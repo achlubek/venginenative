@@ -49,7 +49,7 @@ vec3 getViewDir(){
     vec2 fdir = UV * 2.0 - 1.0;
     //if(length(fdir)> 0.99) fdir = normalize(fdir) * 0.99;
     float mixer = sqrt(max(0.0001, 1.0 - fdir.x*fdir.x - fdir.y * fdir.y));
-    return vec3(fdir.x, mixer, fdir.y);
+    return normalize(vec3(fdir.x, mixer, fdir.y));
 	
 }
 vec3 getViewDir2(){
@@ -75,7 +75,7 @@ vec2 reverseDir(vec3 dir){
     if(dir.y < 0.0) dir.y = - dir.y;
     vec2 fdir = normalize(dir.xz);
   //  dir.y = 1.0 - dir.y;
-		float mixer = sqrt(1.0 - dot(dir, vec3(0,1,0)));
+		float mixer = sqrt(1.0 - dir.y);
     fdir = mix(vec2(0,0), fdir, mixer);
     return fdir * 0.5 + 0.5;
 }
@@ -155,11 +155,8 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
 }
 
 vec3 sun(vec3 camdir, vec3 sundir, float gloss){
-    float mult = sign(sundir.y);
-    sundir = normalize(sundir * vec3(1.0, dot(sundir, vec3(0,1,0)), 1.0));
-    sundir.y *= mult;
     float dt = max(0, dot(camdir, sundir));
-    vec3 var1 = 1100.0 * mix((1.0 - smoothstep(0.003, mix(1.0, 0.0054, gloss), 1.0 - gloss * dt*dt*dt*dt*dt)) * vec3(10), pow(dt*dt*dt*dt*dt, 1256.0 * gloss) * vec3(10), max(0, dot(sundir, vec3(0,1,0)))) * (gloss * 0.9 + 0.1);
+    vec3 var1 = 11.0 * mix((1.0 - smoothstep(0.003, mix(1.0, 0.0054, gloss), 1.0 - gloss * dt*dt*dt*dt*dt)) * vec3(10), pow(dt*dt*dt*dt*dt, 1256.0 * gloss) * vec3(10), max(0, dot(sundir, vec3(0,1,0)))) * (gloss * 0.9 + 0.1);
     vec3 var2 = vec3(1) * max(0, dot(camdir, sundir));
     return mix(var2, var1, gloss);
 }
@@ -235,7 +232,7 @@ float fbm_alu(vec3 p){
 
 float edgeclose = 0.0;
 float cloudsDensity3D(vec3 pos){
-    vec3 ps = pos +CloudsOffset;// + wtim;
+    vec3 ps = pos +CloudsOffset;
     //ps.xz *= CloudsDensityScale;
    // float density = 1.0 - fbm(ps * 0.05 + fbm(ps * 0.5));
     float density = 1.0 - fbm(ps * 0.05);
@@ -261,7 +258,7 @@ Sphere sphere2;
 float weightshadow = CloudsDensityScale;
 float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
     float iter = 0.0;
-    const float stepcount = 3;
+    const float stepcount = 4;
     const float stepsize = 1.0 / stepcount;
     float rd = rand2sTime(UV);
     float coverageinv = 1.0;
@@ -367,5 +364,7 @@ vec4 raymarchCloudsRay(){
     
     float hitfloor = rsi2(r, sphere1);
     float hitceil = rsi2(r, sphere2);
-    return internalmarchconservative(viewdir * hitfloor, viewdir * hitceil);
+    vec4 res = internalmarchconservative(viewdir * hitfloor, viewdir * hitceil);
+    res.b = sun(viewdir, normalize(SunDirection), 1.0).x;
+    return res;
 }

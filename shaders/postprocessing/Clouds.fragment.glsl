@@ -26,7 +26,9 @@ vec4 shade(){
    val.g = mix(min(val.g, lastData.g), val.g, 0.2);
    val.a = mix(min(val.a, lastData.a), val.a, 0.3);
    val.r = mix(max(val.r, lastData.r), val.r, 0.8);
+   float s = val.b;
     val = mix(val, lastData, 0.96227);
+    val.b = s;
    // data = mix(val, data, 0.95);
    
     return val;
