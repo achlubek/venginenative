@@ -23,11 +23,11 @@ vec4 shade(){
   //  vec4 data = val.b <= lastData.b ? val : lastData;
   //  vec3 pos = startpos + ssdir * data.b;
    // data.g = getAOPos(1.0, pos);
-   val.g = mix(min(val.g, lastData.g), val.g, 0.2);
-   val.a = mix(min(val.a, lastData.a), val.a, 0.3);
-   val.r = mix(max(val.r, lastData.r), val.r, 0.8);
+   val.g = mix(min(val.g, lastData.g), val.g, 0.1);
+  // val.a = mix(min(val.a, lastData.a), val.a, 0.3);
+  // val.r = mix(max(val.r, lastData.r), val.r, 0.1);
    float s = val.b;
-    val = mix(val, lastData, 0.96227);
+    val = mix(val, lastData, 0.91227);
     val.b = s;
    // data = mix(val, data, 0.95);
    

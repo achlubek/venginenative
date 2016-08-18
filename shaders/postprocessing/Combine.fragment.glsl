@@ -61,16 +61,16 @@ vec4 smartblur(vec3 dir, float roughness){
     vec4 centerval = vec4(0);
     float center = textureLod(cloudsCloudsTex, uv, mlvel).r;
     float aoc = 0;
-    float blurrange = 0.003;// * pow(center, 2.0);
+    float blurrange = 0.42 *   pow(1.0 - dir.y, 32.0);// * pow(center, 2.0);
     for(int i=0;i<64;i++){
-        vec2 rdp = randpoint2() * blurrange;
-        float there = textureLod(cloudsCloudsTex, uv + rdp, mlvel).r;
-        float w = 1.0;//pow( 1.0 - abs(there - center), 12.0);
-        centerval += w * textureLod(cloudsCloudsTex, uv + rdp, mlvel).rgba;
+        vec2 rdp = reverseDir(normalize(dir + vec3(randpoint2(), 0.0).xzy * blurrange)) ;
+        float there = textureLod(cloudsCloudsTex, rdp, mlvel).r;
+        float w = 1.0;//pow( 1.0 - abs(there - center), 2.0);
+        centerval += w * textureLod(cloudsCloudsTex, rdp, mlvel).rgba;
         aoc += w;
     }
     centerval /= aoc;
-    return vec4(centervals.r, centerval.g, centervals.b, centerval.a);
+    return vec4(centerval.r, centerval.g, centervals.b, centerval.a);
 }
 
 
@@ -287,12 +287,11 @@ vec3 cloudsbydir(vec3 dir){
    // roughness = 0;
     //return vec3(cdata.a);
     vec4 cdata = smartblur(dir, roughness).rgba;
-    vec3 sunx = (1.0 - doatmscatter) * sun(dir, normalize(SunDirection), roughness) + doatmscatter * cdata.b;
-    cdata.a = doatmscatter * clamp(pow(cdata.a * 1.0, 16.0) * 1.0, 0.0, 1.0) * NoiseOctave1;
-    //cdata.r *= 1.0 - pow(1.0 - (dir.y), 64.0);
-    vec3 scatt = getAtmosphereForDirectionReal(vec3(0,1,0), (dir), normalize(SunDirection)) + sunx;
+    //cdata.a = doatmscatter ;//* clamp(pow(cdata.a * 1.0, 16.0) * 1.0, 0.0, 1.0);
     vec3 skydaylightcolor = vec3(0.23, 0.33, 0.48) * 1.3;
     vec3 atmcolor = getAtmosphereForDirection(vec3(0), normalize(SunDirection), normalize(SunDirection), 0.2) + vec3(1);
+    vec3 sunx = sun(dir, normalize(SunDirection), 1.0 - roughness) * vec3(atmcolor);
+    vec3 scatt = getAtmosphereForDirectionReal(vec3(0,1,0), (dir), normalize(SunDirection)) + sunx;
     vec3 atmcolor1 = getAtmosphereForDirection(vec3(0), vec3(0,1,0), normalize(SunDirection), 0.0);
         float diminisher = max(0, dot(normalize(SunDirection), vec3(0,1,0)));
     float diminisher_absolute = dot(normalize(SunDirection), vec3(0,1,0)) * 0.5 + 0.5;
@@ -308,12 +307,12 @@ vec3 cloudsbydir(vec3 dir){
     cdata.r = mix(0.0, cdata.r, 1.0 - pow(1.0 - dir.y, 45.0));
     //   cdata.r = mix(cdata.r, 0.0, min(1.0, dst * 0.000005));
     vec3 scatcolor = mix(vec3(1.0), atmcolor, 1.0 - diminisher) * 0.1;
-    cdata.a = mix(1.0, cdata.a, 1.0 - pow(1.0 - dir.y, 24.0));
+    //cdata.a = mix(1.0, cdata.a, 1.0 - pow(1.0 - dir.y, 24.0));
     vec3 result = vec3(litcolor) * whites + fresnel * mix(scatt, colorcloud, min(1.0, cdata.r * 1.2)) + basewaterclor;
     result = clamp(result, vec3(0.0), vec3(30.0));
-    cdata.a *= pow(dot(dir, normalize(SunDirection))*0.5 + 0.5, 3.0);
-    result += cdata.a * atmcolor;// + diminisher_absolute * (0.5 * pow(diminisher, 8.0) + 0.5) * litcolor * ((pow(1.0 - diminisher, 24.0)) * 0.9 + 0.1) * pow(cdata.a * 1.0, 2.0);
     
+    result += cdata.aaa * atmcolor;// + diminisher_absolute * (0.5 * pow(diminisher, 8.0) + 0.5) * litcolor * ((pow(1.0 - diminisher, 24.0)) * 0.9 + 0.1) * pow(cdata.a * 1.0, 2.0);
+  //  if(UV.x < 0.5)return cdata.aaa;
     //return vec3(hitdistx);
   //  return result;
    // return texture(atmScattTex, UV).rgb;
@@ -329,7 +328,7 @@ vec3 fisheye(){
     vec2 fullsp = UV * 2.0 - 1.0;
     //vec3 dir = normalize(reconstructCameraSpaceDistance(UV * 0.5 + 0.5, 1.0));
   //  fullsp = fullsp / sqrt(1.0 - length(fullsp) * 0.71);
-    fullsp *= 0.5;
+    //fullsp *= 0.5;
     vec3 rld = normalize(reconstructCameraSpaceDistance(vec2(0.5), 1.0));
     vec3 dir = normalize(reconstructCameraSpaceDistance(fullsp * 0.5 + 0.5, 1.0));
     vec3 xdir = rld - dir;
