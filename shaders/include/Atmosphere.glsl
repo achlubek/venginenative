@@ -177,13 +177,13 @@ float fbm_alu(vec3 p){
     
     px = px * 4.0;
     w = 0.02;
-    a += noise(px + noise(px * 3.0 + Time * 0.3)) * w;	
+    a += noise(px + noise(px * 3.0)) * w;	
     sum += w;
     
-   // px = px * 4.0;
-   // w = 0.005;
-   // a += noise(px + noise(px * 3.0)) * w;	
-   // sum += w;
+    px = px * 4.0;
+    w = 0.005;
+    a += noise(px + noise(px * 3.0)) * w;	
+    sum += w;
     
 	return a / sum;
 }
@@ -198,7 +198,7 @@ float cloudsDensity3D(vec3 pos){
     float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh,  density);
     //edgeclose = pow(1.0 - abs(CloudsThresholdLow - density), CloudsThresholdHigh * 113.0);
     float mid = (CloudsThresholdLow + CloudsThresholdHigh) * 0.5;
-    edgeclose = pow(1.0 - abs(mid - density), 12.0);
+    edgeclose = pow(1.0 - abs(mid - density) * 2.0, 1.0);
     return  init;
 } 
 
@@ -213,22 +213,21 @@ float rand2sTime(vec2 co){
 Sphere sphere1;
 Sphere sphere2;
 
-float weightshadow = CloudsDensityScale;
+float weightshadow = 1.0;
 float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
     float iter = 0.0;
-    const float stepcount = 2;
+    const float stepcount = 6;
     const float stepsize = 1.0 / stepcount;
-    float rd = rand2sTime(UV);
+    float rd = rand2sTime(UV) * stepsize;
     float coverageinv = 1.0;
-    
+    float linear = distance(p1, mix(p1, p2, stepsize));
     for(int i=0;i<stepcount;i++){
-        vec3 pos = mix(p1, p2, rd);
+        vec3 pos = mix(p1, p2, iter + rd);
         float clouds = cloudsDensity3D(pos * 0.01);
-        coverageinv -= clouds * weightshadow;
+        coverageinv -= clouds * weightshadow * stepsize * linear * 0.001;
         iter += stepsize;
-        rd = rand2sTime(UV * iter);
     }
-    return  clamp(coverageinv, 0.0, 1.0);
+    return  pow(clamp(coverageinv, 0.0, 1.0), CloudsDensityScale);
 }
 
 float hash1x = 0.0;
@@ -252,8 +251,9 @@ float intersectplanet(vec3 pos){
 float getAOPos(vec3 pos){
     float a = 0;
         vec3 dir = normalize(normalize(SunDirection) + randdir() * 0.2);
+       // vec3 dir = normalize(SunDirection);
         Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
-        float hitceil = rsi2(r, sphere1);
+        float hitceil = rsi2(r, sphere2);
         vec3 posceil = pos + dir * hitceil;
         a +=internalmarchconservativeCoverageOnly(pos, posceil);
     return a;
@@ -269,21 +269,21 @@ float directshadow(vec3 pos){
 }
 float godray(vec3 pos){
     float a = 1;
-    if(intersectplanet(pos) != 0.0){
+    //if(intersectplanet(pos) != 0.0){
         vec3 dir = normalize(SunDirection);
         Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
         float hitceil = rsi2(r, sphere2);
         vec3 posceil = pos + dir * hitceil;
         float hitceil2 = rsi2(r, sphere1);
-        vec3 posceil2 = pos + dir * hitceil2;
-        a +=clamp(internalmarchconservativeCoverageOnly(posceil2, posceil), 0.0, 1.0);
-    }
+        vec3 posceil2 = hitceil2 > 0.0 ? pos + dir * hitceil2 : pos;
+        a +=clamp(internalmarchconservativeCoverageOnly(pos, posceil), 0.0, 1.0);
+    //}
     return a;
 }
 
 vec4 internalmarchconservative(vec3 p1, vec3 p2){
-    const float stepcount = 3;
-    const float stepsize = 1.0 / stepcount;
+    float stepcount = 7;
+    float stepsize = 1.0 / stepcount;
     float rd = fract(rand2sTime(UV) + hash(Time)) * stepsize;
     hash1x = rand2s(UV * vec2(Time, Time));
     float c = 0.0;
@@ -300,24 +300,28 @@ vec4 internalmarchconservative(vec3 p1, vec3 p2){
         pos = mix(vec3(0,1,0), p2, iter + rd);
       //  c += edgeclose * getAOPos(scale, pos);
       //  w += edgeclose;
-       // if(coverageinv > 0.0){
-            c += edgeclose * getAOPos(pos);
-            w += edgeclose;
-       // }
+        if(coverageinv > 0.0 && clouds > 0.0){
+            c += coverageinv * getAOPos(pos);
+            w += coverageinv;
+        }
         coverageinv -= clouds * 3.0;
+        if(coverageinv <= 0.0) break;
         iter += stepsize;
         //rd = fract(rd + iter * 124.345345);
     }
-    float cdist = ((1.0 - normalize(p2 - p1).y) + 0.4) * stepsize * 0.3;
     iter = 0.0;
-   // for(int i=0;i<stepcount;i++){
-     //   pos = mix(vec3(0), p2, rd + iter);
-     //   godr += godray(pos) * cdist;
-     //   iter += stepsize;
-   // }
+    stepcount = 4;
+    stepsize = 1.0 / stepcount;
+    float cdist = ((1.0 - normalize(p2 - p1).y) + 0.4) * stepsize * 0.3;
+    rd = fract(rand2sTime(UV) + hash(Time)) * stepsize;
+    for(int i=0;i<stepcount;i++){
+        pos = mix(CameraPosition, p2, rd + iter);
+        godr += godray(pos) * cdist;
+        iter += stepsize;
+    }
     
-    //godr *= NoiseOctave1;
-   // godr = pow(godr, 4.0);
+    godr *= NoiseOctave1;
+    godr = pow(godr, 4.0);
    // godr += pow(1.0 - max(0, dot(vec3(0,1,0), normalize(p2 - p1))), 6.0) * 1.0 * normalize(SunDirection).y;
    // godr *= max(pow(max(0.0, dot(normalize(p2 - p1), normalize(SunDirection))), 3.0), pow(max(0.0, dot(vec3(0,1,0), normalize(SunDirection))), 3.0));
     if(w > 0.001) c /= w; else c = 1.0;

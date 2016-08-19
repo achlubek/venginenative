@@ -52,25 +52,25 @@ float roughtomipmap(float roughness, sampler2D txt){
     return mx * levels;
 }
 vec4 smartblur(vec3 dir, float roughness){
-    float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)) - 2.0);
+    float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));
     float mx = log2(roughness*512+1)/log2(512);
     float mlvel = mx * levels;
    // return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
     return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
-    /*vec4 centervals = textureLod(cloudsCloudsTex, dir, mlvel).rgba;
+    vec4 centervals = textureLod(cloudsCloudsTex, dir, mlvel).rgba;
     vec4 centerval = vec4(0);
     float center = textureLod(cloudsCloudsTex, dir, mlvel).r;
     float aoc = 0;
-    float blurrange = 0.42 *   pow(1.0 - dir.y, 32.0);// * pow(center, 2.0);
+    float blurrange = 0.005 * (center);// * pow(center, 2.0);
     for(int i=0;i<64;i++){
-        vec2 rdp = reverseDir(normalize(dir + vec3(randpoint2(), 0.0).xzy * blurrange)) ;
+        vec3 rdp = normalize(dir + randpoint3() * blurrange);
         float there = textureLod(cloudsCloudsTex, rdp, mlvel).r;
-        float w = 1.0;//pow( 1.0 - abs(there - center), 2.0);
+        float w = pow( 1.0 - abs(there - center), 2.0);
         centerval += w * textureLod(cloudsCloudsTex, rdp, mlvel).rgba;
         aoc += w;
     }
     centerval /= aoc;
-    return vec4(centerval.r, centerval.g, centervals.b, centerval.a);*/
+    return vec4(centerval.r, centerval.g, centervals.b, centerval.a);
 }
 
 
@@ -181,7 +181,7 @@ vec3 raymarchwaterImpl(vec3 upper, vec3 lower, float stepsF, int stepsI, float i
         float h = heightwater(pos.xz, WATER_SAMPLES_LOW);
         if(h > 1.0 - (iter) || dst > maxdist) {
            // return normalx(pos, 1);
-            iter -= stepsize;
+            iter -= stepsize;   
             float stepsize = stepsize / instepsF;
             for(int z=0;z<instepsI + 1;z++){
                // pos.x += (iter + rd) * 30.0;
@@ -224,17 +224,20 @@ vec3 cloudsbydir(vec3 dir){
     float whites = (0);
     float doatmscatter = 1.0;
    //defres += getAtmosphereForDirection(currentData.worldPos, currentData.normal, normalize(SunDirection), currentData.roughness) * 0.5 * currentData.diffuseColor;
-    if(dir.y < -1.0){
-        
-        vec3 atmorg = vec3(0, planetradius, 0) + CameraPosition;  
+    Sphere planet0 = Sphere(vec3(0), planetradius + waterdepth);
+    vec3 atmorg = vec3(0, planetradius, 0) + CameraPosition;  
+    Ray r = Ray(atmorg, dir);
+    float planethit = rsi2(r, planet0);
+    if(intersects(planethit)){ 
         Ray r = Ray(atmorg, dir);
-        float planethit = intersectPlane(CameraPosition, dir, vec3(0, waterdepth, 0), vec3(0,1,0));
-        float planethit2 = intersectPlane(CameraPosition, dir, vec3(0, 0.01, 0), vec3(0,1,0));    
+        
+        Sphere planet1 = Sphere(vec3(0), planetradius);
+        float planethit2 = rsi2(r, planet1);
         vec3 newpos = CameraPosition + dir * planethit;
         vec3 newpos2 = CameraPosition + dir * planethit2;
         float flh1 = planethit * 0.0005;
         roughness = 1.0 - smoothstep(0.0, 22.0, sqrt(sqrt(flh1)));
-        roughness = 1.0 - pow(roughness, 164.0);
+        roughness = 1.0 - pow(roughness, 64.0);
         roughness = mix(roughness, 1.0, 1.0 - pow(abs(dir.y), 1.0));
         dst = planethit;
         float lodz = pow(1.0 - smoothstep(0, LOD3, planethit), 1.0);
@@ -264,7 +267,7 @@ vec3 cloudsbydir(vec3 dir){
             n = normalize(mix(n, vec3(0,1,0), roughness));
         }
         //return vec3(whites);
-        roughness *= 0.02 ;//* (WaterWavesScale);
+        roughness *= 0.05 * (WaterWavesScale);
         vec3 refr = normalize(refract(dir, n, 1.333));
         dir = normalize(reflect(dir, n));
         dir.y = abs(dir.y);
@@ -278,6 +281,7 @@ vec3 cloudsbydir(vec3 dir){
         //defres += getAtmosphereForDirection(currentData.worldPos, n, normalize(SunDirection), currentData.roughness) * 0.5 * currentData.diffuseColor;
         basewaterclor = (1.0 - fresnel) * mix(vec3(0.0, 0.46, 0.60) * max(0, normalize(SunDirection).y)* 0.1 * (waveheight * 0.3 + 0.7), defres, (1.0 / (hitdepth * 0.08 + 1.0)));
         dir = normalize(mix(dir, vec3(0,1,0), roughness));
+        fresnel = mix(fresnel, 0.02, sqrt(roughness));
       //return vec3(1) * (1.0 / (hitdepth * hitdepth * 0.03 + 1.0));
         //dir = normalize(reflect(dir, vec3(0,1,0)));
         doatmscatter = 0;
@@ -290,7 +294,7 @@ vec3 cloudsbydir(vec3 dir){
     //return cdata.rgb;
     //cdata.a = doatmscatter ;//* clamp(pow(cdata.a * 1.0, 16.0) * 1.0, 0.0, 1.0);
     vec3 skydaylightcolor = vec3(0.23, 0.33, 0.48) * 1.3;
-    vec3 atmcolor = getAtmosphereForDirectionReal(CameraPosition, normalize(SunDirection), normalize(SunDirection)) + vec3(1);
+    vec3 atmcolor = getAtmosphereForDirectionReal(CameraPosition, normalize(max(vec3(-1.0, 0.08, -1.0), SunDirection)), normalize(SunDirection));
     vec3 sunx = sun(dir, normalize(SunDirection), 1.0 - roughness) * vec3(atmcolor);
     vec3 scatt = getAtmosphereForDirectionReal(CameraPosition, (dir), normalize(SunDirection)) + sunx;
     vec3 atmcolor1 = getAtmosphereForDirectionReal(CameraPosition, vec3(0,1,0), normalize(SunDirection));
@@ -302,7 +306,7 @@ vec3 cloudsbydir(vec3 dir){
     
 
     vec3 shadowcolor = mix(skydaylightcolor, skydaylightcolor * 0.05, 1.0 - diminisher);
-    vec3 litcolor = mix(vec3(10.0)   , atmcolor * 0.2, 1.0 - diminisher);
+    vec3 litcolor = mix(vec3(5.0)   , atmcolor * 0.2, 1.0 - diminisher);
     vec3 colorcloud = dmxp * mix(shadowcolor, litcolor, pow(cdata.g, 2.0)) ;//* (diminisher * 0.3 + 0.7);
     
    // cdata.r = mix(0.0, cdata.r, 1.0 - pow(1.0 - dir.y, 45.0));

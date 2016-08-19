@@ -88,6 +88,7 @@ private:
     CubeMapTexture *cloudsTextureOdd;
 
     bool cloudCycleUseOdd = false;
+    int cloudFace = 0;
     void clouds();
 
     ShaderProgram *fxaaTonemapShader;
