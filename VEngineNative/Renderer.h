@@ -82,10 +82,10 @@ private:
     void atmScatt();
 
     ShaderProgram *cloudsShader;
-    Framebuffer *cloudsFboEven;
-    Texture *cloudsTextureEven;
-    Framebuffer *cloudsFboOdd;
-    Texture *cloudsTextureOdd;
+    CubeMapFramebuffer *cloudsFboEven;
+    CubeMapTexture *cloudsTextureEven;
+    CubeMapFramebuffer *cloudsFboOdd;
+    CubeMapTexture *cloudsTextureOdd;
 
     bool cloudCycleUseOdd = false;
     void clouds();

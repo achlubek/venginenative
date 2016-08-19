@@ -32,7 +32,7 @@ vec3 randpoint3(){
     rdhash += 1.6271255;
     return vec3(x, y, z) * 2.0 - 1.0;
 }
-
+/*
 float aaoo(){
     vec2 uv = reverseViewDir();
     float center = texture(cloudsCloudsTex, uv).b;
@@ -44,7 +44,7 @@ float aaoo(){
         aoc += w * clamp(center - there, 0.0, 1000.0) * 0.001;
     }
     return pow(1.0 - aoc / 32.0, 16.0);
-}    
+}    */
 float roughtomipmap(float roughness, sampler2D txt){
     //roughness = roughness * roughness;
     float levels = max(0, float(textureQueryLevels(txt)));
@@ -52,14 +52,14 @@ float roughtomipmap(float roughness, sampler2D txt){
     return mx * levels;
 }
 vec4 smartblur(vec3 dir, float roughness){
-    vec2 uv = reverseDir(dir);
     float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)) - 2.0);
     float mx = log2(roughness*512+1)/log2(512);
     float mlvel = mx * levels;
-    //return textureLod(cloudsCloudsTex, uv, mlvel).rgba;
-    vec4 centervals = textureLod(cloudsCloudsTex, uv, mlvel).rgba;
+   // return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
+    return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
+    /*vec4 centervals = textureLod(cloudsCloudsTex, dir, mlvel).rgba;
     vec4 centerval = vec4(0);
-    float center = textureLod(cloudsCloudsTex, uv, mlvel).r;
+    float center = textureLod(cloudsCloudsTex, dir, mlvel).r;
     float aoc = 0;
     float blurrange = 0.42 *   pow(1.0 - dir.y, 32.0);// * pow(center, 2.0);
     for(int i=0;i<64;i++){
@@ -70,7 +70,7 @@ vec4 smartblur(vec3 dir, float roughness){
         aoc += w;
     }
     centerval /= aoc;
-    return vec4(centerval.r, centerval.g, centervals.b, centerval.a);
+    return vec4(centerval.r, centerval.g, centervals.b, centerval.a);*/
 }
 
 
@@ -224,7 +224,7 @@ vec3 cloudsbydir(vec3 dir){
     float whites = (0);
     float doatmscatter = 1.0;
    //defres += getAtmosphereForDirection(currentData.worldPos, currentData.normal, normalize(SunDirection), currentData.roughness) * 0.5 * currentData.diffuseColor;
-    if(dir.y < 0.0){
+    if(dir.y < -1.0){
         
         vec3 atmorg = vec3(0, planetradius, 0) + CameraPosition;  
         Ray r = Ray(atmorg, dir);
@@ -287,12 +287,13 @@ vec3 cloudsbydir(vec3 dir){
    // roughness = 0;
     //return vec3(cdata.a);
     vec4 cdata = smartblur(dir, roughness).rgba;
+    //return cdata.rgb;
     //cdata.a = doatmscatter ;//* clamp(pow(cdata.a * 1.0, 16.0) * 1.0, 0.0, 1.0);
     vec3 skydaylightcolor = vec3(0.23, 0.33, 0.48) * 1.3;
-    vec3 atmcolor = getAtmosphereForDirection(vec3(0), normalize(SunDirection), normalize(SunDirection), 0.2) + vec3(1);
+    vec3 atmcolor = getAtmosphereForDirectionReal(CameraPosition, normalize(SunDirection), normalize(SunDirection)) + vec3(1);
     vec3 sunx = sun(dir, normalize(SunDirection), 1.0 - roughness) * vec3(atmcolor);
-    vec3 scatt = getAtmosphereForDirectionReal(vec3(0,1,0), (dir), normalize(SunDirection)) + sunx;
-    vec3 atmcolor1 = getAtmosphereForDirection(vec3(0), vec3(0,1,0), normalize(SunDirection), 0.0);
+    vec3 scatt = getAtmosphereForDirectionReal(CameraPosition, (dir), normalize(SunDirection)) + sunx;
+    vec3 atmcolor1 = getAtmosphereForDirectionReal(CameraPosition, vec3(0,1,0), normalize(SunDirection));
         float diminisher = max(0, dot(normalize(SunDirection), vec3(0,1,0)));
     float diminisher_absolute = dot(normalize(SunDirection), vec3(0,1,0)) * 0.5 + 0.5;
     
@@ -304,7 +305,7 @@ vec3 cloudsbydir(vec3 dir){
     vec3 litcolor = mix(vec3(10.0)   , atmcolor * 0.2, 1.0 - diminisher);
     vec3 colorcloud = dmxp * mix(shadowcolor, litcolor, pow(cdata.g, 2.0)) ;//* (diminisher * 0.3 + 0.7);
     
-    cdata.r = mix(0.0, cdata.r, 1.0 - pow(1.0 - dir.y, 45.0));
+   // cdata.r = mix(0.0, cdata.r, 1.0 - pow(1.0 - dir.y, 45.0));
     //   cdata.r = mix(cdata.r, 0.0, min(1.0, dst * 0.000005));
     vec3 scatcolor = mix(vec3(1.0), atmcolor, 1.0 - diminisher) * 0.1;
     //cdata.a = mix(1.0, cdata.a, 1.0 - pow(1.0 - dir.y, 24.0));

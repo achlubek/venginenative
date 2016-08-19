@@ -7,8 +7,10 @@
 #include Atmosphere.glsl
 
 vec4 shade(){    
-    if(shouldBreak()) return vec4(0);
-    vec4 lastData = texture(cloudsCloudsTex, UV).rgba;
+   // if(shouldBreak()) return vec4(0);
+    vec3 dir = normalize(reconstructCameraSpaceDistance(UV, 1.0));
+    
+    vec4 lastData = texture(cloudsCloudsTex, dir).rgba;
    vec4 val = raymarchCloudsRay();
    /*
    //val.g = min(val.g, lastData.a);
@@ -25,9 +27,9 @@ vec4 shade(){
    // data.g = getAOPos(1.0, pos);
    val.g = mix(min(val.g, lastData.g), val.g, 0.1);
   // val.a = mix(min(val.a, lastData.a), val.a, 0.3);
-  // val.r = mix(max(val.r, lastData.r), val.r, 0.1);
+   //val.r = mix(max(val.r, lastData.r), val.r, 0.1);
    float s = val.b;
-    val = mix(val, lastData, 0.91227);
+    val = mix(val, lastData, 0.918227);
     val.b = s;
    // data = mix(val, data, 0.95);
    

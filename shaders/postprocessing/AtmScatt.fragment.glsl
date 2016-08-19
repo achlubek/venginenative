@@ -7,7 +7,7 @@
 #include Atmosphere.glsl
 
 vec4 shade(){
-    vec3 val = getAtmosphereForDirectionReal(vec3(0,10,0), getViewDir2(), normalize(SunDirection));
-    return vec4(val.r, val.g, val.b, 0);
-    //return vec4(0);
+   // vec3 val = getAtmosphereForDirectionReal(vec3(0,10,0), getViewDir2(), normalize(SunDirection));
+   // return vec4(val.r, val.g, val.b, 0);
+    return vec4(0);
 }

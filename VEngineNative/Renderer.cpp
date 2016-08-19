@@ -104,12 +104,12 @@ void Renderer::initializeFbos()
     fogFbo = new Framebuffer();
     fogFbo->attachTexture(fogTexture, GL_COLOR_ATTACHMENT0);
 
-    cloudsTextureEven = new Texture(1024, 1024, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
-    cloudsFboEven = new Framebuffer();
+    cloudsTextureEven = new CubeMapTexture(512, 512, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    cloudsFboEven = new CubeMapFramebuffer();
     cloudsFboEven->attachTexture(cloudsTextureEven, GL_COLOR_ATTACHMENT0);
 
-    cloudsTextureOdd = new Texture(1024, 1024, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
-    cloudsFboOdd = new Framebuffer();
+    cloudsTextureOdd = new CubeMapTexture(512, 512, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    cloudsFboOdd = new CubeMapFramebuffer();
     cloudsFboOdd->attachTexture(cloudsTextureOdd, GL_COLOR_ATTACHMENT0);
 
     atmScattTexture = new Texture(768, 768, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
@@ -210,7 +210,7 @@ void Renderer::draw(Camera *camera)
     }
     deferred();
     ambientLight();
-    atmScatt();
+    //atmScatt();
     clouds();
     combine();
 }
@@ -451,26 +451,20 @@ void Renderer::clouds()
 {
     cloudCycleUseOdd = !cloudCycleUseOdd;
     glDisable(GL_BLEND);
-    FrustumCone *cone = currentCamera->cone;
-    glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
 
     mrtAlbedoRoughnessTex->use(0);
     mrtNormalMetalnessTex->use(1);
     mrtDistanceTexture->use(2);
 
-    if (cloudCycleUseOdd) 
-        cloudsTextureEven->use(22);
-    else 
-        cloudsTextureOdd->use(22);
+
+ //   if (cloudCycleUseOdd) 
+  //      cloudsTextureEven->use(22);
+  //  else 
+  //      cloudsTextureOdd->use(18);
+
 
 
     cloudsShader->use();
-    cloudsShader->setUniform("VPMatrix", vpmatrix);
-    cloudsShader->setUniform("Resolution", glm::vec2(width, height));
-    cloudsShader->setUniform("CameraPosition", currentCamera->transformation->position);
-    cloudsShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
-    cloudsShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-    cloudsShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
     cloudsShader->setUniform("Time", Game::instance->time);
     cloudsShader->setUniform("CloudsFloor", cloudsFloor);
     cloudsShader->setUniform("CloudsCeil", cloudsCeil);
@@ -490,15 +484,40 @@ void Renderer::clouds()
     cloudsShader->setUniform("NoiseOctave4", noiseOctave4);
     cloudsShader->setUniform("NoiseOctave5", noiseOctave5);
     cloudsShader->setUniform("NoiseOctave6", noiseOctave6);
+    cloudsShader->setUniform("Resolution", glm::vec2(cloudsTextureOdd->width, cloudsTextureOdd->height));
     srand(static_cast <unsigned> (Game::instance->time * 1000.0));
     cloudsShader->setUniform("Rand1", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
     cloudsShader->setUniform("Rand2", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
 
+    CubeMapFramebuffer* currentFbo = cloudsFboOdd;
     if (cloudCycleUseOdd)
-        cloudsFboOdd->use(true);
+        currentFbo = cloudsFboOdd;
     else
-        cloudsFboEven->use(true);
-    quad3dInfo->draw();
+        currentFbo = cloudsFboEven;
+
+
+    for (int i = 0; i < 6; i++) {
+        if (GL_TEXTURE_CUBE_MAP_POSITIVE_X + i != GL_TEXTURE_CUBE_MAP_NEGATIVE_Y) {
+            currentFbo->use();
+            Camera* camera = currentFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, true);
+            camera->transformation->setPosition(currentCamera->transformation->position);
+            FrustumCone *cone = camera->cone;
+            glm::mat4 vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
+            glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
+            glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
+            camera->cone->update(inverse(rpmatrix));
+            cloudsShader->use();
+            cloudsShader->setUniform("VPMatrix", vpmatrix);
+            cloudsShader->setUniform("CameraPosition", camera->transformation->position);
+            cloudsShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
+            cloudsShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
+            cloudsShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
+            currentFbo->use();
+            cloudsShader->use();
+            quad3dInfo->draw();
+        }
+    }
+
     if (cloudCycleUseOdd)
         cloudsTextureOdd->generateMipMaps();
     else
