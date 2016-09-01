@@ -1,6 +1,6 @@
 #pragma once
 #include "Framebuffer.h";
-#include "Texture.h";
+#include "Texture2d.h";
 #include "CubeMapTexture.h";
 #include "CubeMapFramebuffer.h";
 #include "ShaderProgram.h";
@@ -34,6 +34,9 @@ public:
     float noiseOctave4;
     float noiseOctave5;
     float noiseOctave6;
+    float noiseOctave7;
+    float noiseOctave8;
+    float cloudsIntegrate;
     glm::vec3 cloudsOffset;
     glm::vec3 sunDirection;
     int width;
@@ -49,36 +52,36 @@ private:
 
     //MRT Buffers
     Framebuffer *mrtFbo;
-    Texture *mrtAlbedoRoughnessTex;
-    Texture *mrtNormalMetalnessTex;
-    Texture *mrtDistanceTexture;
-    Texture *depthTexture;
+    Texture2d *mrtAlbedoRoughnessTex;
+    Texture2d *mrtNormalMetalnessTex;
+    Texture2d *mrtDistanceTexture;
+    Texture2d *depthTexture;
 
     // Effects part
     ShaderProgram *deferredShader;
     ShaderProgram *envProbesShader;
     Framebuffer *deferredFbo;
-    Texture *deferredTexture;
+    Texture2d *deferredTexture;
     void deferred();
 
     ShaderProgram *ambientLightShader;
     Framebuffer *ambientLightFbo;
-    Texture *ambientLightTexture;
+    Texture2d *ambientLightTexture;
     void ambientLight();
 
     ShaderProgram *ambientOcclusionShader;
     Framebuffer *ambientOcclusionFbo;
-    Texture *ambientOcclusionTexture;
+    Texture2d *ambientOcclusionTexture;
     void ambientOcclusion();
 
     ShaderProgram *fogShader;
     Framebuffer *fogFbo;
-    Texture *fogTexture;
+    Texture2d *fogTexture;
     void fog();
 
     ShaderProgram *atmScattShader;
     Framebuffer *atmScattFbo;
-    Texture *atmScattTexture;
+    Texture2d *atmScattTexture;
     void atmScatt();
 
     ShaderProgram *cloudsShader;
@@ -93,23 +96,23 @@ private:
 
     ShaderProgram *fxaaTonemapShader;
    // Framebuffer *fxaaTonemapFbo;
-    //Texture *fxaaTonemapTexture;
+    //Texture2d *fxaaTonemapTexture;
     void fxaaTonemap();
 
     ShaderProgram *motionBlurShader;
     Framebuffer *motionBlurFbo;
-    Texture *motionBlurTexture;
+    Texture2d *motionBlurTexture;
     void motionBlur();
 
     ShaderProgram *bloomShader;
     Framebuffer *bloomFbo;
-    Texture *bloomXTexture;
-    Texture *bloomYTexture;
+    Texture2d *bloomXTexture;
+    Texture2d *bloomYTexture;
     void bloom();
 
     ShaderProgram *combineShader;
     Framebuffer *combineFbo;
-    Texture *combineTexture;
+    Texture2d *combineTexture;
     void combine();
 
     // Output to output fbo

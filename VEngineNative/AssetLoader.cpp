@@ -121,10 +121,10 @@ Material * AssetLoader::loadMaterialString(string source)
                     for (int a = 1; a < words.size(); a++)ss << (a == 1 ? "" : " ") << words[a];
                     void * cached = Media::checkCache(ss.str());
                     if (cached != nullptr) {
-                        node->texture = (Texture*)cached;
+                        node->texture = (Texture2d*)cached;
                     }
                     else {
-                        node->texture = new Texture(ss.str());
+                        node->texture = new Texture2d(ss.str());
                         Media::saveCache(ss.str(), node->texture);
                     }
                 }

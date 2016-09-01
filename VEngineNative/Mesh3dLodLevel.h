@@ -3,7 +3,7 @@
 #include "Material.h"
 #include "Object3dInfo.h"
 #include "Mesh3dInstance.h"
-#include "Texture.h"
+#include "Texture2d.h"
 class Mesh3dLodLevel
 {
 public:
@@ -31,7 +31,7 @@ private:
     vector<glm::vec2> uvScales;
     vector<glm::vec4> nodesDatas;
     vector<glm::vec4> nodesColors;
-    vector<Texture*> textureBinds;
+    vector<Texture2d*> textureBinds;
     size_t instancesFiltered;
     bool useGeometryShader = false;
 };

@@ -11,6 +11,9 @@ uniform float NoiseOctave3;
 uniform float NoiseOctave4;
 uniform float NoiseOctave5;
 uniform float NoiseOctave6;
+uniform float NoiseOctave7;
+uniform float NoiseOctave8;
+uniform float CloudsIntegrate;
 uniform vec3 SunDirection;
 uniform float AtmosphereScale;
 uniform float CloudsDensityScale;
@@ -153,8 +156,8 @@ float noise( in vec3 x ){
     return res;
 }
 
-#define fbmsamples 2
-#define fbm fbm_alu
+#define fbmsamples 4
+#define fbm fbm_aluX
 #define ssnoise(a) (snoise(a) * 0.5 + 0.5)
 float fbm_alu(vec3 p){
     //p *= 0.2;
@@ -172,7 +175,7 @@ float fbm_alu(vec3 p){
     
     px = p * 2.0;
     w = 0.05;
-    a += noise(px) * w;	
+    a += noise(px + noise(px * 0.1)) * w;	
     sum += w;
     
     px = px * 4.0;
@@ -187,19 +190,35 @@ float fbm_alu(vec3 p){
     
 	return a / sum;
 }
+float fbm_aluX(vec3 p){
+    p *= 0.1;
+	float a = 0.0;
+    float w = 1.0;
+	for(int i=0;i<fbmsamples;i++){
+		a += noise(p) * w;	
+        w *= 0.5;
+		p = p * NoiseOctave6;
+	}
+	return a;
+}
+
+float dividerrcp = 1.0 / (CloudsCeil - CloudsFloor);
 
 float edgeclose = 0.0;
 float cloudsDensity3D(vec3 pos){
     vec3 ps = pos +CloudsOffset;
+    float h =  (length(vec3(0, planetradius, 0) + pos * 100.0) - planetradius - CloudsFloor) * dividerrcp; 
+    float hw = smoothstep(0.0, 0.08, h) * (1.0 - smoothstep(0.7, 1.0, h));
     //ps.xz *= CloudsDensityScale;
    // float density = 1.0 - fbm(ps * 0.05 + fbm(ps * 0.5));
-    float density = 1.0 - fbm(ps * 0.05);
+    //float density = 1.0 - fbm(ps * 0.05);
+    float density = 1.0 - fbm(ps * 0.05 + fbm(ps * 0.02 * NoiseOctave5));
     
     float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh,  density);
     //edgeclose = pow(1.0 - abs(CloudsThresholdLow - density), CloudsThresholdHigh * 113.0);
     float mid = (CloudsThresholdLow + CloudsThresholdHigh) * 0.5;
     edgeclose = pow(1.0 - abs(mid - density) * 2.0, 1.0);
-    return  init;
+    return init * hw ;
 } 
 
 float rand2s(vec2 co){
@@ -216,15 +235,15 @@ Sphere sphere2;
 float weightshadow = 1.0;
 float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
     float iter = 0.0;
-    const float stepcount = 6;
-    const float stepsize = 1.0 / stepcount;
+    const int stepcount = 6;
+    const float stepsize = 1.0 / float(stepcount);
     float rd = rand2sTime(UV) * stepsize;
     float coverageinv = 1.0;
     float linear = distance(p1, mix(p1, p2, stepsize));
     for(int i=0;i<stepcount;i++){
         vec3 pos = mix(p1, p2, iter + rd);
         float clouds = cloudsDensity3D(pos * 0.01);
-        coverageinv -= clouds * weightshadow * stepsize * linear * 0.001;
+        coverageinv -= clouds * weightshadow * stepsize * linear * 0.002 * CloudsDensityScale;
         iter += stepsize;
     }
     return  pow(clamp(coverageinv, 0.0, 1.0), CloudsDensityScale);
@@ -250,7 +269,9 @@ float intersectplanet(vec3 pos){
 }
 float getAOPos(vec3 pos){
     float a = 0;
-        vec3 dir = normalize(normalize(SunDirection) + randdir() * 0.2);
+        vec3 dir = normalize(normalize(SunDirection) + randdir() * 0.7);
+        //vec3 dir = normalize(randdir());
+        //dir.y = abs(dir.y);
        // vec3 dir = normalize(SunDirection);
         Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
         float hitceil = rsi2(r, sphere2);
@@ -261,6 +282,7 @@ float getAOPos(vec3 pos){
 float directshadow(vec3 pos){
     float a = 0;
         vec3 dir = normalize(randdir());
+        dir.y = abs(dir.y);
         Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
         float hitceil = rsi2(r, sphere2);
         vec3 posceil = pos + dir * hitceil;
@@ -282,8 +304,8 @@ float godray(vec3 pos){
 }
 
 vec4 internalmarchconservative(vec3 p1, vec3 p2){
-    float stepcount = 7;
-    float stepsize = 1.0 / stepcount;
+    int stepcount = 7;
+    float stepsize = 1.0 / float(stepcount);
     float rd = fract(rand2sTime(UV) + hash(Time)) * stepsize;
     hash1x = rand2s(UV * vec2(Time, Time));
     float c = 0.0;
@@ -311,7 +333,7 @@ vec4 internalmarchconservative(vec3 p1, vec3 p2){
     }
     iter = 0.0;
     stepcount = 4;
-    stepsize = 1.0 / stepcount;
+    stepsize = 1.0 / float(stepcount);
     float cdist = ((1.0 - normalize(p2 - p1).y) + 0.4) * stepsize * 0.3;
     rd = fract(rand2sTime(UV) + hash(Time)) * stepsize;
     for(int i=0;i<stepcount;i++){

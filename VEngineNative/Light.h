@@ -1,6 +1,6 @@
 #pragma once
 #include "AbsTransformable.h"
-#include "Texture.h"
+#include "Texture2d.h"
 #include "Framebuffer.h"
 #include "CubeMapFramebuffer.h"
 #include "Camera.h"
@@ -27,7 +27,7 @@ public:
 private:
     int shadowMapWidth;
     int shadowMapHeight;
-    Texture *depthMap;
+    Texture2d *depthMap;
     Framebuffer *mapper;
     CubeMapTexture *depthCubeMap;
     CubeMapFramebuffer *cubeMapper;

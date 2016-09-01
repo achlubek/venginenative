@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "Texture.h"
+#include "Texture2d.h"
 #include "Media.h"
 
-Texture::Texture(GLuint ihandle)
+Texture2d::Texture2d(GLuint ihandle)
 {
     handle = ihandle;
     generated = true;
@@ -13,7 +13,7 @@ Texture::Texture(GLuint ihandle)
     usedds = false;
 }
 
-Texture::Texture(string filekey)
+Texture2d::Texture2d(string filekey)
 {
     if (strstr(filekey.c_str(), ".dds") != nullptr) {
         ddsFile = filekey;
@@ -32,7 +32,7 @@ Texture::Texture(string filekey)
     }
 }
 
-Texture::Texture(int iwidth, int iheight, GLint internalFormat, GLenum format, GLenum type)
+Texture2d::Texture2d(int iwidth, int iheight, GLint internalFormat, GLenum format, GLenum type)
 {
     width = iwidth;
     height = iheight;
@@ -43,24 +43,24 @@ Texture::Texture(int iwidth, int iheight, GLint internalFormat, GLenum format, G
     genMode = genModeEmptyFromDesc;
 }
 
-Texture::~Texture()
+Texture2d::~Texture2d()
 {
 }
-void Texture::pregenerate()
+void Texture2d::pregenerate()
 {
     if (!generated) {
         generate();
     }
 }
 
-void Texture::generateMipMaps()
+void Texture2d::generateMipMaps()
 {
     glBindTexture(GL_TEXTURE_2D, handle);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glGenerateMipmap(GL_TEXTURE_2D);
 }
 
-void Texture::use(int unit)
+void Texture2d::use(int unit)
 {
     if (!generated) {
         generate();
@@ -69,11 +69,11 @@ void Texture::use(int unit)
     glBindTexture(GL_TEXTURE_2D, handle);
 }
 
-void Texture::bind(int unit, int level) {
+void Texture2d::bind(int unit, int level) {
     glBindImageTexture(unit, handle, 0, false, 0, GL_WRITE_ONLY, GL_R16F);
 }
 
-void Texture::generate()
+void Texture2d::generate()
 {
     glGenTextures(1, &handle);
     glBindTexture(GL_TEXTURE_2D, handle);
@@ -82,7 +82,7 @@ void Texture::generate()
             auto glitexture = gli::load(Media::getPath(ddsFile));
             gli::gl GL(gli::gl::PROFILE_GL33);
             gli::gl::format const Format = GL.translate(glitexture.format(), glitexture.swizzles());
-            // GLenum Target = GL.translate(Texture.target());
+            // GLenum Target = GL.translate(Texture2d.target());
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, static_cast<GLint>(glitexture.levels() - 1));
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, Format.Swizzles[0]);

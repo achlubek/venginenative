@@ -22,12 +22,15 @@ Renderer::Renderer(int iwidth, int iheight)
     cloudsDensityScale = 1.0;
     cloudsWindSpeed = 0.4;
 
-    noiseOctave1 = 0.5;
-    noiseOctave2 = 2.02;
-    noiseOctave3 = 3.03;
-    noiseOctave4 = 4.01;
-    noiseOctave5 = 4.04;
-    noiseOctave6 = 5.01;
+    noiseOctave1 = 1.0;
+    noiseOctave2 = 1.02;
+    noiseOctave3 = 1.03;
+    noiseOctave4 = 0.0;
+    noiseOctave5 = 0.5;
+    noiseOctave6 = 4.0;
+    noiseOctave7 = 1.01;
+    noiseOctave8 = 1.01;
+    cloudsIntegrate = 0.90;
 
     cloudsOffset = glm::vec3(1);
     sunDirection = glm::vec3(0, 1, 0);
@@ -77,10 +80,10 @@ void Renderer::resize(int width, int height)
 
 void Renderer::initializeFbos()
 {
-    mrtAlbedoRoughnessTex = new Texture(width, height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE);
-    mrtNormalMetalnessTex = new Texture(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
-    mrtDistanceTexture = new Texture(width, height, GL_R32F, GL_RED, GL_FLOAT);
-    depthTexture = new Texture(width, height, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT); // most probably overkill
+    mrtAlbedoRoughnessTex = new Texture2d(width, height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE);
+    mrtNormalMetalnessTex = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    mrtDistanceTexture = new Texture2d(width, height, GL_R32F, GL_RED, GL_FLOAT);
+    depthTexture = new Texture2d(width, height, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT); // most probably overkill
 
     mrtFbo = new Framebuffer();
     mrtFbo->attachTexture(mrtAlbedoRoughnessTex, GL_COLOR_ATTACHMENT0);
@@ -88,19 +91,19 @@ void Renderer::initializeFbos()
     mrtFbo->attachTexture(mrtDistanceTexture, GL_COLOR_ATTACHMENT2);
     mrtFbo->attachTexture(depthTexture, GL_DEPTH_ATTACHMENT);
 
-    deferredTexture = new Texture(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    deferredTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     deferredFbo = new Framebuffer();
     deferredFbo->attachTexture(deferredTexture, GL_COLOR_ATTACHMENT0);
 
-    ambientLightTexture = new Texture(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    ambientLightTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     ambientLightFbo = new Framebuffer();
     ambientLightFbo->attachTexture(ambientLightTexture, GL_COLOR_ATTACHMENT0);
 
-    ambientOcclusionTexture = new Texture(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    ambientOcclusionTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     ambientOcclusionFbo = new Framebuffer();
     ambientOcclusionFbo->attachTexture(ambientOcclusionTexture, GL_COLOR_ATTACHMENT0);
 
-    fogTexture = new Texture(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    fogTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     fogFbo = new Framebuffer();
     fogFbo->attachTexture(fogTexture, GL_COLOR_ATTACHMENT0);
 
@@ -112,21 +115,21 @@ void Renderer::initializeFbos()
     cloudsFboOdd = new CubeMapFramebuffer();
     cloudsFboOdd->attachTexture(cloudsTextureOdd, GL_COLOR_ATTACHMENT0);
 
-    atmScattTexture = new Texture(768, 768, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    atmScattTexture = new Texture2d(768, 768, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     atmScattFbo = new Framebuffer();
     atmScattFbo->attachTexture(atmScattTexture, GL_COLOR_ATTACHMENT0);
 
-    motionBlurTexture = new Texture(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    motionBlurTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     motionBlurFbo = new Framebuffer();
     motionBlurFbo->attachTexture(motionBlurTexture, GL_COLOR_ATTACHMENT0);
 
-    bloomXTexture = new Texture(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
-    bloomYTexture = new Texture(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    bloomXTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    bloomYTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     bloomFbo = new Framebuffer();
     bloomFbo->attachTexture(bloomXTexture, GL_COLOR_ATTACHMENT0);
     bloomFbo->attachTexture(bloomYTexture, GL_COLOR_ATTACHMENT1);
 
-    combineTexture = new Texture(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    combineTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     combineFbo = new Framebuffer();
     combineFbo->attachTexture(combineTexture, GL_COLOR_ATTACHMENT0);
 
@@ -484,6 +487,9 @@ void Renderer::clouds()
     cloudsShader->setUniform("NoiseOctave4", noiseOctave4);
     cloudsShader->setUniform("NoiseOctave5", noiseOctave5);
     cloudsShader->setUniform("NoiseOctave6", noiseOctave6);
+    cloudsShader->setUniform("NoiseOctave7", noiseOctave7);
+    cloudsShader->setUniform("NoiseOctave8", noiseOctave8);
+    cloudsShader->setUniform("CloudsIntegrate", cloudsIntegrate);
     cloudsShader->setUniform("Resolution", glm::vec2(cloudsTextureOdd->width, cloudsTextureOdd->height));
     srand(static_cast <unsigned> (Game::instance->time * 1000.0));
     cloudsShader->setUniform("Rand1", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));

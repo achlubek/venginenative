@@ -1,5 +1,5 @@
 #pragma once
-#include "Texture.h";
+#include "Texture2d.h";
 #include "MaterialNode.h";
 class Material
 {

@@ -1,6 +1,6 @@
 // dear imgui, v1.49 WIP
 // (main code and documentation)
-
+#include "stdafx.h"
 // See ImGui::ShowTestWindow() in imgui_demo.cpp for demo code.
 // Newcomers, read 'Programmer guide' below for notes on how to setup ImGui in your codebase.
 // Get latest version at https://github.com/ocornut/imgui

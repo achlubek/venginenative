@@ -153,6 +153,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AbsFramebuffer.h" />
     <ClInclude Include="AbsTransformable.h" />
     <ClInclude Include="AssetLoader.h" />
     <ClInclude Include="Camera.h" />
@@ -190,13 +191,15 @@
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Texture.h" />
+    <ClInclude Include="Texture2d.h" />
+    <ClInclude Include="Texture2dArray.h" />
     <ClInclude Include="Texture3d.h" />
     <ClInclude Include="tinydir.h" />
     <ClInclude Include="TransformationManager.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AbsFramebuffer.cpp" />
     <ClCompile Include="AbsTransformable.cpp" />
     <ClCompile Include="AssetLoader.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -237,7 +240,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Texture2d.cpp" />
+    <ClCompile Include="Texture2dArray.cpp" />
     <ClCompile Include="Texture3d.cpp" />
     <ClCompile Include="TransformationManager.cpp" />
     <ClCompile Include="World.cpp" />

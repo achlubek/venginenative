@@ -55,13 +55,13 @@ vec4 smartblur(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));
     float mx = log2(roughness*512+1)/log2(512);
     float mlvel = mx * levels;
-   // return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
     return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
+   // return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
     vec4 centervals = textureLod(cloudsCloudsTex, dir, mlvel).rgba;
     vec4 centerval = vec4(0);
     float center = textureLod(cloudsCloudsTex, dir, mlvel).r;
     float aoc = 0;
-    float blurrange = 0.005 * (center);// * pow(center, 2.0);
+    float blurrange = 0.01 * (center);// * pow(center, 2.0);
     for(int i=0;i<64;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
         float there = textureLod(cloudsCloudsTex, rdp, mlvel).r;
@@ -133,24 +133,26 @@ float heightwater(vec2 pos, int s){
     float res = 0.0;
     float w = 0.0;
     float wz = 1.0;
-    float chop = 6.0;
+    float chop = 3.0;
     float tmod = 260.1;
     for(int i=0;i<s;i++){
-        vec2 t = vec2(0, tmod * T001);
+        //vec2 t = vec2(0, tmod * T001);
+        vec2 t = vec2(noise2X(pos)*2.0 +  tmod * T001);
         res += wz * snoisesinpow(pos + t.yx, chop);
         res += wz * snoisesinpow(pos - t.yx, chop);
         w += wz * 2;
         wz *= 0.4;
-        pos *= 2.4;
+        pos *= 2.8;
         tmod *= 1.8;
     }
     return res / w;// * 0.5 + (sin((noise2X(pos.xx * 0.001) * 0.5 + 0.5) * pos.x*0.01 + Time) * 0.5 + 0.5);
 }
+
 vec3 hitpos = vec3(0);
 float hitdistx = 0;
 #define waterdepth 22.0 * WaterWavesScale
 #define WATER_SAMPLES_LOW 2
-#define WATER_SAMPLES_HIGH 5
+#define WATER_SAMPLES_HIGH 3
 vec3 normalx(vec3 pos, float e){
     vec2 ex = vec2(e, 0);
     vec3 a = vec3(pos.x, heightwater(pos.xz, WATER_SAMPLES_HIGH) * waterdepth, pos.z);    

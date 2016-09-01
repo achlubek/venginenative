@@ -108,7 +108,7 @@ void Light::recreateFbo()
 {
     Game::instance->invoke([&]() {
         destroyFbo();
-        depthMap = new Texture(shadowMapWidth, shadowMapHeight,
+        depthMap = new Texture2d(shadowMapWidth, shadowMapHeight,
             GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT);
         mapper = new Framebuffer();
         mapper->attachTexture(depthMap, GL_DEPTH_ATTACHMENT);

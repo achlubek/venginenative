@@ -1,5 +1,5 @@
 #pragma once
-#include "Texture.h";
+#include "Texture2d.h";
 
 #define NODE_MODE_ADD 0
 #define NODE_MODE_MUL 1
@@ -40,20 +40,20 @@ class MaterialNode
 {
 public:
     MaterialNode(glm::vec4 icolor, glm::vec2 uvScaling, int mixMode, int nodeTarget);
-    MaterialNode(Texture *tex, glm::vec2 uvScaling, int mixMode, int nodeTarget);
+    MaterialNode(Texture2d *tex, glm::vec2 uvScaling, int mixMode, int nodeTarget);
 
     MaterialNode(glm::vec4 icolor, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier);
-    MaterialNode(Texture *tex, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier);
+    MaterialNode(Texture2d *tex, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier);
 
     MaterialNode(glm::vec4 icolor, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier, float idata);
-    MaterialNode(Texture *tex, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier, float idata);
+    MaterialNode(Texture2d *tex, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier, float idata);
 
     MaterialNode(glm::vec4 icolor, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier, glm::vec4 idata);
-    MaterialNode(Texture *tex, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier, glm::vec4 idata);
+    MaterialNode(Texture2d *tex, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier, glm::vec4 idata);
 
     MaterialNode();
     ~MaterialNode();
-    Texture *texture;
+    Texture2d *texture;
     glm::vec2 uvScale;
     glm::vec4 color;
     glm::vec4 data;

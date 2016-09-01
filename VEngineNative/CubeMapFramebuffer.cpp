@@ -1,51 +1,13 @@
 #include "stdafx.h"
 #include "CubeMapFramebuffer.h"
-
-CubeMapFramebuffer::CubeMapFramebuffer()
-{
-    attachedTextures = {};
-    generated = false;
-    width = 1;
-    height = 1;
-}
-
-CubeMapFramebuffer::CubeMapFramebuffer(int iwidth, int iheight, GLuint ihandle)
-{
-    handle = ihandle;
-    width = iwidth;
-    height = iheight;
-    generated = true;
-}
-
-CubeMapFramebuffer::~CubeMapFramebuffer()
-{
-}
-
-void CubeMapFramebuffer::attachTexture(CubeMapTexture * tex, GLenum attachment)
-{
-    Attachment *ath = new Attachment();
-    ath->texture = tex;
-    ath->attachment = attachment;
-    attachedTextures.push_back(ath);
-    width = tex->width;
-    height = tex->height;
-}
-
-void CubeMapFramebuffer::use()
-{
-    if (!generated)
-        generate();
-
-    glBindFramebuffer(GL_FRAMEBUFFER, handle);
-
-    glViewport(0, 0, width, height);
-}
-
+ 
 Camera* CubeMapFramebuffer::switchFace(GLenum face, bool clear)
 {
     int vindex = face - GL_TEXTURE_CUBE_MAP_POSITIVE_X;
     for (int i = 0; i < attachedTextures.size(); i++) {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, attachedTextures[i]->attachment, face, attachedTextures[i]->texture->handle, 0);
+        if (attachedTextures[i]->textureCube != NULL) {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachedTextures[i]->attachment, face, attachedTextures[i]->textureCube->handle, 0);
+        }
     }
     if (clear)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -88,19 +50,4 @@ void CubeMapFramebuffer::generate()
 
     facesCameras.push_back(cam_posz);
     facesCameras.push_back(cam_newz);
-
-    glGenFramebuffers(1, &handle);
-    glBindFramebuffer(GL_FRAMEBUFFER, handle);
-    vector<GLenum> buffers;
-    for (int i = 0; i < attachedTextures.size(); i++) {
-        attachedTextures[i]->texture->pregenerate();
-        glFramebufferTexture2D(GL_FRAMEBUFFER, attachedTextures[i]->attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X, attachedTextures[i]->texture->handle, 0);
-        if (attachedTextures[i]->attachment < GL_DEPTH_ATTACHMENT)buffers.push_back(attachedTextures[i]->attachment);
-    }
-    glDrawBuffers((GLsizei)buffers.size(), buffers.data());
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        printf("Framebuffer not complete");
-    }
-    generated = true;
 }

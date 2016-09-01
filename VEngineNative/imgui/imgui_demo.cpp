@@ -1,6 +1,6 @@
 // dear imgui, v1.49 WIP
 // (demo code)
-
+#include "stdafx.h"
 // Don't remove this file from your project! It is useful reference code that you can execute.
 // You can call ImGui::ShowTestWindow() in your code to learn about various features of ImGui.
 // Everything in this file will be stripped out by the linker if you don't call ImGui::ShowTestWindow().
