@@ -452,7 +452,6 @@ void Renderer::atmScatt()
 
 void Renderer::clouds()
 {
-    cloudCycleUseOdd = !cloudCycleUseOdd;
     glDisable(GL_BLEND);
 
     mrtAlbedoRoughnessTex->use(0);
@@ -500,11 +499,14 @@ void Renderer::clouds()
         currentFbo = cloudsFboOdd;
     else
         currentFbo = cloudsFboEven;
+    if (cloudCycleUseOdd) 
+        cloudsTextureEven->use(18);
+    else 
+        cloudsTextureOdd->use(18);
 
-
-    for (int i = 0; i < 6; i++) {
-        currentFbo->use();
-        Camera* camera = currentFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, true);
+   // for (int i = 0; i < 6; i++) {
+        currentFbo->use(false);
+        Camera* camera = currentFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, true);
         camera->transformation->setPosition(currentCamera->transformation->position);
         FrustumCone *cone = camera->cone;
         glm::mat4 vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
@@ -517,15 +519,21 @@ void Renderer::clouds()
         cloudsShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
         cloudsShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
         cloudsShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
-        currentFbo->use();
+        currentFbo->use(false);
         cloudsShader->use();
         quad3dInfo->draw();
-    }
+   // }
 
     if (cloudCycleUseOdd)
         cloudsTextureOdd->generateMipMaps();
     else
         cloudsTextureEven->generateMipMaps();
+
+    cloudFace++;
+    if (cloudFace > 5) {
+        cloudFace = 0;
+        cloudCycleUseOdd = !cloudCycleUseOdd;
+    }
 }
 
 void Renderer::motionBlur()

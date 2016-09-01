@@ -52,6 +52,7 @@ float roughtomipmap(float roughness, sampler2D txt){
     return mx * levels;
 }
 vec4 smartblur(vec3 dir, float roughness){
+    roughness *= 0.3;
     float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));
     float mx = log2(roughness*512+1)/log2(512);
     float mlvel = mx * levels;
@@ -127,7 +128,7 @@ float noise2X( in vec2 x ){
 #define snoisesin(a) pow(1.0 - (abs(noise2X(a) - 0.5) * 2.0), 6.0)
 #define snoisesinpow(a,b) pow(1.0 - (abs(noise2X(a) - 0.5) * 2.0), b)
 #define snoisesinpowXF(a,b) (1.0 - pow((abs(snoise(a))), b))
-float heightwater(vec2 pos, int s){
+float heightwaterHI(vec2 pos, int s){
     pos *= 0.009;
     pos *= vec2(NoiseOctave2, NoiseOctave3);
     float res = 0.0;
@@ -147,12 +148,99 @@ float heightwater(vec2 pos, int s){
     }
     return res / w;// * 0.5 + (sin((noise2X(pos.xx * 0.001) * 0.5 + 0.5) * pos.x*0.01 + Time) * 0.5 + 0.5);
 }
+#define noise2A(a) noise(a + noise(a*vec3(1.0, 1.0, 0.5)))
+
+float fbmlow(vec3 pos)
+{
+	return (noise2A(pos) * 0.5 +
+		noise2A(pos * 2.0 ) * 0.25 +
+		noise2A(pos * 4.0) * 0.125 +
+		noise2A(pos * 8.0) * 0.0625 +
+		noise2A(pos * 16.0) * 0.03125);
+}
+
+
+vec2 mod289(vec2 x) {
+  return x - floor(x * (1.0 / 289.0)) * 289.0;
+}
+
+vec3 permute(vec3 x) {
+  return mod289(((x*34.0)+1.0)*x);
+}
+
+float snoise2d(vec2 v)
+  {
+  const vec4 C = vec4(0.211324865405187,  // (3.0-sqrt(3.0))/6.0
+                      0.366025403784439,  // 0.5*(sqrt(3.0)-1.0)
+                     -0.577350269189626,  // -1.0 + 2.0 * C.x
+                      0.024390243902439); // 1.0 / 41.0
+// First corner
+  vec2 i  = floor(v + dot(v, C.yy) );
+  vec2 x0 = v -   i + dot(i, C.xx);
+
+// Other corners
+  vec2 i1;
+  //i1.x = step( x0.y, x0.x ); // x0.x > x0.y ? 1.0 : 0.0
+  //i1.y = 1.0 - i1.x;
+  i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+  // x0 = x0 - 0.0 + 0.0 * C.xx ;
+  // x1 = x0 - i1 + 1.0 * C.xx ;
+  // x2 = x0 - 1.0 + 2.0 * C.xx ;
+  vec4 x12 = x0.xyxy + C.xxzz;
+  x12.xy -= i1;
+
+// Permutations
+  i = mod289(i); // Avoid truncation effects in permutation
+  vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
+		+ i.x + vec3(0.0, i1.x, 1.0 ));
+
+  vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+  m = m*m ;
+  m = m*m ;
+
+// Gradients: 41 points uniformly over a line, mapped onto a diamond.
+// The ring size 17*17 = 289 is close to a multiple of 41 (41*7 = 287)
+
+  vec3 x = 2.0 * fract(p * C.www) - 1.0;
+  vec3 h = abs(x) - 0.5;
+  vec3 ox = floor(x + 0.5);
+  vec3 a0 = x - ox;
+
+// Normalise gradients implicitly by scaling m
+// Approximation of: m *= inversesqrt( a0*a0 + h*h );
+  m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+
+// Compute final noise value at P
+  vec3 g;
+  g.x  = a0.x  * x0.x  + h.x  * x0.y;
+  g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+  return 130.0 * dot(m, g);
+}
+float heightwater(vec2 pos, int s){
+    pos *= 0.006;
+    pos *= vec2(NoiseOctave2, NoiseOctave3);
+    float res = 0.0;
+    float w = 0.0;
+    float wz = 1.0;
+    float chop = 1.0;
+    float tmod = 94.1;
+    for(int i=0;i<s;i++){
+        //vec2 t = vec2(0, tmod * T001);
+        vec2 t = vec2(tmod * T001);
+        res += wz * (sin(snoise2d(pos + t.yx) * 2.0 + Time * 3.0) * 0.5 + 0.5);
+        w += wz;
+        wz *= 0.4;
+        pos *= 1.8;
+        tmod *= 1.8;
+    }
+    return res / w;// * 0.5 + (sin((noise2X(pos.xx * 0.001) * 0.5 + 0.5) * pos.x*0.01 + Time) * 0.5 + 0.5);
+}
 
 vec3 hitpos = vec3(0);
 float hitdistx = 0;
 #define waterdepth 22.0 * WaterWavesScale
 #define WATER_SAMPLES_LOW 2
-#define WATER_SAMPLES_HIGH 3
+#define WATER_SAMPLES_HIGH 6
 vec3 normalx(vec3 pos, float e){
     vec2 ex = vec2(e, 0);
     vec3 a = vec3(pos.x, heightwater(pos.xz, WATER_SAMPLES_HIGH) * waterdepth, pos.z);    
@@ -190,15 +278,15 @@ vec3 raymarchwaterImpl(vec3 upper, vec3 lower, float stepsF, int stepsI, float i
                 pos = mix(upper, lower, iter);
                 dst = distance(pos, CameraPosition);
                 if(heightwater(pos.xz, WATER_SAMPLES_LOW) > 1.0 - iter || dst > maxdist) {
-                    return normalx(pos, 0.01);
+                    return normalx(pos, 0.1);
                 }
                 iter += stepsize;
             }
-            return normalx(pos, 0.01);
+            return normalx(pos, 0.1);
         }
         iter += stepsize;
     }
-    return normalx(upper, 0.01);
+    return normalx(upper, 0.1);
 }
 vec3 raymarchwater(vec3 upper, vec3 lower, int si, int isi){
     return raymarchwaterImpl(upper, lower, float(si), si, float(isi), isi);
@@ -237,10 +325,8 @@ vec3 cloudsbydir(vec3 dir){
         float planethit2 = rsi2(r, planet1);
         vec3 newpos = CameraPosition + dir * planethit;
         vec3 newpos2 = CameraPosition + dir * planethit2;
-        float flh1 = planethit * 0.0005;
-        roughness = 1.0 - smoothstep(0.0, 22.0, sqrt(sqrt(flh1)));
-        roughness = 1.0 - pow(roughness, 64.0);
-        roughness = mix(roughness, 1.0, 1.0 - pow(abs(dir.y), 1.0));
+        float flh1 = planethit * 0.005;
+        roughness = smoothstep(0.0, 2.0, sqrt(sqrt(flh1)));
         dst = planethit;
         float lodz = pow(1.0 - smoothstep(0, LOD3, planethit), 1.0);
         vec3 n = vec3(0,1,0);
@@ -250,9 +336,9 @@ vec3 cloudsbydir(vec3 dir){
                 n = raymarchwaterLOW3(newpos, newpos2);
             }
             else {
-                n = mix(raymarchwaterLOW3(newpos, newpos2), raymarchwater(newpos, newpos2, int(2.0 + 6.0 * lodz * WaterWavesScale), int(2.0 + 8.0 * lodz * WaterWavesScale)), 1.0 - smoothstep(0, LOD3, planethit));
+                n = mix(raymarchwaterLOW3(newpos, newpos2), raymarchwater(newpos, newpos2, int(1.0 + 6.0 * lodz * WaterWavesScale), int(2.0 + 2.0 * lodz * WaterWavesScale)), 1.0 - smoothstep(0, LOD3, planethit));
             }
-            float freq = 1.0;
+            /*float freq = 1.0;
             float h0 = heightwater(hitpos.xz, WATER_SAMPLES_HIGH);
             waveheight = h0;
             float h1 = heightwater(hitpos.xz + vec2(freq, 0.0), WATER_SAMPLES_HIGH);
@@ -264,12 +350,13 @@ vec3 cloudsbydir(vec3 dir){
             whites *= (1.0 - smoothstep(0, LOD3, planethit)) * WaterWavesScale;
             whites = min(1.0, whites);
             //return vec3(whites);
-            float lodzx =  1.0 - clamp(hitdistx / LOD3, 0.0, 1.0);
+            float lodzx =  1.0 - clamp(hitdistx / LOD3, 0.0, 1.0);*/
             //roughness = roughness * 0.8 + 0.2;
             n = normalize(mix(n, vec3(0,1,0), roughness));
         }
         //return vec3(whites);
-        roughness *= 0.05 * (WaterWavesScale);
+        roughness *= 0.23 * (WaterWavesScale);
+        roughness = clamp(roughness, 0.0, 1.0);
         vec3 refr = normalize(refract(dir, n, 1.333));
         dir = normalize(reflect(dir, n));
         dir.y = abs(dir.y);
@@ -282,8 +369,8 @@ vec3 cloudsbydir(vec3 dir){
         defres = texture(directTex, uv).rgb + texture(alTex, uv).rgb * (UseAO == 1 ? texture(aoxTex, uv).r : 1.0);
         //defres += getAtmosphereForDirection(currentData.worldPos, n, normalize(SunDirection), currentData.roughness) * 0.5 * currentData.diffuseColor;
         basewaterclor = (1.0 - fresnel) * mix(vec3(0.0, 0.46, 0.60) * max(0, normalize(SunDirection).y)* 0.1 * (waveheight * 0.3 + 0.7), defres, (1.0 / (hitdepth * 0.08 + 1.0)));
-        dir = normalize(mix(dir, vec3(0,1,0), roughness));
-        fresnel = mix(fresnel, 0.02, sqrt(roughness));
+        //dir = normalize(mix(dir, vec3(0,1,0), roughness));
+       // fresnel = mix(fresnel, 0.02, sqrt(roughness));
       //return vec3(1) * (1.0 / (hitdepth * hitdepth * 0.03 + 1.0));
         //dir = normalize(reflect(dir, vec3(0,1,0)));
         doatmscatter = 0;
@@ -297,7 +384,7 @@ vec3 cloudsbydir(vec3 dir){
     //cdata.a = doatmscatter ;//* clamp(pow(cdata.a * 1.0, 16.0) * 1.0, 0.0, 1.0);
     vec3 skydaylightcolor = vec3(0.23, 0.33, 0.48) * 1.3;
     vec3 atmcolor = getAtmosphereForDirectionReal(CameraPosition, normalize(max(vec3(-1.0, 0.08, -1.0), SunDirection)), normalize(SunDirection));
-    vec3 sunx = sun(dir, normalize(SunDirection), 1.0 - roughness) * vec3(atmcolor);
+    vec3 sunx = sun(dir, normalize(SunDirection), 1.0 - roughness ) * vec3(atmcolor) * 20.0;
     vec3 scatt = getAtmosphereForDirectionReal(CameraPosition, (dir), normalize(SunDirection)) + sunx;
     vec3 atmcolor1 = getAtmosphereForDirectionReal(CameraPosition, vec3(0,1,0), normalize(SunDirection));
         float diminisher = max(0, dot(normalize(SunDirection), vec3(0,1,0)));

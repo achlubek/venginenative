@@ -49,7 +49,7 @@ int main()
 
     // mesh loading
 
-    game->world->scene = game->asset->loadSceneFile("terrain.scene");
+   // game->world->scene = game->asset->loadSceneFile("terrain.scene");
     //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->translate(glm::vec3(0, 2.5f, 0));
     //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->rotate(glm::angleAxis(deg2rad(73.75f), glm::vec3(-0.006f, -0.005f, 1.0f)));
   //  game->world->scene->addMesh(game->asset->loadMeshFile("treeground.mesh3d"));

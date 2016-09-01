@@ -119,9 +119,11 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
 
 vec3 sun(vec3 camdir, vec3 sundir, float gloss){
     float dt = max(0, dot(camdir, sundir));
-    vec3 var1 = 11.0 * mix((1.0 - smoothstep(0.003, mix(1.0, 0.0054, gloss), 1.0 - gloss * dt*dt*dt*dt*dt)) * vec3(10), pow(dt*dt*dt*dt*dt, 1256.0 * gloss) * vec3(10), max(0, dot(sundir, vec3(0,1,0)))) * (gloss * 0.9 + 0.1);
-    vec3 var2 = vec3(1) * max(0, dot(camdir, sundir));
-    return mix(var2, var1, gloss);
+    vec3 var1 = 11.0 * mix(
+    pow(dt*dt*dt*dt*dt, 27.0 ) * vec3(110.0),  
+    pow(dt*dt*dt*dt*dt, 412.0) * vec3(310),  
+    gloss );
+    return var1;
 }
 
 vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
@@ -235,7 +237,7 @@ Sphere sphere2;
 float weightshadow = 1.0;
 float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
     float iter = 0.0;
-    const int stepcount = 6;
+    const int stepcount = 5;
     const float stepsize = 1.0 / float(stepcount);
     float rd = rand2sTime(UV) * stepsize;
     float coverageinv = 1.0;
@@ -304,7 +306,7 @@ float godray(vec3 pos){
 }
 
 vec4 internalmarchconservative(vec3 p1, vec3 p2){
-    int stepcount = 7;
+    int stepcount = 4;
     float stepsize = 1.0 / float(stepcount);
     float rd = fract(rand2sTime(UV) + hash(Time)) * stepsize;
     hash1x = rand2s(UV * vec2(Time, Time));

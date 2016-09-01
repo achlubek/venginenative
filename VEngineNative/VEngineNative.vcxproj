@@ -155,8 +155,10 @@
   <ItemGroup>
     <ClInclude Include="AbsFramebuffer.h" />
     <ClInclude Include="AbsTransformable.h" />
+    <ClInclude Include="Array2dFramebuffer.h" />
     <ClInclude Include="AssetLoader.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="CascadeShadowMap.h" />
     <ClInclude Include="CubeMapFramebuffer.h" />
     <ClInclude Include="CubeMapTexture.h" />
     <ClInclude Include="EnvProbe.h" />
@@ -201,8 +203,10 @@
   <ItemGroup>
     <ClCompile Include="AbsFramebuffer.cpp" />
     <ClCompile Include="AbsTransformable.cpp" />
+    <ClCompile Include="Array2dFramebuffer.cpp" />
     <ClCompile Include="AssetLoader.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CascadeShadowMap.cpp" />
     <ClCompile Include="CubeMapFramebuffer.cpp" />
     <ClCompile Include="CubeMapTexture.cpp" />
     <ClCompile Include="EnvProbe.cpp" />
