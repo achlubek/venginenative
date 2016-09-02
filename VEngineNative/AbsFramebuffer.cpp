@@ -77,7 +77,7 @@ void AbsFramebuffer::generateBase()
         }
         if (attachedTextures[i]->texture2dArray != NULL) {
             attachedTextures[i]->texture2dArray->pregenerate();
-            glFramebufferTextureLayer(GL_FRAMEBUFFER, attachedTextures[i]->attachment, attachedTextures[i]->texture2d->handle, 0, 0);
+            glFramebufferTextureLayer(GL_FRAMEBUFFER, attachedTextures[i]->attachment, attachedTextures[i]->texture2dArray->handle, 0, 0);
         }
         if (attachedTextures[i]->attachment < GL_DEPTH_ATTACHMENT)buffers.push_back(attachedTextures[i]->attachment);
     }

@@ -6,6 +6,7 @@
 #include "ShaderProgram.h";
 #include "Object3dInfo.h";
 #include "Texture3d.h";
+#include "CascadeShadowMap.h";
 class Renderer
 {
 public:
@@ -45,6 +46,8 @@ private:
     void draw(Camera *camera);
     void initializeFbos();
     void destroyFbos();
+
+    CascadeShadowMap *csm;
 
     CubeMapTexture *skyboxTexture;
     Object3dInfo *quad3dInfo;

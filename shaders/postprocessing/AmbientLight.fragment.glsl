@@ -3,7 +3,34 @@
 #include PostProcessEffectBase.glsl
 
 layout(binding = 3) uniform samplerCube skyboxTex;
+layout(binding = 24) uniform sampler2DArray CSMTex;
 #include Atmosphere.glsl
+
+#define MAX_CSM_LAYERS 9
+uniform int CSMLayers;
+uniform mat4 CSMPMatrices[MAX_CSM_LAYERS];
+uniform mat4 CSMVPMatrices[MAX_CSM_LAYERS];
+uniform float CSMFarplanes[MAX_CSM_LAYERS];
+uniform float CSMRadiuses[MAX_CSM_LAYERS];
+uniform vec3 CSMCenter;
+uniform mat4 CSMVMatrix;
+
+vec2 CSMProject(vec3 pos, int layer, out float depth){
+    vec4 tmp = ((CSMVPMatrices[layer]) * vec4(pos, 1.0));
+    depth = ((tmp.z / tmp.w) * 0.5 + 0.5);
+    return (tmp.xy / tmp.w) * 0.5 + 0.5;
+}
+
+float CSMQueryVisibility(vec3 pos){
+    for(int i=0;i<CSMLayers;i++){
+        float depth = 0.0;
+        vec2 csmuv = CSMProject(pos, i, depth);
+        if(csmuv.x >= 0.0 && csmuv.x < 1.0 && csmuv.y >= 0.0 && csmuv.y < 1.0){
+            return (texture(CSMTex, vec3(csmuv, i)).r - depth - 0.001);
+        }
+    }
+    return 1.0;
+}
 
 float rand2sx(vec2 co){
         return fract(sin(dot(co.xy,vec2(12.9898,78.233))) * 43758.5453);
@@ -94,7 +121,7 @@ vec4 shade(){
     if(currentData.cameraDistance > 0){
         //color.rgb += MMAL(currentData) *0.63;
         atmc = mix(vec3(1.0), getAtmosphereForDirection(currentData.worldPos, normalize(SunDirection), normalize(SunDirection), 0.0), 1.0 - normalize(SunDirection).y);
-        color.rgb += getAtmosphereForDirection(currentData.worldPos, currentData.normal, normalize(SunDirection), currentData.roughness) * 0.0 * currentData.diffuseColor + MakeShading(currentData);
+        color.rgb += getAtmosphereForDirection(currentData.worldPos, currentData.normal, normalize(SunDirection), currentData.roughness) * 0.0 * currentData.diffuseColor + MakeShading(currentData) * CSMQueryVisibility(currentData.worldPos);
     }
     //color.rgb += (1.0 - smoothstep(0.0, 0.001, textureLod(mrt_Distance_Bump_Tex, UV, 0).r)) * pow(textureLod(skyboxTex, reconstructCameraSpaceDistance(UV, 1.0), 0.0).rgb, vec3(2.4)) * 5.0;
     return clamp(color, 0.0, 1.0);

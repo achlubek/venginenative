@@ -32,7 +32,7 @@ int main()
 {
     Media::loadFileMap("../../media");
     Media::loadFileMap("../../shaders");
-    Game *game = new Game(1920, 1020);
+    Game *game = new Game(1920, 1080);
     game->start();
     volatile bool ready = false;
     game->invoke([&ready]() {
@@ -49,13 +49,21 @@ int main()
 
     // mesh loading
 
-   // game->world->scene = game->asset->loadSceneFile("terrain.scene");
-    //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->translate(glm::vec3(0, 2.5f, 0));
+     game->world->scene = game->asset->loadSceneFile("terrain.scene");
+     game->world->scene->getMeshes()[0]->getInstance(0)->transformation->translate(glm::vec3(0, -62.5f, 0));
+     game->world->scene->getMeshes()[0]->getInstance(0)->transformation->scale(glm::vec3(0.1));
     //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->rotate(glm::angleAxis(deg2rad(73.75f), glm::vec3(-0.006f, -0.005f, 1.0f)));
   //  game->world->scene->addMesh(game->asset->loadMeshFile("treeground.mesh3d"));
     //auto t = game->asset->loadMeshFile("lucy.mesh3d");
    // game->world->scene->addMesh(t);
     bool isOpened = true;
+
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->AddFontFromFileTTF(Media::getPath("segoeui.ttf").c_str(), 10);
+    unsigned char* pixels;
+    int width, height;
+    //io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
     game->onRenderUIFrame->add([&](int zero) {
         static float f = 0.0f;
         if (Game::instance->renderer->cloudsThresholdLow > Game::instance->renderer->cloudsThresholdHigh) {

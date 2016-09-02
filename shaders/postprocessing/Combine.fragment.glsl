@@ -227,7 +227,7 @@ float heightwater(vec2 pos, int s){
     for(int i=0;i<s;i++){
         //vec2 t = vec2(0, tmod * T001);
         vec2 t = vec2(tmod * T001);
-        res += wz * (sin(snoise2d(pos + t.yx) * 2.0 + Time * 3.0) * 0.5 + 0.5);
+        res += wz * (sin(snoise2d(pos + t.yx) * 2.0 + Time * 3.0 + pos.x) * 0.5 + 0.5);
         w += wz;
         wz *= 0.4;
         pos *= 1.8;
@@ -239,7 +239,7 @@ float heightwater(vec2 pos, int s){
 vec3 hitpos = vec3(0);
 float hitdistx = 0;
 #define waterdepth 22.0 * WaterWavesScale
-#define WATER_SAMPLES_LOW 2
+#define WATER_SAMPLES_LOW 1
 #define WATER_SAMPLES_HIGH 6
 vec3 normalx(vec3 pos, float e){
     vec2 ex = vec2(e, 0);
@@ -299,7 +299,7 @@ vec3 raymarchwaterLOW3(vec3 upper, vec3 lower){
     return n;
 }
 
-#define LOD3 4422.0
+#define LOD3 14422.0
 
 vec2 projectvdao(vec3 pos){
     vec4 tmp = (VPMatrix * vec4(pos, 1.0));
@@ -325,7 +325,7 @@ vec3 cloudsbydir(vec3 dir){
         float planethit2 = rsi2(r, planet1);
         vec3 newpos = CameraPosition + dir * planethit;
         vec3 newpos2 = CameraPosition + dir * planethit2;
-        float flh1 = planethit * 0.005;
+        float flh1 = planethit * 0.001;
         roughness = smoothstep(0.0, 2.0, sqrt(sqrt(flh1)));
         dst = planethit;
         float lodz = pow(1.0 - smoothstep(0, LOD3, planethit), 1.0);
@@ -355,7 +355,7 @@ vec3 cloudsbydir(vec3 dir){
             n = normalize(mix(n, vec3(0,1,0), roughness));
         }
         //return vec3(whites);
-        roughness *= 0.23 * (WaterWavesScale);
+        roughness *= 0.07 * (WaterWavesScale);
         roughness = clamp(roughness, 0.0, 1.0);
         vec3 refr = normalize(refract(dir, n, 1.333));
         dir = normalize(reflect(dir, n));
@@ -368,7 +368,7 @@ vec3 cloudsbydir(vec3 dir){
         if(hitdistx > 0 && hitdistx < currentData.cameraDistance) uv = projectvdao(newposr);
         defres = texture(directTex, uv).rgb + texture(alTex, uv).rgb * (UseAO == 1 ? texture(aoxTex, uv).r : 1.0);
         //defres += getAtmosphereForDirection(currentData.worldPos, n, normalize(SunDirection), currentData.roughness) * 0.5 * currentData.diffuseColor;
-        basewaterclor = (1.0 - fresnel) * mix(vec3(0.0, 0.46, 0.60) * max(0, normalize(SunDirection).y)* 0.1 * (waveheight * 0.3 + 0.7), defres, (1.0 / (hitdepth * 0.08 + 1.0)));
+        basewaterclor = (1.0 - fresnel) * mix(vec3(0.0, 0.76, 0.55) * max(0, normalize(SunDirection).y)* 0.1 * (waveheight * 0.3 + 0.7), defres, 1.0 - smoothstep(0.0, 6.0, sqrt(hitdepth)));
         //dir = normalize(mix(dir, vec3(0,1,0), roughness));
        // fresnel = mix(fresnel, 0.02, sqrt(roughness));
       //return vec3(1) * (1.0 / (hitdepth * hitdepth * 0.03 + 1.0));

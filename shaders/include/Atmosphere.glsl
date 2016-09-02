@@ -205,16 +205,16 @@ float fbm_aluX(vec3 p){
 }
 
 float dividerrcp = 1.0 / (CloudsCeil - CloudsFloor);
-
+vec3 wind = Time * vec3(0.0, 0.0, 0.01  );
 float edgeclose = 0.0;
 float cloudsDensity3D(vec3 pos){
     vec3 ps = pos +CloudsOffset;
-    float h =  (length(vec3(0, planetradius, 0) + pos * 100.0) - planetradius - CloudsFloor) * dividerrcp; 
+    float h =  (length(vec3(0, planetradius, 0) + pos) - planetradius - CloudsFloor) * dividerrcp; 
     float hw = smoothstep(0.0, 0.08, h) * (1.0 - smoothstep(0.7, 1.0, h));
     //ps.xz *= CloudsDensityScale;
    // float density = 1.0 - fbm(ps * 0.05 + fbm(ps * 0.5));
     //float density = 1.0 - fbm(ps * 0.05);
-    float density = 1.0 - fbm(ps * 0.05 + fbm(ps * 0.02 * NoiseOctave5));
+    float density = 1.0 - fbm(ps * 0.0005 + wind + fbm(ps * 0.0005 * NoiseOctave5 + wind));
     
     float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh,  density);
     //edgeclose = pow(1.0 - abs(CloudsThresholdLow - density), CloudsThresholdHigh * 113.0);
@@ -237,14 +237,14 @@ Sphere sphere2;
 float weightshadow = 1.0;
 float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
     float iter = 0.0;
-    const int stepcount = 5;
+    const int stepcount = 8;
     const float stepsize = 1.0 / float(stepcount);
     float rd = rand2sTime(UV) * stepsize;
     float coverageinv = 1.0;
     float linear = distance(p1, mix(p1, p2, stepsize));
     for(int i=0;i<stepcount;i++){
         vec3 pos = mix(p1, p2, iter + rd);
-        float clouds = cloudsDensity3D(pos * 0.01);
+        float clouds = cloudsDensity3D(pos);
         coverageinv -= clouds * weightshadow * stepsize * linear * 0.002 * CloudsDensityScale;
         iter += stepsize;
     }
@@ -306,7 +306,7 @@ float godray(vec3 pos){
 }
 
 vec4 internalmarchconservative(vec3 p1, vec3 p2){
-    int stepcount = 4;
+    int stepcount = 8;
     float stepsize = 1.0 / float(stepcount);
     float rd = fract(rand2sTime(UV) + hash(Time)) * stepsize;
     hash1x = rand2s(UV * vec2(Time, Time));
@@ -320,7 +320,7 @@ vec4 internalmarchconservative(vec3 p1, vec3 p2){
     float iter = 0.0;
     for(int i=0;i<stepcount;i++){
         pos = mix(p1, p2, rd + iter);
-        clouds = cloudsDensity3D(pos * 0.01);// * (1.0 - rd);
+        clouds = cloudsDensity3D(pos);// * (1.0 - rd);
         pos = mix(vec3(0,1,0), p2, iter + rd);
       //  c += edgeclose * getAOPos(scale, pos);
       //  w += edgeclose;
