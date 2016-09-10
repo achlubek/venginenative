@@ -56,6 +56,7 @@ void Texture2dArray::generate()
 {
     glGenTextures(1, &handle);
     glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 0, internalFormatRequested, width, height, levels);
     glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, internalFormatRequested, width, height, levels, 0, formatRequested, typeRequested, (void*)0);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);

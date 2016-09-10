@@ -15,18 +15,19 @@ uniform float CSMRadiuses[MAX_CSM_LAYERS];
 uniform vec3 CSMCenter;
 uniform mat4 CSMVMatrix;
 
-vec2 CSMProject(vec3 pos, int layer, out float depth){
+float Z = 0;
+vec3 CSMProject(vec3 pos, int layer){
     vec4 tmp = ((CSMVPMatrices[layer]) * vec4(pos, 1.0));
-    depth = ((tmp.z / tmp.w) * 0.5 + 0.5);
-    return (tmp.xy / tmp.w) * 0.5 + 0.5;
+    Z = tmp.z * 0.5 + 0.5;
+    return (tmp.xyz / tmp.w);
 }
 
 float CSMQueryVisibility(vec3 pos){
     for(int i=0;i<CSMLayers;i++){
-        float depth = 0.0;
-        vec2 csmuv = CSMProject(pos, i, depth);
+        vec3 csmuv = CSMProject(pos, i);
+        csmuv = csmuv * 0.5 + 0.5;
         if(csmuv.x >= 0.0 && csmuv.x < 1.0 && csmuv.y >= 0.0 && csmuv.y < 1.0){
-            return (texture(CSMTex, vec3(csmuv, i)).r - depth - 0.001);
+            return  sign( texture(CSMTex, csmuv).r - csmuv.z) ;
         }
     }
     return 1.0;
@@ -120,9 +121,11 @@ vec4 shade(){
     vec4 color = vec4(0);
     if(currentData.cameraDistance > 0){
         //color.rgb += MMAL(currentData) *0.63;
-        atmc = mix(vec3(1.0), getAtmosphereForDirection(currentData.worldPos, normalize(SunDirection), normalize(SunDirection), 0.0), 1.0 - normalize(SunDirection).y);
-        color.rgb += getAtmosphereForDirection(currentData.worldPos, currentData.normal, normalize(SunDirection), currentData.roughness) * 0.0 * currentData.diffuseColor + MakeShading(currentData) * CSMQueryVisibility(currentData.worldPos);
+      //  atmc = mix(vec3(1.0), getAtmosphereForDirection(currentData.worldPos, normalize(SunDirection), normalize(SunDirection), 0.0), 1.0 - normalize(SunDirection).y);
+      //  color.rgb += getAtmosphereForDirection(currentData.worldPos, currentData.normal, normalize(SunDirection), currentData.roughness) * 0.0 * currentData.diffuseColor + MakeShading(currentData) * CSMQueryVisibility(currentData.worldPos);
     }
     //color.rgb += (1.0 - smoothstep(0.0, 0.001, textureLod(mrt_Distance_Bump_Tex, UV, 0).r)) * pow(textureLod(skyboxTex, reconstructCameraSpaceDistance(UV, 1.0), 0.0).rgb, vec3(2.4)) * 5.0;
+   // if(UV.x < 0.4 && UV.y < 0.4) return texture(CSMTex, vec3(UV / 0.4, 0.0)).rrrr;
+   // return vec4(CSMProject(currentData.worldPos, 0).zzz, 1.0);
     return clamp(color, 0.0, 1.0);
 }

@@ -197,11 +197,19 @@ float fbm_aluX(vec3 p){
 	float a = 0.0;
     float w = 1.0;
 	for(int i=0;i<fbmsamples;i++){
-		a += noise(p) * w;	
+		a += ssnoise(p) * w;	
         w *= 0.5;
 		p = p * NoiseOctave6;
 	}
 	return a;
+}
+
+vec3 getWind(vec3 p){
+    return vec3(
+        snoise(p),
+        snoise(-p),
+        snoise(p.zxy)
+    );
 }
 
 float dividerrcp = 1.0 / (CloudsCeil - CloudsFloor);
@@ -214,7 +222,7 @@ float cloudsDensity3D(vec3 pos){
     //ps.xz *= CloudsDensityScale;
    // float density = 1.0 - fbm(ps * 0.05 + fbm(ps * 0.5));
     //float density = 1.0 - fbm(ps * 0.05);
-    float density = 1.0 - fbm(ps * 0.0005 + wind + fbm(ps * 0.0005 * NoiseOctave5 + wind));
+    float density = 1.0 - fbm(ps * 0.0005 + getWind(ps * 0.0001 * NoiseOctave5) * NoiseOctave7);
     
     float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh,  density);
     //edgeclose = pow(1.0 - abs(CloudsThresholdLow - density), CloudsThresholdHigh * 113.0);

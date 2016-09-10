@@ -4,7 +4,7 @@ in Data {
 #include InOutStageLayout.glsl
 } Input;
 
-out float Depth;
+//out float Depth;
 
 #include Quaternions.glsl
 #include ModelBuffer.glsl
@@ -13,6 +13,7 @@ out float Depth;
 #include Material.glsl
 
 uniform float CutOffDistance;
+uniform float CSMRadius;
 
 float toLogDepth(float depth, float far){
     float badass_depth = log2(max(1e-6, 1.0 + depth)) / (log2(far));
@@ -22,5 +23,6 @@ float toLogDepth(float depth, float far){
 void main(){
     //float bump = getBump(Input.TexCoord);
     //if(Input.Data.x < 1.0 && bump >= Input.Data.x) discard;
+  //  gl_FragDepth = Input.Data.y;
     gl_FragDepth = Input.Data.y;
 }

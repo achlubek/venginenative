@@ -32,7 +32,7 @@ Renderer::Renderer(int iwidth, int iheight)
     noiseOctave8 = 1.01;
     cloudsIntegrate = 0.90;
 
-    csm = new CascadeShadowMap(512, 512, {100.0, 400.0, 1200.0, 3000.0, 7000.0});
+    csm = new CascadeShadowMap(512, 512, {5, 10, 15, 25, 50});
 
     cloudsOffset = glm::vec3(1);
     sunDirection = glm::vec3(0, 1, 0);
@@ -214,7 +214,7 @@ void Renderer::draw(Camera *camera)
         ambientOcclusion();
     }
     deferred();
-    csm->map(-sunDirection, camera->transformation->position);
+    //csm->map(-sunDirection, camera->transformation->position);
     ambientLight();
     //atmScatt();
     clouds();
