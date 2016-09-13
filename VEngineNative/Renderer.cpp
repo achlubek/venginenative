@@ -234,7 +234,7 @@ void Renderer::combine()
     deferredTexture->use(5);
     ambientLightTexture->use(6);
     ambientOcclusionTexture->use(16);
-    if (cloudCycleUseOdd)
+    if (!cloudCycleUseOdd)
         cloudsTextureOdd->use(18);
     else
         cloudsTextureEven->use(18);

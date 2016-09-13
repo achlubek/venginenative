@@ -18,6 +18,7 @@ Game::Game(int windowwidth, int windowheight)
     screenFbo = new Framebuffer(width, height, 0);
     onRenderFrame = new EventHandler<int>();
     onRenderUIFrame = new EventHandler<int>();
+    onWindowResize = new EventHandler<int>();
     onKeyPress = new EventHandler<int>();
     onKeyRelease = new EventHandler<int>();
     onKeyRepeat = new EventHandler<int>();
@@ -95,6 +96,13 @@ void APIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum severi
         debSource, debType, id, debSev, message);
 }
 
+void Game::glfwWindowSizeCallback(GLFWwindow* window, int w, int h)
+{
+    width = w;
+    height = h;
+    renderer->resize(w, h);
+}
+
 void Game::renderThread()
 {
     if (!glfwInit()) {
@@ -116,7 +124,7 @@ void Game::renderThread()
         glfwTerminate();
         return;
     }
-
+        
     glfwMakeContextCurrent(window);
 
     if (!gladLoadGL())
@@ -124,6 +132,11 @@ void Game::renderThread()
         printf("ERROR: Cannot initialize GLAD!\n");
         return;
     }
+
+    glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) -> void {
+        instance->glfwWindowSizeCallback(window, width, height);
+        instance->onWindowResize->invoke(0);
+    });
 
 //    glfwSetKeyCallback(window, glfwKeyCallback);
 

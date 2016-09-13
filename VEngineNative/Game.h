@@ -35,9 +35,11 @@ public:
     int getKeyStatus(int key);
     void setCursorMode(int mode);
     glm::dvec2 getCursorPosition();
+    void glfwWindowSizeCallback(GLFWwindow* window, int width, int height);
 
     EventHandler<int> *onRenderFrame;
     EventHandler<int> *onRenderUIFrame;
+    EventHandler<int> *onWindowResize;
     EventHandler<int> *onKeyPress;
     EventHandler<int> *onKeyRelease;
     EventHandler<int> *onKeyRepeat;

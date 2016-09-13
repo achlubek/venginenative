@@ -66,7 +66,7 @@ vec3 MMALSkybox(vec3 dir, float roughness){
     //return pow(result * 1.2, vec3(2.0));
     return result;
 }
-
+/*
 vec3 atmc = getAtmosphereForDirection(currentData.worldPos, currentData.normal, normalize(SunDirection), currentData.roughness);
 
 vec3 shadingMetalic(PostProceessingData data){
@@ -88,7 +88,7 @@ vec3 shadingNonMetalic(PostProceessingData data){
     
     vec3 difradiance = shadeDiffuse(CameraPosition, data.diffuseColor * (1.0 - fresnel), data.normal, data.worldPos, data.worldPos + normalize(SunDirection) * 40.0, vec3(atmc), 0.0, false) * x;
  //   return vec3(0);
-    return radiance + difradiance ;
+    return radiance + difradiance ; 
 }
 
 vec3 MakeShading(PostProceessingData data){
@@ -115,7 +115,7 @@ vec3 MMAL(PostProceessingData data){
     return  MakeShading(currentData);
     
 }
-
+*/
 
 vec4 shade(){
     vec4 color = vec4(0);

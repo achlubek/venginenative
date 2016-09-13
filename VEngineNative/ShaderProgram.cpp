@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ShaderProgram.h"
 #include "Media.h"
+#include "Game.h"
 
 ShaderProgram * ShaderProgram::current = nullptr;
 
@@ -33,8 +34,21 @@ void ShaderProgram::use()
 {
     if (!generated)
         compile();
-    current = this;
-    glUseProgram(handle);
+    if (current != this) {
+        glUseProgram(handle);
+        for (auto i = shaderVariables.begin(); i != shaderVariables.end(); i++) {
+
+            if (i->second->type == SHADER_VARIABLE_TYPE_FLOAT) setUniform(i->first, i->second->var_float);
+            if (i->second->type == SHADER_VARIABLE_TYPE_INT) setUniform(i->first, i->second->var_int);
+            if (i->second->type == SHADER_VARIABLE_TYPE_VEC2) setUniform(i->first, i->second->var_vec2);
+            if (i->second->type == SHADER_VARIABLE_TYPE_IVEC2) setUniform(i->first, i->second->var_ivec2);
+            if (i->second->type == SHADER_VARIABLE_TYPE_VEC3) setUniform(i->first, i->second->var_vec3);
+           // if (i->second->type == SHADER_VARIABLE_TYPE_IVEC3) setUniform(i->first, i->second->var_ivec3);
+            if (i->second->type == SHADER_VARIABLE_TYPE_VEC4) setUniform(i->first, i->second->var_vec4);
+           // if (i->second->type == SHADER_VARIABLE_TYPE_IVEC4) setUniform(i->first, i->second->var_ivec4);
+        }
+        current = this;
+    }
 }
 
 void ShaderProgram::dispatch(GLuint groups_x, GLuint groups_y, GLuint groups_z)
@@ -249,10 +263,38 @@ string ShaderProgram::resolveIncludes(string source)
     return src;
 }
 
+string ShaderProgram::resolveVariables(string source)
+{
+    string src = source;
+    regex includeregex("\\#export ([^ ]+?) ([^ ]+?)\n");
+    smatch match;
+    while (regex_search(src, match, includeregex)) {
+        int64_t pos = match.position();
+        int64_t len = match.length();
+        string vartype = match[1];
+        string varname = match[2];
+        ShaderProgramVariable * var = new ShaderProgramVariable();
+        if (vartype == "float") var->type = SHADER_VARIABLE_TYPE_FLOAT;
+        if (vartype == "int") var->type = SHADER_VARIABLE_TYPE_INT;
+        if (vartype == "vec2") var->type = SHADER_VARIABLE_TYPE_VEC2;
+        if (vartype == "ivec2") var->type = SHADER_VARIABLE_TYPE_IVEC2;
+        if (vartype == "vec3") var->type = SHADER_VARIABLE_TYPE_VEC3;
+        if (vartype == "ivec3") var->type = SHADER_VARIABLE_TYPE_IVEC3;
+        if (vartype == "vec4") var->type = SHADER_VARIABLE_TYPE_VEC4;
+        if (vartype == "ivec4") var->type = SHADER_VARIABLE_TYPE_IVEC4;
+        if(shaderVariables.find(varname) == shaderVariables.end())shaderVariables[varname] = var;
+        stringstream ss;
+        ss << src.substr(0, pos) << "\nuniform " << vartype << " " << varname << ";\n" << src.substr(pos + len);
+        src = ss.str();
+    }
+    return src;
+}
+
 GLuint ShaderProgram::compileSingleShader(GLenum type, string filename, string source)
 {
-    //  printf("Compiling shader %s\n", filename.c_str());
+    printf("Compiling shader %s\n", filename.c_str());
     string resolved = resolveIncludes(source);
+    resolved = resolveVariables(resolved);
     //   printf("Compiling source %s\n", resolved.c_str());
     GLuint shader = glCreateShader(type);
     const char* cstr = resolved.c_str();

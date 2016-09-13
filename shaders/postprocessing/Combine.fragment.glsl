@@ -14,7 +14,75 @@ uniform float T001;
 #define CLOUD_SAMPLES 18
 #define CLOUDCOVERAGE_DENSITY 50    
 #include Atmosphere.glsl
+vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAtmos, vec3 kRlh, float kMie, float shRlh, float shMie, float g) {
+    pSun = normalize(pSun);
+    r = normalize(r);
+    float iStepSize = rsi2(Ray(r0, r), Sphere(vec3(0), rAtmos)) / float(iSteps);
+    float iTime = 0.0;
+    vec3 totalRlh = vec3(0,0,0);
+    vec3 totalMie = vec3(0,0,0);
+    float iOdRlh = 0.0;
+    float iOdMie = 0.0;
+    float mu = dot(r, pSun);
+    float mumu = mu * mu;
+    float gg = g * g;
+    float pRlh = 3.0 / (16.0 * PI) * (1.0 + mumu);
+    float pMie = 3.0 / (8.0 * PI) * ((1.0 - gg) * (mumu + 1.0)) / (pow(1.0 + gg - 2.0 * mu * g, 1.5) * (2.0 + gg));
+    for (int i = 0; i < iSteps; i++) {
+        vec3 iPos = r0 + r * (iTime + iStepSize * 0.5);
+        float iHeight = length(iPos) - rPlanet;
+        float odStepRlh = exp(-iHeight / shRlh) * iStepSize;
+        float odStepMie = exp(-iHeight / shMie) * iStepSize;
+        iOdRlh += odStepRlh;
+        iOdMie += odStepMie;
+        float jStepSize = rsi2(Ray(iPos, pSun), Sphere(vec3(0),rAtmos)) / float(jSteps);
+        float jTime = 0.0;
+        float jOdRlh = 0.0;
+        float jOdMie = 0.0;
+        float invshRlh = 1.0 / shRlh;
+        float invshMie = 1.0 / shMie;
+        for (int j = 0; j < jSteps; j++) {
+            vec3 jPos = iPos + pSun * (jTime + jStepSize * 0.5);
+            float jHeight = length(jPos) - rPlanet;
+            jOdRlh += exp(-jHeight * invshRlh) * jStepSize;
+            jOdMie += exp(-jHeight * invshMie) * jStepSize;
+            jTime += jStepSize;
+        }
+        vec3 attn = exp(-(kMie * (iOdMie + jOdMie) + kRlh * (iOdRlh + jOdRlh)));
+        totalRlh += odStepRlh * attn;
+        totalMie += odStepMie * attn;
+        iTime += iStepSize;
+    }   
+    return max(vec3(0.0), iSun * (pRlh * kRlh * totalRlh + pMie * kMie * totalMie));
+}
 
+vec3 sun(vec3 camdir, vec3 sundir, float gloss){
+    float dt = max(0, dot(camdir, sundir));
+    vec3 var1 = 11.0 * mix(
+    pow(dt*dt*dt*dt*dt, 27.0 ) * vec3(3.0),  
+    pow(dt*dt*dt*dt*dt, 412.0) * vec3(9),  
+    gloss );
+    return var1;
+}
+
+vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
+    return atmosphere(
+        dir,           // normalized ray direction
+        vec3(0,planetradius  ,0)+ origin,               // ray origin
+        sunpos,                        // position of the sun
+        64.0,                           // intensity of the sun
+        planetradius,                         // radius of the planet in meters
+        6471e3,                         // radius of the atmosphere in meters
+        vec3(2.5e-6, 6.0e-6, 22.4e-6), // Rayleigh scattering coefficient
+        21e-6,                          // Mie scattering coefficient
+        5e3,                            // Rayleigh scale height
+        1.2e3,                          // Mie scale height
+        0.758                           // Mie preferred scattering direction
+    );
+}
+vec3 getAtmosphereForDirection(vec3 origin, vec3 dir, vec3 sunpos, float r){
+    return getAtmosphereForDirectionReal(origin, dir, sunpos);
+}
 float rdhash = 0.453451 + Time;
 vec2 randpoint2(){
     float x = rand2s(UV * rdhash);
@@ -56,22 +124,22 @@ vec4 smartblur(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));
     float mx = log2(roughness*512+1)/log2(512);
     float mlvel = mx * levels;
-    return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
+    //return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
    // return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
     vec4 centervals = textureLod(cloudsCloudsTex, dir, mlvel).rgba;
     vec4 centerval = vec4(0);
-    float center = textureLod(cloudsCloudsTex, dir, mlvel).r;
+    vec2 center = textureLod(cloudsCloudsTex, dir, mlvel).rg;
     float aoc = 0;
-    float blurrange = 0.01 * (center);// * pow(center, 2.0);
-    for(int i=0;i<64;i++){
+    float blurrange = 0.01 * centervals.b * 0.000005;
+    for(int i=0;i<12;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
-        float there = textureLod(cloudsCloudsTex, rdp, mlvel).r;
-        float w = pow( 1.0 - abs(there - center), 2.0);
-        centerval += w * textureLod(cloudsCloudsTex, rdp, mlvel).rgba;
-        aoc += w;
+        vec2 there = textureLod(cloudsCloudsTex, rdp, mlvel).rg;
+        float w = min(pow( 1.0 - abs(there.r - center.r), 2.0), pow( 1.0 - abs(there.g - center.g), 2.0));
+        centerval +=  textureLod(cloudsCloudsTex, rdp, mlvel).rgba;
+        aoc += 1.0;
     }
     centerval /= aoc;
-    return vec4(centerval.r, centerval.g, centervals.b, centerval.a);
+    return vec4(centerval.r, centerval.g, centerval.b, centerval.a);
 }
 
 
@@ -378,8 +446,8 @@ vec3 cloudsbydir(vec3 dir){
         roughness = 0;//pow(1.0 - (dir.y), 128.0);
     }
    // roughness = 0;
-    //return vec3(cdata.a);
     vec4 cdata = smartblur(dir, roughness).rgba;
+    //return vec3(cdata.b) * 0.00003;
     //return cdata.rgb;
     //cdata.a = doatmscatter ;//* clamp(pow(cdata.a * 1.0, 16.0) * 1.0, 0.0, 1.0);
     vec3 skydaylightcolor = vec3(0.23, 0.33, 0.48) * 1.3;
@@ -402,10 +470,11 @@ vec3 cloudsbydir(vec3 dir){
     //   cdata.r = mix(cdata.r, 0.0, min(1.0, dst * 0.000005));
     vec3 scatcolor = mix(vec3(1.0), atmcolor, 1.0 - diminisher) * 0.1;
     //cdata.a = mix(1.0, cdata.a, 1.0 - pow(1.0 - dir.y, 24.0));
-    vec3 result = vec3(litcolor) * whites + fresnel * mix(scatt, colorcloud, min(1.0, cdata.r * 1.2)) + basewaterclor;
+    float xv  = min(1.0, cdata.b * 0.00001) * max(0.0, sqrt(sqrt(normalize(SunDirection).y)));
+    vec3 result = vec3(litcolor) * whites + mix(cdata.aaa * atmcolor * fresnel + fresnel * mix(scatt, colorcloud, min(1.0, cdata.r * 1.2)), litcolor * 0.8 * fresnel, xv) + basewaterclor;
     result = clamp(result, vec3(0.0), vec3(30.0));
     
-    result += cdata.aaa * atmcolor;// + diminisher_absolute * (0.5 * pow(diminisher, 8.0) + 0.5) * litcolor * ((pow(1.0 - diminisher, 24.0)) * 0.9 + 0.1) * pow(cdata.a * 1.0, 2.0);
+   // result += cdata.aaa * atmcolor * fresnel;// + diminisher_absolute * (0.5 * pow(diminisher, 8.0) + 0.5) * litcolor * ((pow(1.0 - diminisher, 24.0)) * 0.9 + 0.1) * pow(cdata.a * 1.0, 2.0);
   //  if(UV.x < 0.5)return cdata.aaa;
     //return vec3(hitdistx);
   //  return result;

@@ -25,14 +25,14 @@ vec4 shade(){
   //  vec4 data = val.b <= lastData.b ? val : lastData;
   //  vec3 pos = startpos + ssdir * data.b;
    // data.g = getAOPos(1.0, pos);
-   val.g = mix(min(val.g, lastData.g), val.g, 0.3);
+   //val.g = mix(min(val.g, lastData.g), val.g, 0.3);
   // val.a = mix(min(val.a, lastData.a), val.a, 0.3);
    //val.r = mix(max(val.r, lastData.r), val.r, 0.2);
-   float s = val.b;
+   //float s = val.b;
     val = mix(val, lastData, CloudsIntegrate);
-    val.b = s;
-   // data = mix(val, data, 0.95);
-   
+    //val.b = s;
+   //// data = mix(val, data, 0.95);
+   val.a = clamp(val.a, 0.0, 9.0);
     return val;
   //  return vec4(0,1,999999999,0);
 }

@@ -38,6 +38,7 @@ public:
     float noiseOctave7;
     float noiseOctave8;
     float cloudsIntegrate;
+    ShaderProgram *cloudsShader;
     glm::vec3 cloudsOffset;
     glm::vec3 sunDirection;
     int width;
@@ -87,7 +88,6 @@ private:
     Texture2d *atmScattTexture;
     void atmScatt();
 
-    ShaderProgram *cloudsShader;
     CubeMapFramebuffer *cloudsFboEven;
     CubeMapTexture *cloudsTextureEven;
     CubeMapFramebuffer *cloudsFboOdd;
