@@ -49,4 +49,5 @@ private:
     queue<function<void(void)>> invokeQueue;
     void renderThread();
     void onRenderFrameFunc();
+    unsigned int uniqueIdCounter = 0;
 };

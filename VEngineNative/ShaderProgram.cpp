@@ -186,8 +186,19 @@ void ShaderProgram::setUniformVector(const string &name, const vector<glm::mat3>
 void ShaderProgram::setUniformVector(const string &name, const vector<glm::mat4> &value)
 {
     GLint location = getUniformLocation(name);
-    if (location < 0) return;
-    glUniformMatrix4fv(location, (GLsizei)value.size(), GL_FALSE, (GLfloat*)value.data());
+    if (location < 0) return; 
+    vector<float> floats;
+    floats.reserve(16 * value.size());
+    for (unsigned int i = 0; i < value.size(); i++) {
+        glm::mat4 m = value[i];
+        for (unsigned int d = 0; d < 4; d++) {
+            floats.push_back(m[d].x);
+            floats.push_back(m[d].y);
+            floats.push_back(m[d].z);
+            floats.push_back(m[d].w);
+        }
+    }
+    glUniformMatrix4fv(location, (GLsizei)value.size(), GL_FALSE, (GLfloat*)floats.data());
 }
 
 GLint ShaderProgram::getUniformLocation(const string &name)
@@ -205,6 +216,7 @@ GLint ShaderProgram::getUniformLocation(const string &name)
 
 void ShaderProgram::compile()
 {
+    generated = true;
     uniformLocationsMap = {};
     handle = glCreateProgram();
     if (computeFile != "") {
@@ -243,7 +255,6 @@ void ShaderProgram::compile()
         delete log;
         glDeleteProgram(handle);
     }
-    generated = true;
 }
 
 string ShaderProgram::resolveIncludes(string source)

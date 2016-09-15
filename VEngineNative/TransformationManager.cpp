@@ -97,9 +97,9 @@ mat4 TransformationManager::getWorldTransform()
 mat4 TransformationManager::getInverseWorldTransform()
 {
     mat4 rotmat = glm::mat4_cast(inverse(orientation));
-    mat4 scalemat = glm::scale(mat4(1), size);
+    mat4 scalemat = glm::scale(mat4(1), 1.0f / size);
     mat4 transmat = glm::translate(mat4(1), -position);
-    return rotmat * transmat;
+    return scalemat * rotmat * transmat;
 }
 
 glm::mat4 TransformationManager::getRotationMatrix()

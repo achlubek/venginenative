@@ -32,7 +32,7 @@ Renderer::Renderer(int iwidth, int iheight)
     noiseOctave8 = 1.01;
     cloudsIntegrate = 0.90;
 
-    csm = new CascadeShadowMap(512, 512, {5, 10, 15, 25, 50});
+    csm = new CascadeShadowMap(1024, 1024, {125, 455, 1025, 2048, 4096});
 
     cloudsOffset = glm::vec3(1);
     sunDirection = glm::vec3(0, 1, 0);
@@ -205,6 +205,7 @@ void Renderer::renderToFramebuffer(Camera *camera, Framebuffer * fboout)
 
 void Renderer::draw(Camera *camera)
 {
+    csm->map(-sunDirection, camera->transformation->position);
     mrtFbo->use(true);
     Game::instance->world->setUniforms(Game::instance->shaders->materialGeometryShader, camera);
     Game::instance->world->setUniforms(Game::instance->shaders->materialShader, camera);
@@ -214,7 +215,6 @@ void Renderer::draw(Camera *camera)
         ambientOcclusion();
     }
     deferred();
-    //csm->map(-sunDirection, camera->transformation->position);
     ambientLight();
     //atmScatt();
     clouds();
@@ -275,6 +275,7 @@ void Renderer::combine()
     combineShader->setUniform("NoiseOctave4", noiseOctave4);
     combineShader->setUniform("NoiseOctave5", noiseOctave5);
     combineShader->setUniform("NoiseOctave6", noiseOctave6);
+    csm->setUniformsAndBindSampler(combineShader, 24);
     quad3dInfo->draw();
 }
 void Renderer::fxaaTonemap()
@@ -377,7 +378,6 @@ void Renderer::ambientLight()
 {
     ambientLightFbo->use(true);
     ambientLightShader->use();
-    csm->setUniformsAndBindSampler(ambientLightShader, 24);
     mrtAlbedoRoughnessTex->use(0);
     mrtNormalMetalnessTex->use(1);
     mrtDistanceTexture->use(2);

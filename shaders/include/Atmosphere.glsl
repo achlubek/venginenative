@@ -88,6 +88,75 @@ float rsi2(in Ray ray, in Sphere sphere)
 }
 
 
+vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAtmos, vec3 kRlh, float kMie, float shRlh, float shMie, float g) {
+    pSun = normalize(pSun);
+    r = normalize(r);
+    float iStepSize = rsi2(Ray(r0, r), Sphere(vec3(0), rAtmos)) / float(iSteps);
+    float iTime = 0.0;
+    vec3 totalRlh = vec3(0,0,0);
+    vec3 totalMie = vec3(0,0,0);
+    float iOdRlh = 0.0;
+    float iOdMie = 0.0;
+    float mu = dot(r, pSun);
+    float mumu = mu * mu;
+    float gg = g * g;
+    float pRlh = 3.0 / (16.0 * PI) * (1.0 + mumu);
+    float pMie = 3.0 / (8.0 * PI) * ((1.0 - gg) * (mumu + 1.0)) / (pow(1.0 + gg - 2.0 * mu * g, 1.5) * (2.0 + gg));
+    for (int i = 0; i < iSteps; i++) {
+        vec3 iPos = r0 + r * (iTime + iStepSize * 0.5);
+        float iHeight = length(iPos) - rPlanet;
+        float odStepRlh = exp(-iHeight / shRlh) * iStepSize;
+        float odStepMie = exp(-iHeight / shMie) * iStepSize;
+        iOdRlh += odStepRlh;
+        iOdMie += odStepMie;
+        float jStepSize = rsi2(Ray(iPos, pSun), Sphere(vec3(0),rAtmos)) / float(jSteps);
+        float jTime = 0.0;
+        float jOdRlh = 0.0;
+        float jOdMie = 0.0;
+        float invshRlh = 1.0 / shRlh;
+        float invshMie = 1.0 / shMie;
+        for (int j = 0; j < jSteps; j++) {
+            vec3 jPos = iPos + pSun * (jTime + jStepSize * 0.5);
+            float jHeight = length(jPos) - rPlanet;
+            jOdRlh += exp(-jHeight * invshRlh) * jStepSize;
+            jOdMie += exp(-jHeight * invshMie) * jStepSize;
+            jTime += jStepSize;
+        }
+        vec3 attn = exp(-(kMie * (iOdMie + jOdMie) + kRlh * (iOdRlh + jOdRlh)));
+        totalRlh += odStepRlh * attn;
+        totalMie += odStepMie * attn;
+        iTime += iStepSize;
+    }   
+    return max(vec3(0.0), iSun * (pRlh * kRlh * totalRlh + pMie * kMie * totalMie));
+}
+
+vec3 sun(vec3 camdir, vec3 sundir, float gloss){
+    float dt = max(0, dot(camdir, sundir));
+    vec3 var1 = 11.0 * mix(
+    pow(dt*dt*dt*dt*dt, 27.0 ) * vec3(3.0),  
+    pow(dt*dt*dt*dt*dt, 412.0) * vec3(9),  
+    gloss );
+    return var1;
+}
+
+vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
+    return atmosphere(
+        dir,           // normalized ray direction
+        vec3(0,planetradius  ,0)+ origin,               // ray origin
+        sunpos,                        // position of the sun
+        64.0,                           // intensity of the sun
+        planetradius,                         // radius of the planet in meters
+        6471e3,                         // radius of the atmosphere in meters
+        vec3(2.5e-6, 6.0e-6, 22.4e-6), // Rayleigh scattering coefficient
+        21e-6,                          // Mie scattering coefficient
+        5e3,                            // Rayleigh scale height
+        1.2e3,                          // Mie scale height
+        0.758                           // Mie preferred scattering direction
+    );
+}
+vec3 getAtmosphereForDirection(vec3 origin, vec3 dir, vec3 sunpos, float r){
+    return getAtmosphereForDirectionReal(origin, dir, sunpos);
+}
 
 float hash( float n ){
     return fract(sin(n)*758.5453);
@@ -192,8 +261,10 @@ float cloudsDensity3D(vec3 pos){
     float partitions2 = ssnoise(pos * 0.00001 * vec3(FBMINITSCALE2, FBMINITSCALE2, FBMINITSCALE2));
     float fao1 = FBMO1 * 0.1;
     float fao2 = FBMO2 * 0.1;
-    float localaberations = mix(1.0, ssnoise(pos * 0.0001 * FBMS1) * fao1 + 1.0 * (1.0 - fao1), hcl);
-    float localaberations2 = mix(1.0, ssnoise(pos * 0.0006 * FBMS2) * fao2 + 1.0 * (1.0 - fao2), hcl);
+    //float localaberations = mix(1.0, ssnoise(pos * 0.0001 * FBMS1) * fao1 + 1.0 * (1.0 - fao1), hcl);
+    float localaberations = ssnoise(pos * 0.0001 * FBMS1) * fao1 + 1.0 * (1.0 - fao1);
+    //float localaberations2 = mx(1.0, ssnoise(pos * 0.0001 * FBMS1) * fao1 + 1.0 * (1.0 - fao1), hcl);
+    float localaberations2 = ssnoise(pos * 0.0006 * FBMS2) * fao2 + 1.0 * (1.0 - fao2);
     float density = sqrt(partitions * partitions2) * localaberations * localaberations2;
     return smoothstep(
         CloudsThresholdLow,
