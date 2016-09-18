@@ -37,7 +37,7 @@ vec3 Uncharted2Tonemap(vec3 x)
 }
 
 vec3 tonemap(vec3 x){
-    vec3 a = Uncharted2Tonemap(0.5 * x);
+    vec3 a = Uncharted2Tonemap(1.0 * x);
     vec3 white = vec3(1.0) / Uncharted2Tonemap(vec3(W));
     vec3 c = a * white;
     return rgb_to_srgb(c);

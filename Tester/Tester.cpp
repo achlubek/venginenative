@@ -32,7 +32,7 @@ int main()
 {
     Media::loadFileMap("../../media");
     Media::loadFileMap("../../shaders");
-    Game *game = new Game(1920, 1020);
+    Game *game = new Game(1280, 720);
     game->start();
     volatile bool ready = false;
     game->invoke([&ready]() {
@@ -52,7 +52,7 @@ int main()
 
     // mesh loading
 
-     game->world->scene = game->asset->loadSceneFile("terrain.scene");
+     game->world->scene = game->asset->loadSceneFile("castle.scene");
      //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->translate(glm::vec3(0, -62.5f, 0));
      //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->scale(glm::vec3(0.1));
     //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->rotate(glm::angleAxis(deg2rad(73.75f), glm::vec3(-0.006f, -0.005f, 1.0f)));
@@ -62,12 +62,17 @@ int main()
     bool isOpened = true;
 
 
-    ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF(Media::getPath("segoeui.ttf").c_str(), 10);
     unsigned char* pixels;
     int width, height;
     //io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
+    bool imugiinit = false;
     game->onRenderUIFrame->add([&](int zero) {
+        if (!imugiinit) {
+            ImGuiIO& io = ImGui::GetIO();
+           // io.Fonts->ClearFonts();
+            io.Fonts->AddFontFromFileTTF(Media::getPath("segoeui.ttf").c_str(), 10);
+            imugiinit = true;
+        }
         static float f = 0.0f;
         if (Game::instance->renderer->cloudsThresholdLow > Game::instance->renderer->cloudsThresholdHigh) {
             Game::instance->renderer->cloudsThresholdHigh = Game::instance->renderer->cloudsThresholdLow;

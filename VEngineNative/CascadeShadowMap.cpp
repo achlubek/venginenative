@@ -70,7 +70,7 @@ void CascadeShadowMap::setUniformsAndBindSampler(ShaderProgram * shader, int sam
     shader->setUniformVector("CSMVPMatrices", vpmats);
     shader->setUniform("CSMLayers", cascadeCount);
    // shader->setUniformVector("CSMFarplanes", farplanes);
-   // shader->setUniformVector("CSMRadiuses", radiuses);
+    shader->setUniformVector("CSMRadiuses", radiuses);
     texture->use(sampler);
 }
 

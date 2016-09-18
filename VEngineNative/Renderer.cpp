@@ -32,7 +32,7 @@ Renderer::Renderer(int iwidth, int iheight)
     noiseOctave8 = 1.01;
     cloudsIntegrate = 0.90;
 
-    csm = new CascadeShadowMap(1024, 1024, {125, 455, 1025, 2048, 4096});
+    csm = new CascadeShadowMap(1024, 1024, {128, 512, 1536, 4096});
 
     cloudsOffset = glm::vec3(1);
     sunDirection = glm::vec3(0, 1, 0);
@@ -275,6 +275,8 @@ void Renderer::combine()
     combineShader->setUniform("NoiseOctave4", noiseOctave4);
     combineShader->setUniform("NoiseOctave5", noiseOctave5);
     combineShader->setUniform("NoiseOctave6", noiseOctave6);
+    combineShader->setUniform("NoiseOctave7", noiseOctave7);
+    combineShader->setUniform("NoiseOctave8", noiseOctave8);
     csm->setUniformsAndBindSampler(combineShader, 24);
     quad3dInfo->draw();
 }
