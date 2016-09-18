@@ -15,7 +15,7 @@ in Data {
 uniform float CutOffDistance;
 uniform float CSMRadius;
 
-out float Red;
+//out float Red;
 
 float toLogDepth(float depth, float far){
     float badass_depth = log2(max(1e-6, 1.0 + depth)) / (log2(far));
@@ -27,5 +27,5 @@ void main(){
     //if(Input.Data.x < 1.0 && bump >= Input.Data.x) discard;
   //  gl_FragDepth = Input.Data.y;
     gl_FragDepth = clamp(Input.Data.y, 0.0, 1.0);
-   Red = Input.Data.y;
+  // Red = Input.Data.y;
 }

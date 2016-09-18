@@ -3,8 +3,15 @@ diffuse 1 0 0
 roughness 1.0
 metalness 0.0
 
-//node
-//texture pm0133_00_Body1.png
-//mix REPLACE
-//target DIFFUSE
-//uvscale 1.0 -1.0
+node
+texture ds1a.png
+mix REPLACE
+target DIFFUSE
+modifier LINEARIZE
+uvscale 240.0
+
+node
+texture ds1n.png
+mix REPLACE
+target NORMAL
+uvscale 240.0

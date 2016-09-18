@@ -8,10 +8,10 @@ using namespace glm;
 CascadeShadowMap::CascadeShadowMap(int width, int height, vector<float> iradiuses)
 {
     cascadeCount = iradiuses.size();
-    texture = new Texture2dArray(width, height, cascadeCount, GL_R32F, GL_RED, GL_FLOAT);
-    textureDepth = new Texture2d(width, height, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
+ //   texture = new Texture2dArray(width, height, cascadeCount, GL_R32F, GL_RED, GL_FLOAT);
+    textureDepth = new Texture2dArray(width, height, cascadeCount, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
     framebuffer = new Array2dFramebuffer();
-    framebuffer->attachTexture(texture, GL_COLOR_ATTACHMENT0);
+   // framebuffer->attachTexture(texture, GL_COLOR_ATTACHMENT0);
     framebuffer->attachTexture(textureDepth, GL_DEPTH_ATTACHMENT);
     for (int i = 0; i < cascadeCount; i++) {
         float radius = iradiuses[i];
@@ -71,7 +71,7 @@ void CascadeShadowMap::setUniformsAndBindSampler(ShaderProgram * shader, int sam
     shader->setUniform("CSMLayers", cascadeCount);
    // shader->setUniformVector("CSMFarplanes", farplanes);
     shader->setUniformVector("CSMRadiuses", radiuses);
-    texture->use(sampler);
+    textureDepth->use(sampler);
 }
 
 CascadeShadowMap::~CascadeShadowMap()

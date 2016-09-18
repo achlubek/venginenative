@@ -682,6 +682,7 @@ vec3 cloudsbydir(vec3 dir){
 
     vec3 shadowcolor = mix(skydaylightcolor, skydaylightcolor * 0.05, 1.0 - diminisher);
     vec3 litcolor = mix(vec3(8.0) + dirdirdir * 3.0   , atmcolor * 0.2, pow(1.0 - diminisher, 3.0));
+    vec3 litcolor2 = mix(vec3(8.0), atmcolor * 0.2, pow(1.0 - diminisher, 3.0));
     vec3 colorcloud = dmxp * mix(shadowcolor, litcolor, pow(cdata.g, 2.0)) ;//* (diminisher * 0.3 + 0.7);
     
         //    return sun(dir, normalize(SunDirection), 1.0 - roughness );
@@ -709,10 +710,10 @@ vec3 cloudsbydir(vec3 dir){
    if( ln < 0.01) 
    return result + defres;
    else if(hitdistx > 0 && hitdistx > currentData.cameraDistance && ln > 0.01) 
-    return defres + MakeShading(currentData) * cwp + currentData.diffuseColor * 0.002 * litcolor;
+    return defres + MakeShading(currentData) * cwp + currentData.diffuseColor * 0.009 * litcolor2;
    else if(hitdistx > 0 && hitdistx < currentData.cameraDistance && ln > 0.01){
    return result + defres;
-   } else return defres + MakeShading(currentData) * cwp + currentData.diffuseColor * 0.002 * litcolor;//mix(result, vec3(0.7), ;
+   } else return defres + MakeShading(currentData) * cwp + currentData.diffuseColor * 0.009 * litcolor2;//mix(result, vec3(0.7), ;
    //return texture(atmScattTex, UV).rgb;
   // return texture(atmScattTex, UV).rgb;
   // eturn getatscatter(dir, normalize(SunDirection))+ sun(dir, normalize(SunDirection));

@@ -19,7 +19,7 @@ private:
     int cascadeCount;
     Array2dFramebuffer *framebuffer;
     Texture2dArray *texture;
-    Texture2d *textureDepth;
+    Texture2dArray *textureDepth;
     Camera * camera;
 };
 
