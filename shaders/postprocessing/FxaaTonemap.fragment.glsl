@@ -45,6 +45,6 @@ vec3 tonemap(vec3 x){
 
 vec4 shade(){    
     //vec3 color = fxaa(inputTex, UV).rgb;
-    vec3 color = texture(inputTex, UV).rgb;
+    vec3 color = fxaa(inputTex, UV).rgb;
     return vec4(tonemap(color), 1.0);
 }

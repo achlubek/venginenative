@@ -57,7 +57,7 @@ int main()
     sq->compileFile(Media::getPath("squireeltest.txt"));
     sq->callProcedureVoid("testme");
 
-     game->world->scene = game->asset->loadSceneFile("terrain.scene");
+  //   game->world->scene = game->asset->loadSceneFile("terrain.scene");
      //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->translate(glm::vec3(0, -62.5f, 0));
      //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->scale(glm::vec3(0.1));
     //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->rotate(glm::angleAxis(deg2rad(73.75f), glm::vec3(-0.006f, -0.005f, 1.0f)));
@@ -111,7 +111,7 @@ int main()
         ImGui::SliderFloat("Noise6", &Game::instance->renderer->noiseOctave6, 0.01f, 10.0f);
         ImGui::SliderFloat("Noise7", &Game::instance->renderer->noiseOctave7, 0.01f, 10.0f);
         ImGui::SliderFloat("Noise8", &Game::instance->renderer->noiseOctave8, 0.01f, 10.0f);
-        ImGui::SliderFloat("RoughnessTerra", &game->world->scene->getMeshes()[0]->getLodLevel(0)->material->roughness, 0.01f, 10.0f);
+//        ImGui::SliderFloat("RoughnessTerra", &game->world->scene->getMeshes()[0]->getLodLevel(0)->material->roughness, 0.01f, 10.0f);
         ImGui::SliderFloat("CloudsIntegrate", &Game::instance->renderer->cloudsIntegrate, 0.3f, 0.99f);
         ImGui::SliderFloat3("CloudsOffset", (float*)&Game::instance->renderer->cloudsOffset, -1000.0f, 1000.0f);
         ImGui::SliderFloat3("SunDirection", (float*)&Game::instance->renderer->sunDirection, -1.0f, 1.0f);

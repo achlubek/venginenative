@@ -110,13 +110,37 @@ void Renderer::initializeFbos()
     fogFbo = new Framebuffer();
     fogFbo->attachTexture(fogTexture, GL_COLOR_ATTACHMENT0);
 
-    cloudsTextureEven = new CubeMapTexture(512, 512, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    //---------/
+
+    cloudsTextureEven = new CubeMapTexture(512, 512, GL_RG32F, GL_RG, GL_FLOAT);
     cloudsFboEven = new CubeMapFramebuffer();
     cloudsFboEven->attachTexture(cloudsTextureEven, GL_COLOR_ATTACHMENT0);
 
-    cloudsTextureOdd = new CubeMapTexture(512, 512, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    cloudsTextureOdd = new CubeMapTexture(512, 512, GL_RG32F, GL_RG, GL_FLOAT);
     cloudsFboOdd = new CubeMapFramebuffer();
     cloudsFboOdd->attachTexture(cloudsTextureOdd, GL_COLOR_ATTACHMENT0);
+
+    //
+
+    cloudsShadowsTextureEven = new CubeMapTexture(256, 256, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    cloudsShadowsFboEven = new CubeMapFramebuffer();
+    cloudsShadowsFboEven->attachTexture(cloudsShadowsTextureEven, GL_COLOR_ATTACHMENT0);
+
+    cloudsShadowsTextureOdd = new CubeMapTexture(256, 256, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    cloudsShadowsFboOdd = new CubeMapFramebuffer();
+    cloudsShadowsFboOdd->attachTexture(cloudsShadowsTextureOdd, GL_COLOR_ATTACHMENT0);
+
+    //
+
+    skyfogTextureEven = new CubeMapTexture(128, 128, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    skyfogFboEven = new CubeMapFramebuffer();
+    skyfogFboEven->attachTexture(skyfogTextureEven, GL_COLOR_ATTACHMENT0);
+
+    skyfogTextureOdd = new CubeMapTexture(128, 128, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    skyfogFboOdd = new CubeMapFramebuffer();
+    skyfogFboOdd->attachTexture(skyfogTextureOdd, GL_COLOR_ATTACHMENT0);
+
+    //---------/
 
     atmScattTexture = new CubeMapTexture(256, 256, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     atmScattFbo = new CubeMapFramebuffer();
@@ -250,10 +274,16 @@ void Renderer::combine()
     deferredTexture->use(5);
     ambientLightTexture->use(6);
     ambientOcclusionTexture->use(16);
-    if (!cloudCycleUseOdd)
-        cloudsTextureOdd->use(18);
-    else
-        cloudsTextureEven->use(18);
+    if (!cloudCycleUseOdd) {
+        cloudsTextureOdd->use(25);
+        cloudsShadowsTextureOdd->use(26);
+        skyfogTextureOdd->use(27);
+    }
+    else {
+        cloudsTextureEven->use(25);
+        cloudsShadowsTextureEven->use(26);
+        skyfogTextureEven->use(27);
+    }
     atmScattTexture->use(19);
     fogTexture->use(20);
     FrustumCone *cone = currentCamera->cone;
@@ -588,6 +618,9 @@ void Renderer::clouds()
     cloudsShader->setUniform("Rand1", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
     cloudsShader->setUniform("Rand2", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
 
+    // RENDER CLOUD COVERAGE::
+    cloudsShader->setUniform("RenderPass", 0);
+
     CubeMapFramebuffer* currentFbo = cloudsFboOdd;
     if (cloudCycleUseOdd)
         currentFbo = cloudsFboOdd;
@@ -622,6 +655,94 @@ void Renderer::clouds()
         cloudsTextureOdd->generateMipMaps();
     else
         cloudsTextureEven->generateMipMaps();
+
+    // RENDER SHADOWS
+    cloudsShader->setUniform("RenderPass", 1);
+
+    currentFbo = cloudsShadowsFboOdd;
+    if (cloudCycleUseOdd)
+        currentFbo = cloudsShadowsFboOdd;
+    else
+        currentFbo = cloudsShadowsFboEven;
+
+    if (cloudCycleUseOdd)
+        cloudsShadowsTextureEven->use(18);
+    else
+        cloudsShadowsTextureOdd->use(18);
+
+    if (cloudCycleUseOdd)
+        cloudsTextureEven->use(29);
+    else
+        cloudsTextureOdd->use(29);
+
+    // for (int i = 0; i < 6; i++) {
+    currentFbo->use(false);
+    camera = currentFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, true);
+    camera->transformation->setPosition(currentCamera->transformation->position);
+    cone = camera->cone;
+    vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
+    cameraRotMatrix = camera->transformation->getRotationMatrix();
+    rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
+    camera->cone->update(inverse(rpmatrix));
+    cloudsShader->use();
+    cloudsShader->setUniform("VPMatrix", vpmatrix);
+    cloudsShader->setUniform("CameraPosition", camera->transformation->position);
+    cloudsShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
+    cloudsShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
+    cloudsShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
+    currentFbo->use(false);
+    cloudsShader->use();
+    quad3dInfo->draw();
+    // }
+
+    if (cloudCycleUseOdd)
+        cloudsShadowsTextureOdd->generateMipMaps();
+    else
+        cloudsShadowsTextureEven->generateMipMaps();
+
+    // RENDER FOG
+
+    cloudsShader->setUniform("RenderPass", 2);
+
+    currentFbo = skyfogFboOdd;
+    if (cloudCycleUseOdd)
+        currentFbo = skyfogFboOdd;
+    else
+        currentFbo = skyfogFboEven;
+    if (cloudCycleUseOdd)
+        skyfogTextureEven->use(18);
+    else
+        skyfogTextureOdd->use(18);
+
+    if (cloudCycleUseOdd)
+        cloudsTextureEven->use(29);
+    else
+        cloudsTextureOdd->use(29);
+
+    // for (int i = 0; i < 6; i++) {
+    currentFbo->use(false);
+    camera = currentFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, true);
+    camera->transformation->setPosition(currentCamera->transformation->position);
+    cone = camera->cone;
+    vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
+    cameraRotMatrix = camera->transformation->getRotationMatrix();
+    rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
+    camera->cone->update(inverse(rpmatrix));
+    cloudsShader->use();
+    cloudsShader->setUniform("VPMatrix", vpmatrix);
+    cloudsShader->setUniform("CameraPosition", camera->transformation->position);
+    cloudsShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
+    cloudsShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
+    cloudsShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
+    currentFbo->use(false);
+    cloudsShader->use();
+    quad3dInfo->draw();
+    // }
+
+    if (cloudCycleUseOdd)
+        skyfogTextureOdd->generateMipMaps();
+    else
+        skyfogTextureEven->generateMipMaps();
 
     cloudFace++;
     if (cloudFace > 5) {

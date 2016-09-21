@@ -89,14 +89,25 @@ private:
     CubeMapTexture *atmScattTexture;
     void atmScatt();
 
+    bool cloudCycleUseOdd = false;
+    int cloudFace = 0;
+
     CubeMapFramebuffer *cloudsFboEven;
     CubeMapTexture *cloudsTextureEven;
     CubeMapFramebuffer *cloudsFboOdd;
     CubeMapTexture *cloudsTextureOdd;
 
-    bool cloudCycleUseOdd = false;
-    int cloudFace = 0;
+    CubeMapFramebuffer *cloudsShadowsFboEven;
+    CubeMapTexture *cloudsShadowsTextureEven;
+    CubeMapFramebuffer *cloudsShadowsFboOdd;
+    CubeMapTexture *cloudsShadowsTextureOdd;
+
+    CubeMapFramebuffer *skyfogFboEven;
+    CubeMapTexture *skyfogTextureEven;
+    CubeMapFramebuffer *skyfogFboOdd;
+    CubeMapTexture *skyfogTextureOdd;
     void clouds();
+
 
     ShaderProgram *fxaaTonemapShader;
    // Framebuffer *fxaaTonemapFbo;
