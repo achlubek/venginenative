@@ -12,6 +12,7 @@
 #include "../VEngineNative/Material.h";
 #include "../VEngineNative/Mesh3d.h";
 #include "../VEngineNative/Light.h";
+#include "../VEngineNative/SquirrelVM.h";
 #include "../VEngineNative/imgui/imgui.h";
 
 Mesh3d * loadRawMesh(string file) {
@@ -52,7 +53,11 @@ int main()
 
     // mesh loading
 
-     game->world->scene = game->asset->loadSceneFile("sponza.scene");
+    SquirrelVM* sq = new SquirrelVM();
+    sq->compileFile(Media::getPath("squireeltest.txt"));
+    sq->callProcedureVoid("testme");
+
+     game->world->scene = game->asset->loadSceneFile("terrain.scene");
      //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->translate(glm::vec3(0, -62.5f, 0));
      //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->scale(glm::vec3(0.1));
     //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->rotate(glm::angleAxis(deg2rad(73.75f), glm::vec3(-0.006f, -0.005f, 1.0f)));

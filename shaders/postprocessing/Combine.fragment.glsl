@@ -61,19 +61,19 @@ vec4 smartblur(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
-    return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
+   // return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
    // return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
     vec4 centervals = textureLod(cloudsCloudsTex, dir, mlvel).rgba;
     vec4 centerval = vec4(0);
     vec2 center = textureLod(cloudsCloudsTex, dir, mlvel).rg;
     float aoc = 0;
-    float blurrange = 0.01 * centervals.b * 0.000005;
+    float blurrange = 0.001;
     for(int i=0;i<12;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
-        vec2 there = textureLod(cloudsCloudsTex, rdp, mlvel).rg;
-        float w = min(pow( 1.0 - abs(there.r - center.r), 2.0), pow( 1.0 - abs(there.g - center.g), 2.0));
-        centerval +=  textureLod(cloudsCloudsTex, rdp, mlvel).rgba;
-        aoc += 1.0;
+        float there = textureLod(cloudsCloudsTex, rdp, mlvel).b;
+        float w = pow( 1.0 - abs(there - centervals.b), 2.0);
+        centerval += w* textureLod(cloudsCloudsTex, rdp, mlvel).rgba;
+        aoc += w;
     }
     centerval /= aoc;
     return vec4(centerval.r, centerval.g, centerval.b, centerval.a);
@@ -770,17 +770,17 @@ vec3 cloudsbydir(vec3 dir){
     
 
     vec3 shadowcolor = mix(skydaylightcolor, skydaylightcolor * 0.05, 1.0 - diminisher);
-    vec3 litcolor = mix(vec3(8.0) + dirdirdir * 3.0   , atmcolor * 0.2, pow(1.0 - diminisher, 3.0));
+    vec3 scatcolor = mix(vec3(1.0), atmcolor, 1.0 - diminisher) * 0.1;
+    vec3 litcolor = mix(vec3(3.0) * scatcolor + scatcolor * dirdirdir * 0.2   , scatcolor, pow(1.0 - diminisher, 3.0));
     vec3 colorcloud = dmxp * mix(shadowcolor, litcolor, pow(cdata.g, 2.0)) ;//* (diminisher * 0.3 + 0.7);
     
         //    return sun(dir, normalize(SunDirection), 1.0 - roughness );
    // cdata.r = mix(0.0, cdata.r, 1.0 - pow(1.0 - dir.y, 45.0));
     //   cdata.r = mix(cdata.r, 0.0, min(1.0, dst * 0.000005));
-    vec3 scatcolor = mix(vec3(1.0), atmcolor, 1.0 - diminisher) * 0.1;
     //cdata.a = mix(1.0, cdata.a, 1.0 - pow(1.0 - dir.y, 24.0));
     float xv  = min(1.0, cdata.b * 0.00001) * max(0.0, sqrt(sqrt(normalize(SunDirection).y)));
-    vec3 result = mix(cdata.aaa * atmcolor * fresnel + fresnel * mix(scatt, colorcloud, min(1.0, cdata.r * 1.2)) , litcolor * 0.8 * fresnel, xv);
-    result = clamp(result, vec3(0.0), vec3(30.0));
+    vec3 result = mix(cdata.aaa * litcolor * fresnel + fresnel * mix(scatt, colorcloud, min(1.0, cdata.r * 1.2)) , litcolor * 12.8 * fresnel, xv);
+    result = clamp(result, vec3(0.0), vec3(300.0));
     //return sunx;
    // result += cdata.aaa * atmcolor * fresnel;// + diminisher_absolute * (0.5 * pow(diminisher, 8.0) + 0.5) * litcolor * ((pow(1.0 - diminisher, 24.0)) * 0.9 + 0.1) * pow(cdata.a * 1.0, 2.0);
   //  if(UV.x < 0.5)return cdata.aaa;
@@ -805,7 +805,7 @@ vec3 cloudsbydir(vec3 dir){
    else if(hitdistx > 0 && hitdistx < csdr && ln > 0.01){
         result = result * minshadow + defres * minshadow;
    } else result = defres;//mix(result, vec3(0.7), ;
-   result = mix(result, (ln < 0.01 && hitdistx <= 0 ? result : vec3(0)) + scatcolor * textureLod(fogTex, UV, 0).r, 1.0 - clamp(textureLod(fogTex, UV, 0).g, 0.0, 1.0));
+   result = mix(result, (ln < 0.01 && hitdistx <= 0 ? result : vec3(0)) + litcolor * 0.08 * textureLod(fogTex, UV, 0).r, 1.0 - clamp(textureLod(fogTex, UV, 0).g, 0.0, 1.0));
    return result;
    //return texture(atmScattTex, UV).rgb;
   // return texture(atmScattTex, UV).rgb;

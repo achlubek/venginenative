@@ -25,7 +25,6 @@
 #include <queue>
 #include <regex>
 #include <map>
-
 using namespace std;
 
 #include "glad.h"

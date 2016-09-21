@@ -43,7 +43,7 @@ public:
     EventHandler<int> *onKeyPress;
     EventHandler<int> *onKeyRelease;
     EventHandler<int> *onKeyRepeat;
-
+    void display(string str);
 private:
 
     queue<function<void(void)>> invokeQueue;

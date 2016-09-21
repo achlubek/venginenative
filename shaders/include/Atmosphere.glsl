@@ -286,7 +286,7 @@ Sphere sphere2;
 float weightshadow = 1.0;
 float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
     float iter = 0.0;
-    const int stepcount = 4;
+    const int stepcount = 2;
     const float stepsize = 1.0 / float(stepcount);
     float rd = rand2sTime(UV) * stepsize;
     float coverageinv = 1.0;
@@ -369,7 +369,7 @@ float godrayrandompoint(vec3 p1, vec3 p2){
 }
 
 vec4 internalmarchconservative(vec3 p1, vec3 p2){
-    int stepcount = 8;
+    int stepcount = 6;
     float stepsize = 1.0 / float(stepcount);
     float rd = fract(rand2sTime(UV) + hash(Time)) * stepsize;
     hash1x = rand2s(UV * vec2(Time, Time));
