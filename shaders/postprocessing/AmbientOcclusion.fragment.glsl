@@ -313,28 +313,36 @@ vec3 randpoint3(){
     rdhash += 1.6271255;
     return (vec3(x, y, z) * 2.0 - 1.0);
 }
-float slowao(float mult){
+#define AOSCALE 13.0
+float slowao(){
     float ao = 0.0;
+    float d = 0.0;
     float w = 0.001;
-    for(int i=0;i<64;i++){
+    float nw = 1.0;
+    vec3 refdir = normalize(reflect(currentData.cameraPos, currentData.normal));
+    vec3 refrefdir = normalize(mix(refdir, currentData.normal, currentData.roughness));
+    float sca = mix(12.0, AOSCALE, currentData.roughness);
+    for(int i=0;i<32;i++){
         vec3 p = randpoint3();
-        p *= sign(dot(currentData.normal, p));
-       // p = normalize(mix(normalize(SunDirection), p, 0.7));
-        p *= mult;
-        float nw = max(0, dot(p, normalize(SunDirection)));
-        vec2 nuv = projectvdao(currentData.worldPos + p );
-        float d = textureLod(mrt_Distance_Bump_Tex, nuv, 0).r;
-        d = max(0, distance(currentData.worldPos + p, CameraPosition) - d);
-        nw *= 1.0 - smoothstep(mult*0.5, mult, d);
-        w += nw;
-        ao += nw * smoothstep(0.0, 1.0, d);
+        p *= sign(dot(refdir, p));
+        p = mix(refdir, p, currentData.roughness);
+        p *= sca;
+        vec2 nuv = projectvdao(currentData.worldPos + p);
+        nuv = clamp(nuv, 0.01, 0.99);
+        p = FromCameraSpace(reconstructCameraSpaceDistance(nuv, textureLod(mrt_Distance_Bump_Tex, nuv, 1).r));
+        d = pow(max(0.0, dot(refrefdir, normalize(p - currentData.worldPos))), 1.0 + 12.0 * (1.0 - currentData.roughness));
+        nw = 1.0 - smoothstep(0.0, sca * 0.5, distance(currentData.worldPos, p));
+        ao = max(d * nw, ao);
+        //w += nw;
+        //ao += d * nw;//nw * smoothstep(0.0, 1.0, d);
     }
-    return 1.0 - ao / w;
+    ao = 1.0 - ao;
+    return mix(ao, pow(ao, 4.0), currentData.roughness);
 }
 
 float AmbientOcclusion(){
     //float ao = AO(currentData.worldPos, currentData.cameraPos, currentData.normal, currentData.roughness, 8.4,3));
-    float ao = slowao(18.0);
+    float ao = slowao();
     return ao;
     ao = 1.0 - pow(1.0 - ao, 2.0);
    // ao += AO(currentData.worldPos, currentData.cameraPos, currentData.normal, currentData.roughness, 2.4,4);

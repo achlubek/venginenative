@@ -74,6 +74,27 @@ void createData(){
     normal_metalness.a
     );
 }
+PostProceessingData loadData(vec2 uv){
+    vec4 albedo_roughness = textureLod(mrt_Albedo_Roughness_Tex, uv, 0).rgba;
+    vec4 normal_metalness = textureLod(mrt_Normal_Metalness_Tex, uv, 0).rgba;
+    float dist = textureLod(mrt_Distance_Bump_Tex, uv, 0).r;
+    vec3 cameraSpace = reconstructCameraSpaceDistance(uv,dist);
+    vec3 worldSpace = FromCameraSpace(cameraSpace);
+        
+    return PostProceessingData(
+    albedo_roughness.rgb,
+    normal_metalness.rgb,
+    normalize(cross(
+        dFdx(worldSpace), 
+        dFdy(worldSpace)
+    )).xyz,
+    worldSpace,
+    cameraSpace,
+    dist,
+    albedo_roughness.a,
+    normal_metalness.a
+    );
+}
 vec4 shade();
 void main(){
     createData();

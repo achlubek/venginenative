@@ -47,6 +47,7 @@ private:
     void draw(Camera *camera);
     void initializeFbos();
     void destroyFbos();
+    void setCommonUniforms(ShaderProgram *  sp);
 
     CascadeShadowMap *csm;
 
@@ -84,8 +85,8 @@ private:
     void fog();
 
     ShaderProgram *atmScattShader;
-    Framebuffer *atmScattFbo;
-    Texture2d *atmScattTexture;
+    CubeMapFramebuffer *atmScattFbo;
+    CubeMapTexture *atmScattTexture;
     void atmScatt();
 
     CubeMapFramebuffer *cloudsFboEven;
@@ -118,9 +119,18 @@ private:
     Texture2d *combineTexture;
     void combine();
 
+    ShaderProgram *lensBlurShader;
+    Framebuffer *lensBlurFboHorizontal;
+    Framebuffer *lensBlurFboVertical;
+    Texture2d *lensBlurTextureHorizontal;
+    Texture2d *lensBlurTextureVertical;
+    void lensBlur();
+
     // Output to output fbo
     ShaderProgram *outputShader;
     void output();
+
+
 
     Camera* currentCamera;
 };

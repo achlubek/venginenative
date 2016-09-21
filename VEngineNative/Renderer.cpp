@@ -32,7 +32,7 @@ Renderer::Renderer(int iwidth, int iheight)
     noiseOctave8 = 1.01;
     cloudsIntegrate = 0.90;
 
-    csm = new CascadeShadowMap(1024, 1024, {128, 512, 1536, 4096});
+    csm = new CascadeShadowMap(4096, 4096, {16, 64, 256, 768, 4096});
 
     cloudsOffset = glm::vec3(1);
     sunDirection = glm::vec3(0, 1, 0);
@@ -64,6 +64,7 @@ Renderer::Renderer(int iwidth, int iheight)
     fogShader = new ShaderProgram("PostProcess.vertex.glsl", "Fog.fragment.glsl");
     cloudsShader = new ShaderProgram("PostProcess.vertex.glsl", "Clouds.fragment.glsl");
     atmScattShader = new ShaderProgram("PostProcess.vertex.glsl", "AtmScatt.fragment.glsl");
+    lensBlurShader = new ShaderProgram("PostProcess.vertex.glsl", "LensBlur.fragment.glsl");
     motionBlurShader = new ShaderProgram("PostProcess.vertex.glsl", "MotionBlur.fragment.glsl");
     bloomShader = new ShaderProgram("PostProcess.vertex.glsl", "Bloom.fragment.glsl");
     combineShader = new ShaderProgram("PostProcess.vertex.glsl", "Combine.fragment.glsl");
@@ -105,7 +106,7 @@ void Renderer::initializeFbos()
     ambientOcclusionFbo = new Framebuffer();
     ambientOcclusionFbo->attachTexture(ambientOcclusionTexture, GL_COLOR_ATTACHMENT0);
 
-    fogTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    fogTexture = new Texture2d(width, height, GL_RG16F, GL_RG, GL_HALF_FLOAT);
     fogFbo = new Framebuffer();
     fogFbo->attachTexture(fogTexture, GL_COLOR_ATTACHMENT0);
 
@@ -117,8 +118,8 @@ void Renderer::initializeFbos()
     cloudsFboOdd = new CubeMapFramebuffer();
     cloudsFboOdd->attachTexture(cloudsTextureOdd, GL_COLOR_ATTACHMENT0);
 
-    atmScattTexture = new Texture2d(768, 768, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
-    atmScattFbo = new Framebuffer();
+    atmScattTexture = new CubeMapTexture(256, 256, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    atmScattFbo = new CubeMapFramebuffer();
     atmScattFbo->attachTexture(atmScattTexture, GL_COLOR_ATTACHMENT0);
 
     motionBlurTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
@@ -134,6 +135,14 @@ void Renderer::initializeFbos()
     combineTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     combineFbo = new Framebuffer();
     combineFbo->attachTexture(combineTexture, GL_COLOR_ATTACHMENT0);
+
+    lensBlurTextureHorizontal = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    lensBlurFboHorizontal = new Framebuffer();
+    lensBlurFboHorizontal->attachTexture(lensBlurTextureHorizontal, GL_COLOR_ATTACHMENT0);
+
+    lensBlurTextureVertical = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    lensBlurFboVertical = new Framebuffer();
+    lensBlurFboVertical->attachTexture(lensBlurTextureVertical, GL_COLOR_ATTACHMENT0);
 
 }
 
@@ -165,6 +174,10 @@ void Renderer::destroyFbos()
 
     delete combineFbo;
     delete combineTexture;
+}
+
+void Renderer::setCommonUniforms(ShaderProgram * sp)
+{
 }
 
 Renderer::~Renderer()
@@ -211,14 +224,17 @@ void Renderer::draw(Camera *camera)
     Game::instance->world->setUniforms(Game::instance->shaders->materialShader, camera);
     Game::instance->world->setSceneUniforms();
     Game::instance->world->draw(Game::instance->shaders->materialShader, camera);
+    mrtDistanceTexture->generateMipMaps();
     if (useAmbientOcclusion) {
         ambientOcclusion();
     }
     deferred();
     ambientLight();
-    //atmScatt();
+    atmScatt();
     clouds();
+    fog();
     combine();
+    lensBlur();
 }
 
 void Renderer::bloom()
@@ -238,7 +254,8 @@ void Renderer::combine()
         cloudsTextureOdd->use(18);
     else
         cloudsTextureEven->use(18);
-    atmScattTexture->use(22);
+    atmScattTexture->use(19);
+    fogTexture->use(20);
     FrustumCone *cone = currentCamera->cone;
     //   outputShader->setUniform("VPMatrix", vpmatrix);
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
@@ -283,7 +300,7 @@ void Renderer::combine()
 void Renderer::fxaaTonemap()
 {
     fxaaTonemapShader->use();
-    combineTexture->use(16);
+    lensBlurTextureVertical->use(16);
     FrustumCone *cone = currentCamera->cone;
     fxaaTonemapShader->setUniform("Resolution", glm::vec2(width, height));
     fxaaTonemapShader->setUniform("CameraPosition", currentCamera->transformation->position);
@@ -295,6 +312,29 @@ void Renderer::fxaaTonemap()
     quad3dInfo->draw();
 
     Game::instance->firstFullDrawFinished = true;
+}
+    
+void Renderer::lensBlur()
+{
+    lensBlurShader->use();
+    mrtDistanceTexture->use(2);
+    FrustumCone *cone = currentCamera->cone;
+    lensBlurShader->setUniform("Resolution", glm::vec2(width, height));
+    lensBlurShader->setUniform("CameraPosition", currentCamera->transformation->position);
+    lensBlurShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
+    lensBlurShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
+    lensBlurShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
+    lensBlurShader->setUniform("Time", Game::instance->time);
+
+  //  lensBlurFboHorizontal->use(true);
+    combineTexture->use(16);
+   // lensBlurShader->setUniform("Pass", 0);
+   // quad3dInfo->draw();
+
+    lensBlurFboVertical->use(true);
+  //  lensBlurTextureHorizontal->use(16);
+ //   lensBlurShader->setUniform("Pass", 1);
+    quad3dInfo->draw();
 }
 
 void Renderer::output()
@@ -310,7 +350,9 @@ void Renderer::recompileShaders()
     envProbesShader->recompile();
     cloudsShader->recompile();
     atmScattShader->recompile();
+    fogShader->recompile();
     combineShader->recompile();
+    lensBlurShader->recompile();
     fxaaTonemapShader->recompile();
 }
 
@@ -419,39 +461,85 @@ void Renderer::ambientOcclusion()
 
 void Renderer::fog()
 {
+
+    fogFbo->use(true);
+    fogShader->use();
+    mrtDistanceTexture->use(2);
+    skyboxTexture->use(3);
+    deferredTexture->use(5);
+    ambientLightTexture->use(6);
+    ambientOcclusionTexture->use(16);
+    if (!cloudCycleUseOdd)
+        cloudsTextureOdd->use(18);
+    else
+        cloudsTextureEven->use(18);
+    atmScattTexture->use(19);
+    FrustumCone *cone = currentCamera->cone;
+    //   outputShader->setUniform("VPMatrix", vpmatrix);
+    glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
+    fogShader->setUniform("VPMatrix", vpmatrix);
+    fogShader->setUniform("UseAO", useAmbientOcclusion);
+    fogShader->setUniform("UseGamma", useGammaCorrection);
+    fogShader->setUniform("Resolution", glm::vec2(width, height));
+    fogShader->setUniform("CameraPosition", currentCamera->transformation->position);
+    fogShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
+    fogShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
+    fogShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
+    double t = glfwGetTime();
+    double t100 = t * 100.0;
+    double t001 = t * 0.001;
+    fogShader->setUniform("Time", (float)t);
+    fogShader->setUniform("T100", (float)t100);
+    fogShader->setUniform("T001", (float)t001);
+
+    fogShader->setUniform("CloudsFloor", cloudsFloor);
+    fogShader->setUniform("CloudsCeil", cloudsCeil);
+    fogShader->setUniform("CloudsThresholdLow", cloudsThresholdLow);
+    fogShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
+    fogShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
+    fogShader->setUniform("CloudsOffset", cloudsOffset);
+    fogShader->setUniform("SunDirection", sunDirection);
+    fogShader->setUniform("AtmosphereScale", atmosphereScale);
+    fogShader->setUniform("CloudsDensityScale", cloudsDensityScale);
+    fogShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
+    fogShader->setUniform("CloudsDensityThresholdHigh", cloudsDensityThresholdHigh);
+    fogShader->setUniform("WaterWavesScale", waterWavesScale);
+    fogShader->setUniform("NoiseOctave1", noiseOctave1);
+    fogShader->setUniform("NoiseOctave2", noiseOctave2);
+    fogShader->setUniform("NoiseOctave3", noiseOctave3);
+    fogShader->setUniform("NoiseOctave4", noiseOctave4);
+    fogShader->setUniform("NoiseOctave5", noiseOctave5);
+    fogShader->setUniform("NoiseOctave6", noiseOctave6);
+    fogShader->setUniform("NoiseOctave7", noiseOctave7);
+    fogShader->setUniform("NoiseOctave8", noiseOctave8);
+    csm->setUniformsAndBindSampler(fogShader, 24);
+    quad3dInfo->draw();
 }
 
 void Renderer::atmScatt()
 {
     glDisable(GL_BLEND);
-    FrustumCone *cone = currentCamera->cone;
-    glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
-
-
     atmScattShader->use();
-    atmScattShader->setUniform("VPMatrix", vpmatrix);
-    atmScattShader->setUniform("Resolution", glm::vec2(width, height));
-    atmScattShader->setUniform("CameraPosition", currentCamera->transformation->position);
-    atmScattShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
-    atmScattShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-    atmScattShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
     atmScattShader->setUniform("Time", Game::instance->time);
-    atmScattShader->setUniform("CloudsFloor", cloudsFloor);
-    atmScattShader->setUniform("CloudsCeil", cloudsCeil);
-    atmScattShader->setUniform("CloudsThresholdLow", cloudsThresholdLow);
-    atmScattShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
-    atmScattShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
-    atmScattShader->setUniform("CloudsOffset", cloudsOffset);
     atmScattShader->setUniform("SunDirection", sunDirection);
-    atmScattShader->setUniform("AtmosphereScale", atmosphereScale);
-    atmScattShader->setUniform("CloudsDensityScale", cloudsDensityScale);
-    atmScattShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
-    atmScattShader->setUniform("CloudsDensityThresholdHigh", cloudsDensityThresholdHigh);
-    atmScattShader->setUniform("WaterWavesScale", waterWavesScale);
+    atmScattShader->setUniform("Resolution", glm::vec2(atmScattTexture->width, atmScattTexture->height));
 
-    atmScattFbo->use(true);
-
-    quad3dInfo->draw();
+    atmScattFbo->use(false);
+    for (int i = 0; i < 6; i++) {
+        Camera* camera = atmScattFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, true);
+        camera->transformation->setPosition(currentCamera->transformation->position);
+        FrustumCone *cone = camera->cone;
+        glm::mat4 vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
+        glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
+        glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
+        camera->cone->update(inverse(rpmatrix));
+        atmScattShader->setUniform("VPMatrix", vpmatrix);
+        atmScattShader->setUniform("CameraPosition", camera->transformation->position);
+        atmScattShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
+        atmScattShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
+        atmScattShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
+        quad3dInfo->draw();
+    }
 
     atmScattTexture->generateMipMaps();
 }

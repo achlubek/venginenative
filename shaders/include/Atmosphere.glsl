@@ -38,7 +38,8 @@ uniform float Rand2;
 
 
 layout(binding = 18) uniform samplerCube cloudsCloudsTex;
-layout(binding = 22) uniform sampler2D atmScattTex;
+layout(binding = 19) uniform samplerCube atmScattTex;
+//layout(binding = 22) uniform sampler2D atmScattTex;
 layout(binding = 20) uniform sampler2D cloudsRefShadowTex;
 
 #include Shade.glsl
@@ -132,14 +133,10 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
 
 vec3 sun(vec3 camdir, vec3 sundir, float gloss){
     float dt = max(0, dot(camdir, sundir));
-    vec3 var1 = 11.0 * mix(
-    pow(dt*dt*dt*dt*dt, 27.0 ) * vec3(3.0),  
-    pow(dt*dt*dt*dt*dt, 412.0) * vec3(9),  
-    gloss );
-    return var1;
+    return pow(dt*dt*dt*dt*dt, clamp(256.0 * gloss , 44.0, 412.0)) * vec3(113.0 * gloss);
 }
 
-vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
+vec3 getAtmosphereForDirectionRealX(vec3 origin, vec3 dir, vec3 sunpos){
     return atmosphere(
         dir,           // normalized ray direction
         vec3(0,planetradius  ,0)+ origin,               // ray origin
@@ -154,8 +151,11 @@ vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
         0.758                           // Mie preferred scattering direction
     );
 }
-vec3 getAtmosphereForDirection(vec3 origin, vec3 dir, vec3 sunpos, float r){
-    return getAtmosphereForDirectionReal(origin, dir, sunpos);
+vec3 getAtmosphereForDirection(vec3 dir, float roughness){
+    float levels = max(0, float(textureQueryLevels(atmScattTex)));
+    float mx = log2(roughness*1024.0+1.0)/log2(1024.0);
+    float mlvel = mx * levels;
+    return textureLod(atmScattTex, dir, mlvel).rgb;
 }
 
 float hash( float n ){

@@ -158,3 +158,17 @@ bool ignoreAtt
     roughness,
     albedo) * att;
 }
+
+vec3 shadeInvariantGI(
+vec3 camera,
+vec3 albedo, 
+vec3 fragmentPosition, 
+vec3 lightPosition, 
+vec3 lightColor
+){
+    vec3 lightRelativeToVPos =normalize( lightPosition - fragmentPosition);
+    
+    vec3 cameraRelativeToVPos = -normalize(fragmentPosition - camera);
+    float att = CalculateFallof(distance(fragmentPosition, lightPosition));
+    return albedo * lightColor * att;
+}
