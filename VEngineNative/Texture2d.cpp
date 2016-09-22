@@ -60,6 +60,16 @@ void Texture2d::generateMipMaps()
     glGenerateMipmap(GL_TEXTURE_2D);
 }
 
+void Texture2d::setWrapModes(GLuint s, GLuint t)
+{
+    if (!generated) {
+        generate();
+    }
+    glBindTexture(GL_TEXTURE_2D, handle);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, s);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, t);
+}
+
 void Texture2d::use(int unit)
 {
     if (!generated) {

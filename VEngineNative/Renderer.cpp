@@ -93,7 +93,7 @@ void Renderer::initializeFbos()
     mrtFbo->attachTexture(mrtNormalMetalnessTex, GL_COLOR_ATTACHMENT1);
     mrtFbo->attachTexture(mrtDistanceTexture, GL_COLOR_ATTACHMENT2);
     mrtFbo->attachTexture(depthTexture, GL_DEPTH_ATTACHMENT);
-
+    
     deferredTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     deferredFbo = new Framebuffer();
     deferredFbo->attachTexture(deferredTexture, GL_COLOR_ATTACHMENT0);
@@ -252,6 +252,10 @@ void Renderer::draw(Camera *camera)
     if (useAmbientOcclusion) {
         ambientOcclusion();
     }
+    mrtAlbedoRoughnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
+    mrtNormalMetalnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
+    mrtDistanceTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
+    depthTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     deferred();
     ambientLight();
     atmScatt();

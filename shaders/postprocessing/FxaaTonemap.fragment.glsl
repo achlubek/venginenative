@@ -43,6 +43,22 @@ vec3 tonemap(vec3 x){
     return rgb_to_srgb(c);
 }
 
+/*
+float edgeDetect(vec2 uv){
+    vec2 pixel = 1.0 / Resolution;
+    vec2 crs[] = vec2[](
+        vec2(pixel.x, pixel.y),
+        vec2(-pixel.x, pixel.y),
+        vec2(pixel.x, -pixel.y),
+        vec2(-pixel.x, -pixel.y),
+        vec2(pixel.x, 0.0),
+        vec2(0.0, pixel.y),
+        vec2(-pixel.x, 0.0),
+        vec2(0.0, -pixel.y)
+    );
+
+}*/
+
 vec4 shade(){    
     //vec3 color = fxaa(inputTex, UV).rgb;
     vec3 color = fxaa(inputTex, UV).rgb;

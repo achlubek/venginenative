@@ -15,6 +15,7 @@ public:
     void Texture2d::bind(int unit, int level);
     void pregenerate();
     void generateMipMaps();
+    void setWrapModes(GLuint s, GLuint t);
 private:
     bool generated;
     void generate();
