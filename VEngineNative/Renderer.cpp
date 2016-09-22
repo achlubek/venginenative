@@ -32,7 +32,7 @@ Renderer::Renderer(int iwidth, int iheight)
     noiseOctave8 = 1.01;
     cloudsIntegrate = 0.90;
 
-    csm = new CascadeShadowMap(4096, 4096, {16, 64, 256, 768, 4096});
+    csm = new CascadeShadowMap(4096, 4096, {64, 256, 768, 4096, 4096 * 4});
 
     cloudsOffset = glm::vec3(1);
     sunDirection = glm::vec3(0, 1, 0);
