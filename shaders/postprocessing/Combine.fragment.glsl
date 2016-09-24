@@ -230,7 +230,7 @@ float snoise2d(vec2 v)
   return 130.0 * dot(m, g);
 }
 #define noise2XZ(a) (noise2X(a) * 0.5 + 0.5)
-float heightwater(vec2 pos, int s){
+float heightwater(vec2 pos, int s, float timeshift){
     pos *= 0.06;
     pos *= vec2(NoiseOctave2, NoiseOctave3);
     float res = 0.0;
@@ -238,21 +238,19 @@ float heightwater(vec2 pos, int s){
     float wz = 1.0;
     float chop = 1.0;
     float tmod = 94.1;
+    float T = Time + timeshift;
+    float t001 = T * 0.001;
     for(int i=0;i<s;i++){   
-        //vec2 t = vec2(0, tmod * T001);
-        vec2 t = vec2(tmod * T001);
-        res += wz * sin(snoise2d(pos + t.yx) * 2.0 + Time * 3.0 + pos.x);
-      //  res += wz * sin(noise2XZ(pos - t.yx) * 2.0 - Time * 3.0 - pos.x);
+        vec2 t = vec2(tmod * t001);
+        res += wz * sin(snoise2d(pos + t.yx) * 2.0 + T * 3.0 + pos.x);
         w += wz;
-     //  res += wz * ssnoise(vec3(pos, Time)) * 2.0 + Time * 3.0;
-     //  res += wz * ssnoise(vec3(pos, -Time)) * 2.0 - Time * 3.0;
-    //   w += wz * 2.0;
         wz *= 0.4;
         pos *= 1.8;
         tmod *= 1.8;
     }
     return (res / w) * 0.5 + 0.5;// * 0.5 + (sin((noise2X(pos.xx * 0.001) * 0.5 + 0.5) * pos.x*0.01 + Time) * 0.5 + 0.5);
 }
+
 
 vec3 hitpos = vec3(0);
 float hitdistx = 0;
@@ -263,25 +261,25 @@ vec3 normalx(vec3 pos, float e){
     hitpos = pos;
     hitdistx = distance(CameraPosition, pos);
     vec2 ex = vec2(e, 0);
-    vec3 a = vec3(pos.x, heightwater(pos.xz, WATER_SAMPLES_HIGH) * waterdepth, pos.z);    
-    vec3 b = vec3(pos.x + e, heightwater(pos.xz + ex.xy, WATER_SAMPLES_HIGH) * waterdepth, pos.z);
-    vec3 c = vec3(pos.x, heightwater(pos.xz - ex.yx, WATER_SAMPLES_HIGH) * waterdepth, pos.z - e);      
+    vec3 a = vec3(pos.x, heightwater(pos.xz, WATER_SAMPLES_HIGH, 0.0) * waterdepth, pos.z);    
+    vec3 b = vec3(pos.x + e, heightwater(pos.xz + ex.xy, WATER_SAMPLES_HIGH, 0.0) * waterdepth, pos.z);
+    vec3 c = vec3(pos.x, heightwater(pos.xz - ex.yx, WATER_SAMPLES_HIGH, 0.0) * waterdepth, pos.z - e);      
     vec3 normal = (cross(normalize(a-b), normalize(a-c)));
     return normalize(normal).xyz;// + 0.1 * vec3(snoise(normal), snoise(-normal), snoise(normal.zyx)));
 }
 vec3 normalhix(vec3 pos, float e){
     vec2 ex = vec2(e, 0);
-    vec3 a = vec3(pos.x, heightwater(pos.xz, WATER_SAMPLES_HIGH) * waterdepth, pos.z);    
-    vec3 b = vec3(pos.x + e, heightwater(pos.xz + ex.xy, WATER_SAMPLES_HIGH) * waterdepth, pos.z);
-    vec3 c = vec3(pos.x, heightwater(pos.xz - ex.yx, WATER_SAMPLES_HIGH) * waterdepth, pos.z - e);      
+    vec3 a = vec3(pos.x, heightwater(pos.xz, WATER_SAMPLES_HIGH, 0.0) * waterdepth, pos.z);    
+    vec3 b = vec3(pos.x + e, heightwater(pos.xz + ex.xy, WATER_SAMPLES_HIGH, 0.0) * waterdepth, pos.z);
+    vec3 c = vec3(pos.x, heightwater(pos.xz - ex.yx, WATER_SAMPLES_HIGH, 0.0) * waterdepth, pos.z - e);      
     vec3 normal = (cross(normalize(a-b), normalize(a-c)));
     return normalize(normal).xyz;// + 0.1 * vec3(snoise(normal), snoise(-normal), snoise(normal.zyx)));
 }
 vec3 normalxlow(vec3 pos, float e){
     vec2 ex = vec2(e, 0);
-    vec3 a = vec3(pos.x, heightwater(pos.xz, WATER_SAMPLES_LOW) * waterdepth, pos.z);    
-    vec3 b = vec3(pos.x + e, heightwater(pos.xz + ex.xy, WATER_SAMPLES_LOW) * waterdepth, pos.z);
-    vec3 c = vec3(pos.x, heightwater(pos.xz - ex.yx, WATER_SAMPLES_LOW) * waterdepth, pos.z - e);      
+    vec3 a = vec3(pos.x, heightwater(pos.xz, WATER_SAMPLES_LOW, 0.0) * waterdepth, pos.z);    
+    vec3 b = vec3(pos.x + e, heightwater(pos.xz + ex.xy, WATER_SAMPLES_LOW, 0.0) * waterdepth, pos.z);
+    vec3 c = vec3(pos.x, heightwater(pos.xz - ex.yx, WATER_SAMPLES_LOW, 0.0) * waterdepth, pos.z - e);      
     vec3 normal = (cross(normalize(a-b), normalize(a-c))); ;
     return normalize(normal).xyz;// + 0.1 * vec3(snoise(normal), snoise(-normal), snoise(normal.zyx)));
 }
@@ -296,7 +294,7 @@ vec3 raymarchwaterImpl(vec3 upper, vec3 lower, int stepsI){
         vec3 pos = mix(upper, lower, iter + rd);
       //  pos.x += iter * 30.0;
         float dst = distance(pos, CameraPosition);
-        float h = heightwater(pos.xz, WATER_SAMPLES_LOW);
+        float h = heightwater(pos.xz, WATER_SAMPLES_LOW, 0.0);
         if(h > 1.0 - (iter + rd) || dst > maxdist) {
             return normalx(pos, 0.1);
         }
@@ -319,6 +317,17 @@ vec3 raymarchwaterHIGH3(vec3 upper, vec3 lower){
     //hitpos = upper;
     //hitdistx = distance(CameraPosition, hitpos);
     return n;
+}
+
+#define WaterLevel (0.01+ 10.0 * NoiseOctave6)
+
+float underwaterPercentage(vec3 pos){
+    float rf = pos.y;
+    float u1 = max(0.0, heightwater(pos.xz, WATER_SAMPLES_LOW, -0.2) * waterdepth + WaterLevel - rf);
+    float u2 = max(0.0, heightwater(pos.xz, WATER_SAMPLES_LOW, -0.8) * waterdepth + WaterLevel - rf);
+    float u3 = max(0.0, heightwater(pos.xz, WATER_SAMPLES_LOW, -1.6) * waterdepth + WaterLevel - rf);
+    float u4 = max(0.0, heightwater(pos.xz, WATER_SAMPLES_LOW, -2.8) * waterdepth + WaterLevel - rf);
+    return max(0.0, 1.0 - (u1 + u2 * 0.75 + u3 * 0.5 + u4 * 0.33) * 1.8);
 }
 
 #define LOD3 422.0
@@ -536,8 +545,39 @@ vec3 MMAL(PostProceessingData data){
     
 }
 
-#define WaterLevel (0.01+ 10.0 * NoiseOctave6)
+float causs(vec2 sp){
+	vec2 p = sp*6.0 - vec2(125.0);
+	vec2 i = p;
+	float c = 1.0;
+	float cc = fract(1.);
+	int ccc = int(cc);
+	
+	float inten = 0.01;
+	
+		for (int n = 0; n < 4; n++) 
+		{
+			float t = Time * 0.2* (0.05 - (3.0 / float(n+1)));
+			i = p + vec2(cos(t - i.x) + sin(t + i.y), sin(t - i.y) + cos(t + i.x));
+			c += 1.0/length(vec2(p.x / (sin(i.x+t)/inten),p.y / (cos(i.y+t)/inten)));
+		}
+			c /= float(4);
+			c = 1.5-sqrt(c);
+	return c*c*c;
+}
+
 vec3 cloudsbydir(vec3 dir){
+    bool underwater = CameraPosition.y < WaterLevel || WaterLevel + waterdepth * heightwater(CameraPosition.xz, WATER_SAMPLES_LOW, 0.0) > CameraPosition.y;   
+    
+    float planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
+    vec2 uvX = UV;
+    if(underwater){
+        float dst = planethit > 0.0 ? min(planethit, currentData.cameraDistance) : currentData.cameraDistance;
+        dst = dst == 0.0 ? 99999.0 : dst;
+        uvX = uvX + vec2(snoise2d(uvX * 3.0 + Time * 0.2), snoise2d(uvX.yx * 3.0 + Time * 0.2)) * min(0.006, dst * 0.0001);
+        currentData = loadData(uvX);      
+        dir = reconstructCameraSpaceDistance(uvX, 1.0);
+        planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
+   }
     float dst = 0;
     float roughness = 0.0;
     vec3 basewaterclor = vec3(0);
@@ -550,19 +590,16 @@ vec3 cloudsbydir(vec3 dir){
     float cwpgi = 0;//CSMQueryVisibilityGI(currentData.worldPos) * 0.1 * diminisher * diminisher;
     float ln = length(currentData.normal);
     float fresnel = ln < 0.01 ? 1.0 : 0.0;
-    vec2 uvX = UV;
     float whites = (0);
     float doatmscatter = 1.0 ;
    //defres += getAtmosphereForDirection(currentData.worldPos, currentData.normal, normalize(SunDirection), currentData.roughness) * 0.5 * currentData.diffuseColor;
     Sphere planet0 = Sphere(vec3(0), planetradius + waterdepth + WaterLevel);
     vec3 atmorg = vec3(0, planetradius, 0) + CameraPosition;  
     Ray r = Ray(atmorg, dir);
-    float planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
     float shadowwater = 0.0;
     float hitdepth = 0.0;
     bool underwaterRoughness = false;
     float adf = 0.0;
-    bool underwater = CameraPosition.y < WaterLevel || heightwater(CameraPosition.xz, WATER_SAMPLES_LOW) > CameraPosition.y;
     vec3 refr;
     float caustistics = 1.0;
     if(intersects(planethit)){ 
@@ -642,11 +679,7 @@ vec3 cloudsbydir(vec3 dir){
            fresnel = 0.0;
         } else {
            underwaterRoughness = true;
-            float causshit = intersectPlane(currentData.worldPos, normalize(SunDirection), vec3(0.0, WaterLevel + waterdepth, 0.0), vec3(0.0, -1.0, 0.0));
-            vec3 poscauss = currentData.worldPos + normalize(SunDirection) * causshit;
-            vec3 ncauss = normalhix(poscauss.xyz, 0.5);
-            vec3 refcauss = refract(-normalize(SunDirection), ncauss, 0.66);
-            caustistics = (1.0 - pow(dot(ncauss, vec3(0,1,0)), 12.0)) * 2.0;
+            
            // return vec3(caustistics);
        }
        // defres = texture(directTex, uv).rgb + texture(alTex, uv).rgb * (UseAO == 1 ? texture(aoxTex, uv).r : 1.0);
@@ -673,14 +706,40 @@ vec3 cloudsbydir(vec3 dir){
         currentData.roughness = 1.0;
    }
    
-    float cwp = CSMQueryVisibility(currentData.worldPos) * (1.0 + max(0, caustistics));
+   if(underwater || underwaterRoughness){
+    float causshit = intersectPlane(currentData.worldPos, normalize(SunDirection), vec3(0.0, WaterLevel + waterdepth, 0.0), vec3(0.0, -1.0, 0.0));
+    vec3 poscauss = currentData.worldPos + normalize(SunDirection) * causshit;
+    vec3 ncauss = normalhix(poscauss.xyz, 0.5);
+    vec3 refcauss = refract(-normalize(SunDirection), ncauss, 0.66);
+    float dt = pow(dot(-refcauss, normalize(SunDirection)), 156.0);
+    caustistics = pow(mix(1.0, causs(poscauss.xz * 0.01), min(1.0, WaterWavesScale)), 3.0) * (1.0 / (1.0 + causshit / NoiseOctave7 * 0.1));
+    //return caustistics * vec3(1);
+   }
+
+   
+    float cwp = CSMQueryVisibility(currentData.worldPos) * (max(0, caustistics));
     //return cwp * vec3(1);
     //return MakeShading(currentData) * vec3(1);
    // return MakeShading(currentData) * cwp;
    // spaghetti incoming
     vec3 defres = ln < 0.01 ? vec3(0) : (texture(directTex, uvX).rgb + texture(alTex, uvX).rgb * (UseAO == 1 ? texture(aoxTex, uvX).r : 1.0) + MakeShading(currentData) * cwp + currentData.diffuseColor * 0.009 * litcolor2 * (UseAO == 1 ? texture(aoxTex, uvX).r : 1.0));
     
-    defres = (1.0 - fresnel) * mix(vec3(0.0, 0.76, 0.55) * 0.1 * max(0, normalize(SunDirection).y * 0.9), defres, ln > 0.01 ? (1.0 - smoothstep(0.0, 33.0 * NoiseOctave7, hitdepth)) : 0.0);
+    vec3 mixing = vec3(
+        1.0 - smoothstep(0.0, 93.0 * NoiseOctave7, sign(hitdepth) * pow(hitdepth, 1.4)),
+        1.0 - smoothstep(0.0, 93.0 * NoiseOctave7, sign(hitdepth) * pow(hitdepth, 1.3)),
+        1.0 - smoothstep(0.0, 93.0 * NoiseOctave7, sign(hitdepth) * pow(hitdepth, 1.2))
+    );
+    /*
+    if(underwater) {
+        float dst = planethit > 0 ? min(currentData.cameraDistance, planethit) : currentData.cameraDistance;
+        mixing = vec3(
+            1.0 - smoothstep(0.0, 33.0 * NoiseOctave7, sign(dst) * pow(dst, 1.4)),
+            1.0 - smoothstep(0.0, 33.0 * NoiseOctave7, sign(dst) * pow(dst, 1.2)),
+            1.0 - smoothstep(0.0, 33.0 * NoiseOctave7, dst)
+        );
+    }*/
+    
+    if(!underwater) defres = (1.0 - fresnel) * mix(vec3(0.0, 0.76, 0.55) * 0.1 * max(0, normalize(SunDirection).y * 0.9), defres, (ln > 0.01) ? (mixing) : vec3(0.0));
     currentData = loadData(UV);
 
     vec4 cdata = smartblur(dir, roughness).rbga;
@@ -715,6 +774,11 @@ vec3 cloudsbydir(vec3 dir){
     //return cdata.aaa;
     vec3 result = fresnel * mix(scatt, colorcloud, min(1.0, cdata.r * 1.2)) + fresnel * cdata.a * scatcolor;
     result = clamp(result, vec3(0.0), vec3(300.0));
+    
+   // if(underwater) {
+        //result = mix(vec3(0.0, 0.76, 0.55) * 0.1 * max(0, normalize(SunDirection).y * 0.9), result, mixing);
+        
+  //  }
     //return sunx;
    // result += cdata.aaa * atmcolor * fresnel;// + diminisher_absolute * (0.5 * pow(diminisher, 8.0) + 0.5) * litcolor * ((pow(1.0 - diminisher, 24.0)) * 0.9 + 0.1) * pow(cdata.a * 1.0, 2.0);
   //  if(UV.x < 0.5)return cdata.aaa;
@@ -725,22 +789,52 @@ vec3 cloudsbydir(vec3 dir){
    //defres += gimmegodrays(CameraPosition, normalize(reconstructCameraSpaceDistance(UV, 1.0) ));
   // else 
   //return textureLod(fogTex, UV, 0).ggg;
-  if(currentData.cameraDistance == 0) currentData.cameraDistance = min(99999.0, hitdistx);
-  float csdr = currentData.cameraDistance;
-  currentData.cameraDistance = min(currentData.cameraDistance, hitdistx);
   // defres = mix(defres, scatcolor * textureLod(fogTex, UV, 0).r, 1.0 - clamp(textureLod(fogTex, UV, 0).g, 0.0, 1.0));
    //defres = CSMQueryVisibilitySimple(currentData.worldPos) * vec3(1);
    //return result;
    //if(underwater) return vec3(0.1);
+   //if((hitdistx <= 0 && hitdistx > csdr && planethit > 0 && )&& ln > 0.01)defres *= 0.5 + 0.5    * underwaterPercentage(currentData.worldPos);
+   
+    //float uperct = max(0.0, heightwater(currentData.worldPos.xz, WATER_SAMPLES_LOW, -0.2) * waterdepth + WaterLevel - currentData.worldPos.y);
+   // defres *= uperct;
+    
+  if(currentData.cameraDistance == 0) currentData.cameraDistance = min(99999.0, hitdistx);
+  float csdr = currentData.cameraDistance;
+  currentData.cameraDistance = min(currentData.cameraDistance, hitdistx);
    float minshadow = shadowwater * 0.3 + 0.7;
-   if( ln < 0.01) 
-    result = result * minshadow + defres * minshadow;
-   else if(hitdistx > 0 && hitdistx > csdr && ln > 0.01) 
-        result = defres;
-   else if(hitdistx > 0 && hitdistx < csdr && ln > 0.01){
+   //return csdr * vec3(0.001);
+   if(!underwater){
+       if( ln < 0.01) 
         result = result * minshadow + defres * minshadow;
-   } else result = defres;//mix(result, vec3(0.7), ;
-   result = mix(result, (ln < 0.01 && hitdistx <= 0 ? result : vec3(0)) + litcolor * 0.08 * textureLod(fogTex, UV, 0).r, 1.0 - clamp(textureLod(fogTex, UV, 0).g, 0.0, 1.0));
+       else if(hitdistx > 0 && hitdistx > csdr && ln > 0.01) 
+            result = defres;
+       else if(hitdistx > 0 && hitdistx < csdr && ln > 0.01){
+            result = result * minshadow + defres * minshadow;
+       } else result = defres;//mix(result, vec3(0.7), ;
+       result = mix(result, (ln < 0.01 && hitdistx <= 0 ? result : vec3(0)) + litcolor * 0.08 * textureLod(fogTex, UV, 0).r, 1.0 - clamp(textureLod(fogTex, UV, 0).g, 0.0, 1.0));
+   } else {
+   //if(underwater) {
+        float dst = csdr;
+        dst = dst == 0.0 ? 99999.0 : dst;
+        mixing = vec3(
+            1.0 - smoothstep(0.0, 93.0 * NoiseOctave7, sign(dst) * pow(dst, 1.4)),
+            1.0 - smoothstep(0.0, 93.0 * NoiseOctave7, sign(dst) * pow(dst, 1.3)),
+            1.0 - smoothstep(0.0, 93.0 * NoiseOctave7, sign(dst) * pow(dst, 1.2))
+        );
+    //} 
+    //return csdr * vec3(0.001);
+   // return defres + result;
+    return mix(vec3(0.0, 0.76, 0.55) * 0.1 * max(0, normalize(SunDirection).y * 0.9), defres + result, mixing);
+    //return defres + result;
+       if( ln < 0.01) 
+        result = result * minshadow + defres * minshadow;
+       else if(hitdistx > 0 && hitdistx > csdr && ln > 0.01) 
+            result = defres;
+       else if(hitdistx > 0 && hitdistx < csdr && ln > 0.01){
+            result = result * minshadow + defres * minshadow;
+       } else result = defres;//mix(result, vec3(0.7), ;
+       result = mix(result, (ln < 0.01 && hitdistx <= 0 ? result : vec3(0)) + litcolor * 0.08 * textureLod(fogTex, UV, 0).r, 1.0 - clamp(textureLod(fogTex, UV, 0).g, 0.0, 1.0));   
+   }
    return result;
    //return texture(atmScattTex, UV).rgb;
   // return texture(atmScattTex, UV).rgb;
