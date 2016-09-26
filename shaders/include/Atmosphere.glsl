@@ -132,9 +132,10 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
     return max(vec3(0.0), iSun * (pRlh * kRlh * totalRlh + pMie * kMie * totalMie));
 }
 
-vec3 sun(vec3 camdir, vec3 sundir, float gloss){
-    float dt = max(0, dot(camdir, sundir));
-    return pow(dt*dt*dt*dt*dt, clamp(256.0 * gloss , 44.0, 412.0)) * vec3(113.0 * gloss);
+vec3 sun(vec3 dir, vec3 sundir, float gloss, float ansio){
+    float dt = max(0, dot(normalize(mix(dir, dir + vec3(dir.x, sundir.y, dir.z), ansio)), sundir));
+    return pow(dt*dt*dt*dt*dt, clamp(256.0 * gloss , 44.0, 412.0)) * vec3(64.0 * gloss * gloss);
+   // return smoothstep(0.997, 1.0, dt) * vec3(122);
 }
 
 vec3 getAtmosphereForDirectionRealX(vec3 origin, vec3 dir, vec3 sunpos){
@@ -254,24 +255,27 @@ float cloudsDensity3DFBMReal(vec3 pos){
     return init ;
 } 
 */
+
+#define xdnoise(a) ssnoise(a + ssnoise(a * 2.0) * 0.5)
 float hcl = 0.0;
 float cloudsDensity3D(vec3 pos){
-    hcl = smoothstep(CloudsFloor, CloudsCeil, length(vec3(0, planetradius, 0) + pos) - planetradius);
+    hcl = 1.0 - smoothstep(CloudsFloor, CloudsCeil, length(vec3(0, planetradius, 0) + pos) - planetradius);
     pos += (getWind(pos * 0.0005  * WindBigScale) * WindBigPower * 0.3 + getWind(pos * 0.00155  * WindSmallScale) * WindSmallPower * 0.1) * 2000.0 + CloudsOffset * 100.0;
-    float partitions = ssnoise(pos * 0.00001 * vec3(FBMINITSCALE, FBMINITSCALE, FBMINITSCALE));
-    float partitions2 = ssnoise(pos * 0.00004 * vec3(FBMINITSCALE2, FBMINITSCALE2, FBMINITSCALE2));
+    float partitions = xdnoise(pos * 0.00001 * vec3(FBMINITSCALE, FBMINITSCALE, FBMINITSCALE));
+    float partitions2 = xdnoise(pos * 0.00004 * vec3(FBMINITSCALE2, FBMINITSCALE2, FBMINITSCALE2));
+    float aza = smoothstep(0.0, 0.1, hcl) * (1.0 - smoothstep(0.8, 1.0, hcl));
     partitions = (partitions + partitions2) * 0.5;
     float fao1 = FBMO1 * 0.1;
     float fao2 = FBMO2 * 0.1;
-    //float localaberations = mix(1.0, ssnoise(pos * 0.0001 * FBMS1) * fao1 + 1.0 * (1.0 - fao1), hcl);
-    float localaberations = ssnoise(pos * 0.0001 * FBMS1) * fao1 + 1.0 * (1.0 - fao1);
-    //float localaberations2 = mx(1.0, ssnoise(pos * 0.0001 * FBMS1) * fao1 + 1.0 * (1.0 - fao1), hcl);
-    float localaberations2 = ssnoise(pos * 0.0006 * FBMS2) * fao2 + 1.0 * (1.0 - fao2);
+    //float localaberations = mix(1.0, xdnoise(pos * 0.0001 * FBMS1) * fao1 + 1.0 * (1.0 - fao1), hcl);
+    float localaberations = xdnoise(pos * 0.0001 * FBMS1) * fao1 + 1.0 * (1.0 - fao1);
+    //float localaberations2 = mx(1.0, xdnoise(pos * 0.0001 * FBMS1) * fao1 + 1.0 * (1.0 - fao1), hcl);
+    float localaberations2 = xdnoise(pos * 0.0006 * FBMS2) * fao2 + 1.0 * (1.0 - fao2);
     float density = partitions * localaberations * localaberations2;
     return smoothstep(
         CloudsThresholdLow,
         CloudsThresholdHigh,
-        density);
+        density * aza);
 } 
 
 float rand2s(vec2 co){
@@ -322,11 +326,12 @@ float intersectplanet(vec3 pos){
     return max(0.0, -sign(hitceil));
 }
 float getAO(vec3 pos){
-    vec3 dir = normalize(normalize(SunDirection) + randdir() * 0.3);
+    vec3 dir = normalize(normalize(SunDirection) + randdir() * 1.03);
     Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
     float hitceil = rsi2(r, sphere2);
     float hitfloor = rsi2(r, sphere1);
-    vec3 posceil = hitfloor < hitceil && hitfloor > 0.0 ? (pos + dir * min(hitfloor, planetradius * 0.01)) : (pos + dir * min(hitceil, planetradius * 0.01));
+    //vec3 posceil = hitfloor < hitceil && hitfloor > 0.0 ? (pos + dir * min(hitfloor, planetradius * 0.01)) : (pos + dir * min(hitceil, planetradius * 0.01));
+    vec3 posceil = pos + dir * min(hitceil, planetradius * 0.01);
     return internalmarchconservativeCoverageOnly(pos, posceil);
 }
 float getSunShadow(vec3 pos){
@@ -392,7 +397,7 @@ vec2 internalmarchconservative(vec3 p1, vec3 p2){
        // godw += coverageinv;
         //depw += coverageinv;
         coverageinv -= clouds;
-        depr += coverageinv * distance(lastpos, pos);
+        depr += step(0.99, coverageinv) * distance(lastpos, pos);
         if(coverageinv <= 0.0) break;
         lastpos = pos;
         iter += stepsize;

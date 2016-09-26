@@ -15,7 +15,7 @@ vec4 shade(){
     if(RenderPass == 0){
         vec2 lastData = texture(cloudsCloudsTex, dir).rg;
         vec2 val = raymarchCloudsRay();
-        val = mix(val, lastData, CloudsIntegrate);
+        val.r = mix(val.r, lastData.r, CloudsIntegrate);
         ret.rg = val;
     } else if(RenderPass == 1){
         float lastData = texture(cloudsCloudsTex, dir).r;

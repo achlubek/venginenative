@@ -4,11 +4,11 @@ roughness 1.0
 metalness 0.0
 
 node
-texture colorchecker.jpg
+texture kingston_a.png
 mix REPLACE
 target DIFFUSE
 modifier LINEARIZE
-uvscale 240.0
+uvscale 1.0
 
 #node
 #texture ds1n.png
