@@ -17,6 +17,6 @@ vec3 lensblur(vec2 uv){
 
 vec4 shade(){    
     //vec3 color = fxaa(inputTex, UV).rgb;
-    vec3 color = texture(inputTex, UV).rgb;
-    return vec4(color, 1.0);
+    vec3 color = texture(inputTex, UV).rgba;
+    return vec4(color);
 }

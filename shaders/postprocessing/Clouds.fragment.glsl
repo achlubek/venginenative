@@ -11,22 +11,25 @@ uniform int RenderPass;
 vec4 shade(){    
    // if(shouldBreak()) return vec4(0);
     vec3 dir = normalize(reconstructCameraSpaceDistance(UV, 1.0));
-    vec4 ret = vec4(0);
+    vec4 retedg = vec4(0);
+    vec4 retavg = vec4(0);
+    
     if(RenderPass == 0){
         vec2 lastData = texture(cloudsCloudsTex, dir).rg;
         vec2 val = raymarchCloudsRay();
-        val.r = mix(val.r, lastData.r, CloudsIntegrate);
-        ret.rg = val;
+        retedg.rg = vec2(max(val.r, lastData.r), min(val.g, lastData.g));
+        retavg.rg = vec2(mix(val.r, lastData.r, CloudsIntegrate), val.g);
     } else if(RenderPass == 1){
         float lastData = texture(cloudsCloudsTex, dir).r;
         float val = shadows();
-        val = mix(val, lastData, CloudsIntegrate);
-        ret.r = val;
+        retedg.r = min(val, lastData);
+        retavg.r = mix(val, lastData, CloudsIntegrate);
     } else {
         float lastData = texture(cloudsCloudsTex, dir).r;
         float val = skyfog();
-        val = mix(val, lastData, CloudsIntegrate);
-        ret.r = val;
+        retedg.r = min(val, lastData);
+        retavg.r = mix(val, lastData, CloudsIntegrate);
     }
-    return ret;
+
+    return mix(retavg, retedg, CloudsIntegrate * 0.8);
 }

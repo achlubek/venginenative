@@ -229,10 +229,11 @@ float fbm_alu_optimized(vec3 p){
      noise(p * FBMO1 * FBMO2 * FBMO3 * FBMO4) * FBMS4) / (FBMS1 + FBMS2 + FBMS3 + FBMS4);
 }*/
 vec3 getWind(vec3 p){
+    vec3 p2 = p * (noise(p) + 0.5);
     return vec3(
-        noise(p),
-        noise(-p),
-        noise(p.zxy)
+        noise(p2 + noise(p2 * 0.5) * 1.5),
+        noise(-p2 + noise(p2 * 0.5) * 1.5),
+        noise(p2.zxy + noise(p2 * 0.5) * 1.5)
     ) * 2.0 - 1.0;
 }
 /*
@@ -255,8 +256,7 @@ float cloudsDensity3DFBMReal(vec3 pos){
     return init ;
 } 
 */
-
-#define xdnoise(a) ssnoise(a + ssnoise(a * 2.0) * 0.5)
+#define xdnoise(a) ssnoise(a + ssnoise(a * 0.5) * 0.5)
 float hcl = 0.0;
 float cloudsDensity3D(vec3 pos){
     hcl = 1.0 - smoothstep(CloudsFloor, CloudsCeil, length(vec3(0, planetradius, 0) + pos) - planetradius);
@@ -270,7 +270,7 @@ float cloudsDensity3D(vec3 pos){
     //float localaberations = mix(1.0, xdnoise(pos * 0.0001 * FBMS1) * fao1 + 1.0 * (1.0 - fao1), hcl);
     float localaberations = xdnoise(pos * 0.0001 * FBMS1) * fao1 + 1.0 * (1.0 - fao1);
     //float localaberations2 = mx(1.0, xdnoise(pos * 0.0001 * FBMS1) * fao1 + 1.0 * (1.0 - fao1), hcl);
-    float localaberations2 = xdnoise(pos * 0.0006 * FBMS2) * fao2 + 1.0 * (1.0 - fao2);
+    float localaberations2 = xdnoise(pos * 0.001 * FBMS2).x * fao2 + 1.0 * (1.0 - fao2);
     float density = partitions * localaberations * localaberations2;
     return smoothstep(
         CloudsThresholdLow,
@@ -326,7 +326,16 @@ float intersectplanet(vec3 pos){
     return max(0.0, -sign(hitceil));
 }
 float getAO(vec3 pos){
-    vec3 dir = normalize(normalize(SunDirection) + randdir() * 1.03);
+    vec3 dir = normalize(normalize(SunDirection) + randdir() * 2.03);
+    Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
+    float hitceil = rsi2(r, sphere2);
+    float hitfloor = rsi2(r, sphere1);
+    //vec3 posceil = hitfloor < hitceil && hitfloor > 0.0 ? (pos + dir * min(hitfloor, planetradius * 0.01)) : (pos + dir * min(hitceil, planetradius * 0.01));
+    vec3 posceil = pos + dir * min(hitceil, planetradius * 0.01);
+    return internalmarchconservativeCoverageOnly(pos, posceil);
+}
+float getSUN(vec3 pos){
+    vec3 dir = normalize(normalize(SunDirection) + randdir() * 0.7);
     Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
     float hitceil = rsi2(r, sphere2);
     float hitfloor = rsi2(r, sphere1);
@@ -412,7 +421,7 @@ float shadows(){
     vec3 hitman = viewdir * data.g;
     sphere1 = Sphere(vec3(0), planetradius + CloudsFloor);
     sphere2 = Sphere(vec3(0), planetradius + CloudsCeil);
-    return data.r < 0.001 ? 1.0 : getAO(hitman);
+    return data.r < 0.001 ? 1.0 : ((getAO(hitman) + getSUN(hitman)) * 0.5);
 }
 float skyfog(){
     if(NoiseOctave1 <= 0.1) return 0.0;

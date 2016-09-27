@@ -67,13 +67,13 @@ float blurshadows(vec3 dir, float roughness){
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
     float dst = textureLod(cloudsCloudsTex, dir, mlvel).g;
-    float aoc = 0;
-    float centerval = 0.0;
+    float aoc = 1.0;
+    float centerval = textureLod(shadowsTex, dir, mlvel).r;
     float blurrange = 0.01;
     for(int i=0;i<12;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
         float there = textureLod(cloudsCloudsTex, rdp, mlvel).g;
-        float w = clamp(1.0 / (abs(there - dst)*0.001 + 0.01), 0.0, 1.0);
+        float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
         centerval += w * textureLod(shadowsTex, rdp, mlvel).r;
         aoc += w;
     }
@@ -87,8 +87,8 @@ vec4 smartblur(vec3 dir, float roughness){
     float mlvel = mx * levels;
     vec4 ret = vec4(0);
     ret.xy = textureLod(coverageDistTex, dir, mlvel).rg;
-    ret.z = textureLod(shadowsTex, dir, mlvel).r;
-    //ret.z = blurshadows(dir, roughness);
+    //ret.z = textureLod(shadowsTex, dir, mlvel).r;
+    ret.z = blurshadows(dir, roughness);
     ret.w = textureLod(skyfogTex, dir, mlvel).r;
     return ret;
     // return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
@@ -699,6 +699,7 @@ vec3 cloudsbydir(vec3 dir){
         roughness = dst * 0.00009;
         roughness = clamp(roughness, 0.0, 1.0);
         roughness = 1.0 - pow(1.0 - roughness, 2.0);
+        roughness = 0.0;
         dir = normalize(reflect(dir, n));
         dir.y = abs(dir.y);
         dir = mix(dir, reflect(origdir, vec3(0.0, 1.0, 0.0)), roughness);
@@ -841,7 +842,8 @@ vec3 cloudsbydir(vec3 dir){
     
     if(currentData.cameraDistance == 0) currentData.cameraDistance = min(99999.0, hitdistx);
     float csdr = currentData.cameraDistance;
-    currentData.cameraDistance = min(currentData.cameraDistance, hitdistx);
+    if(hitdistx > 0)currentData.cameraDistance = min(currentData.cameraDistance, hitdistx);
+    if(cdata.b > 0)currentData.cameraDistance = min(currentData.cameraDistance, cdata.b);
     float minshadow = shadowwater * 0.3 + 0.7;
     //return csdr * vec3(0.001);
     if(!underwater){
@@ -876,6 +878,7 @@ vec3 cloudsbydir(vec3 dir){
         } else result = defres;//mix(result, vec3(0.7), ;
         result = mix(result, (ln < 0.01 && hitdistx <= 0 ? result : vec3(0)) + litcolor * 0.08 * textureLod(fogTex, UV, 0).r, 1.0 - clamp(textureLod(fogTex, UV, 0).g, 0.0, 1.0));   
     }
+    if(currentData.cameraDistance == 0) currentData.cameraDistance = cdata.b;
     return result;
     //return texture(atmScattTex, UV).rgb;
     // return texture(atmScattTex, UV).rgb;
@@ -900,5 +903,5 @@ vec3 fisheye(){
 
 vec4 shade(){    
     vec3 color = cloudsbydir(fisheye());
-    return vec4( color, currentData.cameraDistance);
+    return vec4( color, currentData.cameraDistance * 0.001);
 }

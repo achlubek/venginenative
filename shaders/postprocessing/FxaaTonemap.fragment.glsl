@@ -31,6 +31,49 @@ float E = 0.02;
 float F = 0.30;
 float W = 11.2;
 
+
+float InputFocalLength = 35.0;
+float LensBlurAmount = 1.00;
+float getAmountForDistance(float focus, float dist){
+
+	float f = InputFocalLength;
+	float d = focus*1000.0; //focal plane in mm
+	float o = dist*1000.0; //depth in mm
+	
+	float fstop = 64.0 / LensBlurAmount;
+	float CoC = 1.0;
+	float a = (o*f)/(o-f); 
+	float b = (d*f)/(d-f); 
+	float c = (d-f)/(d*fstop*CoC); 
+	
+	float blur = abs(a-b)*c;
+	return blur;
+}
+
+vec3 BoKeH(vec2 uv){
+    float focus = texture(inputTex, vec2(0.5, 0.5)).a;
+    float dist = texture(inputTex, uv).a;
+    float amountoriginal = clamp(getAmountForDistance(focus, dist), 0.0, 1.0);
+    float amount = amountoriginal * 0.019;
+    //float amount = getAmountForDistance(focus, dist);
+    //return vec3(amount / 0.005);
+    float stepsize = 6.283185 / 16.0;
+    float ringsize = 1.0 / 6.0;
+    vec3 sum = vec3(0);
+    float weight = 0.0;
+    vec2 ratio = vec2(Resolution.y / Resolution.x, 1.0);
+    for(float x=0.0;x<6.283185;x+=stepsize){
+        for(float y=ringsize;y<1.0;y+=ringsize){
+            vec2 displacement = vec2(sin(x + y * 2.1), cos(x + y * 2.1)) * ratio * (y) * amount;
+            vec3 c = textureLod(inputTex, uv + displacement, 4.0 * amountoriginal).rgb;
+            float w = length(c) + 0.3;
+            sum += w * c;
+            weight += w;
+        }
+    }
+    return sum / weight;
+}
+
 vec3 Uncharted2Tonemap(vec3 x)
 {
    return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
@@ -61,6 +104,7 @@ float edgeDetect(vec2 uv){
 
 vec4 shade(){    
     //vec3 color = fxaa(inputTex, UV).rgb;
-    vec3 color = fxaa(inputTex, UV).rgb;
+   // vec3 color = fxaa(inputTex, UV).rgb;
+    vec3 color = BoKeH(UV);
     return vec4(tonemap(color), 1.0);
 }

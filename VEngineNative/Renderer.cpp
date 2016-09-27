@@ -262,7 +262,7 @@ void Renderer::draw(Camera *camera)
     clouds();
     fog();
     combine();
-    lensBlur();
+   // lensBlur();
 }
 
 void Renderer::bloom()
@@ -330,11 +330,12 @@ void Renderer::combine()
     combineShader->setUniform("NoiseOctave8", noiseOctave8);
     csm->setUniformsAndBindSampler(combineShader, 24);
     quad3dInfo->draw();
+    combineTexture->generateMipMaps();
 }
 void Renderer::fxaaTonemap()
 {
     fxaaTonemapShader->use();
-    lensBlurTextureVertical->use(16);
+    combineTexture->use(16);
     FrustumCone *cone = currentCamera->cone;
     fxaaTonemapShader->setUniform("Resolution", glm::vec2(width, height));
     fxaaTonemapShader->setUniform("CameraPosition", currentCamera->transformation->position);
