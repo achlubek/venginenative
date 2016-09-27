@@ -115,6 +115,7 @@ int main()
         ImGui::SliderFloat("CloudsIntegrate", &Game::instance->renderer->cloudsIntegrate, 0.3f, 0.99f);
         ImGui::SliderFloat3("CloudsOffset", (float*)&Game::instance->renderer->cloudsOffset, -1000.0f, 1000.0f);
         ImGui::SliderFloat3("SunDirection", (float*)&Game::instance->renderer->sunDirection, -1.0f, 1.0f);
+        ImGui::SliderFloat("MieScattering", (float*)&Game::instance->renderer->mieScattCoefficent, 0.0f, 20.0f);
         for (auto i = Game::instance->renderer->cloudsShader->shaderVariables.begin(); i != Game::instance->renderer->cloudsShader->shaderVariables.end(); i++) {
 
             if (i->second->type == SHADER_VARIABLE_TYPE_FLOAT) ImGui::SliderFloat(i->first.c_str(), &i->second->var_float, 0.01f, 10.0f);

@@ -579,24 +579,25 @@ float causs(vec2 sp){
 }
 
 float snoisefractal(vec3 pos){
+    return 0;
     pos *= (snoise(pos * 0.000005) * 0.5 + 0.5) * 0.2 + 0.8;
     float res = (snoise(pos * 0.000001) * 0.5 + 0.5) + 
     (snoise(pos * 0.00032) * 0.5 + 0.5) * 0.5 + 
-    (snoise(pos * 0.000816 + snoise(pos * 0.000916) * 0.3) * 0.5 + 0.5) * 0.25 +
-    (snoise(pos * 0.002816 + snoise(pos * 0.000516) * 0.3) * 0.5 + 0.5) * 0.125 +
-    (snoise(pos * 0.006816 + snoise(pos * 0.000216) * 0.3) * 0.5 + 0.5) * 0.065;
-    return smoothstep(0.66, 0.99, res);
+    (snoise(pos * 0.000816 + snoise(pos * 0.000316) * 0.3) * 0.5 + 0.5) * 0.25 +
+    (snoise(pos * 0.001816 + snoise(pos * 0.000516) * 0.3) * 0.5 + 0.5) * 0.125 +
+    (snoise(pos * 0.003816 + snoise(pos * 0.001216) * 1.3) * 0.5 + 0.5) * 0.065;
+    return smoothstep(0.88, 0.99, res);
 }
 
 // todo make it eye pos dependant 
 float makeUpperLayer(vec3 dir){
-    return 0;
+   // return 0;
     Sphere upperlayer = Sphere(vec3(0), planetradius + 27000.0);
     vec3 atmorg = vec3(0, planetradius, 0) + CameraPosition;  
     Ray r = Ray(atmorg, dir);
     float ulhit = rsi2(r, upperlayer);
     vec3 p = CameraPosition + dir * ulhit;
-    return snoisefractal(p);
+    return snoisefractal(p*0.4);
 }
 
 vec3 cloudsbydir(vec3 dir){
@@ -699,7 +700,7 @@ vec3 cloudsbydir(vec3 dir){
         roughness = dst * 0.00009;
         roughness = clamp(roughness, 0.0, 1.0);
         roughness = 1.0 - pow(1.0 - roughness, 2.0);
-        roughness = 0.0;
+        
         dir = normalize(reflect(dir, n));
         dir.y = abs(dir.y);
         dir = mix(dir, reflect(origdir, vec3(0.0, 1.0, 0.0)), roughness);
@@ -802,7 +803,7 @@ vec3 cloudsbydir(vec3 dir){
     vec3 shadowcolor = mix(aahaha, aahaha, 1.0 - diminisherX);
     vec3 scatcolor = mix(vec3(1.0), atmcolor, 1.0 - diminisher) ;
     vec3 litcolor = mix(vec3(7.0) + dirdirdir * 1.2   , atmcolor * 0.2, pow(1.0 - diminisherX, 3.0));
-    vec3 colorcloud = dmxp * mix(aahaha, litcolor, cdata.g) ;//* (diminisher * 0.3 + 0.7);
+    vec3 colorcloud = dmxp * mix(aahaha* (1.0 / (1.0 + MieScattCoeff * 0.4)), litcolor* (1.0 / (1.0 + MieScattCoeff * 0.4)), cdata.g)  ;//* (diminisher * 0.3 + 0.7);
     
     //    return sun(dir, normalize(SunDirection), 1.0 - roughness );
     // cdata.r = mix(0.0, cdata.r, 1.0 - pow(1.0 - dir.y, 45.0));
@@ -854,7 +855,8 @@ vec3 cloudsbydir(vec3 dir){
         else if(hitdistx > 0 && hitdistx < csdr && ln > 0.01){
             result = result * minshadow + defres * minshadow;
         } else result = defres;//mix(result, vec3(0.7), ;
-        result = mix(result, (ln < 0.01 && hitdistx <= 0 ? result : vec3(0)) + litcolor * 0.08 * textureLod(fogTex, UV, 0).r, 1.0 - clamp(textureLod(fogTex, UV, 0).g, 0.0, 1.0));
+        //result = mix(result, (ln < 0.01 && hitdistx <= 0 ? result : vec3(0)) + litcolor * 0.08 * textureLod(fogTex, UV, 0).r, 1.0 - clamp(textureLod(fogTex, UV, 0).g, 0.0, 1.0));
+        result = mix(result,   textureLod(fogTex, UV, 0).rrr * litcolor * 0.08, 1.0 - clamp(textureLod(fogTex, UV, 0).g, 0.0, 1.0));
     } else {
         //if(underwater) {
         float dst = csdr;
@@ -903,5 +905,5 @@ vec3 fisheye(){
 
 vec4 shade(){    
     vec3 color = cloudsbydir(fisheye());
-    return vec4( color, currentData.cameraDistance * 0.001);
+    return vec4( clamp(color, 0.0, 10.0), currentData.cameraDistance * 0.001);
 }

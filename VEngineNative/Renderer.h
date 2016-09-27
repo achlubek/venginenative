@@ -7,6 +7,7 @@
 #include "Object3dInfo.h";
 #include "Texture3d.h";
 #include "CascadeShadowMap.h";
+#include "ShaderStorageBuffer.h";
 class Renderer
 {
 public:
@@ -37,6 +38,7 @@ public:
     float noiseOctave6;
     float noiseOctave7;
     float noiseOctave8;
+    float mieScattCoefficent;
     float cloudsIntegrate;
     ShaderProgram *cloudsShader;
     glm::vec3 cloudsOffset;
@@ -50,6 +52,10 @@ private:
     void setCommonUniforms(ShaderProgram *  sp);
 
     CascadeShadowMap *csm;
+
+    bool gpuInitialized;
+    ShaderProgram * exposureComputeShader;
+    ShaderStorageBuffer * exposureBuffer;
 
     CubeMapTexture *skyboxTexture;
     Object3dInfo *quad3dInfo;

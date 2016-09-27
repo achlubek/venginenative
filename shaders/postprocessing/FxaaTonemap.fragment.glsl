@@ -78,9 +78,12 @@ vec3 Uncharted2Tonemap(vec3 x)
 {
    return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
 }
-
+layout (std430, binding = 0) buffer R1
+{
+  float Luminence; 
+}; 
 vec3 tonemap(vec3 x){
-    vec3 a = Uncharted2Tonemap(1.0 * x);
+    vec3 a = Uncharted2Tonemap(1.0 * x / Luminence);
     vec3 white = vec3(1.0) / Uncharted2Tonemap(vec3(W));
     vec3 c = a * white;
     return rgb_to_srgb(c);
@@ -103,8 +106,8 @@ float edgeDetect(vec2 uv){
 }*/
 
 vec4 shade(){    
-    //vec3 color = fxaa(inputTex, UV).rgb;
-   // vec3 color = fxaa(inputTex, UV).rgb;
-    vec3 color = BoKeH(UV);
+    vec3 color = fxaa(inputTex, UV).rgb;
+   // vec3 color = textureLod(inputTex, UV, float(textureQueryLevels(inputTex) - 2.0)).rgb;
+    //vec3 color = BoKeH(UV);
     return vec4(tonemap(color), 1.0);
 }

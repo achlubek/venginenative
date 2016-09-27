@@ -31,6 +31,8 @@ Renderer::Renderer(int iwidth, int iheight)
     noiseOctave7 = 1.01;
     noiseOctave8 = 1.01;
     cloudsIntegrate = 0.90;
+    mieScattCoefficent = 1.0;
+    gpuInitialized = false;
 
     csm = new CascadeShadowMap(4096, 4096, {64, 256, 768, 4096, 4096 * 4});
 
@@ -69,6 +71,8 @@ Renderer::Renderer(int iwidth, int iheight)
     bloomShader = new ShaderProgram("PostProcess.vertex.glsl", "Bloom.fragment.glsl");
     combineShader = new ShaderProgram("PostProcess.vertex.glsl", "Combine.fragment.glsl");
     fxaaTonemapShader = new ShaderProgram("PostProcess.vertex.glsl", "FxaaTonemap.fragment.glsl");
+    exposureComputeShader = new ShaderProgram("CalculateExposure.compute.glsl");
+    exposureBuffer = new ShaderStorageBuffer();
 
 
     skyboxTexture = new CubeMapTexture("posx.jpg", "posy.jpg", "posz.jpg", "negx.jpg", "negy.jpg", "negz.jpg");
@@ -242,6 +246,11 @@ void Renderer::renderToFramebuffer(Camera *camera, Framebuffer * fboout)
 
 void Renderer::draw(Camera *camera)
 {
+    if (!gpuInitialized) {
+        float* ones = new float[4] {1.0f, 1.0f, 1.0f, 1.0f};
+        exposureBuffer->mapData(4 * 4, &ones);
+    }
+    gpuInitialized = true;
     csm->map(-sunDirection, camera->transformation->position);
     mrtFbo->use(true);
     Game::instance->world->setUniforms(Game::instance->shaders->materialGeometryShader, camera);
@@ -271,6 +280,9 @@ void Renderer::bloom()
 
 void Renderer::combine()
 {
+    exposureBuffer->use(0);
+    combineTexture->use(16);
+    exposureComputeShader->dispatch(1, 1, 1);
     combineFbo->use(true);
     combineShader->use();
     mrtDistanceTexture->use(2);
@@ -295,6 +307,7 @@ void Renderer::combine()
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
     combineShader->setUniform("VPMatrix", vpmatrix);
     combineShader->setUniform("UseAO", useAmbientOcclusion);
+    combineShader->setUniform("MieScattCoeff", mieScattCoefficent);
     combineShader->setUniform("UseGamma", useGammaCorrection);
     combineShader->setUniform("Resolution", glm::vec2(width, height));
     combineShader->setUniform("CameraPosition", currentCamera->transformation->position);
@@ -335,6 +348,7 @@ void Renderer::combine()
 void Renderer::fxaaTonemap()
 {
     fxaaTonemapShader->use();
+    exposureBuffer->use(0);
     combineTexture->use(16);
     FrustumCone *cone = currentCamera->cone;
     fxaaTonemapShader->setUniform("Resolution", glm::vec2(width, height));
@@ -345,6 +359,7 @@ void Renderer::fxaaTonemap()
     fxaaTonemapShader->setUniform("Time", Game::instance->time);
 
     quad3dInfo->draw();
+
 
     Game::instance->firstFullDrawFinished = true;
 }
@@ -389,6 +404,7 @@ void Renderer::recompileShaders()
     combineShader->recompile();
     lensBlurShader->recompile();
     fxaaTonemapShader->recompile();
+    exposureComputeShader->recompile();
 }
 
 void Renderer::deferred()
@@ -558,6 +574,7 @@ void Renderer::atmScatt()
     atmScattShader->setUniform("Time", Game::instance->time);
     atmScattShader->setUniform("SunDirection", sunDirection);
     atmScattShader->setUniform("Resolution", glm::vec2(atmScattTexture->width, atmScattTexture->height));
+    atmScattShader->setUniform("MieScattCoeff", mieScattCoefficent);
 
     atmScattFbo->use(false);
     for (int i = 0; i < 6; i++) {
@@ -599,6 +616,7 @@ void Renderer::clouds()
     cloudsShader->setUniform("Time", Game::instance->time);
     cloudsShader->setUniform("CloudsFloor", cloudsFloor);
     cloudsShader->setUniform("CloudsCeil", cloudsCeil);
+    cloudsShader->setUniform("MieScattCoeff", mieScattCoefficent);
     cloudsShader->setUniform("CloudsThresholdLow", cloudsThresholdLow);
     cloudsShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
     cloudsShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);

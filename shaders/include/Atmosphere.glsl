@@ -23,6 +23,7 @@ uniform float Time;
 uniform float WaterWavesScale;
 uniform float Rand1;
 uniform float Rand2;
+uniform float MieScattCoeff;
 
 #export float FBMO1
 #export float FBMO2
@@ -146,11 +147,11 @@ vec3 getAtmosphereForDirectionRealX(vec3 origin, vec3 dir, vec3 sunpos){
         64.0,                           // intensity of the sun
         planetradius,                         // radius of the planet in meters
         6471e3,                         // radius of the atmosphere in meters
-        vec3(2.5e-6, 6.0e-6, 22.4e-6), // Rayleigh scattering coefficient
+        vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
         21e-6,                          // Mie scattering coefficient
         5e3,                            // Rayleigh scale height
-        1.2e3,                          // Mie scale height
-        0.758                           // Mie preferred scattering direction
+        1.2e3 * MieScattCoeff,                          // Mie scale height
+        0.1758                           // Mie preferred scattering direction
     );
 }
 vec3 getAtmosphereForDirection(vec3 dir, float roughness){

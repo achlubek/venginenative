@@ -152,13 +152,13 @@ vec2 tracegodrays(vec3 p1, vec3 p2){
         lastpos = p;
         float xz  = (1.0 - smoothstep(cloudslow, cloudshigh, height));
         float z = mix(noise(p.xyz*0.015 + Time * 0.1), 1.0, pow(xz, 3.0));
-        rays += coverage * (dist * CSMQueryVisibilitySimple(p) + dist * 0.15);
+        rays += coverage * (dist * CSMQueryVisibilitySimple(p) + dist * 0.15) * (1.0 - xz);
         w += coverage;
-        coverage *= 1.0 - max(z * dist * xz * NoiseOctave5 * 0.0004, 0.0);
+        coverage *= 1.0 - max(dist * mix(z, 1.0, xz) * NoiseOctave5 * 0.0004, 0.0);
         if(coverage <= 0.0) break;
         iter += stepsize;
     }
-    return vec2(clamp(rays / w, 0.0, 999.0), clamp(coverage, 0.0, 1.0));
+    return vec2(clamp(rays / w, 0.0, 11.0), clamp(coverage, 0.0, 1.0));
 }
 
 #define waterdepth 1.0 * WaterWavesScale
