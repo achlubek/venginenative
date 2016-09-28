@@ -430,7 +430,7 @@ float skyfog(){
     vec2 data = texture(mainPassTex, viewdir).rg;
     vec3 hitman = viewdir * data.g;
     float iter = 0.0;
-    int stepcount = 14;
+    int stepcount = 3;
     float stepsize = 1.0 / float(stepcount);
     float rd = fract(rand2sTime(UV) + hash(Time)) * stepsize;
     float godr = 0.0;
@@ -444,7 +444,7 @@ float skyfog(){
         iter += stepsize;
         godr += godray(pos) * fulldistinv * 0.0001 * NoiseOctave1;
     }
-    return godr * 0.05;
+    return godr * 0.15;
 }
 
 #define intersects(a) (a >= 0.0)

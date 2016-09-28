@@ -71,6 +71,7 @@ Renderer::Renderer(int iwidth, int iheight)
     bloomShader = new ShaderProgram("PostProcess.vertex.glsl", "Bloom.fragment.glsl");
     combineShader = new ShaderProgram("PostProcess.vertex.glsl", "Combine.fragment.glsl");
     fxaaTonemapShader = new ShaderProgram("PostProcess.vertex.glsl", "FxaaTonemap.fragment.glsl");
+    waterTileShader = new ShaderProgram("PostProcess.vertex.glsl", "WaterTile.fragment.glsl");
     exposureComputeShader = new ShaderProgram("CalculateExposure.compute.glsl");
     exposureBuffer = new ShaderStorageBuffer();
 
@@ -106,6 +107,10 @@ void Renderer::initializeFbos()
     ambientLightFbo = new Framebuffer();
     ambientLightFbo->attachTexture(ambientLightTexture, GL_COLOR_ATTACHMENT0);
 
+    waterTileTexture = new Texture2d(width, height, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    waterTileFbo = new Framebuffer();
+    waterTileFbo->attachTexture(waterTileTexture, GL_COLOR_ATTACHMENT0);
+
     ambientOcclusionTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     ambientOcclusionFbo = new Framebuffer();
     ambientOcclusionFbo->attachTexture(ambientOcclusionTexture, GL_COLOR_ATTACHMENT0);
@@ -126,11 +131,11 @@ void Renderer::initializeFbos()
 
     //
 
-    cloudsShadowsTextureEven = new CubeMapTexture(1024, 1024, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    cloudsShadowsTextureEven = new CubeMapTexture(512, 512, GL_R16F, GL_RED, GL_HALF_FLOAT);
     cloudsShadowsFboEven = new CubeMapFramebuffer();
     cloudsShadowsFboEven->attachTexture(cloudsShadowsTextureEven, GL_COLOR_ATTACHMENT0);
 
-    cloudsShadowsTextureOdd = new CubeMapTexture(1024, 1024, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    cloudsShadowsTextureOdd = new CubeMapTexture(512, 512, GL_R16F, GL_RED, GL_HALF_FLOAT);
     cloudsShadowsFboOdd = new CubeMapFramebuffer();
     cloudsShadowsFboOdd->attachTexture(cloudsShadowsTextureOdd, GL_COLOR_ATTACHMENT0);
 
@@ -267,6 +272,7 @@ void Renderer::draw(Camera *camera)
     depthTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     deferred();
     ambientLight();
+    waterTile();
     atmScatt();
     clouds();
     fog();
@@ -280,6 +286,7 @@ void Renderer::bloom()
 
 void Renderer::combine()
 {
+    waterTileTexture->use(23);
     exposureBuffer->use(0);
     combineTexture->use(16);
     exposureComputeShader->dispatch(1, 1, 1);
@@ -405,6 +412,7 @@ void Renderer::recompileShaders()
     lensBlurShader->recompile();
     fxaaTonemapShader->recompile();
     exposureComputeShader->recompile();
+    waterTileShader->recompile();
 }
 
 void Renderer::deferred()
@@ -488,6 +496,17 @@ void Renderer::ambientLight()
     ambientLightShader->setUniform("Time", Game::instance->time);
     ambientLightShader->setUniform("SunDirection", sunDirection);
     quad3dInfo->draw();
+}
+
+void Renderer::waterTile()
+{
+    waterTileTexture->setWrapModes(GL_REPEAT, GL_REPEAT);
+    waterTileFbo->use(true);
+    waterTileShader->use();
+    waterTileShader->setUniform("Resolution", glm::vec2(width, height));
+    waterTileShader->setUniform("Time", Game::instance->time);
+    quad3dInfo->draw();
+    waterTileTexture->generateMipMaps();
 }
 
 void Renderer::ambientOcclusion()

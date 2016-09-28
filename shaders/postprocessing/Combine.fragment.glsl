@@ -17,6 +17,7 @@ layout(binding = 20) uniform sampler2D fogTex;
 layout(binding = 25) uniform samplerCube coverageDistTex;
 layout(binding = 26) uniform samplerCube shadowsTex;
 layout(binding = 27) uniform samplerCube skyfogTex;
+layout(binding = 23) uniform sampler2D waterTileTex;
 
 uniform int UseAO;
 uniform float T100;
@@ -63,6 +64,7 @@ float roughtomipmap(float roughness, sampler2D txt){
 }
 
 float blurshadows(vec3 dir, float roughness){
+    if(CloudsDensityScale <= 0.010) return 0.0;
     float levels = max(0, float(textureQueryLevels(shadowsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
@@ -70,11 +72,30 @@ float blurshadows(vec3 dir, float roughness){
     float aoc = 1.0;
     float centerval = textureLod(shadowsTex, dir, mlvel).r;
     float blurrange = 0.01;
-    for(int i=0;i<12;i++){
+    for(int i=0;i<7;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
         float there = textureLod(cloudsCloudsTex, rdp, mlvel).g;
         float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
         centerval += w * textureLod(shadowsTex, rdp, mlvel).r;
+        aoc += w;
+    }
+    centerval /= aoc;
+    return centerval;
+}
+float blurskyfog(vec3 dir, float roughness){
+    if(NoiseOctave1 <= 0.010) return 0.0;
+    float levels = max(0, float(textureQueryLevels(skyfogTex)));
+    float mx = log2(roughness*128+1)/log2(128);
+    float mlvel = mx * levels;
+    float dst = textureLod(cloudsCloudsTex, dir, mlvel).g;
+    float aoc = 1.0;
+    float centerval = textureLod(skyfogTex, dir, mlvel).r;
+    float blurrange = 0.08;
+    for(int i=0;i<7;i++){
+        vec3 rdp = normalize(dir + randpoint3() * blurrange);
+        float there = textureLod(cloudsCloudsTex, rdp, mlvel).g;
+        float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
+        centerval += w * textureLod(skyfogTex, rdp, mlvel).r;
         aoc += w;
     }
     centerval /= aoc;
@@ -87,9 +108,10 @@ vec4 smartblur(vec3 dir, float roughness){
     float mlvel = mx * levels;
     vec4 ret = vec4(0);
     ret.xy = textureLod(coverageDistTex, dir, mlvel).rg;
-    //ret.z = textureLod(shadowsTex, dir, mlvel).r;
-    ret.z = blurshadows(dir, roughness);
+    ret.z = textureLod(shadowsTex, dir, mlvel).r;
+    //ret.z = blurshadows(dir, roughness);
     ret.w = textureLod(skyfogTex, dir, mlvel).r;
+    //ret.w = blurskyfog(dir, roughness);
     return ret;
     // return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
     vec4 centervals = textureLod(cloudsCloudsTex, dir, mlvel).rgba;
@@ -251,7 +273,7 @@ float heightwaterX(vec2 pos, int s){
     return res / w * 0.99 + 0.01*(snoise2d(pos) *2.0-1.0);// * 0.5 + (sin((noise2X(pos.xx * 0.001) * 0.5 + 0.5) * pos.x*0.01 + Time) * 0.5 + 0.5);
 }
 #define noise2XZ(a) (noise2X(a) * 0.5 + 0.5)
-float heightwater(vec2 pos, int s){
+float heightwaterZ(vec2 pos, int s){
     pos *= 0.06;
     pos *= vec2(NoiseOctave2, NoiseOctave3);
     float res = 0.0;
@@ -272,12 +294,28 @@ float heightwater(vec2 pos, int s){
     return (res / w) * 0.5 + 0.5;// * 0.5 + (sin((noise2X(pos.xx * 0.001) * 0.5 + 0.5) * pos.x*0.01 + Time) * 0.5 + 0.5);
 }
 
+float waterhitdistance = 1.0;
+mat2 octave_m = mat2(1.6,1.2,-1.2,1.6);
+float octave(vec2 uv, float f){
+    vec2 uv1 = uv * f;
+    float mipmap = log2(1.0 + waterhitdistance) / log2(1.0 + 100.0);
+    return textureLod(waterTileTex, uv1, 0.0).r;
+}
+float heightwater(vec2 uv, int s){
+    uv *= vec2(NoiseOctave2, NoiseOctave3);
+    float h = 0.0;
+  //  h += octave(uv, 0.002) * 0.3;
+    h += octave(uv + Time* 0.1, 0.006) * 0.9;
+    //h += octave(uv + Time* 0.2, 0.02) * 0.1;
+    return h;
+}
+
 
 vec3 hitpos = vec3(0);
 float hitdistx = 0;
 #define waterdepth 1.0 * WaterWavesScale
-#define WATER_SAMPLES_LOW 1
-#define WATER_SAMPLES_HIGH 5
+#define WATER_SAMPLES_LOW 2
+#define WATER_SAMPLES_HIGH 4
 vec3 normalx(vec3 pos, float e){
     hitpos = pos;
     hitdistx = distance(CameraPosition, pos);
@@ -306,6 +344,7 @@ vec3 normalxlow(vec3 pos, float e){
 }
 
 vec3 raymarchwaterImpl(vec3 upper, vec3 lower, int stepsI){
+    return normalx(upper, 0.01);
     float stepsize = 1.0 / stepsI;
     float iter = 0;
     float rdo = rand2s(UV * Time);
@@ -317,7 +356,7 @@ vec3 raymarchwaterImpl(vec3 upper, vec3 lower, int stepsI){
         float dst = distance(pos, CameraPosition);
         float h = heightwater(pos.xz, WATER_SAMPLES_LOW);
         if(h > 1.0 - (iter + rd) || dst > maxdist) {
-            return normalx(pos, 0.1);
+            return normalx(pos, 0.01);
         }
         iter += stepsize;
     }
@@ -640,7 +679,7 @@ vec3 cloudsbydir(vec3 dir){
     float ward = 0.0;
     if(intersects(planethit)){ 
         Ray r = Ray(atmorg, dir);
-        
+        waterhitdistance = planethit;
         Sphere planet1 = Sphere(vec3(0), planetradius + WaterLevel);
         float planethit2 = intersectPlane(CameraPosition, dir, vec3(0.0, WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
         vec3 newpos = CameraPosition + dir * planethit;
@@ -700,7 +739,6 @@ vec3 cloudsbydir(vec3 dir){
         roughness = dst * 0.00009;
         roughness = clamp(roughness, 0.0, 1.0);
         roughness = 1.0 - pow(1.0 - roughness, 2.0);
-        
         dir = normalize(reflect(dir, n));
         dir.y = abs(dir.y);
         dir = mix(dir, reflect(origdir, vec3(0.0, 1.0, 0.0)), roughness);
@@ -802,7 +840,7 @@ vec3 cloudsbydir(vec3 dir){
 
     vec3 shadowcolor = mix(aahaha, aahaha, 1.0 - diminisherX);
     vec3 scatcolor = mix(vec3(1.0), atmcolor, 1.0 - diminisher) ;
-    vec3 litcolor = mix(vec3(7.0) + dirdirdir * 1.2   , atmcolor * 0.2, pow(1.0 - diminisherX, 3.0));
+    vec3 litcolor = mix(vec3(7.0) + dirdirdir * 1.2   , atmcolor * 0.2, pow(1.0 - diminisherX, 7.0));
     vec3 colorcloud = dmxp * mix(aahaha* (1.0 / (1.0 + MieScattCoeff * 0.4)), litcolor* (1.0 / (1.0 + MieScattCoeff * 0.4)), cdata.g)  ;//* (diminisher * 0.3 + 0.7);
     
     //    return sun(dir, normalize(SunDirection), 1.0 - roughness );
@@ -816,7 +854,7 @@ vec3 cloudsbydir(vec3 dir){
     vec3 result = mix(scatt, colorcloud, min(1.0, makeUpperLayer(dir))); 
     result = mix(result, colorcloud*0.8, min(1.0, cdata.r * 1.2));
     result = result * fresnel + fresnel * cdata.a * scatcolor;
-    result = clamp(result, vec3(0.0), vec3(300.0));
+    result = clamp(result * (1.0 / (NoiseOctave1 + 1.0)) + scatcolorsky, vec3(0.0), vec3(300.0));
     
     // if(underwater) {
     //result = mix(vec3(0.0, 0.76, 0.55) * 0.1 * max(0, normalize(SunDirection).y * 0.9), result, mixing);

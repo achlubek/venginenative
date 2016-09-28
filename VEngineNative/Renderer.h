@@ -80,6 +80,11 @@ private:
     Texture2d *ambientLightTexture;
     void ambientLight();
 
+    ShaderProgram *waterTileShader;
+    Framebuffer *waterTileFbo;
+    Texture2d *waterTileTexture;
+    void waterTile();
+
     ShaderProgram *ambientOcclusionShader;
     Framebuffer *ambientOcclusionFbo;
     Texture2d *ambientOcclusionTexture;
