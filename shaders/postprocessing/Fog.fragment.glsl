@@ -2,12 +2,6 @@
 
 #include PostProcessEffectBase.glsl
 
-layout(binding = 24) uniform sampler2DArray CSMTex;
-
-#define MAX_CSM_LAYERS 12
-uniform mat4 CSMVPMatrices[MAX_CSM_LAYERS];
-uniform float CSMRadiuses[MAX_CSM_LAYERS];
-uniform int CSMLayers;
 layout(binding = 3) uniform samplerCube skyboxTex;
 layout(binding = 5) uniform sampler2D directTex;
 layout(binding = 6) uniform sampler2D alTex;
@@ -20,110 +14,7 @@ uniform float T001;
 #define CLOUD_SAMPLES 18
 #define CLOUDCOVERAGE_DENSITY 50    
 #include Atmosphere.glsl
-float hitdistx;
-vec2 projectvdao(vec3 pos){
-    vec4 tmp = (VPMatrix * vec4(pos, 1.0));
-    return (tmp.xy / tmp.w) * 0.5 + 0.5;
-}
-//uniform mat4 CSMPMatrices[MAX_CSM_LAYERS];
-//uniform float CSMFarplanes[MAX_CSM_LAYERS];
-//uniform float CSMRadiuses[MAX_CSM_LAYERS];
-//uniform vec3 CSMCenter;
-//uniform mat4 CSMVMatrix;
-
-vec3 CSMProject(vec3 pos, int layer){
-    vec4 tmp = ((CSMVPMatrices[layer]) * vec4(pos, 1.0));
-    //tmp.xy /= tmp.w;
-    return (tmp.xyz);
-}
-float rdhasha = Time * 0.1;
-vec3 randpointx(){
-    float x = rand2s(UV * rdhasha);
-    rdhasha += 2.1231255;
-    float y = rand2s(UV * rdhasha);
-    rdhasha += 1.6271255;
-    return vec3(x, y, 0.5) * 2.0 - 1.0;
-}
-float blurshadowabit(vec3 uv, float d){
-    float v = 0.0;
-    const float w = 1.0 / 12.0;
-    for(int i=0;i<12;i++){
-        v += smoothstep(0.0, 0.0012, d - texture(CSMTex, uv + randpointx() * 0.00115).r);
-      //  v += 1.0 - max(0, sign(d - texture(CSMTex, uv + randpointx() * 0.00115).r));
-    }
-    return v * w;
-}
-float giscale = 1.0;
-float blurshadowabitGI(vec3 uv, float d){
-    float v = 0.0;
-    const float w = 1.0 / 64.0;
-    for(int i=0;i<64;i++){
-        v += smoothstep(0.0, 0.0012, d - texture(CSMTex, uv + randpointx() * 11.6115 * giscale).r);
-      //  v += 1.0 - max(0, sign(d - texture(CSMTex, uv + randpointx() * 0.00115).r));
-    }
-    return v * w;
-}
-
-float CSMQueryVisibility(vec3 pos){
-//return CSMVPMatrices[0][0].x;
-//return 1.0;
-    for(int i=0;i<CSMLayers;i++) if(distance(pos, CameraPosition) < CSMRadiuses[i]){
-        vec3 csmuv = CSMProject(pos, i);
-       // csmuv.z *= -1;
-        csmuv = csmuv * 0.5 + 0.5;
-        float d = csmuv.z;
-        if(csmuv.x >= 0.0 && csmuv.x < 1.0 && csmuv.y >= 0.0 && csmuv.y < 1.0 && csmuv.z >= 0.0 && csmuv.z < 1.0){
-            return 1.0 - blurshadowabit(vec3(csmuv.x, csmuv.y, float(i)), d);// abs(csmuv.z - texture(CSMTex, csmuv).r) ;
-        }
-    }
-    return 1.0;
-}
-float CSMQueryVisibilityGI(vec3 pos){
-//return CSMVPMatrices[0][0].x;
-//return 1.0;
-    for(int i=0;i<CSMLayers;i++) if(distance(pos, CameraPosition) < CSMRadiuses[i]){
-        vec3 csmuv = CSMProject(pos, i);
-       // csmuv.z *= -1;
-        csmuv = csmuv * 0.5 + 0.5;
-        float d = csmuv.z;
-        if(csmuv.x >= 0.0 && csmuv.x < 1.0 && csmuv.y >= 0.0 && csmuv.y < 1.0 && csmuv.z >= 0.0 && csmuv.z < 1.0){
-            giscale = 1.0 / CSMRadiuses[i];
-            return 1.0 - blurshadowabitGI(vec3(csmuv.x, csmuv.y, float(i)), d);// abs(csmuv.z - texture(CSMTex, csmuv).r) ;
-        }
-    }
-    return 1.0;
-}
-float CSMQueryVisibilitySimple(vec3 pos){
-//return CSMVPMatrices[0][0].x;
-    for(int i=0;i<CSMLayers;i++) if(distance(pos, CameraPosition) < CSMRadiuses[i]){
-        vec3 csmuv = CSMProject(pos, i);
-       // csmuv.z *= -1;
-        csmuv = csmuv * 0.5 + 0.5;
-        float d = csmuv.z;  
-        if(csmuv.x >= 0.0 && csmuv.x < 1.0 && csmuv.y >= 0.0 && csmuv.y < 1.0 && csmuv.z >= 0.0 && csmuv.z < 1.0){
-          //  return 1.0 - blurshadowabit(vec3(csmuv.x, csmuv.y, float(i)), d);// abs(csmuv.z - texture(CSMTex, csmuv).r) ;
-            return 1.0 - max(0, sign(d - texture(CSMTex, vec3(csmuv.x, csmuv.y, float(i))).r - 0.0012));// abs(csmuv.z - texture(CSMTex, csmuv).r) ;
-        }
-    }
-    return 1.0;
-}
-float CSMReconstructDistance(vec3 pos){
-//return CSMVPMatrices[0][0].x;
-    for(int i=0;i<CSMLayers;i++){
-        vec3 csmuv = CSMProject(pos, i);
-       // csmuv.z *= -1;
-        csmuv = csmuv * 0.5 + 0.5;
-        float z = csmuv.z;
-        if(csmuv.x >= 0.0 && csmuv.x < 1.0 && csmuv.y >= 0.0 && csmuv.y < 1.0 && csmuv.z >= 0.0 && csmuv.z < 1.0){
-          float d = texture(CSMTex, vec3(csmuv.x, csmuv.y, float(i))).r;
-          vec4 cp = vec4(csmuv.x, csmuv.y, d, 1.0) * 2.0 - 1.0;
-          vec4 wp = (inverse(CSMVPMatrices[i]) * cp);
-          return distance(wp.xyz / wp.w, pos);
-        }
-    }
-    return 1.0;
-}
-
+#include CSM.glsl
 float rand2sx(vec2 co){
         return fract(sin(dot(co.xy,vec2(12.9898,78.233))) * 43758.5453);
 }
@@ -151,7 +42,7 @@ vec2 tracegodrays(vec3 p1, vec3 p2){
         float height = length(vec3(0, planetradius, 0) + p);
         lastpos = p;
         float xz  = (1.0 - smoothstep(cloudslow, cloudshigh, height));
-        float z = mix(noise(p.xyz*0.015 + Time * 0.1), 1.0, pow(xz, 3.0));
+        float z = mix(noise3d(p.xyz*0.015 + Time * 0.1), 1.0, pow(xz, 3.0));
         rays += coverage * (dist * CSMQueryVisibilitySimple(p) + dist * 0.15) * (1.0 - xz);
         w += coverage;
         coverage *= 1.0 - max(dist * mix(z, 1.0, xz) * NoiseOctave5 * 0.0004, 0.0);
@@ -186,7 +77,7 @@ vec2 gimmegodrays(vec3 o, vec3 d){
     float ceilmaxhit = maxhit;
     float dststart = 0.0;
     float dstend = 0.0;
-    float lim = hitdistx > 0 ? min(currentData.cameraDistance, hitdistx) : currentData.cameraDistance;
+    float lim = currentData.cameraDistance;
     //return lim * 0.1;
     planethit = min(lim , planethit);
     hitfloor = min(lim, hitfloor);
@@ -223,7 +114,7 @@ vec4 shade(){
 //    vec2 pixels = 1.0 / Resolution;
 //    pixels *= 0.5;
  //   currentData = loadData(UV + pixels);
-    if(currentData.cameraDistance < 0.01) currentData.cameraDistance = max(999999.0, hitdistx);
+    if(currentData.cameraDistance < 0.01) currentData.cameraDistance = 999999.0;
     vec2 color = NoiseOctave5 > 0.011 ? (gimmegodrays(CameraPosition, normalize(reconstructCameraSpaceDistance(UV, 1.0) ))) : vec2(0.0, 1.0);
     return vec4( color.x, color.y, 0.0, 1.0);
 }

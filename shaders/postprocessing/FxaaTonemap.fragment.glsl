@@ -51,8 +51,9 @@ float getAmountForDistance(float focus, float dist){
 }
 
 vec3 BoKeH(vec2 uv){
-    float focus = texture(inputTex, vec2(0.5, 0.5)).a;
-    float dist = texture(inputTex, uv).a;
+    float focus = texture(inputTex, vec2(0.5, 0.5)).a * 10.0;
+    float dist = texture(inputTex, uv).a * 10.0;
+    if(dist < focus) dist = focus + abs(dist - focus);
     float amountoriginal = clamp(getAmountForDistance(focus, dist), 0.0, 1.0);
     float amount = amountoriginal * 0.019;
     //float amount = getAmountForDistance(focus, dist);
@@ -106,8 +107,8 @@ float edgeDetect(vec2 uv){
 }*/
 
 vec4 shade(){    
-    vec3 color = fxaa(inputTex, UV).rgb;
+    vec3 color = texture(inputTex, UV).rgb;
    // vec3 color = textureLod(inputTex, UV, float(textureQueryLevels(inputTex) - 2.0)).rgb;
-    //vec3 color = BoKeH(UV);
+   // vec3 color = BoKeH(UV);
     return vec4(tonemap(color), 1.0);
 }

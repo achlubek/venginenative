@@ -1,5 +1,4 @@
-
-#define PI 3.14159265
+#include Constants.glsl
 bool ignoreFalloff = false;
 float CalculateFallof( float dist){
     return 1.0 / (dist * dist * 0.001 + 1.0);

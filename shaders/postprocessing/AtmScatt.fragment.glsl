@@ -1,12 +1,18 @@
 #version 430 core
 
-#include PostProcessEffectBase.glsl
+uniform vec3 SunDirection;
+uniform float MieScattCoeff;
 
-#define CLOUD_SAMPLES 256
-#define CLOUDCOVERAGE_DENSITY 90
-#include Atmosphere.glsl
+#include PostProcessEffectBase.glsl
+#include Constants.glsl
+#include PlanetDefinition.glsl
+#include AtmScattering.glsl
+
 
 vec4 shade(){
-    vec3 val = getAtmosphereForDirectionRealX(CameraPosition, normalize(reconstructCameraSpaceDistance(UV, 1.0)), normalize(SunDirection));
+    vec3 val = getAtmosphereForDirectionReal(
+        CameraPosition, 
+        normalize(reconstructCameraSpaceDistance(UV, 1.0)), 
+        normalize(SunDirection));
     return vec4(val, 0);
 }

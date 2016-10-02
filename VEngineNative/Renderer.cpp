@@ -107,7 +107,7 @@ void Renderer::initializeFbos()
     ambientLightFbo = new Framebuffer();
     ambientLightFbo->attachTexture(ambientLightTexture, GL_COLOR_ATTACHMENT0);
 
-    waterTileTexture = new Texture2d(width, height, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    waterTileTexture = new Texture2d(1024, 1024, GL_R16F, GL_RED, GL_HALF_FLOAT);
     waterTileFbo = new Framebuffer();
     waterTileFbo->attachTexture(waterTileTexture, GL_COLOR_ATTACHMENT0);
 
@@ -500,7 +500,7 @@ void Renderer::ambientLight()
 
 void Renderer::waterTile()
 {
-    waterTileTexture->setWrapModes(GL_REPEAT, GL_REPEAT);
+    waterTileTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     waterTileFbo->use(true);
     waterTileShader->use();
     waterTileShader->setUniform("Resolution", glm::vec2(width, height));

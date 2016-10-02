@@ -9,6 +9,7 @@
 uniform int RenderPass;
 
 vec4 shade(){    
+    return vec3(0,0,0,0);
    // if(shouldBreak()) return vec4(0);
     vec3 dir = normalize(reconstructCameraSpaceDistance(UV, 1.0));
     vec4 retedg = vec4(0);

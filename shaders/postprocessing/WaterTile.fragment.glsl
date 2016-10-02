@@ -38,7 +38,7 @@ float heightwater(vec2 uv) {
     float choppy = 4.0;
     
     float d, h = 0.0;    
-    for(int i = 0; i < 3; i++) {        
+    for(int i = 0; i < 4; i++) {        
     	d = sea_octave((uv+seatime)*freq,choppy);
     	d += sea_octave((uv-seatime)*freq,choppy);
         h += d * amp;        
@@ -53,9 +53,10 @@ vec4 shade(){
     
     vec2 uv = UV;
     float c1 = heightwater(uv);
-    float c2 = heightwater(vec2(uv.x, 1.0 - uv.y));
-    float c3 = heightwater(vec2(1.0 - uv.x, uv.y));
-    float c4 = heightwater(vec2(1.0 - uv.x, 1.0 - uv.y));
-    float color = 0.25 * (c1 + c2 + c3 + c4);
-    return vec4(pow(color, 2.0));
+    //float c2 = heightwater(vec2(uv.x, 1.0 - uv.y));
+    //float c3 = heightwater(vec2(1.0 - uv.x, uv.y));
+    //float c4 = heightwater(vec2(1.0 - uv.x, 1.0 - uv.y));
+    //float color = 0.25 * (c1 + c2 + c3 + c4);
+    float color = c1;
+    return vec4(color*0.25);
 }
