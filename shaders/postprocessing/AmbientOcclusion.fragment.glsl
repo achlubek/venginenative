@@ -311,10 +311,9 @@ vec3 randpoint3(){
     rdhash += 1.6271255;
     float z = rand2s(UV * rdhash);
     rdhash += 1.6271255;
-    return (vec3(x, y, z) * 2.0 - 1.0);
+    return vec3(x * 2.0 - 1.0, y, z * 2.0 - 1.0);
 }
-#define AOSCALE 13.0
-float slowao(){
+float slowao(float AOSCALE){
     float ao = 0.0;
     float d = 0.0;
     float w = 0.001;
@@ -324,7 +323,10 @@ float slowao(){
     float sca = mix(12.0, AOSCALE, currentData.roughness);
     for(int i=0;i<32;i++){
         vec3 p = randpoint3();
-        p *= sign(dot(refdir, p));
+       // p *= sign(dot(refdir, p));
+        //p *= sign(dot(vec3(0.0, 1.0,0.0), p));
+       // p *= sign(dot(refdir, p));
+       // p *= sign(dot(vec3(0.0, 1.0, 0.0), p));
         p = mix(refdir, p, currentData.roughness);
         p *= sca;
         vec2 nuv = projectvdao(currentData.worldPos + p);
@@ -342,8 +344,10 @@ float slowao(){
 
 float AmbientOcclusion(){
     //float ao = AO(currentData.worldPos, currentData.cameraPos, currentData.normal, currentData.roughness, 8.4,3));
-    float ao = slowao();
-    return ao;
+    float ao = slowao(300.0);
+    ao += slowao(200.0);
+    ao += slowao(100.0);
+    return ao * 0.333;
     ao = 1.0 - pow(1.0 - ao, 2.0);
    // ao += AO(currentData.worldPos, currentData.cameraPos, currentData.normal, currentData.roughness, 2.4,4);
     //ao *= 0.5;

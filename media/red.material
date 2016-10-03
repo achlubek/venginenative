@@ -1,14 +1,14 @@
-diffuse 1 0 0
+diffuse 0 1 0
 #diffuse 0.0
 roughness 1.0
 metalness 0.0
 
 node
-texture cuba.png
+texture colorchecker.jpg
 mix REPLACE
 target DIFFUSE
 modifier LINEARIZE
-uvscale 1.0
+uvscale 100.0
 
 #node
 #texture ds1n.png

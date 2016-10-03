@@ -48,10 +48,11 @@ vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
         dir,           // normalized ray direction
         vec3(0,planetradius  ,0)+ origin,               // ray origin
         sunpos,                        // position of the sun
-        64.0,                           // intensity of the sun
+        194.0,                           // intensity of the sun
         planetradius,                         // radius of the planet in meters
         6471e3,                         // radius of the atmosphere in meters
         vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
+      //  vec3(4.5e-6, 10.0e-6, 2.4e-6), // Rayleigh scattering coefficient
         21e-6,                          // Mie scattering coefficient
         5e3,                            // Rayleigh scale height
         1.2e3 * MieScattCoeff,                          // Mie scale height

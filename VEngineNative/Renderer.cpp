@@ -255,7 +255,6 @@ void Renderer::draw(Camera *camera)
         float* ones = new float[4] {1.0f, 1.0f, 1.0f, 1.0f};
         exposureBuffer->mapData(4 * 4, &ones);
     }
-    gpuInitialized = true;
     csm->map(-sunDirection, camera->transformation->position);
     mrtFbo->use(true);
     Game::instance->world->setUniforms(Game::instance->shaders->materialGeometryShader, camera);
@@ -277,6 +276,7 @@ void Renderer::draw(Camera *camera)
     clouds();
     fog();
     combine();
+    gpuInitialized = true;
    // lensBlur();
 }
 
@@ -334,7 +334,7 @@ void Renderer::combine()
     combineShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
     combineShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
     combineShader->setUniform("CloudsOffset", cloudsOffset);
-    combineShader->setUniform("SunDirection", sunDirection);
+    combineShader->setUniform("SunDirection", glm::normalize(sunDirection));
     combineShader->setUniform("AtmosphereScale", atmosphereScale);
     combineShader->setUniform("CloudsDensityScale", cloudsDensityScale);
     combineShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
@@ -417,6 +417,7 @@ void Renderer::recompileShaders()
 
 void Renderer::deferred()
 {
+    if (!gpuInitialized) return;
     vector<Light*> lights = Game::instance->world->scene->getLights();
 
     deferredFbo->use(true);
@@ -494,7 +495,7 @@ void Renderer::ambientLight()
     ambientLightShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
     ambientLightShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
     ambientLightShader->setUniform("Time", Game::instance->time);
-    ambientLightShader->setUniform("SunDirection", sunDirection);
+    ambientLightShader->setUniform("SunDirection", glm::normalize(sunDirection));
     quad3dInfo->draw();
 }
 
@@ -520,7 +521,7 @@ void Renderer::ambientOcclusion()
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
     ambientOcclusionShader->setUniform("VPMatrix", vpmatrix);
     ambientOcclusionShader->setUniform("Resolution", glm::vec2(width, height));
-    ambientOcclusionShader->setUniform("SunDirection", sunDirection);
+    ambientOcclusionShader->setUniform("SunDirection", glm::normalize(sunDirection));
     ambientOcclusionShader->setUniform("CameraPosition", currentCamera->transformation->position);
     ambientOcclusionShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
     ambientOcclusionShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
@@ -568,7 +569,7 @@ void Renderer::fog()
     fogShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
     fogShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
     fogShader->setUniform("CloudsOffset", cloudsOffset);
-    fogShader->setUniform("SunDirection", sunDirection);
+    fogShader->setUniform("SunDirection", glm::normalize(sunDirection));
     fogShader->setUniform("AtmosphereScale", atmosphereScale);
     fogShader->setUniform("CloudsDensityScale", cloudsDensityScale);
     fogShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
@@ -591,7 +592,7 @@ void Renderer::atmScatt()
     glDisable(GL_BLEND);
     atmScattShader->use();
     atmScattShader->setUniform("Time", Game::instance->time);
-    atmScattShader->setUniform("SunDirection", sunDirection);
+    atmScattShader->setUniform("SunDirection", glm::normalize(sunDirection));
     atmScattShader->setUniform("Resolution", glm::vec2(atmScattTexture->width, atmScattTexture->height));
     atmScattShader->setUniform("MieScattCoeff", mieScattCoefficent);
 
@@ -640,7 +641,7 @@ void Renderer::clouds()
     cloudsShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
     cloudsShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
     cloudsShader->setUniform("CloudsOffset", cloudsOffset);
-    cloudsShader->setUniform("SunDirection", sunDirection);
+    cloudsShader->setUniform("SunDirection", glm::normalize(sunDirection));
     cloudsShader->setUniform("AtmosphereScale", atmosphereScale);
     cloudsShader->setUniform("CloudsDensityScale", cloudsDensityScale);
     cloudsShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);

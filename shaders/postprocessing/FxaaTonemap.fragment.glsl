@@ -83,12 +83,29 @@ layout (std430, binding = 0) buffer R1
 {
   float Luminence; 
 }; 
+vec3 tonemapX(vec3 x){
+    x /= Luminence * 1.0;
+    float lumacolor = length(vec3(x.x, x.y, x.z));
+    float lumagray = length(x.x);
+    
+    float mappedgray = x.x*2.0 + x.y *0.5 + x.z * 0.8;
+   // mappedgray /= x.x;
+    
+    vec3 mappedcolor = vec3(log2(x.x + 1.0) / log2(7.0), 
+    log2(x.y + 1.0) / log2(7.0), 
+    log2(x.z + 1.0) / log2(7.0));
+    return mappedcolor;
+    
+    return mix(mappedgray * 0.08 * vec3(0.8, 0.9, 1.0), mappedcolor, pow(min(1.0, lumacolor*4.1), 4.0));
+    
+}
 vec3 tonemap(vec3 x){
-    vec3 a = Uncharted2Tonemap(1.0 * x / Luminence);
+    vec3 a = Uncharted2Tonemap(x / Luminence);
     vec3 white = vec3(1.0) / Uncharted2Tonemap(vec3(W));
     vec3 c = a * white;
     return rgb_to_srgb(c);
 }
+
 
 /*
 float edgeDetect(vec2 uv){
@@ -107,7 +124,7 @@ float edgeDetect(vec2 uv){
 }*/
 
 vec4 shade(){    
-    vec3 color = texture(inputTex, UV).rgb;
+    vec3 color = fxaa(inputTex, UV).rgb;
    // vec3 color = textureLod(inputTex, UV, float(textureQueryLevels(inputTex) - 2.0)).rgb;
    // vec3 color = BoKeH(UV);
     return vec4(tonemap(color), 1.0);
