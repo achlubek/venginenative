@@ -28,6 +28,7 @@ public:
     float cloudsDensityThresholdHigh;
     float cloudsDensityScale;
     float cloudsWindSpeed;
+    float lensBlurSize;
     float atmosphereScale;
     float waterWavesScale;
     float noiseOctave1;

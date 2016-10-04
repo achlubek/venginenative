@@ -33,7 +33,7 @@ int main()
 {
     Media::loadFileMap("../../media");
     Media::loadFileMap("../../shaders");
-    Game *game = new Game(1920, 1080);
+    Game *game = new Game(1280, 720);
     game->start();
     volatile bool ready = false;
     game->invoke([&ready]() {
@@ -110,7 +110,8 @@ int main()
         ImGui::SliderFloat("Noise5", &Game::instance->renderer->noiseOctave5, 0.01f, 400.0f);
         ImGui::SliderFloat("Noise6", &Game::instance->renderer->noiseOctave6, 0.01f, 10.0f);
         ImGui::SliderFloat("Noise7", &Game::instance->renderer->noiseOctave7, 0.01f, 10.0f);
-        ImGui::SliderFloat("Noise8", &Game::instance->renderer->noiseOctave8, 0.01f, 10.0f);
+        ImGui::SliderFloat("LensBlurAmout", &Game::instance->renderer->lensBlurSize, 0.01f, 10.0f);
+        //ImGui::SliderFloat("Noise8", &Game::instance->renderer->noiseOctave8, 0.01f, 10.0f);
 //        ImGui::SliderFloat("RoughnessTerra", &game->world->scene->getMeshes()[0]->getLodLevel(0)->material->roughness, 0.01f, 10.0f);
         ImGui::SliderFloat("CloudsIntegrate", &Game::instance->renderer->cloudsIntegrate, 0.3f, 0.99f);
         ImGui::SliderFloat3("CloudsOffset", (float*)&Game::instance->renderer->cloudsOffset, -1000.0f, 1000.0f);

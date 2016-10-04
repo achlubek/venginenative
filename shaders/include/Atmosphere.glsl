@@ -76,6 +76,7 @@ vec3 getWind(vec3 p){
 float hcl = 0.0;
 float cloudsDensity3D(vec3 pos){
     hcl = 1.0 - smoothstep(CloudsFloor, CloudsCeil, length(vec3(0, planetradius, 0) + pos) - planetradius);
+    pos *= ssnoise(pos * 0.000012) * 2.0 + 0.2;
     pos += (getWind(pos * 0.0005  * WindBigScale) * WindBigPower * 1.3 + getWind(pos * 0.00155  * WindSmallScale) * WindSmallPower * 0.1) * 2000.0 + CloudsOffset * 100.0;
     float partitions = ssnoise(pos * 0.00001 * vec3(FBMINITSCALE, FBMINITSCALE, FBMINITSCALE));
     float partitions2 = ssnoise(pos * 0.00004 * vec3(FBMINITSCALE2, FBMINITSCALE2, FBMINITSCALE2));
@@ -89,8 +90,8 @@ float cloudsDensity3D(vec3 pos){
     float localaberations2 = ssnoise(pos * 0.001 * FBMS2).x * fao2 + 1.0 * (1.0 - fao2);
     float density = partitions * localaberations * localaberations2;
     return smoothstep(
-        CloudsThresholdLow,
-        CloudsThresholdHigh,
+        clamp(ssnoise(pos * 0.000001) , 0.0, 1.0),
+        clamp((ssnoise(pos * 0.000001) + 0.0) , 0.0, 1.0),
         density * aza);
 } 
 

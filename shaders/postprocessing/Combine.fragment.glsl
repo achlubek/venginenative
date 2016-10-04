@@ -141,7 +141,7 @@ float octavescale1 = 0.018;
 float mipmap1 = 0.0;
 float heightwater(vec2 uv, int s){
     uv *= vec2(NoiseOctave2, NoiseOctave3) * octavescale1;
-    return textureLod(waterTileTex, uv, 0.0).r;
+    return textureLod(waterTileTex, uv, mipmap1).r;
 }
 
 
@@ -152,7 +152,6 @@ float hitdist = 0;
 #define WATER_SAMPLES_HIGH 4
 vec3 normalx(vec3 pos, float e){
     hitpos = pos;
-    e = 0.01;
     hitdist = distance(CameraPosition, pos);
     vec2 ex = vec2(e, 0);
     vec3 a = vec3(pos.x, heightwater(pos.xz, WATER_SAMPLES_HIGH) * waterdepth, pos.z);    
@@ -167,14 +166,23 @@ vec3 raymarchwaterImpl(vec3 upper, vec3 lower, int stepsI){
     float stepsize = 1.0 / stepsI;
     float iter = 0;
     float rdo = rand2s(UV * Time);
-    float rd = stepsize * rdo;
-    float maxdist = length(currentData.normal) < 0.07 ? 999998.0 : currentData.cameraDistance;
+    float rd = stepsize * rdo * 1.0;
+    vec3 pos = upper;
+    float h = 0.0;
     for(int i=0;i<stepsI + 1;i++){
-        vec3 pos = mix(upper, lower, iter + rd);
-        //  pos.x += iter * 30.0;
-        float dst = distance(pos, CameraPosition);
-        float h = heightwater(pos.xz, WATER_SAMPLES_LOW);
-        if(h > 1.0 - (iter + rd) || dst > maxdist) {
+        pos = mix(upper, lower, iter);
+        h = heightwater(pos.xz, WATER_SAMPLES_LOW);
+        if(h > 1.0 - (iter )) {
+            iter -= stepsize;
+            stepsize = stepsize / 6.0;
+            for(int g=0;g<6;i++){
+                pos = mix(upper, lower, iter);
+                h = heightwater(pos.xz, WATER_SAMPLES_LOW);
+                if(h > 1.0 - (iter)) {
+                    return normalx(pos, 0.1);
+                }
+                iter += stepsize;
+            }
             return normalx(pos, 0.1);
         }
         iter += stepsize;
@@ -214,12 +222,12 @@ float sun(vec3 dir, vec3 sundir, float gloss, float ansio){
     float dty = 1.0 - max(0, abs(dir.y - sundir.y));
     dt = mix(dt, dt2, ansio);
     //return dt;
-    return pow(dt*dt*dt*dt*dt*dt, 312.0) * 200.0;
+    return pow(dt*dt*dt*dt, 1312.0 * gloss + 11.0) * (200.0 * gloss + 10.0);
    // return smoothstep(0.997, 1.0, dt);
 }
 vec3 shadingWater(PostProceessingData data, vec3 lightDir, vec3 colorA, vec3 colorB){
     float fresnel = getthatfuckingfresnel(0.04, data.normal, normalize(data.cameraPos), 0.0);
-    return sun(data.normal, SunDirection, 1.0, data.roughness) * colorA * fresnel + colorB * (1.0 - fresnel);
+    return sun(data.normal, SunDirection, 1.0 - data.roughness * 0.18, data.roughness) * 50.0 * colorA * fresnel + colorB * (1.0 - fresnel);
 }
 
 vec3 shadingNonMetalic(PostProceessingData data, vec3 lightDir, vec3 color){
@@ -285,8 +293,8 @@ vec3 getDiffuseAtmosphereColor(){
 }
 
 vec3 getSunColor(float roughness){
-    vec3 atm = textureLod(atmScattTex, SunDirection, roughnessToMipmap(roughness, atmScattTex)).rgb * 2.0;
-    return mix(atm  , vec3(12.0), max(0.07, SunDirection.y));
+    vec3 atm = textureLod(atmScattTex, SunDirection, roughnessToMipmap(roughness, atmScattTex)).rgb * 1.0;
+    return mix(atm  , vec3(3.0), max(0.07, SunDirection.y));
 }
 
 vec3 getAtmosphereScattering(vec3 dir, float roughness){
@@ -299,8 +307,8 @@ vec3 shadeColor(PostProceessingData data, vec3 lightdir, vec3 c){
 }
 
 vec3 sampleAtmosphere(vec3 dir, float roughness){
-    vec3 diffuse = getDiffuseAtmosphereColor();
-    vec3 direct = getSunColor(roughness);
+    vec3 diffuse = getDiffuseAtmosphereColor() * SunDirection.y;
+    vec3 direct = getSunColor(roughness) * SunDirection.y;
     vec3 scattering = getAtmosphereScattering(dir, roughness);
     vec4 cloudsData = smartblur(dir, roughness);
     float coverage = cloudsData.r;
@@ -342,30 +350,60 @@ vec3 getLighting(){
         planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
     }
     bool hitwater = intersects(planethit) && (length(currentData.normal) < 0.01 || currentData.cameraDistance > planethit);
-    if(hitwater){ 
-        vec3 newpos = CameraPosition + dir * planethit;
-         
-        vec3 dfX = dFdx(newpos) * 0.25;
-        vec3 dfY = dFdy(newpos) * 0.25;
+    vec3 normal = vec3(0);
+    vec3 newpos = vec3(0);
+    vec3 newpos2 = vec3(0);
+    vec3 dfX = vec3(0);
+    vec3 dfY = vec3(0);
+    float smoothedgemult = 1.0;
+    newpos = CameraPosition + dir * planethit;
+    mipmap1 = textureQueryLod(waterTileTex, newpos.xz * vec2(NoiseOctave2, NoiseOctave3) * octavescale1).x * 0.4;
+    
+    int smoothsteps = 2;
+    float smoothstepsinv = 1.0 / float(smoothsteps);
+    
+    if(hitwater) {
+        vec2 px = 1.0 / Resolution;
         float planethit2 = intersectPlane(CameraPosition, dir, vec3(0.0, WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
-        vec3 newpos2 = CameraPosition + dir * planethit2;
-        vec3 normal = raymarchwater(newpos, newpos2, 1 + int(88.0 * WaterWavesScale));
+        newpos2 = CameraPosition + dir * planethit2;
+        normal = raymarchwater(newpos, newpos2, 1 + int(33.0 * WaterWavesScale));
+        vec3 dr2 = reconstructCameraSpaceDistance(uvX + vec2(px.x, 0.0), 1.0);
+        vec3 dr3 = reconstructCameraSpaceDistance(uvX + vec2(0.0, px.y), 1.0);
+        float plh2 = intersectPlane(CameraPosition, dr2, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
+        float plh3 = intersectPlane(CameraPosition, dr3, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
+        
+        dfX = ((CameraPosition + dr2 * plh2) - newpos) * smoothstepsinv;
+        dfY = ((CameraPosition + dr3 * plh3) - newpos) * smoothstepsinv;
+        if(length(currentData.normal) > 0.01){
+            hitwater = currentData.cameraDistance > hitdist;
+            smoothedgemult = smoothstep(0.0, 1.1, currentData.cameraDistance - hitdist);
+        }
+    }
+
+    if(hitwater){ 
+        float roughness = 0.0;
+        
         float nw = 1.0;
-        for(int x=-2; x <= 2; x++){
-            for(int y=-2; y <= 2; y++){
+        for(int x=-smoothsteps; x <= smoothsteps; x++){
+            for(int y=-smoothsteps; y <= smoothsteps; y++){
                 if(y == 0 && x == 0) continue;
                 normal += normalx(hitpos + dfX * float(x) + dfY * float(y), 0.1);
                 nw += 1.0;
             }
         }
-        normal = normalize(normal / nw);
+        vec3 X = normal / nw;
+        //roughness = clamp(length(dfX) + length(dfY), 0.0, 1.0);
+        roughness = clamp(pow(textureQueryLod(waterTileTex, hitpos.xz * vec2(NoiseOctave2, NoiseOctave3) * octavescale1).x / textureQueryLevels(waterTileTex), 1.0), 0.0, 1.0);
+        normal = normalize(X);
+        
+       // return vec3(roughness);
+    
     
         vec3 origdir = dir;
         dir = reflect(dir, normal);
         dir.y = abs(dir.y);
-        float roughness = planethit * 0.00141 * WaterWavesScale;
-        roughness = clamp(roughness, 0.0, 1.0);
-        roughness = 1.0 - pow(1.0 - roughness, 2.0);
+       // roughness = clamp(roughness, 0.0, 1.0);
+       // roughness = 1.0 - pow(1.0 - roughness, 2.0);
         vec3 worldpos = hitpos;
         float camdist = hitdist;
                 
@@ -379,32 +417,43 @@ vec3 getLighting(){
             worldpos,
             dir * camdist,
             camdist,
-            min(roughness, 0.8),
+            roughness,
             1.0
         );
         vec3 result = vec3(0.0);
         float fresnel = fresnel_again(vec3(0.04), normal, dir, 1.0);
-        
-        result += shadingWater(dataReflection, -SunDirection, getSunColor(0.0), sampleAtmosphere(dir, roughness * 0.02)) * fresnel * 1.0;// + sampleAtmosphere(normal, 0.0) * fresnel;
-        
+                
+        result += smoothedgemult * shadingWater(dataReflection, -SunDirection, getSunColor(0.0), sampleAtmosphere(dir, roughness*0.15)) * fresnel * 1.0;// + sampleAtmosphere(normal, 0.0) * fresnel;
         
         vec3 refr = normalize(refract(dir, normal, 0.15));
         if(length(currentData.normal) < 0.01) currentData.cameraDistance = 299999.0;        
         float hitdepth = currentData.cameraDistance - hitdist;
         vec3 newposrefracted = hitpos + refr * max(2.0, hitdepth*0.1);
         
-       // uvX =  abs(projectvdao(newposrefracted));
         PostProceessingData dataRefracted = loadData(uvX);
         dataRefracted.roughness = 1.0;
+        if(length(dataRefracted.normal) > 0.01) {
+            vec3 mixing = vec3(
+                1.0 - smoothstep(0.0, 93.0 * NoiseOctave7, sign(hitdepth) * pow(hitdepth, 1.2)),
+                1.0 - smoothstep(0.0, 93.0 * NoiseOctave7, sign(hitdepth) * pow(hitdepth, 1.1)),
+                1.0 - smoothstep(0.0, 93.0 * NoiseOctave7, sign(hitdepth) * pow(hitdepth, 1.0))
+            );
+          //  if(dataReflection.cameraDistance < hitdist) mixing = vec3(1.0);
+           // uvX =  abs(projectvdao(newposrefracted));
+            
+            result += mixing * getNormalLighting(uvX, dataRefracted);
+        }
         
-        if(length(dataRefracted.normal) > 0.01) result += getNormalLighting(uvX, dataRefracted);
+        float ssscoeff = mix(0.1, 0.1 + 0.9 * pow(1.0 - distance(hitpos, newpos) / distance(newpos, newpos2), 2.0), clamp(WaterWavesScale * 0.5, 0.0, 1.0));
+       // ssscoeff *= 1.0 - max(0, dot(origdir, -normal));
+        vec3 waterSSScolor = vec3(0.01, 0.49, 0.65) * getDiffuseAtmosphereColor() * 05.2 * (1.0 - fresnel)  * ssscoeff;
+        result += smoothedgemult * waterSSScolor;
         
-        float ssscoeff = mix(0.1, pow(1.0 - distance(hitpos, newpos) / distance(newpos, newpos2), 2.0), clamp(WaterWavesScale * 0.5, 0.0, 1.0));
-        vec3 waterSSScolor = vec3(0.0, 0.76, 0.55) * getDiffuseAtmosphereColor() * 05.2 * (1.0 - fresnel)  * ssscoeff;
-        result += waterSSScolor;
+        currentData.cameraDistance = hitdist;
         
         return result;
     } else {
+        currentData.cameraDistance = length(currentData.normal) < 0.01 ? 999999.0 : currentData.cameraDistance;
         return getNormalLighting(uvX, currentData) + smoothstep(0.9987, 0.999, dot(SunDirection, dir)) * getSunColor(0.0);
     }
 }

@@ -32,6 +32,7 @@ Renderer::Renderer(int iwidth, int iheight)
     noiseOctave8 = 1.01;
     cloudsIntegrate = 0.90;
     mieScattCoefficent = 1.0;
+    lensBlurSize = 1.0;
     gpuInitialized = false;
 
     csm = new CascadeShadowMap(4096, 4096, {64, 256, 768, 4096, 4096 * 4});
@@ -276,8 +277,8 @@ void Renderer::draw(Camera *camera)
     clouds();
     fog();
     combine();
+    lensBlur();
     gpuInitialized = true;
-   // lensBlur();
 }
 
 void Renderer::bloom()
@@ -356,7 +357,7 @@ void Renderer::fxaaTonemap()
 {
     fxaaTonemapShader->use();
     exposureBuffer->use(0);
-    combineTexture->use(16);
+    lensBlurTextureVertical->use(16);
     FrustumCone *cone = currentCamera->cone;
     fxaaTonemapShader->setUniform("Resolution", glm::vec2(width, height));
     fxaaTonemapShader->setUniform("CameraPosition", currentCamera->transformation->position);
@@ -373,25 +374,21 @@ void Renderer::fxaaTonemap()
     
 void Renderer::lensBlur()
 {
+    lensBlurFboVertical->use(true);
     lensBlurShader->use();
     mrtDistanceTexture->use(2);
+    combineTexture->use(16);
     FrustumCone *cone = currentCamera->cone;
     lensBlurShader->setUniform("Resolution", glm::vec2(width, height));
     lensBlurShader->setUniform("CameraPosition", currentCamera->transformation->position);
+    lensBlurShader->setUniform("LensBlurSize", lensBlurSize);
     lensBlurShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
     lensBlurShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
     lensBlurShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
     lensBlurShader->setUniform("Time", Game::instance->time);
 
-  //  lensBlurFboHorizontal->use(true);
-    combineTexture->use(16);
-   // lensBlurShader->setUniform("Pass", 0);
-   // quad3dInfo->draw();
-
-    lensBlurFboVertical->use(true);
-  //  lensBlurTextureHorizontal->use(16);
- //   lensBlurShader->setUniform("Pass", 1);
     quad3dInfo->draw();
+    lensBlurTextureVertical->generateMipMaps();
 }
 
 void Renderer::output()

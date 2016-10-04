@@ -24,5 +24,5 @@ void main(){
         }
     }
     luma = luma / lumaw;
-    Luminence = clamp(mix(Luminence, luma, 0.01), 0.005, 300.0);
+    Luminence = clamp(mix(Luminence, luma, 0.01), 0.005, 100.0);
 }
