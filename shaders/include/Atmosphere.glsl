@@ -76,7 +76,6 @@ vec3 getWind(vec3 p){
 float hcl = 0.0;
 float cloudsDensity3D(vec3 pos){
     hcl = 1.0 - smoothstep(CloudsFloor, CloudsCeil, length(vec3(0, planetradius, 0) + pos) - planetradius);
-    pos *= ssnoise(pos * 0.000012) * 2.0 + 0.2;
     pos += (getWind(pos * 0.0005  * WindBigScale) * WindBigPower * 1.3 + getWind(pos * 0.00155  * WindSmallScale) * WindSmallPower * 0.1) * 2000.0 + CloudsOffset * 100.0;
     float partitions = ssnoise(pos * 0.00001 * vec3(FBMINITSCALE, FBMINITSCALE, FBMINITSCALE));
     float partitions2 = ssnoise(pos * 0.00004 * vec3(FBMINITSCALE2, FBMINITSCALE2, FBMINITSCALE2));
@@ -90,8 +89,8 @@ float cloudsDensity3D(vec3 pos){
     float localaberations2 = ssnoise(pos * 0.001 * FBMS2).x * fao2 + 1.0 * (1.0 - fao2);
     float density = partitions * localaberations * localaberations2;
     return smoothstep(
-        clamp(ssnoise(pos * 0.000001) , 0.0, 1.0),
-        clamp((ssnoise(pos * 0.000001) + 0.0) , 0.0, 1.0),
+        CloudsThresholdLow,
+        CloudsThresholdHigh,
         density * aza);
 } 
 
@@ -106,7 +105,7 @@ float rand2sTime(vec2 co){
 Sphere sphere1;
 Sphere sphere2;
 
-float weightshadow = 1.0;
+float weightshadow = 2.0;
 float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
     float iter = 0.0;
     const int stepcount = 5;
@@ -115,7 +114,7 @@ float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
     float coverageinv = 1.0;
     float linear = distance(p1, mix(p1, p2, stepsize));
     for(int i=0;i<stepcount;i++){
-        iter += stepsize;
+        iter += rd;
         vec3 pos = mix(p1, p2, iter + rd);
         float clouds = cloudsDensity3D(pos);
         coverageinv *= 1.0 - clouds * linear * 0.001 * weightshadow * stepsize * CloudsDensityScale;
@@ -124,7 +123,7 @@ float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
     return  clamp(coverageinv, 0.0, 1.0);
 }
 
-float hash1x = UV.x * UV.y;
+float hash1x = UV.x * UV.y * Time;
 vec3 randdir(){
     float x = rand2sTime(UV * hash1x);
     hash1x += 0.5451;
@@ -143,7 +142,7 @@ float intersectplanet(vec3 pos){
     return max(0.0, -sign(hitceil));
 }
 float getAO(vec3 pos){
-    vec3 dir = normalize(SunDirection + randdir() * 1.03);
+    vec3 dir = normalize(SunDirection + randdir() * 0.1);
     Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
     float hitceil = rsi2(r, sphere2);
     float hitfloor = rsi2(r, sphere1);
@@ -152,7 +151,7 @@ float getAO(vec3 pos){
     return internalmarchconservativeCoverageOnly(pos, posceil);
 }
 float getSUN(vec3 pos){
-    vec3 dir = normalize(SunDirection + randdir() * 0.7);
+    vec3 dir = normalize(SunDirection);
     Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
     float hitceil = rsi2(r, sphere2);
     float hitfloor = rsi2(r, sphere1);
@@ -194,7 +193,7 @@ vec2 internalmarchconservative(vec3 p1, vec3 p2){
     int stepcount = 5;
     float stepsize = 1.0 / float(stepcount);
     float rd = fract(rand2sTime(UV)) * stepsize;
-    hash1x = rand2s(UV * vec2(Time, Time));
+    hash1x = 0.0;//rand2s(UV * vec2(Time, Time));
     float c = 0.0;
     float w = 0.0;
     float coverageinv = 1.0;
@@ -210,7 +209,7 @@ vec2 internalmarchconservative(vec3 p1, vec3 p2){
     depr += distance(CameraPosition, lastpos);
     depw += 1.0;
     for(int i=0;i<stepcount;i++){
-        pos = mix(p1, p2, rd + iter);
+        pos = mix(p1, p2, iter + rd);
         clouds = cloudsDensity3D(pos);
         
         coverageinv -= clouds;
@@ -220,7 +219,8 @@ vec2 internalmarchconservative(vec3 p1, vec3 p2){
         iter += stepsize;
         //rd = fract(rd + iter * 124.345345);
     }
-    return vec2(1.0 - clamp(coverageinv, 0.0, 1.0), depr);
+    float cv = 1.0 - clamp(coverageinv, 0.0, 1.0);
+    return vec2(cv, depr);
 }
 
 float shadows(){
@@ -229,7 +229,7 @@ float shadows(){
     vec3 hitman = viewdir * data.g;
     sphere1 = Sphere(vec3(0), planetradius + CloudsFloor);
     sphere2 = Sphere(vec3(0), planetradius + CloudsCeil);
-    return data.r < 0.001 ? 1.0 : ((getAO(hitman) + getSUN(hitman)) * 0.5);
+    return data.r < 0.001 ? 1.0 : (getAO(hitman));
 }
 float skyfog(){
     if(NoiseOctave1 <= 0.1) return 0.0;

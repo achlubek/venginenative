@@ -9,7 +9,7 @@
 uniform int RenderPass;
 
 vec4 shade(){    
-   // return vec4(0);
+    return vec4(0);
     vec3 dir = normalize(reconstructCameraSpaceDistance(UV, 1.0));
     vec4 retedg = vec4(0);
     vec4 retavg = vec4(0);
@@ -31,5 +31,5 @@ vec4 shade(){
         retavg.r = mix(val, lastData, CloudsIntegrate);
     }
 
-    return mix(retavg, retedg, CloudsIntegrate * 0.8);
+    return mix(retavg, retedg, CloudsIntegrate * 0.9);
 }

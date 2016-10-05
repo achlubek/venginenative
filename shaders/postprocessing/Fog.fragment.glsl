@@ -20,8 +20,9 @@ float rand2sx(vec2 co){
 }
 
 #define WaterLevel (0.01+ 10.0 * NoiseOctave6)
-vec2 tracegodrays(vec3 p1, vec3 p2){
+vec3 tracegodrays(vec3 p1, vec3 p2){
     float rays = 0.0;
+    float rays2 = 0.0;
     float coverage = 1.0;
     int steps = int(clamp(floor(distance(p1, p2) * 0.2), 17.0, 32.0));
     float stepsize = 1.0 / float(steps);
@@ -43,20 +44,21 @@ vec2 tracegodrays(vec3 p1, vec3 p2){
         lastpos = p;
         float xz  = (1.0 - smoothstep(cloudslow, cloudshigh, height));
         float z = mix(noise3d(p.xyz*0.015 + Time * 0.1), 1.0, pow(xz, 3.0));
-        rays += coverage * (dist * CSMQueryVisibilitySimple(p) + dist * 0.15) * (1.0 - xz);
+        rays += coverage * (dist * CSMQueryVisibilitySimple(p)  ) * (1.0 - xz);
+        rays2 += coverage * (dist) * (1.0 - xz);
         w += coverage;
-        coverage *= 1.0 - max(dist * mix(z, 1.0, xz) * NoiseOctave5 * 0.0004, 0.0);
+        coverage *= 1.0 - max(dist * mix(z, 1.0, xz) * NoiseOctave5 * 0.00004, 0.0);
         if(coverage <= 0.0) break;
         iter += stepsize;
     }
-    return vec2(clamp(rays / w, 0.0, 11.0), clamp(coverage, 0.0, 1.0));
+    return vec3(clamp(rays / w, 0.0, 66.0), clamp(rays2 / w, 0.0, 66.0), 1.0 - clamp(coverage, 0.0, 1.0));
 }
 
 #define waterdepth 1.0 * WaterWavesScale
-vec2 gimmegodrays(vec3 o, vec3 d){
-    vec2 rays = vec2(0.0);
+vec3 gimmegodrays(vec3 o, vec3 d){
+    vec3 rays = vec3(0.0);
 
-    float floorh = WaterLevel + waterdepth;
+    float floorh = WaterLevel;
     float highh = 100.0 * NoiseOctave8;
     
     float cloudslow = planetradius + floorh;
@@ -77,7 +79,7 @@ vec2 gimmegodrays(vec3 o, vec3 d){
     float ceilmaxhit = maxhit;
     float dststart = 0.0;
     float dstend = 0.0;
-    float lim = currentData.cameraDistance;
+    float lim = length(currentData.normal) < 0.1 ? 999999.0 :currentData.cameraDistance ;
     //return lim * 0.1;
     planethit = min(lim , planethit);
     hitfloor = min(lim, hitfloor);
@@ -100,7 +102,7 @@ vec2 gimmegodrays(vec3 o, vec3 d){
         }
     } else if(height >= cloudshigh){
         if(!intersects(hitfloor) && !intersects(hitceil)){
-            rays = vec2(0.0, 1.0);
+            rays = vec3(0.0);
         } else if(!intersects(hitfloor)){
             rays = tracegodrays(o + d * minhit, o + d * maxhit);
         } else {
@@ -115,6 +117,6 @@ vec4 shade(){
 //    pixels *= 0.5;
  //   currentData = loadData(UV + pixels);
     if(currentData.cameraDistance < 0.01) currentData.cameraDistance = 999999.0;
-    vec2 color = NoiseOctave5 > 0.011 ? (gimmegodrays(CameraPosition, normalize(reconstructCameraSpaceDistance(UV, 1.0) ))) : vec2(0.0, 1.0);
-    return vec4( color.x, color.y, 0.0, 1.0);
+    vec3 color = NoiseOctave5 > 0.011 ? (gimmegodrays(CameraPosition, normalize(reconstructCameraSpaceDistance(UV, 1.0) ))) : vec3(0.0);
+    return vec4( color.x, color.y, color.z, 1.0);
 }

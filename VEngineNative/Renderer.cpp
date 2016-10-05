@@ -108,7 +108,7 @@ void Renderer::initializeFbos()
     ambientLightFbo = new Framebuffer();
     ambientLightFbo->attachTexture(ambientLightTexture, GL_COLOR_ATTACHMENT0);
 
-    waterTileTexture = new Texture2d(1024, 1024, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    waterTileTexture = new Texture2d(512, 512, GL_R16F, GL_RED, GL_HALF_FLOAT);
     waterTileFbo = new Framebuffer();
     waterTileFbo->attachTexture(waterTileTexture, GL_COLOR_ATTACHMENT0);
 
@@ -116,7 +116,7 @@ void Renderer::initializeFbos()
     ambientOcclusionFbo = new Framebuffer();
     ambientOcclusionFbo->attachTexture(ambientOcclusionTexture, GL_COLOR_ATTACHMENT0);
 
-    fogTexture = new Texture2d(width, height, GL_RG16F, GL_RG, GL_HALF_FLOAT);
+    fogTexture = new Texture2d(width, height, GL_RGB16F, GL_RGB, GL_HALF_FLOAT);
     fogFbo = new Framebuffer();
     fogFbo->attachTexture(fogTexture, GL_COLOR_ATTACHMENT0);
 
@@ -132,11 +132,11 @@ void Renderer::initializeFbos()
 
     //
 
-    cloudsShadowsTextureEven = new CubeMapTexture(512, 512, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    cloudsShadowsTextureEven = new CubeMapTexture(1024, 1024, GL_R16F, GL_RED, GL_HALF_FLOAT);
     cloudsShadowsFboEven = new CubeMapFramebuffer();
     cloudsShadowsFboEven->attachTexture(cloudsShadowsTextureEven, GL_COLOR_ATTACHMENT0);
 
-    cloudsShadowsTextureOdd = new CubeMapTexture(512, 512, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    cloudsShadowsTextureOdd = new CubeMapTexture(1024, 1024, GL_R16F, GL_RED, GL_HALF_FLOAT);
     cloudsShadowsFboOdd = new CubeMapFramebuffer();
     cloudsShadowsFboOdd->attachTexture(cloudsShadowsTextureOdd, GL_COLOR_ATTACHMENT0);
 
@@ -264,12 +264,12 @@ void Renderer::draw(Camera *camera)
     Game::instance->world->draw(Game::instance->shaders->materialShader, camera);
     mrtDistanceTexture->generateMipMaps();
     if (useAmbientOcclusion) {
-        ambientOcclusion();
+   //     ambientOcclusion();
     }
-    mrtAlbedoRoughnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
-    mrtNormalMetalnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
-    mrtDistanceTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
-    depthTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
+    //mrtAlbedoRoughnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
+    //mrtNormalMetalnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
+    //mrtDistanceTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
+    //depthTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     deferred();
     ambientLight();
     waterTile();
@@ -615,6 +615,7 @@ void Renderer::atmScatt()
 
 void Renderer::clouds()
 {
+    return;
     glDisable(GL_BLEND);
 
     mrtAlbedoRoughnessTex->use(0);

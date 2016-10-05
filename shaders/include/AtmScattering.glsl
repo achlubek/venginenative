@@ -68,7 +68,7 @@ vec3 mydumbassscatteringfunction(vec3 dir, vec3 sun){
 }
 
 vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
-    return mydumbassscatteringfunction(dir, sunpos) +
+    return smoothstep(-0.1, 0.0, dir.y) * (mydumbassscatteringfunction(dir, sunpos) +
      atmosphere(
         dir,           // normalized ray direction
         vec3(0,planetradius  ,0) + origin,               // ray origin
@@ -83,5 +83,5 @@ vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
         4e3,                            // Rayleigh scale height
         1.2e3 * MieScattCoeff,                          // Mie scale height
         0.1758                           // Mie preferred scattering direction
-    );
+    ));
 }

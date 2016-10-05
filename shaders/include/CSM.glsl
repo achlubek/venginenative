@@ -50,7 +50,7 @@ float CSMQueryVisibility(vec3 pos){
         float d = csmuv.z;
         if(csmuv.x >= 0.0 && csmuv.x < 1.0 && csmuv.y >= 0.0 && csmuv.y < 1.0 && csmuv.z >= 0.0 && csmuv.z < 1.0){
             giscale = 1.0 / CSMRadiuses[i];
-            return 1.0 - blurshadowabit(1.0, 18, vec3(csmuv.x, csmuv.y, float(i)), d);// abs(csmuv.z - texture(CSMTex, csmuv).r) ;
+            return 1.0 - blurshadowabit(1.0, 2, vec3(csmuv.x, csmuv.y, float(i)), d);// abs(csmuv.z - texture(CSMTex, csmuv).r) ;
         }
     }
     return 1.0;
@@ -86,14 +86,14 @@ float CSMQueryVisibilityGI(vec3 pos){
     return 1.0;
 }
 float CSMQueryVisibilitySimple(vec3 pos){
-    //return CSMVPMatrices[0][0].x;
+//return CSMVPMatrices[0][0].x;
     for(int i=0;i<CSMLayers;i++) if(distance(pos, CameraPosition) < CSMRadiuses[i]){
         vec3 csmuv = CSMProject(pos, i);
-        // csmuv.z *= -1;
+       // csmuv.z *= -1;
         csmuv = csmuv * 0.5 + 0.5;
-        float d = csmuv.z;
+        float d = csmuv.z;  
         if(csmuv.x >= 0.0 && csmuv.x < 1.0 && csmuv.y >= 0.0 && csmuv.y < 1.0 && csmuv.z >= 0.0 && csmuv.z < 1.0){
-            //  return 1.0 - blurshadowabit(vec3(csmuv.x, csmuv.y, float(i)), d);// abs(csmuv.z - texture(CSMTex, csmuv).r) ;
+          //  return 1.0 - blurshadowabit(vec3(csmuv.x, csmuv.y, float(i)), d);// abs(csmuv.z - texture(CSMTex, csmuv).r) ;
             return 1.0 - max(0, sign(d - texture(CSMTex, vec3(csmuv.x, csmuv.y, float(i))).r - 0.0012));// abs(csmuv.z - texture(CSMTex, csmuv).r) ;
         }
     }
