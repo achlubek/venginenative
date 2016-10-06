@@ -96,6 +96,16 @@ private:
     Texture2d *fogTexture;
     void fog();
 
+    ShaderProgram *waterMeshShader;
+    Framebuffer *waterMeshFbo;
+    Texture2d *waterMeshTexture;
+    void waterMesh();
+
+    ShaderProgram *waterColorShader;
+    Framebuffer *waterColorFbo;
+    Texture2d *waterColorTexture;
+    void waterColorShaded();
+
     ShaderProgram *atmScattShader;
     CubeMapFramebuffer *atmScattFbo;
     CubeMapTexture *atmScattTexture;
@@ -140,7 +150,7 @@ private:
     ShaderProgram *combineShader;
     Framebuffer *combineFbo;
     Texture2d *combineTexture;
-    void combine();
+    void combine(int step);
 
     ShaderProgram *lensBlurShader;
     Framebuffer *lensBlurFboHorizontal;

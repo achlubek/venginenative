@@ -33,7 +33,7 @@ int main()
 {
     Media::loadFileMap("../../media");
     Media::loadFileMap("../../shaders");
-    Game *game = new Game(1920, 1080);
+    Game *game = new Game(1280, 720);
     game->start();
     volatile bool ready = false;
     game->invoke([&ready]() {
@@ -42,9 +42,11 @@ int main()
     while (!ready);
 
     Camera *cam = new Camera();
-    cam->createProjectionPerspective(deg2rad(95.0f), (float)game->width / (float)game->height, 0.01f, 1000);
+    float fov = 95.0f;
+    float fovnew = 95.0f;
+    cam->createProjectionPerspective((95.0f), (float)game->width / (float)game->height, 0.01f, 1000);
     game->onWindowResize->add([&](int zero) {
-        cam->createProjectionPerspective(deg2rad(95.0f), (float)game->width / (float)game->height, 0.01f, 1000);
+        cam->createProjectionPerspective((95.0f), (float)game->width / (float)game->height, 0.01f, 1000);
     });
     cam->transformation->translate(glm::vec3(0, 0, 4));
     glm::quat rot = glm::quat_cast(glm::lookAt(cam->transformation->position, glm::vec3(0), glm::vec3(0, 1, 0)));
@@ -78,6 +80,11 @@ int main()
             io.Fonts->AddFontFromFileTTF(Media::getPath("segoeui.ttf").c_str(), 10);
             imugiinit = true;
         }
+        if (fov != fovnew) {
+
+            cam->createProjectionPerspective((fovnew), (float)game->width / (float)game->height, 0.01f, 1000);
+            fov = fovnew;
+        }
         static float f = 0.0f;
         if (Game::instance->renderer->cloudsThresholdLow > Game::instance->renderer->cloudsThresholdHigh) {
             Game::instance->renderer->cloudsThresholdHigh = Game::instance->renderer->cloudsThresholdLow;
@@ -92,6 +99,7 @@ int main()
        //     ImGui::SliderFloat("roughness", &t->getLodLevel(0)->material->roughness, 0.0f, 1.0f);
        //     ImGui::Text("Terrain metalness:");
        //     ImGui::SliderFloat("metalness", &t->getLodLevel(0)->material->metalness, 0.0f, 1.0f);
+        ImGui::SliderFloat("FOV", &fovnew, 20.0f, 125.0f);
         ImGui::SliderFloat("CloudsFloor", &Game::instance->renderer->cloudsFloor, 100.0f, 30000.0f);
         ImGui::SliderFloat("CloudsCeil", &Game::instance->renderer->cloudsCeil, 100.0f, 30000.0f);
         ImGui::SliderFloat("CloudsThresholdLow", &Game::instance->renderer->cloudsThresholdLow, -1.0f, 1.0f);
@@ -146,11 +154,11 @@ int main()
         }
     }
     */
-    Light* light = game->asset->loadLightFile("test.light");
-    light->type = LIGHT_SPOT;
-    light->angle = 78;
+   // Light* light = game->asset->loadLightFile("test.light");
+   // light->type = LIGHT_SPOT;
+   // light->angle = 78;
     //light->cutOffDistance = 90;
-    game->world->scene->addLight(light);
+   // game->world->scene->addLight(light);
 
     Renderer * envRenderer = new Renderer(512, 512);
     envRenderer->useAmbientOcclusion = false;
@@ -243,11 +251,11 @@ int main()
             }
             if (game->getKeyStatus(GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
                 speed *= 3.0f;
-            }
+            }/*
             if (game->getKeyStatus(GLFW_KEY_F1) == GLFW_PRESS) {
                 light->transformation->position = cam->transformation->position;
                 light->transformation->orientation = cam->transformation->orientation;
-            }
+            }*/
             if (game->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
                 glm::vec3 dir = cam->transformation->orientation * glm::vec3(0, 0, -1);
                 cam->transformation->translate(dir * speed);

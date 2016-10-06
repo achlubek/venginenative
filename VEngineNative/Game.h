@@ -1,5 +1,5 @@
 #pragma once
-#include "glfw.h";
+#include <GLFW\glfw3.h>
 #include "World.h";
 #include "Renderer.h";
 #include "GenericShaders.h";

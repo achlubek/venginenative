@@ -28,7 +28,8 @@
 using namespace std;
 
 #include "glad.h"
-#include "glfw.h"
+#include <GLFW\glfw3.h>
+#include <GLFW\glfw3native.h>
 
 #define glAssert() {if(glGetError() != GL_NO_ERROR) printf("ERROR ON LINE [%d] %s", __LINE__, __FILE__);}
 

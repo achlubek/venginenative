@@ -119,9 +119,17 @@ void Game::renderThread()
 //#ifdef _DEBUG
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 //#endif
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
+    //int count;
+    //GLFWmonitor** monitors = glfwGetMonitors(&count);
+    //GLFWmonitor* primary = glfwGetPrimaryMonitor();
+   // const GLFWvidmode* mode = glfwGetVideoMode(primary);
+   // glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+   // glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+   // glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+   // glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
     window = glfwCreateWindow(width, height, "VENGINE", NULL, NULL);
+   // glfwSetWindowMonitor(window, primary, 0, 0, mode->width, mode->height, mode->refreshRate);
     glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
     if (!window)
     {

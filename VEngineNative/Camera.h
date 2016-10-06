@@ -9,8 +9,13 @@ public:
 
     float brightness;
     float farplane;
+    float focalLength;
+    float fov;
     FrustumCone *cone;
     glm::mat4 projectionMatrix;
 
     void createProjectionPerspective(float fov, float aspectRatio, float nearpl, float farpl);
+
+private:
+    void updateFocalLength();
 };

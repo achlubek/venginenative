@@ -26,13 +26,13 @@ void CubeMapFramebuffer::generate()
     Camera * cam_newy = new Camera();
     Camera * cam_newz = new Camera();
 
-    cam_posx->createProjectionPerspective(deg2rad(90.0f), 1.0f, 0.1f, 10000.0f);
-    cam_posy->createProjectionPerspective(deg2rad(90.0f), 1.0f, 0.1f, 10000.0f);
-    cam_posz->createProjectionPerspective(deg2rad(90.0f), 1.0f, 0.1f, 10000.0f);
+    cam_posx->createProjectionPerspective((90.0f), 1.0f, 0.1f, 10000.0f);
+    cam_posy->createProjectionPerspective((90.0f), 1.0f, 0.1f, 10000.0f);
+    cam_posz->createProjectionPerspective((90.0f), 1.0f, 0.1f, 10000.0f);
 
-    cam_newx->createProjectionPerspective(deg2rad(90.0f), 1.0f, 0.1f, 10000.0f);
-    cam_newy->createProjectionPerspective(deg2rad(90.0f), 1.0f, 0.1f, 10000.0f);
-    cam_newz->createProjectionPerspective(deg2rad(90.0f), 1.0f, 0.1f, 10000.0f);
+    cam_newx->createProjectionPerspective((90.0f), 1.0f, 0.1f, 10000.0f);
+    cam_newy->createProjectionPerspective((90.0f), 1.0f, 0.1f, 10000.0f);
+    cam_newz->createProjectionPerspective((90.0f), 1.0f, 0.1f, 10000.0f);
 
     cam_posx->transformation->orientation = glm::quat_cast(glm::lookAt(glm::vec3(0), glm::vec3(1, 0, 0), glm::vec3(0, -1, 0)));
     cam_posy->transformation->orientation = glm::quat_cast(glm::lookAt(glm::vec3(0), glm::vec3(0, -1, 0), glm::vec3(0, 0, -1)));
