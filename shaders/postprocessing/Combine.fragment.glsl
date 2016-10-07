@@ -24,6 +24,7 @@ uniform int CombineStep;
 #include Atmosphere.glsl
 #include noise2D.glsl
 #include CSM.glsl
+#include FXAA.glsl
 
 float roughnessToMipmap(float roughness, samplerCube txt){
     //roughness = roughness * roughness;
@@ -89,7 +90,7 @@ vec3 shadingNonMetalic(PostProceessingData data, vec3 lightDir, vec3 color){
 }
     
 vec3 getDiffuseAtmosphereColor(){
-    return textureLod(atmScattTex, SunDirection, textureQueryLevels(atmScattTex) ).rgb;
+    return textureLod(atmScattTex, VECTOR_UP, textureQueryLevels(atmScattTex) ).rgb;
 }
 
 vec3 getSunColor(float roughness){
@@ -166,7 +167,7 @@ vec3 integrateStepsAndSun(){
 }
 
 vec3 integrateCloudsWater(){
-    return textureLod(waterColorTex, UV, 0.0).rgb;
+    return fxaa(waterColorTex, UV).rgb;
 }
 
 

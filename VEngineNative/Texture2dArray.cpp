@@ -24,6 +24,7 @@ Texture2dArray::Texture2dArray(int iwidth, int iheight, int ilevels, GLint inter
 
 Texture2dArray::~Texture2dArray()
 {
+    glDeleteTextures(1, &handle);
 }
 void Texture2dArray::pregenerate()
 {

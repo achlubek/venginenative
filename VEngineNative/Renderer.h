@@ -53,7 +53,7 @@ public:
 private:
     void draw(Camera *camera);
     void initializeFbos();
-    void destroyFbos();
+    void destroyFbos(bool onlyViewDependant);
     void setCommonUniforms(ShaderProgram *  sp);
 
     CascadeShadowMap *csm;

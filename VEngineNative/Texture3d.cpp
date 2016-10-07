@@ -24,6 +24,7 @@ Texture3d::Texture3d(int iwidth, int iheight, int idepth, GLint internalFormat, 
 
 Texture3d::~Texture3d()
 {
+    glDeleteTextures(1, &handle);
 }
 void Texture3d::pregenerate()
 {

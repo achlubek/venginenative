@@ -87,9 +87,11 @@ Renderer::Renderer(int iwidth, int iheight)
     initializeFbos();
 }
 
-void Renderer::resize(int width, int height)
+void Renderer::resize(int iwidth, int iheight)
 {
-    destroyFbos();
+    width = iwidth;
+    height = iheight;
+    destroyFbos(true);
     initializeFbos();
 }
 
@@ -132,7 +134,7 @@ void Renderer::initializeFbos()
     waterMeshFbo = new Framebuffer();
     waterMeshFbo->attachTexture(waterMeshTexture, GL_COLOR_ATTACHMENT0);
 
-    waterColorTexture = new Texture2d(width, height, GL_RGB16F, GL_RGB, GL_HALF_FLOAT);
+    waterColorTexture = new Texture2d(width * 2, height * 2, GL_RGB16F, GL_RGB, GL_HALF_FLOAT);
     waterColorFbo = new Framebuffer();
     waterColorFbo->attachTexture(waterColorTexture, GL_COLOR_ATTACHMENT0);
 
@@ -196,34 +198,56 @@ void Renderer::initializeFbos()
 
 }
 
-void Renderer::destroyFbos()
+void Renderer::destroyFbos(bool onlyViewDependant)
 {
+    if (!onlyViewDependant) {
+        delete skyboxTexture;
+        delete waterTileFbo;
+        delete waterTileTexture;
+        delete atmScattFbo;
+        delete atmScattTexture;
+        delete cloudsFboEven;
+        delete cloudsTextureEven;
+        delete cloudsFboOdd;
+        delete cloudsTextureOdd;
+        delete cloudsShadowsFboEven;
+        delete cloudsShadowsTextureEven;
+        delete cloudsShadowsFboOdd;
+        delete cloudsShadowsTextureOdd;
+        delete skyfogFboEven;
+        delete skyfogTextureEven;
+        delete skyfogFboOdd;
+        delete skyfogTextureOdd;
+    }
+    delete mrtFbo;
     delete mrtAlbedoRoughnessTex;
     delete mrtNormalMetalnessTex;
     delete mrtDistanceTexture;
     delete depthTexture;
-
     delete deferredFbo;
     delete deferredTexture;
-
     delete ambientLightFbo;
     delete ambientLightTexture;
-
     delete ambientOcclusionFbo;
     delete ambientOcclusionTexture;
-
     delete fogFbo;
     delete fogTexture;
-
+    delete waterMeshFbo;
+    delete waterMeshTexture;
+    delete waterColorFbo;
+    delete waterColorTexture;
     delete motionBlurFbo;
     delete motionBlurTexture;
-
     delete bloomFbo;
     delete bloomXTexture;
     delete bloomYTexture;
-
     delete combineFbo;
     delete combineTexture;
+    delete lensBlurFboHorizontal;
+    delete lensBlurFboVertical;
+    delete lensBlurTextureHorizontal;
+    delete lensBlurTextureVertical;
+
 }
 
 void Renderer::setCommonUniforms(ShaderProgram * sp)
@@ -232,7 +256,7 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
 
 Renderer::~Renderer()
 {
-    destroyFbos();
+    destroyFbos(false);
     delete quad3dInfo;
     delete skyboxTexture;
     delete deferredShader;

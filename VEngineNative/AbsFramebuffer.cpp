@@ -19,6 +19,7 @@ AbsFramebuffer::AbsFramebuffer(int iwidth, int iheight, GLuint ihandle)
 
 AbsFramebuffer::~AbsFramebuffer()
 {
+    glDeleteFramebuffers(1, &handle);
 }
 
 void AbsFramebuffer::attachTexture(Texture2d * tex, GLenum attachment)

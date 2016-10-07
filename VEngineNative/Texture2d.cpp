@@ -45,6 +45,7 @@ Texture2d::Texture2d(int iwidth, int iheight, GLint internalFormat, GLenum forma
 
 Texture2d::~Texture2d()
 {
+    glDeleteTextures(1, &handle);
 }
 void Texture2d::pregenerate()
 {

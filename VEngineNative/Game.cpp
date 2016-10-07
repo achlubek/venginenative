@@ -100,6 +100,7 @@ void Game::glfwWindowSizeCallback(GLFWwindow* window, int w, int h)
 {
     width = w;
     height = h;
+    screenFbo = new Framebuffer(width, height, 0);
     renderer->resize(w, h);
 }
 
