@@ -15,10 +15,10 @@ layout(binding = 27) uniform samplerCube skyfogTex;
 uniform float WaterHeight;
 uniform vec3 Wind;
 uniform vec2 WaterScale;
-float octavescale1 = 0.018;
+float octavescale1 = 0.0018;
 float mipmap1 = 0.0;
 float heightwater(vec2 uv){
-    return textureLod(waterTileTex, uv * WaterScale * 0.018, mipmap1).r;
+    return textureLod(waterTileTex, uv * WaterScale * 0.0018, mipmap1).r;
 }
 
 float roughnessToMipmap(float roughness, samplerCube txt){
@@ -54,7 +54,7 @@ float fogatt(float dist){
     return min(1.0, (dist * dist) );
 }
 
-#define waterdepth 1.0 * WaterWavesScale
+#define waterdepth 10.0 * WaterWavesScale
 
 vec3 normalx(vec3 pos, float e, float roughness){
     vec2 ex = vec2(e, 0);
@@ -67,7 +67,7 @@ vec3 normalx(vec3 pos, float e, float roughness){
 }
 
 
-#define WaterLevel (0.01+ 10.0 * NoiseOctave6)
+#define WaterLevel WaterHeight
 
 float getthatfuckingfresnel(float reflectivity, vec3 normal, vec3 cameraSpace, float roughness){
     vec3 dir = normalize(reflect(normalize(cameraSpace), normal));
@@ -86,13 +86,14 @@ vec3 shadingMetalic(PostProceessingData data, vec3 lightDir, vec3 color){
     float x = 1.0 - max(0, dot(lightDir, data.originalNormal));
     return shade(CameraPosition, newBase, data.normal, data.worldPos, data.worldPos - lightDir * 1.0, color,  max(0.004, data.roughness), false) * mix(x, pow(x, 8.0), 1.0 - data.roughness);
 }
+float coveragex = 0.0;
 float sun(vec3 dir, vec3 sundir, float gloss, float ansio){
     float dt = max(0, dot(dir, sundir));
     float dt2 = max(0, dot(normalize(vec3(dir.x, abs(sundir.y), dir.z)), sundir));
     float dty = 1.0 - max(0, abs(dir.y - sundir.y));
     dt = mix(dt, dt2, ansio);
     //return dt;
-    return pow(dt*dt*dt*dt, 112.0 * gloss*gloss + 1.0) * (200.0 * gloss + 1.0) * smoothstep(-0.02, -0.01, sundir.y);
+    return pow(dt*dt*dt*dt, 112.0 * gloss*gloss + 1.0) * (200.0 * gloss + 1.0) * smoothstep(-0.02, -0.01, sundir.y) * smoothstep(0.0, 0.9, coveragex);
    // return smoothstep(0.997, 1.0, dt);
 }
 vec3 shadingWater(PostProceessingData data, vec3 lightDir, vec3 colorA, vec3 colorB){
@@ -111,12 +112,12 @@ vec3 shadingNonMetalic(PostProceessingData data, vec3 lightDir, vec3 color){
 
 
 vec3 getDiffuseAtmosphereColor(){
-    return textureLod(atmScattTex, SunDirection, textureQueryLevels(atmScattTex) - 3).rgb;
+    return textureLod(atmScattTex, SunDirection, textureQueryLevels(atmScattTex) ).rgb;
 }
 
 vec3 getSunColor(float roughness){
     vec3 atm = textureLod(atmScattTex, SunDirection, roughnessToMipmap(roughness, atmScattTex)).rgb * 1.0;
-    return mix(atm * max(0.0, SunDirection.y) + vec3(1.0) , vec3(1.0), pow(max(0.01, SunDirection.y), 8.0));
+    return mix((atm * 1)  , vec3(1.5), max(0.00, SunDirection.y)) * max(0.0, SunDirection.y);
 }
 
 vec3 getAtmosphereScattering(vec3 dir, float roughness){
@@ -129,16 +130,18 @@ vec3 shadeColor(PostProceessingData data, vec3 lightdir, vec3 c){
 }
 
 vec3 sampleAtmosphere(vec3 dir, float roughness, float sun){
-    vec3 diffuse = getDiffuseAtmosphereColor()  ;
-    vec3 direct = getSunColor(roughness);
+    float dimmer = max(0, 0.06 + 0.94 * dot(normalize(SunDirection), vec3(0,1,0)));
     vec3 scattering = getAtmosphereScattering(dir, roughness);
+    vec3 diffuse = getDiffuseAtmosphereColor() * (1.0 - pow(1.0 - dimmer, 1.0));
+    vec3 direct = getSunColor(roughness);
     scattering += sun * (1.0 - step(0.1, length(currentData.normal))) * smoothstep(0.9987, 0.999, dot(SunDirection, dir)) * getSunColor(0.0) * 123.0;
     vec4 cloudsData = smartblur(dir, roughness);
     float coverage = cloudsData.r;
+    coveragex = 1.0 - coverage;
     float dist = cloudsData.g;
     float shadow = cloudsData.b;
     float rays = cloudsData.a;
-    
+        
     vec3 cloud = mix(diffuse, direct, shadow);
     return mix(scattering, cloud, coverage) + rays * direct;
 }
@@ -161,7 +164,8 @@ vec4 getLighting(){
     mipmap1 = textureQueryLod(waterTileTex, hitpos.xz * WaterScale *  octavescale1).x * 0.6;
     float roughness = clamp((pow(mipmap1 / textureQueryLevels(waterTileTex), 1.0)) * WaterWavesScale, 0.0, 0.5) * 0.3;
     
-    vec3 normal = normalx(hitpos, 0.03, roughness);
+    vec3 normal = normalx(hitpos, 0.53, roughness);
+    normal = normalize(normal + normalx(hitpos * 10.0, 0.23, roughness));
     
     vec3 dr2 = reconstructCameraSpaceDistance(UV + vec2(px.x, 0.0), 1.0);
     vec3 dr3 = reconstructCameraSpaceDistance(UV + vec2(0.0, px.y), 1.0);

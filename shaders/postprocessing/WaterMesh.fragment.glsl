@@ -9,8 +9,8 @@ uniform vec3 Wind;
 uniform vec2 WaterScale;
 uniform float WaterWavesScale;
 
-#define WaterLevel (0.01+ 10.0 * WaterHeight)
-#define waterdepth 1.0 * WaterWavesScale
+#define WaterLevel WaterHeight
+#define waterdepth 10.0 * WaterWavesScale
  
 
 float intersectPlane(vec3 origin, vec3 direction, vec3 point, vec3 normal)
@@ -19,10 +19,10 @@ float intersectPlane(vec3 origin, vec3 direction, vec3 point, vec3 normal)
 #define intersects(a) (a >= 0.0)
 
 float heightwater(vec2 uv){
-    return textureLod(waterTileTex, uv * WaterScale * 0.018, 0.0).r;
+    return textureLod(waterTileTex, uv * WaterScale * 0.0018, 0.0).r;
 }
 
-float raymarchwater(vec3 start, vec3 end, int stepsI){
+float raymarchwater3(vec3 start, vec3 end, int stepsI){
     float stepsize = 1.0 / stepsI;
     float iter = 0;
     vec3 pos = start;
@@ -34,6 +34,41 @@ float raymarchwater(vec3 start, vec3 end, int stepsI){
         h = hlower + heightwater(pos.xz) * waterdepth;
         if(h > pos.y) {
             return distance(pos, CameraPosition);
+        }
+        iter += stepsize;
+    }
+    return -1.0;
+}
+float raymarchwater2(vec3 start, vec3 end, int stepsI){
+    float stepsize = 1.0 / stepsI;
+    float iter = 0;
+    vec3 pos = start;
+    float h = 0.0;
+    float hupper = waterdepth + WaterLevel;
+    float hlower = WaterLevel;
+    for(int i=0;i<stepsI + 1;i++){
+        pos = mix(start, end, iter);
+        h = hlower + heightwater(pos.xz) * waterdepth;
+        if(h > pos.y) {
+            return raymarchwater3(mix(start, end, iter - stepsize), mix(start, end, iter + stepsize), 6);
+        }
+        iter += stepsize;
+    }
+    return -1.0;
+}
+float raymarchwater(vec3 start, vec3 end, int stepsI){
+    float stepsize = 1.0 / stepsI;
+    float iter = 0;
+    vec3 pos = start;
+    float h = 0.0;
+    float hupper = waterdepth + WaterLevel;
+    float hlower = WaterLevel;
+    for(int i=0;i<stepsI + 1;i++){
+        pos = mix(start, end, iter);
+        h = hlower + heightwater(pos.xz) * waterdepth;
+        if(h > pos.y) {
+            return raymarchwater2(mix(start, end, iter - stepsize), mix(start, end, iter + stepsize), 6);
+           // return distance(pos, CameraPosition);
         }
         iter += stepsize;
     }
@@ -52,18 +87,18 @@ float getWaterDistance(){
         vec3 newpos = CameraPosition + dir * planethit;
         if(WaterWavesScale > 0.01){
             vec3 newpos2 = CameraPosition + dir * planethit2;
-            int steps = 1 + int(11.0 * WaterWavesScale);
+            int steps = 1 + int(45.0 * WaterWavesScale);
             
-            if(planethit < 14.0 && planethit > 0.0) steps *= 10;
-            if(planethit2 < 14.0 && planethit2 > 0.0) steps *= 10;
+          //  if(planethit < 14.0 && planethit > 0.0) steps *= 10;
+        //    if(planethit2 < 14.0 && planethit2 > 0.0) steps *= 10;
             if(intersects(planethit) && intersects(planethit2)){
                 dist = raymarchwater(newpos, newpos2, steps);
             } else if(intersects(planethit)){
                 planethit = min(999, planethit);
-                dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit, 4444);
+                dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit, 444);
             } else if(intersects(planethit2)){
                 planethit2 = min(999, planethit2);
-                dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit2, 4444);
+                dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit2, 444);
             }
         } else {
             dist = distance(newpos, CameraPosition);

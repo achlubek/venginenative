@@ -89,12 +89,12 @@ vec3 shadingNonMetalic(PostProceessingData data, vec3 lightDir, vec3 color){
 }
     
 vec3 getDiffuseAtmosphereColor(){
-    return textureLod(atmScattTex, SunDirection, textureQueryLevels(atmScattTex) - 1 ).rgb;
+    return textureLod(atmScattTex, SunDirection, textureQueryLevels(atmScattTex) ).rgb;
 }
 
 vec3 getSunColor(float roughness){
     vec3 atm = textureLod(atmScattTex, SunDirection, roughnessToMipmap(roughness, atmScattTex)).rgb * 1.0;
-    return mix((atm * 0.2)  , vec3(10.0), max(0.00, SunDirection.y)) * max(0.0, SunDirection.y);
+    return mix((atm * 1)  , vec3(1.5), max(0.00, SunDirection.y)) * max(0.0, SunDirection.y);
 }
 
 vec3 getAtmosphereScattering(vec3 dir, float roughness){
@@ -106,19 +106,33 @@ vec3 shadeColor(PostProceessingData data, vec3 lightdir, vec3 c){
     return mix(shadingNonMetalic(data, lightdir, c), shadingMetalic(data, lightdir, c), data.metalness);// * (UseAO == 1 ? texture(aoxTex, UV).r : 1.0);
 }
 
-/*
+vec2 projectvdao(vec3 pos){
+    vec4 tmp = (VPMatrix * vec4(pos, 1.0));
+    return (tmp.xy / tmp.w) * 0.5 + 0.5;
+}
 
-
-        float diminisher = max(0, dot(normalize(SunDirection), vec3(0,1,0)));
-        vec3 shadowcolor = mix(skydaylightcolor, skydaylightcolor * 0.05, 1.0 - diminisher);
-        vec3 litcolor = mix(vec3(10.0), atmcolor * 0.2, 1.0 - diminisher);
-        vec3 colorcloud = mix(shadowcolor, litcolor, pow(cdata.g, 2.0)) ;*/
+float godrays(vec3 dir){
+    int steps = 53;
+    float stepsize = 1.0 / float(steps);
+    float rd = rand2sTime(UV) * stepsize;
+    
+    float iter = 0.0;
+    float result = 1.0;
+    for(int i=0;i<steps;i++){
+        vec3 p = normalize(mix(dir, SunDirection, iter*iter));
+        float coverage = textureLod(coverageDistTex, p, 0.0).r;
+        result *= 1.0 - coverage * 0.03;
+        iter += stepsize;
+    }
+    return result;
+}
 
 vec3 sampleAtmosphere(vec3 dir, float roughness, float sun){
-    float dimmer = max(0, 0.2 + 0.8 * dot(normalize(SunDirection), vec3(0,1,0)));
+    float dimmer = max(0, 0.06 + 0.94 * dot(normalize(SunDirection), vec3(0,1,0)));
     vec3 scattering = getAtmosphereScattering(dir, roughness);
-    vec3 diffuse = getDiffuseAtmosphereColor();
+    vec3 diffuse = getDiffuseAtmosphereColor() * (1.0 - pow(1.0 - dimmer, 1.0));
     vec3 direct = getSunColor(roughness);
+    scattering *= godrays(dir) ;
     scattering += sun * (1.0 - step(0.1, length(currentData.normal))) * smoothstep(0.9987, 0.999, dot(SunDirection, dir)) * getSunColor(0.0) * 123.0;
     vec4 cloudsData = smartblur(dir, roughness);
     float coverage = cloudsData.r;
@@ -127,7 +141,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun){
     float rays = cloudsData.a;
         
     vec3 cloud = mix(diffuse, direct, shadow);
-    return mix(scattering, cloud, coverage) + rays * direct;
+    return mix(scattering, cloud, coverage) + rays * direct  ;
 }
 
 vec3 shadeFragment(PostProceessingData data){

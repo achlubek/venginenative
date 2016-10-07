@@ -33,19 +33,21 @@ float seatime = 1.0 + Time * 0.8;
 mat2 octave_m = mat2(1.6,1.2,-1.2,1.6);
 float heightwater(vec2 uv) {
     float freq = 0.16;
-    float amp = 0.6;
+    float amp = 1.0;
     uv *= 92.1;
-    float choppy = 4.0;
+    float choppy =3.0;
     
-    float d, h = 0.0;    
+    float d, h = 0.0; 
+    float a = 0.0;
     for(int i = 0; i < 4; i++) {        
     	d = sea_octave((uv+seatime)*freq,choppy);
     	d += sea_octave((uv-seatime)*freq,choppy);
         h += d * amp;        
+        a += amp * 2.0;
     	uv *= octave_m; freq *= 1.9; amp *= 0.22;
         choppy = mix(choppy,1.0,0.2);
     }
-    return h;
+    return h / a;
 }
 
 vec4 shade(){    
@@ -58,5 +60,5 @@ vec4 shade(){
     //float c4 = heightwater(vec2(1.0 - uv.x, 1.0 - uv.y));
     //float color = 0.25 * (c1 + c2 + c3 + c4);
     float color = c1;
-    return vec4(color*0.25);
+    return vec4(color);
 }
