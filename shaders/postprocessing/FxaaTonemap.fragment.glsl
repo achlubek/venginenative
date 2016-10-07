@@ -63,8 +63,8 @@ vec3 tonemapA(vec3 x){
     return rgb_to_srgb(c);
 }
 vec3 tonemap(vec3 xa){
-    vec3 a = xa / (Luminence * 2.1);
-    a *= 1;  
+    xa *= 0.1;
+    vec3 a = xa / (Luminence * 111.0);
     vec3 x = max(vec3(0.0),a-0.004);
     vec3 retColor = (x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06);
     return retColor;
@@ -88,7 +88,7 @@ float edgeDetect(vec2 uv){
 }*/
 
 vec4 shade(){    
-    vec3 color = fxaa(inputTex, UV).rgb;
+    vec3 color = texture(inputTex, UV).rgb;
    // vec3 t = textureLod(inputTex, UV, 1.0).rgb;
    // float d = distance(color, t);
   //  color = mix(color, textureLod(inputTex, UV, 2.0).rgb, smoothstep(0.0,  length(vec3(1.0)),d));

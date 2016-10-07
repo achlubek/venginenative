@@ -8,6 +8,7 @@
 #include "Texture3d.h";
 #include "CascadeShadowMap.h";
 #include "ShaderStorageBuffer.h";
+#include "FrustumCone.h";
 class Renderer
 {
 public:
@@ -44,6 +45,9 @@ public:
     ShaderProgram *cloudsShader;
     glm::vec3 cloudsOffset;
     glm::vec3 sunDirection;
+    glm::vec3 wind;
+    glm::vec2 waterScale;
+    float waterHeight;
     int width;
     int height;
 private:

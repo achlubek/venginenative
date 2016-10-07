@@ -12,10 +12,13 @@ layout(binding = 27) uniform samplerCube skyfogTex;
 #include Atmosphere.glsl
 #include CSM.glsl
 
+uniform float WaterHeight;
+uniform vec3 Wind;
+uniform vec2 WaterScale;
 float octavescale1 = 0.018;
 float mipmap1 = 0.0;
 float heightwater(vec2 uv){
-    return textureLod(waterTileTex, uv * vec2(NoiseOctave2, NoiseOctave3) * octavescale1, mipmap1).r;
+    return textureLod(waterTileTex, uv * WaterScale * 0.018, mipmap1).r;
 }
 
 float roughnessToMipmap(float roughness, samplerCube txt){
@@ -38,7 +41,7 @@ vec4 smartblur(vec3 dir, float roughness){
     ret.xy = textureLod(coverageDistTex, dir, mlvel).rg;
     ret.z = textureLod(shadowsTex, dir, mlvel).r;
     //ret.z = blurshadows(dir, roughness);
-    //ret.w = textureLod(skyfogTex, dir, mlvel).r;
+    ret.w = textureLod(skyfogTex, dir, mlvel).r;
    // ret.w = blurskyfog(dir, roughness);
     return ret;
     
@@ -53,13 +56,14 @@ float fogatt(float dist){
 
 #define waterdepth 1.0 * WaterWavesScale
 
-vec3 normalx(vec3 pos, float e){
+vec3 normalx(vec3 pos, float e, float roughness){
     vec2 ex = vec2(e, 0);
     vec3 a = vec3(pos.x, heightwater(pos.xz) * waterdepth, pos.z);    
     vec3 b = vec3(pos.x + e, heightwater(pos.xz + ex.xy) * waterdepth, pos.z);
     vec3 c = vec3(pos.x, heightwater(pos.xz - ex.yx) * waterdepth, pos.z - e);      
     vec3 normal = (cross(normalize(a-b), normalize(a-c)));
-    return normalize(normal).xyz;
+    //vec3 p2 = pos * 76.0 + Time;
+    return normalize(normal);// + 0.3 * (vec3(noise3d(p2), noise3d(-p2), noise3d(p2.zxy)) * 2.0 - 1.0) * (1.0 - roughness) * (1.0 - roughness)).xyz;
 }
 
 
@@ -69,8 +73,7 @@ float getthatfuckingfresnel(float reflectivity, vec3 normal, vec3 cameraSpace, f
     vec3 dir = normalize(reflect(normalize(cameraSpace), normal));
     float base =  1.0 - abs(dot(normalize(normal), dir));
     float fresnel = (reflectivity + (1-reflectivity)*(pow(base, mix(5.0, 0.8, roughness))));
-    float angle = 1.0 - base;
-    return fresnel * (1.0 - roughness);
+    return fresnel ;
 }
 
 vec3 shadingMetalic(PostProceessingData data, vec3 lightDir, vec3 color){
@@ -89,12 +92,12 @@ float sun(vec3 dir, vec3 sundir, float gloss, float ansio){
     float dty = 1.0 - max(0, abs(dir.y - sundir.y));
     dt = mix(dt, dt2, ansio);
     //return dt;
-    return pow(dt*dt*dt*dt, 112.0 * gloss*gloss + 11.0) * (200.0 * gloss + 10.0) * smoothstep(-0.02, -0.01, sundir.y);
+    return pow(dt*dt*dt*dt, 112.0 * gloss*gloss + 1.0) * (200.0 * gloss + 1.0) * smoothstep(-0.02, -0.01, sundir.y);
    // return smoothstep(0.997, 1.0, dt);
 }
 vec3 shadingWater(PostProceessingData data, vec3 lightDir, vec3 colorA, vec3 colorB){
     float fresnel = getthatfuckingfresnel(0.04, data.normal, normalize(data.cameraPos), 0.0);
-    return sun(data.normal, SunDirection, 1.0 - data.roughness , data.roughness) * 1.0 * colorA * fresnel + colorB * (1.0 - fresnel);
+    return sun(data.normal, SunDirection, 1.0 - data.roughness , data.roughness) * 25.0 * colorA * fresnel + colorB * (1.0 - fresnel);
 }
 
 vec3 shadingNonMetalic(PostProceessingData data, vec3 lightDir, vec3 color){
@@ -108,7 +111,7 @@ vec3 shadingNonMetalic(PostProceessingData data, vec3 lightDir, vec3 color){
 
 
 vec3 getDiffuseAtmosphereColor(){
-    return textureLod(atmScattTex, vec3(0, 1, 0), textureQueryLevels(atmScattTex) - 1).rgb;
+    return textureLod(atmScattTex, SunDirection, textureQueryLevels(atmScattTex) - 3).rgb;
 }
 
 vec3 getSunColor(float roughness){
@@ -126,7 +129,7 @@ vec3 shadeColor(PostProceessingData data, vec3 lightdir, vec3 c){
 }
 
 vec3 sampleAtmosphere(vec3 dir, float roughness, float sun){
-    vec3 diffuse = getDiffuseAtmosphereColor() * 0.4;
+    vec3 diffuse = getDiffuseAtmosphereColor()  ;
     vec3 direct = getSunColor(roughness);
     vec3 scattering = getAtmosphereScattering(dir, roughness);
     scattering += sun * (1.0 - step(0.1, length(currentData.normal))) * smoothstep(0.9987, 0.999, dot(SunDirection, dir)) * getSunColor(0.0) * 123.0;
@@ -152,12 +155,13 @@ vec4 getLighting(){
     float hitdist = textureLod(waterDistanceTex, UV, 0.0).r;
     if(hitdist < 0.0) return  textureLod(inputTex, UV, 0.0);
     vec3 hitpos = CameraPosition + reconstructCameraSpaceDistance(UV, hitdist);
+   // return hitdist * vec4(0.01);
     
     vec2 px = 1.0 / Resolution;
-    mipmap1 = textureQueryLod(waterTileTex, hitpos.xz * vec2(NoiseOctave2, NoiseOctave3) * octavescale1).x * 0.6;
-    float roughness = clamp((pow(mipmap1 / textureQueryLevels(waterTileTex), 1.0)) * WaterWavesScale, 0.0, 0.3);
+    mipmap1 = textureQueryLod(waterTileTex, hitpos.xz * WaterScale *  octavescale1).x * 0.6;
+    float roughness = clamp((pow(mipmap1 / textureQueryLevels(waterTileTex), 1.0)) * WaterWavesScale, 0.0, 0.5) * 0.3;
     
-    vec3 normal = normalx(hitpos, 0.1);
+    vec3 normal = normalx(hitpos, 0.03, roughness);
     
     vec3 dr2 = reconstructCameraSpaceDistance(UV + vec2(px.x, 0.0), 1.0);
     vec3 dr3 = reconstructCameraSpaceDistance(UV + vec2(0.0, px.y), 1.0);
@@ -198,6 +202,10 @@ vec4 getLighting(){
    // roughness = 1.0 - pow(1.0 - roughness, 2.0);
     vec3 worldpos = hitpos;
     float camdist = hitdist;
+    //roughness = 1.0;
+    //float whites = max(0.0, noise2d(hitpos.xz*0.1 + Time * 0.1) * 2.0 - 1.0) * noise2d(hitpos.xz*33.0  + Time * 0.3 + noise2d(hitpos.xz*36.0)) * pow(max(0.0, dot(Wind, normal)) * 2.0, 7.0);
+  //  whites *= 45.0;
+   // return vec4(whites );
             
     PostProceessingData dataReflection = PostProceessingData(
         vec3(1.0),
@@ -212,10 +220,10 @@ vec4 getLighting(){
         roughness,
         1.0
     );
-    float fresnel = fresnel_again(vec3(0.04), normal, dir, 1.0);
-                
+    float fresnel = getthatfuckingfresnel(mix(0.04, 0.4, roughness), normal, dir, roughness);  
                     
-    result += shadingWater(dataReflection, -SunDirection, getSunColor(0.0), sampleAtmosphere(dir, roughness*0.15, 0.0)) * fresnel * 1.0;// + sampleAtmosphere(normal, 0.0) * fresnel;
+    //result += mix(shadingWater(dataReflection, -SunDirection, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0)) * fresnel * 1.0, getSunColor(0.5) * 0.33 * whites, min(1.0, whites));// + sampleAtmosphere(normal, 0.0) * fresnel;
+    result += shadingWater(dataReflection, -SunDirection, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0)) * fresnel * 1.0 * mix(1.0, 0.1, roughness);
     vec3 refr = normalize(refract(origdir, normal, 0.15));
     if(length(currentData.normal) < 0.01) currentData.cameraDistance = 299999.0;        
     float hitdepth = currentData.cameraDistance - hitdist;
@@ -237,9 +245,9 @@ vec4 getLighting(){
     
  //   float ssscoeff = mix(0.3, 0.3 + 0.7 * pow(1.0 - distance(hitpos, newpos) / distance(newpos, newpos2), 2.0), clamp(WaterWavesScale * 0.5, 0.0, 1.0));
     //ssscoeff *= 1.0 - max(0, dot(origdir, -normal));
-   // float ssscoeff = 0.03 * (1.0 - fresnel);
- //   vec3 waterSSScolor = vec3(0.01, 0.49, 0.65) * getDiffuseAtmosphereColor() * 1.2 * (1.0 - fresnel)  * ssscoeff;
-  //  result += smoothedgemult * waterSSScolor;
+    float ssscoeff = 0.1 * (1.0 - fresnel);
+    vec3 waterSSScolor = vec3(0.01, 0.49, 0.65) * getDiffuseAtmosphereColor() * 1.2 * (1.0 - fresnel)  * ssscoeff;
+    result += waterSSScolor;
     
          
      return vec4(result, 1.0);

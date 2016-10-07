@@ -33,6 +33,9 @@ Renderer::Renderer(int iwidth, int iheight)
     cloudsIntegrate = 0.90;
     mieScattCoefficent = 1.0;
     lensBlurSize = 1.0;
+    waterScale = glm::vec2(1.0f, 1.5f);
+    waterHeight = 1.0f;
+    wind = glm::normalize(glm::vec3(0.3, 0.0, 0.3));
     gpuInitialized = false;
 
     //csm = new CascadeShadowMap(4096, 4096, { 64, 256, 768, 4096, 4096 * 4 });
@@ -111,7 +114,7 @@ void Renderer::initializeFbos()
     ambientLightFbo = new Framebuffer();
     ambientLightFbo->attachTexture(ambientLightTexture, GL_COLOR_ATTACHMENT0);
 
-    waterTileTexture = new Texture2d(512, 512, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    waterTileTexture = new Texture2d(1024, 1024, GL_R16F, GL_RED, GL_HALF_FLOAT);
     waterTileFbo = new Framebuffer();
     waterTileFbo->attachTexture(waterTileTexture, GL_COLOR_ATTACHMENT0);
 
@@ -155,11 +158,11 @@ void Renderer::initializeFbos()
 
     //
 
-    skyfogTextureEven = new CubeMapTexture(128, 128, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    skyfogTextureEven = new CubeMapTexture(512, 512, GL_R16F, GL_RED, GL_HALF_FLOAT);
     skyfogFboEven = new CubeMapFramebuffer();
     skyfogFboEven->attachTexture(skyfogTextureEven, GL_COLOR_ATTACHMENT0);
 
-    skyfogTextureOdd = new CubeMapTexture(128, 128, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    skyfogTextureOdd = new CubeMapTexture(512, 512, GL_R16F, GL_RED, GL_HALF_FLOAT);
     skyfogFboOdd = new CubeMapFramebuffer();
     skyfogFboOdd->attachTexture(skyfogTextureOdd, GL_COLOR_ATTACHMENT0);
 
@@ -275,7 +278,7 @@ void Renderer::draw(Camera *camera)
     Game::instance->world->setUniforms(Game::instance->shaders->materialShader, camera);
     Game::instance->world->setSceneUniforms();
     Game::instance->world->draw(Game::instance->shaders->materialShader, camera);
-    mrtDistanceTexture->generateMipMaps();
+   // mrtDistanceTexture->generateMipMaps();
     if (useAmbientOcclusion) {
    //     ambientOcclusion();
     }
@@ -284,7 +287,7 @@ void Renderer::draw(Camera *camera)
     //mrtDistanceTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //depthTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     deferred();
-    ambientLight();
+  //  ambientLight();
     waterTile();
     atmScatt();
     clouds();
@@ -303,73 +306,56 @@ void Renderer::bloom()
 
 void Renderer::combine(int step)
 {
-    waterTileTexture->use(23);
-    exposureBuffer->use(0);
-    combineTexture->use(16);
-    exposureComputeShader->dispatch(1, 1, 1);
     combineFbo->use(true);
     combineShader->use();
-    mrtDistanceTexture->use(2);
-    skyboxTexture->use(3);
     deferredTexture->use(5);
     ambientLightTexture->use(6);
     ambientOcclusionTexture->use(16);
-    if (!cloudCycleUseOdd) {
-        cloudsTextureOdd->use(25);
-        cloudsShadowsTextureOdd->use(26);
-        skyfogTextureOdd->use(27);
-    }
-    else {
-        cloudsTextureEven->use(25);
-        cloudsShadowsTextureEven->use(26);
-        skyfogTextureEven->use(27);
-    }
-    atmScattTexture->use(19);
-    fogTexture->use(20);
+    //fogTexture->use(20);
     waterColorTexture->use(21);
     FrustumCone *cone = currentCamera->cone;
     //   outputShader->setUniform("VPMatrix", vpmatrix);
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
     combineShader->setUniform("VPMatrix", vpmatrix);
     combineShader->setUniform("UseAO", useAmbientOcclusion);
-    combineShader->setUniform("MieScattCoeff", mieScattCoefficent);
+ //   combineShader->setUniform("MieScattCoeff", mieScattCoefficent);
     combineShader->setUniform("CombineStep", step);
-    combineShader->setUniform("UseGamma", useGammaCorrection);
+ //   combineShader->setUniform("UseGamma", useGammaCorrection);
     combineShader->setUniform("Resolution", glm::vec2(width, height));
     combineShader->setUniform("CameraPosition", currentCamera->transformation->position);
     combineShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
     combineShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
     combineShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
     double t = glfwGetTime();
-    double t100 = t * 100.0;
-    double t001 = t * 0.001;
+   // double t100 = t * 100.0;
+   // double t001 = t * 0.001;
     combineShader->setUniform("Time", (float)t);
-    combineShader->setUniform("T100", (float)t100);
-    combineShader->setUniform("T001", (float)t001);
+  //  combineShader->setUniform("T100", (float)t100);
+  //  combineShader->setUniform("T001", (float)t001);
 
-    combineShader->setUniform("CloudsFloor", cloudsFloor);
-    combineShader->setUniform("CloudsCeil", cloudsCeil);
-    combineShader->setUniform("CloudsThresholdLow", cloudsThresholdLow);
-    combineShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
-    combineShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
-    combineShader->setUniform("CloudsOffset", cloudsOffset);
+  //  combineShader->setUniform("CloudsFloor", cloudsFloor);
+  //  combineShader->setUniform("CloudsCeil", cloudsCeil);
+  //  combineShader->setUniform("CloudsThresholdLow", cloudsThresholdLow);
+  //  combineShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
+  //  combineShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
+  //  combineShader->setUniform("CloudsOffset", cloudsOffset);
     combineShader->setUniform("SunDirection", glm::normalize(sunDirection));
-    combineShader->setUniform("AtmosphereScale", atmosphereScale);
-    combineShader->setUniform("CloudsDensityScale", cloudsDensityScale);
-    combineShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
-    combineShader->setUniform("CloudsDensityThresholdHigh", cloudsDensityThresholdHigh);
-    combineShader->setUniform("WaterWavesScale", waterWavesScale);
-    combineShader->setUniform("NoiseOctave1", noiseOctave1);
-    combineShader->setUniform("NoiseOctave2", noiseOctave2);
-    combineShader->setUniform("NoiseOctave3", noiseOctave3);
-    combineShader->setUniform("NoiseOctave4", noiseOctave4);
-    combineShader->setUniform("NoiseOctave5", noiseOctave5);
-    combineShader->setUniform("NoiseOctave6", noiseOctave6);
-    combineShader->setUniform("NoiseOctave7", noiseOctave7);
-    combineShader->setUniform("NoiseOctave8", noiseOctave8);
-    csm->setUniformsAndBindSampler(combineShader, 24);
+  //  combineShader->setUniform("AtmosphereScale", atmosphereScale);
+ //   combineShader->setUniform("CloudsDensityScale", cloudsDensityScale);
+  //  combineShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
+  //  combineShader->setUniform("CloudsDensityThresholdHigh", cloudsDensityThresholdHigh);
+  //  combineShader->setUniform("WaterWavesScale", waterWavesScale);
+  //  combineShader->setUniform("NoiseOctave1", noiseOctave1);
+  //  combineShader->setUniform("NoiseOctave2", noiseOctave2);
+  //  combineShader->setUniform("NoiseOctave3", noiseOctave3);
+   // combineShader->setUniform("NoiseOctave4", noiseOctave4);
+   // combineShader->setUniform("NoiseOctave5", noiseOctave5);
+   // combineShader->setUniform("NoiseOctave6", noiseOctave6);
+   // combineShader->setUniform("NoiseOctave7", noiseOctave7);
+  //  combineShader->setUniform("NoiseOctave8", noiseOctave8);
+  //  csm->setUniformsAndBindSampler(combineShader, 24);
     quad3dInfo->draw();
-    combineTexture->generateMipMaps();
+    //combineTexture->generateMipMaps();
 }
 void Renderer::fxaaTonemap()
 {
@@ -452,7 +438,6 @@ void Renderer::deferred()
     mrtAlbedoRoughnessTex->use(0);
     mrtNormalMetalnessTex->use(1);
     mrtDistanceTexture->use(2);
-    ambientOcclusionTexture->use(16);
     glCullFace(GL_FRONT);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE);
@@ -498,12 +483,9 @@ void Renderer::deferred()
 
 void Renderer::ambientLight()
 {
+    return;
     ambientLightFbo->use(true);
     ambientLightShader->use();
-    mrtAlbedoRoughnessTex->use(0);
-    mrtNormalMetalnessTex->use(1);
-    mrtDistanceTexture->use(2);
-    skyboxTexture->use(3);
     FrustumCone *cone = currentCamera->cone;
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
     ambientLightShader->setUniform("VPMatrix", vpmatrix);
@@ -532,9 +514,6 @@ void Renderer::ambientOcclusion()
 {
     ambientOcclusionFbo->use(true);
     ambientOcclusionShader->use();
-    mrtAlbedoRoughnessTex->use(0);
-    mrtNormalMetalnessTex->use(1);
-    mrtDistanceTexture->use(2);
     FrustumCone *cone = currentCamera->cone;
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
     ambientOcclusionShader->setUniform("VPMatrix", vpmatrix);
@@ -551,18 +530,10 @@ void Renderer::ambientOcclusion()
 void Renderer::fog()
 {
 
+    atmScattTexture->use(19);
+    return;
     fogFbo->use(true);
     fogShader->use();
-    mrtDistanceTexture->use(2);
-    skyboxTexture->use(3);
-    deferredTexture->use(5);
-    ambientLightTexture->use(6);
-    ambientOcclusionTexture->use(16);
-    if (!cloudCycleUseOdd)
-        cloudsTextureOdd->use(18);
-    else
-        cloudsTextureEven->use(18);
-    atmScattTexture->use(19);
     FrustumCone *cone = currentCamera->cone;
     //   outputShader->setUniform("VPMatrix", vpmatrix);
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
@@ -628,7 +599,6 @@ void Renderer::waterMesh()
         cloudsShadowsTextureEven->use(26);
         skyfogTextureEven->use(27);
     }
-    atmScattTexture->use(19);
     fogTexture->use(20);
     waterMeshTexture->use(21);
     combineTexture->use(22);
@@ -665,15 +635,14 @@ void Renderer::waterMesh()
     waterMeshShader->setUniform("CloudsDensityThresholdHigh", cloudsDensityThresholdHigh);
     waterMeshShader->setUniform("WaterWavesScale", waterWavesScale);
     waterMeshShader->setUniform("NoiseOctave1", noiseOctave1);
-    waterMeshShader->setUniform("NoiseOctave2", noiseOctave2);
-    waterMeshShader->setUniform("NoiseOctave3", noiseOctave3);
     waterMeshShader->setUniform("NoiseOctave4", noiseOctave4);
     waterMeshShader->setUniform("NoiseOctave5", noiseOctave5);
     waterMeshShader->setUniform("NoiseOctave6", noiseOctave6);
     waterMeshShader->setUniform("NoiseOctave7", noiseOctave7);
     waterMeshShader->setUniform("NoiseOctave8", noiseOctave8);
-    waterMeshShader->setUniform("WaterScale", glm::vec2(1.0));
-    waterMeshShader->setUniform("WaterHeight", 1.0f);
+    waterMeshShader->setUniform("WaterScale", waterScale);
+    waterMeshShader->setUniform("WaterHeight", waterHeight);
+    waterMeshShader->setUniform("Wind", wind);
     csm->setUniformsAndBindSampler(waterMeshShader, 24);
     quad3dInfo->draw();
     //waterColorTexture->generateMipMaps();
@@ -681,17 +650,11 @@ void Renderer::waterMesh()
 
 void Renderer::waterColorShaded()
 {
-    waterTileTexture->use(23);
-    exposureBuffer->use(0);
-    combineTexture->use(16);
-    exposureComputeShader->dispatch(1, 1, 1);
     waterColorFbo->use(true);
     waterColorShader->use();
-    mrtDistanceTexture->use(2);
-    skyboxTexture->use(3);
-    deferredTexture->use(5);
-    ambientLightTexture->use(6);
-    ambientOcclusionTexture->use(16);
+    fogTexture->use(20);
+    combineTexture->use(22);
+    waterTileTexture->use(23);
     if (!cloudCycleUseOdd) {
         cloudsTextureOdd->use(25);
         cloudsShadowsTextureOdd->use(26);
@@ -702,15 +665,10 @@ void Renderer::waterColorShaded()
         cloudsShadowsTextureEven->use(26);
         skyfogTextureEven->use(27);
     }
-    atmScattTexture->use(19);
-    fogTexture->use(20);
     FrustumCone *cone = currentCamera->cone;
     //   outputShader->setUniform("VPMatrix", vpmatrix);
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
     waterColorShader->setUniform("VPMatrix", vpmatrix);
-    waterColorShader->setUniform("UseAO", useAmbientOcclusion);
-    waterColorShader->setUniform("MieScattCoeff", mieScattCoefficent);
-    waterColorShader->setUniform("UseGamma", useGammaCorrection);
     waterColorShader->setUniform("Resolution", glm::vec2(width, height));
     waterColorShader->setUniform("CameraPosition", currentCamera->transformation->position);
     waterColorShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
@@ -736,13 +694,14 @@ void Renderer::waterColorShaded()
     waterColorShader->setUniform("CloudsDensityThresholdHigh", cloudsDensityThresholdHigh);
     waterColorShader->setUniform("WaterWavesScale", waterWavesScale);
     waterColorShader->setUniform("NoiseOctave1", noiseOctave1);
-    waterColorShader->setUniform("NoiseOctave2", noiseOctave2);
-    waterColorShader->setUniform("NoiseOctave3", noiseOctave3);
     waterColorShader->setUniform("NoiseOctave4", noiseOctave4);
     waterColorShader->setUniform("NoiseOctave5", noiseOctave5);
     waterColorShader->setUniform("NoiseOctave6", noiseOctave6);
     waterColorShader->setUniform("NoiseOctave7", noiseOctave7);
     waterColorShader->setUniform("NoiseOctave8", noiseOctave8);
+    waterColorShader->setUniform("WaterScale", waterScale);
+    waterColorShader->setUniform("WaterHeight", waterHeight);
+    waterColorShader->setUniform("Wind", wind);
     csm->setUniformsAndBindSampler(waterColorShader, 24);
     quad3dInfo->draw();
     //waterColorTexture->generateMipMaps();
@@ -750,7 +709,6 @@ void Renderer::waterColorShaded()
 
 void Renderer::atmScatt()
 {
-    glDisable(GL_BLEND);
     atmScattShader->use();
     atmScattShader->setUniform("Time", Game::instance->time);
     atmScattShader->setUniform("SunDirection", glm::normalize(sunDirection));
@@ -779,20 +737,6 @@ void Renderer::atmScatt()
 
 void Renderer::clouds()
 {
-    return;
-    glDisable(GL_BLEND);
-
-    mrtAlbedoRoughnessTex->use(0);
-    mrtNormalMetalnessTex->use(1);
-    mrtDistanceTexture->use(2);
-
-
- //   if (cloudCycleUseOdd) 
-  //      cloudsTextureEven->use(22);
-  //  else 
-  //      cloudsTextureOdd->use(18);
-
-
 
     cloudsShader->use();
     cloudsShader->setUniform("Time", Game::instance->time);
