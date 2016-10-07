@@ -127,11 +127,6 @@ private:
     CubeMapTexture *cloudsShadowsTextureEven;
     CubeMapFramebuffer *cloudsShadowsFboOdd;
     CubeMapTexture *cloudsShadowsTextureOdd;
-
-    CubeMapFramebuffer *skyfogFboEven;
-    CubeMapTexture *skyfogTextureEven;
-    CubeMapFramebuffer *skyfogFboOdd;
-    CubeMapTexture *skyfogTextureOdd;
     void clouds();
 
 

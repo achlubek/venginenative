@@ -108,7 +108,8 @@ float fbm(vec3 p){
 float cloudsDensity3D(vec3 pos){
     vec3 ps = pos +CloudsOffset * 111;// + wtim;   
     ps += (getWind(pos * 0.0005  * WindBigScale) * WindBigPower * 1.3 + getWind(pos * 0.00155  * WindSmallScale) * WindSmallPower * 0.1) * 2000.0 + CloudsOffset * 100.0;
-    float density = 1.0 - fbm(ps * 0.05 + 0.5 * fbm(ps * 0.03 + Time * 0.01));
+    ps.z += Time * 10.0;
+    float density = 1.0 - fbm(ps * 0.05 + 0.5 * fbm(ps * 0.03));
     float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh,  density);
     return  init;
 }
