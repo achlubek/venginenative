@@ -5,6 +5,8 @@ OpenGL engine for writing robust and threaded graphical applications in C++.
 The software is licensed under MIT license.
 
 ![A screenshot](http://i.imgur.com/I2pNgIF.jpg "Screenshot")
+![A screenshot](http://i.imgur.com/sICFuIb.jpg "Screenshot")
+![A screenshot](http://i.imgur.com/ekURSVa.jpg "Screenshot")
 ![A screenshot](http://i.imgur.com/DAWY6FZ.png "Screenshot")
 ![A screenshot](http://i.imgur.com/7POLfgp.jpg "Screenshot")
 ![A screenshot](http://i.imgur.com/W6EbpAo.jpg "Screenshot")
