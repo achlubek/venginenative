@@ -86,19 +86,26 @@ float getWaterDistance(){
     if(hitwater){ 
         vec3 newpos = CameraPosition + dir * planethit;
         if(WaterWavesScale > 0.01){
-            vec3 newpos2 = CameraPosition + dir * planethit2;
-            int steps = 1 + int(45.0 * WaterWavesScale);
+            if(WaterWavesScale < 0.4){
             
-          //  if(planethit < 14.0 && planethit > 0.0) steps *= 10;
-        //    if(planethit2 < 14.0 && planethit2 > 0.0) steps *= 10;
-            if(intersects(planethit) && intersects(planethit2)){
-                dist = raymarchwater(newpos, newpos2, steps);
-            } else if(intersects(planethit)){
-                planethit = min(999, planethit);
-                dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit, 444);
-            } else if(intersects(planethit2)){
-                planethit2 = min(999, planethit2);
-                dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit2, 444);
+                dist = planethit;
+            
+            } else {
+            
+                vec3 newpos2 = CameraPosition + dir * planethit2;
+                int steps = 1 + int(45.0 * WaterWavesScale);
+                
+              //  if(planethit < 14.0 && planethit > 0.0) steps *= 10;
+            //    if(planethit2 < 14.0 && planethit2 > 0.0) steps *= 10;
+                if(intersects(planethit) && intersects(planethit2)){
+                    dist = raymarchwater(newpos, newpos2, steps);
+                } else if(intersects(planethit)){
+                    planethit = min(999, planethit);
+                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit, 444);
+                } else if(intersects(planethit2)){
+                    planethit2 = min(999, planethit2);
+                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit2, 444);
+                }
             }
         } else {
             dist = distance(newpos, CameraPosition);

@@ -75,7 +75,7 @@ vec4 getLighting(){
     
     //float roughness = 0.0;
    // roughness = clamp((pow(textureQueryLod(waterTileTex, hitpos.xz * vec2(NoiseOctave2, NoiseOctave3) * octavescale1).x / textureQueryLevels(waterTileTex), 1.0)) * WaterWavesScale, 0.0, 1.0);
-    if(WaterWavesScale > 0.01){
+  /*  if(WaterWavesScale > 0.01){
         float nw = 1.0;
         for(int x=-smoothsteps; x <= smoothsteps; x++){
             for(int y=-smoothsteps; y <= smoothsteps; y++){
@@ -88,7 +88,7 @@ vec4 getLighting(){
        // roughness = clamp(length(dfX) + length(dfY), 0.0, 1.0);
        // roughness = 1.0 - min(1.0, length(X) * length(X));
         normal = normalize(X);
-    }
+    }*/
    // return vec3(roughness);
 
    vec3 result = vec3(0);
@@ -100,7 +100,7 @@ vec4 getLighting(){
    // roughness = 1.0 - pow(1.0 - roughness, 2.0);
     vec3 worldpos = hitpos;
     float camdist = hitdist;
-    //roughness = 1.0;
+   // roughness = 0.91;
     //float whites = max(0.0, noise2d(hitpos.xz*0.1 + Time * 0.1) * 2.0 - 1.0) * noise2d(hitpos.xz*33.0  + Time * 0.3 + noise2d(hitpos.xz*36.0)) * pow(max(0.0, dot(Wind, normal)) * 2.0, 7.0);
   //  whites *= 45.0;
    // return vec4(whites );
@@ -121,7 +121,7 @@ vec4 getLighting(){
     float fresnel = getthatfuckingfresnel(mix(0.04, 0.4, roughness), normal, dir, roughness);  
                     
     //result += mix(shadingWater(dataReflection, -SunDirection, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0)) * fresnel * 1.0, getSunColor(0.5) * 0.33 * whites, min(1.0, whites));// + sampleAtmosphere(normal, 0.0) * fresnel;
-    result += shadingWater(dataReflection, -SunDirection, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0)) * fresnel * 1.0 * mix(1.0, 0.1, roughness);
+    result += shadingWater(dataReflection, -SunDirection, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0, 5)) * fresnel * 1.0 * mix(1.0, 1.0, roughness);
     vec3 refr = normalize(refract(origdir, normal, 0.15));
     if(length(currentData.normal) < 0.01) currentData.cameraDistance = 299999.0;        
     float hitdepth = currentData.cameraDistance - hitdist;

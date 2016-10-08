@@ -24,11 +24,6 @@ vec4 shade(){
         float val = shadows();
         retedg.r = min(val, lastData);
         retavg.r = mix(val, lastData, CloudsIntegrate);
-    } else {
-        float lastData = texture(cloudsCloudsTex, dir).r;
-        float val = skyfog();
-        retedg.r = min(val, lastData);
-        retavg.r = mix(val, lastData, CloudsIntegrate);
     }
 
     return mix(retavg, retedg, 0.1);

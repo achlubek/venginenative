@@ -63,11 +63,10 @@ vec3 getAtmosphereForDirection(vec3 dir, float roughness){
 
 #define ssnoise(a) (snoise(a) * 0.5 + 0.5)
 vec3 getWind(vec3 p){
-    vec3 p2 = p * (noise3d(p) + 0.5);
     return vec3(
-        noise3d(p2 + noise3d(p2 * 0.5) * 1.5),
-        noise3d(-p2 + noise3d(p2 * 0.5) * 1.5),
-        noise3d(p2.zxy + noise3d(p2 * 0.5) * 1.5)
+        noise3d(p),
+        noise3d(-p),
+        noise3d(p.zxy)
     ) * 2.0 - 1.0;
 }
 
@@ -76,6 +75,7 @@ vec3 getWind(vec3 p){
 float hcl = 0.0;
 float cloudsDensity3DXXXX(vec3 pos){
     hcl = 1.0 - smoothstep(CloudsFloor, CloudsCeil, length(vec3(0, planetradius, 0) + pos) - planetradius);
+    //pos += (getWind(pos * 0.0005  * WindBigScale) * WindBigPower * 1.3 + getWind(pos * 0.00155  * WindSmallScale) * WindSmallPower * 0.1) * 2000.0 + CloudsOffset * 100.0;
     pos += (getWind(pos * 0.0005  * WindBigScale) * WindBigPower * 1.3 + getWind(pos * 0.00155  * WindSmallScale) * WindSmallPower * 0.1) * 2000.0 + CloudsOffset * 100.0;
     float partitions = ssnoise(pos * 0.00001 * vec3(FBMINITSCALE, FBMINITSCALE, FBMINITSCALE));
     float partitions2 = ssnoise(pos * 0.00004 * vec3(FBMINITSCALE2, FBMINITSCALE2, FBMINITSCALE2));
@@ -107,8 +107,8 @@ float fbm(vec3 p){
 }
 float cloudsDensity3D(vec3 pos){
     vec3 ps = pos +CloudsOffset * 111;// + wtim;   
-    ps += (getWind(pos * 0.0005  * WindBigScale) * WindBigPower * 1.3 + getWind(pos * 0.00155  * WindSmallScale) * WindSmallPower * 0.1) * 2000.0 + CloudsOffset * 100.0;
-    ps.z += Time * 10.0;
+    ps += (getWind(pos * 0.0005  * WindBigScale) * WindBigPower) * 2600.0;
+   // ps.z += Time * 10.0;
     float density = 1.0 - fbm(ps * 0.05 + 0.5 * fbm(ps * 0.03));
     float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh,  density);
     return  init;
@@ -133,14 +133,48 @@ float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
     float rd = rand2sTime(UV) * stepsize;
     float coverageinv = 1.0;
     float linear = distance(p1, mix(p1, p2, stepsize));
+    float mult = weightshadow * stepsize * CloudsDensityScale;
     for(int i=0;i<stepcount;i++){
         iter += rd;
         vec3 pos = mix(p1, p2, iter + rd);
         float clouds = cloudsDensity3D(pos);
-        coverageinv -= clouds * linear * 0.001 * weightshadow * stepsize * CloudsDensityScale;
+        coverageinv -= clouds * mult;
      //   if(coverageinv <= 0.0) break;
     }
     return  clamp(coverageinv, 0.0, 1.0);
+}
+
+vec2 internalmarchconservative(vec3 p1, vec3 p2){
+    int stepcount = 4;
+    float stepsize = 1.0 / float(stepcount);
+    float rd = fract(rand2sTime(UV)) * stepsize;
+    float c = 0.0;
+    float w = 0.0;
+    float coverageinv = 1.0;
+    vec3 pos = vec3(0);
+    float clouds = 0.0;
+    float godr = 0.0;
+    float godw = 0.0;
+    float depr = 0.0;
+    float depw = 0.0;
+    float iter = 0.0;
+    vec3 lastpos = p1;
+    depr += distance(CameraPosition, lastpos);
+    depw += 1.0;
+    float linear = distance(p1, mix(p1, p2, stepsize));
+    for(int i=0;i<stepcount;i++){
+        pos = mix(p1, p2, iter + rd);
+        clouds = cloudsDensity3D(pos);
+        
+        coverageinv -= clouds;
+        if(coverageinv <= 0.0) break;
+        depr += step(0.99, coverageinv) * distance(lastpos, pos);
+        lastpos = pos;
+        iter += stepsize;
+        //rd = fract(rd + iter * 124.345345);
+    }
+    float cv = 1.0 - clamp(coverageinv, 0.0, 1.0);
+    return vec2(cv, depr);
 }
 
 float hash1x = UV.x * UV.y * Time;
@@ -156,12 +190,8 @@ vec3 randdir(){
     ) * 2.0 - 1.0);
 }
 
-float intersectplanet(vec3 pos){
-    Ray r = Ray(vec3(0,planetradius ,0) +pos, SunDirection);
-    float hitceil = rsi2(r, planet);
-    return max(0.0, -sign(hitceil));
-}
 float getAO(vec3 pos){
+    //vec3 dir = normalize(SunDirection);
     vec3 dir = normalize(SunDirection + randdir() * 0.2);
     Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
     float hitceil = rsi2(r, sphere2);
@@ -169,77 +199,6 @@ float getAO(vec3 pos){
     //vec3 posceil = hitfloor < hitceil && hitfloor > 0.0 ? (pos + dir * min(hitfloor, planetradius * 0.01)) : (pos + dir * min(hitceil, planetradius * 0.01));
     vec3 posceil = pos + dir * min(hitceil, planetradius * 0.01);
     return internalmarchconservativeCoverageOnly(pos, posceil);
-}
-float getSUN(vec3 pos){
-    vec3 dir = normalize(SunDirection);
-    Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
-    float hitceil = rsi2(r, sphere2);
-    float hitfloor = rsi2(r, sphere1);
-    //vec3 posceil = hitfloor < hitceil && hitfloor > 0.0 ? (pos + dir * min(hitfloor, planetradius * 0.01)) : (pos + dir * min(hitceil, planetradius * 0.01));
-    vec3 posceil = pos + dir * min(hitceil, planetradius * 0.01);
-    return internalmarchconservativeCoverageOnly(pos, posceil);
-}
-float getSunShadow(vec3 pos){
-    float a = 0;
-        vec3 dir = SunDirection;
-        //vec3 dir = normalize(randdir());
-        //dir.y = abs(dir.y);
-       // vec3 dir = normalize(SunDirection);
-        Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
-        float hitceil = rsi2(r, sphere2);
-        float hitceil2 = rsi2(r, sphere1);
-        vec3 posceil = hitceil2 < hitceil && hitceil2 > 0.0 ? (pos + dir * min(hitceil2, planetradius * 0.01)) : (pos + dir * min(hitceil, planetradius * 0.01));
-       // vec3 posceil =  (pos + dir * min(hitceil, planetradius * 0.01));
-      //  float hitceil2 = min(rsi2(r, sphere1), 5000.0);
-       // vec3 posceil2 = hitceil2 > 0.0 ? pos + dir * hitceil2 : posceil;
-        a +=internalmarchconservativeCoverageOnly(pos, posceil);
-    return a ;
-}
-float godray(vec3 pos){
-    vec3 dir = SunDirection;
-    Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
-    float hitceil = rsi2(r, sphere2);
-    vec3 posceil = pos + dir * hitceil;
-    float hitfloor = rsi2(r, sphere1);
-    vec3 posfloor = hitfloor > 0.0 ? (pos + dir * hitfloor) : pos;
-    return internalmarchconservativeCoverageOnly(posfloor, posceil);
-}
-
-float godrayrandompoint(vec3 p1, vec3 p2){
-    return godray(mix(p1, p2, fract(rand2sTime(UV) + hash(Time))));
-}
-
-vec2 internalmarchconservative(vec3 p1, vec3 p2){
-    int stepcount = 5;
-    float stepsize = 1.0 / float(stepcount);
-    float rd = fract(rand2sTime(UV)) * stepsize;
-    float c = 0.0;
-    float w = 0.0;
-    float coverageinv = 1.0;
-    vec3 pos = vec3(0);
-    float clouds = 0.0;
-    float godr = 0.0;
-    float godw = 0.0;
-    float depr = 0.0;
-    float depw = 0.0;
-    float iter = 0.0;
-    vec3 lastpos = p1;
-    float fulldistinv = distance(p1, p2) * stepsize;
-    depr += distance(CameraPosition, lastpos);
-    depw += 1.0;
-    for(int i=0;i<stepcount;i++){
-        pos = mix(p1, p2, iter + rd);
-        clouds = cloudsDensity3D(pos);
-        
-        coverageinv -= clouds;
-        depr += step(0.99, coverageinv) * distance(lastpos, pos);
-        if(coverageinv <= 0.0) break;
-        lastpos = pos;
-        iter += stepsize;
-        //rd = fract(rd + iter * 124.345345);
-    }
-    float cv = 1.0 - clamp(coverageinv, 0.0, 1.0);
-    return vec2(cv, depr);
 }
 
 float shadows(){
@@ -250,29 +209,6 @@ float shadows(){
     sphere1 = Sphere(vec3(0), planetradius + CloudsFloor);
     sphere2 = Sphere(vec3(0), planetradius + CloudsCeil);
     return data.r < 0.001 ? 1.0 : (getAO(hitman));
-}
-float skyfog(){
-    if(NoiseOctave1 <= 0.1) return 0.0;
-    vec3 viewdir = normalize(reconstructCameraSpaceDistance(UV, 1.0));
-    vec2 data = texture(mainPassTex, viewdir).rg;
-    vec3 hitman = viewdir * data.g;
-    float iter = 0.0;
-    weightshadow = 100.0;
-    int stepcount = 7;
-    float stepsize = 1.0 / float(stepcount);
-    float rd = fract(rand2sTime(UV) + hash(Time)) * stepsize;
-    float godr = 0.0;
-    vec3 pos = CameraPosition;
-    //float godrcoverage = 1.0;
-    float fulldistinv = distance(CameraPosition, hitman) * stepsize;
-    sphere1 = Sphere(vec3(0), planetradius + CloudsFloor);
-    sphere2 = Sphere(vec3(0), planetradius + CloudsCeil);
-    for(int i=0;i<stepcount;i++){
-        pos = mix(CameraPosition, hitman, rd + iter);
-        iter += stepsize;
-        godr += godray(pos)  * NoiseOctave1;
-    }
-    return pow(godr * 0.025, 4.0);
 }
 
 #define intersects(a) (a >= 0.0)

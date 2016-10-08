@@ -140,11 +140,11 @@ void Renderer::initializeFbos()
 
     //---------/
 
-    cloudsTextureEven = new CubeMapTexture(1024, 1024, GL_RG32F, GL_RG, GL_FLOAT);
+    cloudsTextureEven = new CubeMapTexture(512, 512, GL_RG32F, GL_RG, GL_FLOAT);
     cloudsFboEven = new CubeMapFramebuffer();
     cloudsFboEven->attachTexture(cloudsTextureEven, GL_COLOR_ATTACHMENT0);
 
-    cloudsTextureOdd = new CubeMapTexture(1024, 1024, GL_RG32F, GL_RG, GL_FLOAT);
+    cloudsTextureOdd = new CubeMapTexture(512, 512, GL_RG32F, GL_RG, GL_FLOAT);
     cloudsFboOdd = new CubeMapFramebuffer();
     cloudsFboOdd->attachTexture(cloudsTextureOdd, GL_COLOR_ATTACHMENT0);
 
@@ -742,8 +742,7 @@ void Renderer::atmScatt()
 }
 
 void Renderer::clouds()
-{
-
+{ 
     cloudsShader->use();
     cloudsShader->setUniform("Time", Game::instance->time);
     cloudsShader->setUniform("CloudsFloor", cloudsFloor);
