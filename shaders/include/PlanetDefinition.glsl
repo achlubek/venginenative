@@ -1,3 +1,5 @@
+#ifndef _PLANET_DEFINITION_H_
+#define _PLANET_DEFINITION_H_
 struct Ray { vec3 o; vec3 d; };
 struct Sphere { vec3 pos; float rad; };
 
@@ -27,3 +29,4 @@ float rsi2(in Ray ray, in Sphere sphere)
     if (t0 < 0.0) return t1;
     else return t0; 
 }
+#endif

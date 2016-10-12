@@ -12,7 +12,9 @@ layout(binding = 22) uniform sampler2D inputTex;
 layout(binding = 25) uniform samplerCube coverageDistTex;
 layout(binding = 26) uniform samplerCube shadowsTex;
 layout(binding = 27) uniform samplerCube skyfogTex;
+layout(binding = 28) uniform sampler2D moonTex;
 layout(binding = 23) uniform sampler2D waterTileTex;
+layout(binding = 24) uniform sampler2D starsTex;
 
 uniform int UseAO;
 
@@ -20,6 +22,7 @@ uniform int CombineStep;
 #define STEP_PREVIOUS_SUN 0
 #define STEP_WATER_CLOUDS 1
 
+#include PlanetDefinition.glsl
 #include PostProcessEffectBase.glsl
 #include Atmosphere.glsl
 #include noise2D.glsl
@@ -35,7 +38,6 @@ vec3 integrateStepsAndSun(){
 vec3 integrateCloudsWater(){
     return fxaa(waterColorTex, UV).rgb;
 }
-
 
 vec4 shade(){    
     vec3 color = vec3(0);

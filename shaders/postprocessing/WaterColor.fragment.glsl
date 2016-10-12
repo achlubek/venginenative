@@ -7,6 +7,8 @@ layout(binding = 23) uniform sampler2D waterTileTex;
 layout(binding = 25) uniform samplerCube coverageDistTex;
 layout(binding = 26) uniform samplerCube shadowsTex;
 layout(binding = 27) uniform samplerCube skyfogTex;
+layout(binding = 24) uniform sampler2D starsTex;
+layout(binding = 28) uniform sampler2D moonTex;
 
 #include PostProcessEffectBase.glsl
 #include Atmosphere.glsl

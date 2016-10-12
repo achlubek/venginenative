@@ -13,13 +13,13 @@ Renderer::Renderer(int iwidth, int iheight)
     useAmbientOcclusion = false;
     useGammaCorrection = true;
 
-    cloudsFloor = 2500;
-    cloudsCeil = 6000;
-    cloudsThresholdLow = 0.84;
-    cloudsThresholdHigh = 0.85;
+    cloudsFloor = 7800;
+    cloudsCeil = 10000;
+    cloudsThresholdLow = 0.24;
+    cloudsThresholdHigh = 0.30;
     cloudsDensityThresholdLow = 0.0;
     cloudsDensityThresholdHigh = 1.0;
-    cloudsDensityScale = 1.0;
+    cloudsDensityScale = 0.6;
     cloudsWindSpeed = 0.4;
 
     noiseOctave1 = 1.0;
@@ -32,17 +32,17 @@ Renderer::Renderer(int iwidth, int iheight)
     noiseOctave8 = 1.01;
     cloudsIntegrate = 0.90;
     mieScattCoefficent = 1.0;
-    lensBlurSize = 1.0;
+    lensBlurSize = 0.0;
     waterScale = glm::vec2(1.0f, 1.5f);
-    waterHeight = 1.0f;
+    waterHeight = 0.3f;
     wind = glm::normalize(glm::vec3(0.3, 0.0, 0.3));
     gpuInitialized = false;
 
     //csm = new CascadeShadowMap(4096, 4096, { 64, 256, 768, 4096, 4096 * 4 });
-    csm = new CascadeShadowMap(512, 512, { 4096 * 4 });
+    csm = new CascadeShadowMap(0, 0, { });
 
     cloudsOffset = glm::vec3(1);
-    sunDirection = glm::vec3(0, 1, 0);
+    sunDirection = glm::vec3(0, 0.4, 1);
     atmosphereScale = 1.0;
     waterWavesScale = 1.0;
 
@@ -55,13 +55,13 @@ Renderer::Renderer(int iwidth, int iheight)
     quad3dInfo = new Object3dInfo(ppvertices);
     quad3dInfo->drawMode = GL_TRIANGLE_STRIP;
 
-    unsigned char* bytes;
+   /* unsigned char* bytes;
     int bytescount = Media::readBinary("deferredsphere.raw", &bytes);
     GLfloat * floats = (GLfloat*)bytes;
     int floatsCount = bytescount / 4;
     vector<GLfloat> flo(floats, floats + floatsCount);
 
-    sphere3dInfo = new Object3dInfo(flo);
+    sphere3dInfo = new Object3dInfo(flo);*/
 
     outputShader = new ShaderProgram("PostProcess.vertex.glsl", "Output.fragment.glsl");
     deferredShader = new ShaderProgram("PostProcessPerspective.vertex.glsl", "Deferred.fragment.glsl");
@@ -83,7 +83,9 @@ Renderer::Renderer(int iwidth, int iheight)
     exposureBuffer = new ShaderStorageBuffer();
 
 
-    skyboxTexture = new CubeMapTexture("posx.jpg", "posy.jpg", "posz.jpg", "negx.jpg", "negy.jpg", "negz.jpg");
+   // skyboxTexture = new CubeMapTexture("posx.jpg", "posy.jpg", "posz.jpg", "negx.jpg", "negy.jpg", "negz.jpg");
+    starsTexture = new Texture2d("stars.png");
+    moonTexture = new Texture2d("moon.png");
     initializeFbos();
 }
 
@@ -281,8 +283,9 @@ void Renderer::draw(Camera *camera)
     if (!gpuInitialized) {
         float* ones = new float[4] {1.0f, 1.0f, 1.0f, 1.0f};
         exposureBuffer->mapData(4 * 4, &ones);
+        starsTexture->generateMipMaps();
     }
-    csm->map(-sunDirection, camera->transformation->position);
+   // csm->map(-sunDirection, camera->transformation->position);
     mrtFbo->use(true);
     Game::instance->world->setUniforms(Game::instance->shaders->materialGeometryShader, camera);
     Game::instance->world->setUniforms(Game::instance->shaders->materialShader, camera);
@@ -296,7 +299,7 @@ void Renderer::draw(Camera *camera)
     //mrtNormalMetalnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtDistanceTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //depthTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
-    deferred();
+   // deferred();
   //  ambientLight();
     waterTile();
     atmScatt();
@@ -306,7 +309,7 @@ void Renderer::draw(Camera *camera)
     waterMesh();
     waterColorShaded();
     combine(1);
-    lensBlur();
+  //  lensBlur();
     gpuInitialized = true;
 }
 
@@ -323,6 +326,8 @@ void Renderer::combine(int step)
     ambientOcclusionTexture->use(16);
     //fogTexture->use(20);
     waterColorTexture->use(21);
+    starsTexture->use(24);
+    moonTexture->use(28);
     FrustumCone *cone = currentCamera->cone;
     //   outputShader->setUniform("VPMatrix", vpmatrix);
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
@@ -371,7 +376,8 @@ void Renderer::fxaaTonemap()
 {
     fxaaTonemapShader->use();
     exposureBuffer->use(0);
-    lensBlurTextureVertical->use(16);
+    //lensBlurTextureVertical->use(16);
+    combineTexture->use(16);
     FrustumCone *cone = currentCamera->cone;
     fxaaTonemapShader->setUniform("Resolution", glm::vec2(width, height));
     fxaaTonemapShader->setUniform("CameraPosition", currentCamera->transformation->position);
@@ -448,6 +454,7 @@ void Renderer::deferred()
     mrtAlbedoRoughnessTex->use(0);
     mrtNormalMetalnessTex->use(1);
     mrtDistanceTexture->use(2);
+    moonTexture->use(28);
     glCullFace(GL_FRONT);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE);
@@ -582,7 +589,7 @@ void Renderer::fog()
     fogShader->setUniform("NoiseOctave6", noiseOctave6);
     fogShader->setUniform("NoiseOctave7", noiseOctave7);
     fogShader->setUniform("NoiseOctave8", noiseOctave8);
-    csm->setUniformsAndBindSampler(fogShader, 24);
+   // csm->setUniformsAndBindSampler(fogShader, 24);
     quad3dInfo->draw();
 }
 
@@ -595,7 +602,7 @@ void Renderer::waterMesh()
     waterMeshFbo->use(true);
     waterMeshShader->use();
     mrtDistanceTexture->use(2);
-    skyboxTexture->use(3);
+   // skyboxTexture->use(3);
     deferredTexture->use(5);
     ambientLightTexture->use(6);
     ambientOcclusionTexture->use(16);
@@ -651,7 +658,7 @@ void Renderer::waterMesh()
     waterMeshShader->setUniform("WaterScale", waterScale);
     waterMeshShader->setUniform("WaterHeight", waterHeight);
     waterMeshShader->setUniform("Wind", wind);
-    csm->setUniformsAndBindSampler(waterMeshShader, 24);
+   // csm->setUniformsAndBindSampler(waterMeshShader, 24);
     quad3dInfo->draw();
     //waterColorTexture->generateMipMaps();
 }
@@ -708,7 +715,7 @@ void Renderer::waterColorShaded()
     waterColorShader->setUniform("WaterScale", waterScale);
     waterColorShader->setUniform("WaterHeight", waterHeight);
     waterColorShader->setUniform("Wind", wind);
-    csm->setUniformsAndBindSampler(waterColorShader, 24);
+   // csm->setUniformsAndBindSampler(waterColorShader, 24);
     quad3dInfo->draw();
     //waterColorTexture->generateMipMaps();
 }

@@ -121,6 +121,10 @@ vec2 projectvdao(vec3 pos){
     vec4 tmp = (VPMatrix * vec4(pos, 1.0));
     return (tmp.xy / tmp.w) * 0.5 + 0.5;
 }
+vec4 projectvdao2(vec3 pos){
+    vec4 tmp = (VPMatrix * vec4(pos, 1.0));
+    return (tmp.xyzw);
+}
 
 float godrays(vec3 dir, int steps){
     float bias = 58.0 / float(steps);
@@ -134,6 +138,29 @@ float godrays(vec3 dir, int steps){
         iter += stepsize;
     }
     return result;
+}
+
+vec2 xyzToPolar(vec3 xyz){
+    float radius = sqrt(xyz.x * xyz.x + xyz.y * xyz.y + xyz.z * xyz.z);
+    float theta = atan(xyz.y, xyz.x);
+    float phi = acos(xyz.z / radius);
+    return vec2(theta, phi) / vec2(2.0 *3.1415,  3.1415);
+}
+mat3 rotationMatrix(vec3 axis, float angle)
+{
+	axis = normalize(axis);
+	float s = sin(angle);
+	float c = cos(angle);
+	float oc = 1.0 - c;
+	
+	return mat3(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s, 
+	oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s, 
+	oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c);
+}
+
+vec3 getStars(vec3 dir, float roughness){
+    dir = rotationMatrix(vec3(1, 1, 1), Time*0.003) * dir;
+    return pow(textureLod(starsTex, xyzToPolar(dir), roughnessToMipmap(roughness, starsTex)).rgb, vec3(2.2));
 }
 
 vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
@@ -161,10 +188,31 @@ vec3 shadeFragment(PostProceessingData data){
     return sun * CSMQueryVisibility(data.worldPos) + diffuse;
 }
 
+vec3 textureMoon(vec3 dir){
+    vec3 mond = normalize(vec3(1.0, 2.0, 0.0));
+    vec3 mont = cross(vec3(0.0, 1.0, 0.0), mond);
+    vec3 monb = cross(mont, mond);
+    float dt = max(0.0, dot(dir, mond));
+    vec3 dd = normalize(mond - dir);
+    vec2 ud = vec2(dot(mont, dd), dot(monb, dd));
+    float cr = 0.99885;
+    dt = (dt - cr) / (1.0 - cr);
+    float st = smoothstep(0.0, 0.01, dt);
+    Sphere moon = Sphere(mond * 362600.0, 17360.0);
+    Ray r = Ray(CameraPosition, dir);
+    float i = rsi2(r, moon);
+    vec3 posOnMoon = CameraPosition + dir * i;
+    vec3 n = normalize(posOnMoon - mond * 362600.0);
+    float l = pow(max(0.0, dot(n, SunDirection)), 1.2);
+    //return l * vec3(1);
+    return l * pow(textureLod(moonTex, clamp((sqrt(1.0 - dt) * ud) * 2.22 * 0.5 + 0.5, 0.0, 1.0), 0.0).rgb, vec3(2.4)) * 2.0 + getStars(dir, 0.0) * (1.0 - st);
+}
+
 vec3 getNormalLighting(vec2 uv, PostProceessingData data){
     if(length(data.normal) < 0.01){
         data.roughness = 0.0;
-        return sampleAtmosphere(reconstructCameraSpaceDistance(uv, 1.0), 0.0, 1.0, 23);
+        vec3 dir = reconstructCameraSpaceDistance(uv, 1.0);
+        return sampleAtmosphere(dir, 0.0, 1.0, 23) + textureMoon(dir);
     } else {
         return shadeFragment(data);
     }

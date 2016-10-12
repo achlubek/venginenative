@@ -63,6 +63,8 @@ private:
     ShaderStorageBuffer * exposureBuffer;
 
     CubeMapTexture *skyboxTexture;
+    Texture2d *starsTexture;
+    Texture2d *moonTexture;
     Object3dInfo *quad3dInfo;
     Object3dInfo *sphere3dInfo;
 

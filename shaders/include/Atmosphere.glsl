@@ -24,18 +24,20 @@ uniform float WaterWavesScale;
 uniform float Rand1;
 uniform float Rand2;
 uniform float MieScattCoeff;
+/*
+.export float FBMO1
+.export float FBMO2
+.export float FBMS1
+.export float FBMS2
+.export float WindSmallPower
+.export float WindSmallScale
+.export float GodRayPower
+.export float FBMINITSCALE
+.export float FBMINITSCALE2
+*/
 
-#export float FBMO1
-#export float FBMO2
-#export float FBMS1
-#export float FBMS2
 #export float WindBigScale
-#export float WindSmallScale
 #export float WindBigPower
-#export float WindSmallPower
-#export float GodRayPower
-#export float FBMINITSCALE
-#export float FBMINITSCALE2
 
 
 layout(binding = 18) uniform samplerCube cloudsCloudsTex;
@@ -69,7 +71,7 @@ vec3 getWind(vec3 p){
         noise3d(p.zxy)
     ) * 2.0 - 1.0;
 }
-
+/*
 #define xdnoise(a) ssnoise(a + ssnoise(a * 0.5) * 0.5)
 
 float hcl = 0.0;
@@ -92,7 +94,7 @@ float cloudsDensity3DXXXX(vec3 pos){
         CloudsThresholdLow,
         CloudsThresholdHigh,
         density * aza);
-} 
+} */
 #define fbm fbm_alu
 float fbm(vec3 p){
     p *= 0.001;
