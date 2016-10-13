@@ -14,7 +14,6 @@ uniform float NoiseOctave6;
 uniform float NoiseOctave7;
 uniform float NoiseOctave8;
 uniform float CloudsIntegrate;
-uniform vec3 SunDirection;
 uniform float AtmosphereScale;
 uniform float CloudsDensityScale;
 uniform float CloudsDensityThresholdLow;
@@ -192,9 +191,9 @@ vec3 randdir(){
     ) * 2.0 - 1.0);
 }
 
-float getAO(vec3 pos){
-    //vec3 dir = normalize(SunDirection);
-    vec3 dir = normalize(SunDirection + randdir() * 0.2);
+float getAO(vec3 pos, float randomization){
+    //vec3 dir = normalize(dayData.sunDir);
+    vec3 dir = normalize(dayData.sunDir + randdir() * randomization);
     Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
     float hitceil = rsi2(r, sphere2);
     float hitfloor = rsi2(r, sphere1);
@@ -210,7 +209,7 @@ float shadows(){
     vec3 hitman = viewdir * data.g;
     sphere1 = Sphere(vec3(0), planetradius + CloudsFloor);
     sphere2 = Sphere(vec3(0), planetradius + CloudsCeil);
-    return data.r < 0.001 ? 1.0 : (getAO(hitman));
+    return data.r < 0.001 ? 1.0 : (getAO(hitman, 0.0) * 0.9 + getAO(hitman, 1.5) * 0.1);
 }
 
 #define intersects(a) (a >= 0.0)

@@ -17,12 +17,12 @@ void main(){
     for(int x=0;x<grid.length();x++){
         for(int y=0;y<grid.length();y++){
             vec2 coord = vec2(grid[x], grid[y]);
-            vec3 c = textureLod(inputTex, coord, float(textureQueryLevels(inputTex) - 5.0)).rgb;
-            float w = 1.0 - distance(coord, vec2(0.5));
+            vec3 c = textureLod(inputTex, coord, float(textureQueryLevels(inputTex) - 3.0)).rgb;
+            float w = 1.4- distance(coord, vec2(0.5));
             luma += w * length(c);
             lumaw += 1.0;
         }
     }
     luma = luma / lumaw;
-    Luminence = clamp(mix(Luminence, luma, 0.01), 0.005, 30.0);
+    Luminence = clamp(mix(Luminence, luma, 0.01), 0.0, 130.0);
 }

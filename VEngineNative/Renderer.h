@@ -44,7 +44,9 @@ public:
     float cloudsIntegrate;
     ShaderProgram *cloudsShader;
     glm::vec3 cloudsOffset;
-    glm::vec3 sunDirection;
+    float dayElapsed;
+    float yearElapsed;
+    float equatorPoleMix;
     glm::vec3 wind;
     glm::vec2 waterScale;
     float waterHeight;

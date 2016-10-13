@@ -74,7 +74,6 @@ int main()
     int width, height;
     //io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
     bool imugiinit = false;
-    glm::vec3 sunt = glm::vec3(0, 0.4, 1);
     game->onRenderUIFrame->add([&](int zero) {
         if (!imugiinit) {
             ImGuiIO& io = ImGui::GetIO();
@@ -147,7 +146,7 @@ int main()
        //     ImGui::SliderFloat("roughness", &t->getLodLevel(0)->material->roughness, 0.0f, 1.0f);
        //     ImGui::Text("Terrain metalness:");
        //     ImGui::SliderFloat("metalness", &t->getLodLevel(0)->material->metalness, 0.0f, 1.0f);
-        ImGui::SliderFloat("FOV", &fovnew, 5.0f, 125.0f);
+        ImGui::SliderFloat("FOV", &fovnew, 5.0f, 175.0f);
         ImGui::SliderFloat("CloudsHeightStart", &Game::instance->renderer->cloudsFloor, 100.0f, 30000.0f);
         ImGui::SliderFloat("CloudsHeightEnd", &Game::instance->renderer->cloudsCeil, 100.0f, 30000.0f);
         ImGui::SliderFloat("CloudsThresholdLow", &Game::instance->renderer->cloudsThresholdLow, -1.0f, 1.0f);
@@ -158,8 +157,10 @@ int main()
         ImGui::SliderFloat("CloudsIntegration", &Game::instance->renderer->cloudsIntegrate, 0.3f, 0.999f);
         ImGui::SliderFloat3("CloudsOffset", (float*)&Game::instance->renderer->cloudsOffset, -1000.0f, 1000.0f);
         ImGui::Separator();
-        ImGui::SliderFloat3("SunDirection", (float*)&sunt, -1.0f, 1.0f);
-        Game::instance->renderer->sunDirection = (Game::instance->renderer->sunDirection * 0.90f) + sunt * 0.1f;
+        ImGui::SliderFloat("DayElapsed", (float*)&Game::instance->renderer->dayElapsed, 0.0f, 1.0f);
+        ImGui::SliderFloat("YearElapsed", (float*)&Game::instance->renderer->yearElapsed, 0.0f, 1.0f);
+        ImGui::SliderFloat("Equator/Pole", (float*)&Game::instance->renderer->equatorPoleMix, 0.0f, 1.0f);
+
         ImGui::SliderFloat("MieScattering", (float*)&Game::instance->renderer->mieScattCoefficent, 0.0f, 20.0f);
         ImGui::SliderFloat("GodRaysStrength", &Game::instance->renderer->noiseOctave1, 0.01f, 10.0f);
         ImGui::Separator();

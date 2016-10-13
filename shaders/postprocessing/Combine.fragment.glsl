@@ -22,6 +22,7 @@ uniform int CombineStep;
 #define STEP_PREVIOUS_SUN 0
 #define STEP_WATER_CLOUDS 1
 
+#include Constants.glsl
 #include PlanetDefinition.glsl
 #include PostProcessEffectBase.glsl
 #include Atmosphere.glsl

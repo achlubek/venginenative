@@ -34,7 +34,7 @@ mat2 octave_m = mat2(1.6,1.2,-1.2,1.6);
 float heightwater(vec2 uv) {
     float freq = 0.16;
     float amp = 1.0;
-    uv *= 92.1;
+    uv *= 192.1;
     float choppy =3.0;
     
     float d, h = 0.0; 

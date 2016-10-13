@@ -33,7 +33,7 @@ vec3 tracegodrays(vec3 p1, vec3 p2){
     float highh = 100.0 * NoiseOctave8;
     float cloudslow = planetradius + floorh;
     float cloudshigh = planetradius + highh;
-    vec3 d = normalize(SunDirection);
+    vec3 d = normalize(dayData.sunDir);
     float w = 0.0;
     for(int i=0;i<steps;i++){
         vec3 p = mix(p1, p2, rd + iter);

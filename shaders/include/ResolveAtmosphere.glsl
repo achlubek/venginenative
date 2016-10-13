@@ -85,7 +85,7 @@ float sun(vec3 dir, vec3 sundir, float gloss, float ansio){
 float sshadow = 1.0;
 vec3 shadingWater(PostProceessingData data, vec3 lightDir, vec3 colorA, vec3 colorB){
     float fresnel = getthatfuckingfresnel(0.04, data.normal, normalize(data.cameraPos), 0.0);
-    return sshadow * sun(data.normal, SunDirection, 1.0 - data.roughness , data.roughness) * 1.0 * colorA * fresnel + colorB * (1.0 - fresnel);
+    return sshadow * sun(data.normal, dayData.sunDir, 1.0 - data.roughness , data.roughness) * 1.0 * colorA * fresnel + colorB * (1.0 - fresnel);
 }
 
 
@@ -104,8 +104,8 @@ vec3 getDiffuseAtmosphereColor(){
 }
 
 vec3 getSunColor(float roughness){
-    vec3 atm = textureLod(atmScattTex, SunDirection, roughnessToMipmap(roughness, atmScattTex)).rgb * 1.0;
-    return mix((atm * 1)  , vec3(1.5), max(0.00, SunDirection.y)) * max(0.0, SunDirection.y);
+    vec3 atm = textureLod(atmScattTex, dayData.sunDir, roughnessToMipmap(roughness, atmScattTex)).rgb * 1.0;
+    return mix((atm * 1)  , vec3(1.5), max(0.00, dayData.sunDir.y)) * max(0.0, dayData.sunDir.y);
 }
 
 vec3 getAtmosphereScattering(vec3 dir, float roughness){
@@ -134,7 +134,7 @@ float godrays(vec3 dir, int steps){
     float iter = 0.0;
     float result = 1.0;
     for(int i=0;i<steps;i++){
-        result *= 1.0 - textureLod(coverageDistTex, normalize(mix(dir, SunDirection, iter + rd)), 1.0).r * 0.03 * NoiseOctave1 * bias;
+        result *= 1.0 - textureLod(coverageDistTex, normalize(mix(dir, dayData.sunDir, iter + rd)), 1.0).r * 0.03 * NoiseOctave1 * bias;
         iter += stepsize;
     }
     return result;
@@ -146,50 +146,24 @@ vec2 xyzToPolar(vec3 xyz){
     float phi = acos(xyz.z / radius);
     return vec2(theta, phi) / vec2(2.0 *3.1415,  3.1415);
 }
-mat3 rotationMatrix(vec3 axis, float angle)
-{
-	axis = normalize(axis);
-	float s = sin(angle);
-	float c = cos(angle);
-	float oc = 1.0 - c;
-	
-	return mat3(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s, 
-	oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s, 
-	oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c);
-}
+
 
 vec3 getStars(vec3 dir, float roughness){
-    dir = rotationMatrix(vec3(1, 1, 1), Time*0.003) * dir;
-    return pow(textureLod(starsTex, xyzToPolar(dir), roughnessToMipmap(roughness, starsTex)).rgb, vec3(2.2));
+    dir = dayData.viewFrame * dir;
+    vec3 c = pow(texture(starsTex, xyzToPolar(dir)).rgb, vec3(2.2));
+    return mix(c, vec3(0.01, 0.02, 0.03) * 0.2 * (1.0  - reconstructCameraSpaceDistance(UV, 1.0).y * 0.8), 0.94);
 }
+mat3 calcLookAtMatrix(vec3 origin, vec3 target, float roll) {
+  vec3 rr = vec3(sin(roll), cos(roll), 0.0);
+  vec3 ww = normalize(target - origin);
+  vec3 uu = normalize(cross(ww, rr));
+  vec3 vv = normalize(cross(uu, ww));
 
-vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
-    float dimmer = max(0, 0.06 + 0.94 * dot(normalize(SunDirection), vec3(0,1,0)));
-    vec3 scattering = getAtmosphereScattering(dir, roughness);
-    vec3 diffuse = getDiffuseAtmosphereColor() * (1.0 - pow(1.0 - dimmer, 1.0)) * ( (1.0 - max(0.0, SunDirection.y)) * 0.5 + 0.5);
-    vec3 direct = getSunColor(roughness);
-   // scattering *= godrays(dir) ;
-    scattering += sun * (1.0 - step(0.1, length(currentData.normal))) * smoothstep(0.9987, 0.999, dot(SunDirection, dir)) * getSunColor(0.0) * 123.0;
-    vec4 cloudsData = smartblur(dir, roughness);
-    float coverage = cloudsData.r;
-    sshadow = 1.0 - coverage;
-    float dist = cloudsData.g;
-    float shadow = cloudsData.b;
-    float rays = godrays(dir, raysteps);
-        
-    vec3 cloud = mix(diffuse * rays, direct, shadow);
-    return mix(scattering * rays, cloud, coverage);
+  return mat3(uu, vv, ww);
 }
-
-vec3 shadeFragment(PostProceessingData data){
-    vec3 suncolor = getSunColor(0.0);
-    vec3 sun = shadeColor(data, -SunDirection, suncolor);
-    vec3 diffuse = shadeColor(data, -data.normal, sampleAtmosphere(data.normal, data.roughness*0.5, 1.0, 0)) * 0.2;
-    return sun * CSMQueryVisibility(data.worldPos) + diffuse;
-}
-
+float sun_moon_mult = 1.0;
 vec3 textureMoon(vec3 dir){
-    vec3 mond = normalize(vec3(1.0, 2.0, 0.0));
+  /*  vec3 mond = dayData.moonDir;
     vec3 mont = cross(vec3(0.0, 1.0, 0.0), mond);
     vec3 monb = cross(mont, mond);
     float dt = max(0.0, dot(dir, mond));
@@ -198,21 +172,76 @@ vec3 textureMoon(vec3 dir){
     float cr = 0.99885;
     dt = (dt - cr) / (1.0 - cr);
     float st = smoothstep(0.0, 0.01, dt);
+    mond = normalize(dayData.moonPos - dayData.earthPos);
     Sphere moon = Sphere(mond * 362600.0, 17360.0);
     Ray r = Ray(CameraPosition, dir);
     float i = rsi2(r, moon);
     vec3 posOnMoon = CameraPosition + dir * i;
     vec3 n = normalize(posOnMoon - mond * 362600.0);
-    float l = pow(max(0.0, dot(n, SunDirection)), 1.2);
-    //return l * vec3(1);
-    return l * pow(textureLod(moonTex, clamp((sqrt(1.0 - dt) * ud) * 2.22 * 0.5 + 0.5, 0.0, 1.0), 0.0).rgb, vec3(2.4)) * 2.0 + getStars(dir, 0.0) * (1.0 - st);
+    float l = pow(max(0.0, dot(n, dayData.sunSpaceDir)), 1.2);
+    return l * pow(textureLod(moonTex, clamp((sqrt(1.0 - dt) * ud) * 2.22 * 0.5 + 0.5, 0.0, 1.0), 0.0).rgb, vec3(2.4)) * 2.0 + getStars(dir, 0.0) * (1.0 - st);*/
+    Sphere moon = Sphere(dayData.moonPos, 17.37);
+    Ray r = Ray(dayData.earthPos, dayData.viewFrame * dir);
+    float i = rsi2(r, moon);
+    vec3 posOnMoon = dayData.earthPos + dayData.viewFrame * dir * i;
+    vec3 n = normalize(dayData.moonPos - posOnMoon);
+    float l = pow(max(0.0, dot(n, dayData.sunSpaceDir)), 1.2);
+    n *= rotationMatrix(vec3(0.0, 1.0, 0.0), 6.1415);
+    n *= rotationMatrix(vec3(0.0, 0.0, 1.0), 3.1415);
+    vec3 color = vec3(0.5) + pow(textureLod(moonTex, xyzToPolar(calcLookAtMatrix(dayData.moonPos, dayData.earthPos, 0.0) * n.xyz) , 0.0).rgb, vec3(2.4));
+    
+    vec3 atmdiff = vec3(0.004) * pow(asin(dot(dir, dayData.moonDir)) * 0.5 + 0.5, 4.0);
+    
+    vec3 atm = mix(vec3(1.0, 0.1, 0.0), vec3(1.0), 1.0 - pow(1.0 - max(0.0, dayData.moonDir.y * 1.1 - 0.1), 4.0));
+    atmdiff *= atm;
+    color *= atm;
+    sun_moon_mult = step(0.0, i);
+    float monsoonconverage = 1.0 - smoothstep(0.995, 1.0, dot(dayData.sunDir, dayData.moonDir));
+    return atmdiff * monsoonconverage + l * color * sun_moon_mult * 0.1 + getStars(dir, 0.0) * (1.0 - sun_moon_mult);
 }
+
+
+float lenssun(vec3 dir){
+    float d = (1.0 - sun_moon_mult) * pow(max(0.0, dot(dayData.sunDir, dir)) * 1.0, 512.0) * 1.0;
+    d += (1.0 - sun_moon_mult) *  pow(max(0.0, dot(dayData.sunDir, dir)) * 1.0, 256.0) * 0.5;
+    d += pow(max(0.0, dot(dayData.sunDir, dir)) * 1.0, 64.0) * 0.25;
+    d += pow(max(0.0, dot(dayData.sunDir, dir)) * 1.0, 16.0) * 0.125;
+    return d * 0.05 + (1.0 - sun_moon_mult) * smoothstep(0.999, 0.999, dot(dir, dayData.sunDir));
+}
+
+vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
+    float dimmer = max(0, 0.06 + 0.94 * dot(normalize(dayData.sunDir), vec3(0,1,0)));
+    vec3 scattering = getAtmosphereScattering(dir, roughness);
+    vec3 diffuse = getDiffuseAtmosphereColor() * (1.0 - pow(1.0 - dimmer, 1.0)) * ( (1.0 - max(0.0, dayData.sunDir.y)) * 0.5 + 0.5);
+    vec3 direct = getSunColor(roughness);
+   // scattering *= godrays(dir) ;
+    vec3 moon = textureMoon(dir);
+    scattering += sun * (1.0 - step(0.1, length(currentData.normal))) * lenssun(dir) * getSunColor(0.0) * 123.0;
+    float monsoonconverage = (1.0 - smoothstep(0.995, 1.0, dot(dayData.sunDir, dayData.moonDir))) * 0.7 + 0.3;
+    vec4 cloudsData = smartblur(dir, roughness);
+    float coverage = cloudsData.r;
+    sshadow = 1.0 - coverage;
+    float dist = cloudsData.g;
+    float shadow = cloudsData.b;
+    float rays = godrays(dir, raysteps);
+        
+    vec3 cloud = mix(diffuse * rays, direct, shadow);
+    return mix(scattering * rays * monsoonconverage + moon, monsoonconverage * cloud, coverage);
+}
+
+vec3 shadeFragment(PostProceessingData data){
+    vec3 suncolor = getSunColor(0.0);
+    vec3 sun = shadeColor(data, -dayData.sunDir, suncolor);
+    vec3 diffuse = shadeColor(data, -data.normal, sampleAtmosphere(data.normal, data.roughness*0.5, 1.0, 0)) * 0.2;
+    return sun * CSMQueryVisibility(data.worldPos) + diffuse;
+}
+
 
 vec3 getNormalLighting(vec2 uv, PostProceessingData data){
     if(length(data.normal) < 0.01){
         data.roughness = 0.0;
         vec3 dir = reconstructCameraSpaceDistance(uv, 1.0);
-        return sampleAtmosphere(dir, 0.0, 1.0, 23) + textureMoon(dir);
+        return sampleAtmosphere(dir, 0.0, 1.0, 23);
     } else {
         return shadeFragment(data);
     }

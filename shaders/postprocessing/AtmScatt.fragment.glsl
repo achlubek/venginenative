@@ -13,6 +13,6 @@ vec4 shade(){
     vec3 val = getAtmosphereForDirectionReal(
         CameraPosition, 
         normalize(reconstructCameraSpaceDistance(UV, 1.0)), 
-        normalize(SunDirection));
+        normalize(dayData.sunDir));
     return vec4(val, 0);
 }

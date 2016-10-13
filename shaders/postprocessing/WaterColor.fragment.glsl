@@ -61,7 +61,7 @@ vec4 getLighting(){
     float roughness = clamp((pow(mipmap1 / textureQueryLevels(waterTileTex), 1.0)) * WaterWavesScale, 0.0, 0.5) ;
     
     vec3 normal = normalx(hitpos, 0.53, roughness);
-    normal = normalize(normal + normalx(hitpos * 10.0, 0.23, roughness));
+ //   normal = normalize(normal + normalx(hitpos * 10.0, 0.23, roughness));
     
     vec3 dr2 = reconstructCameraSpaceDistance(UV + vec2(px.x, 0.0), 1.0);
     vec3 dr3 = reconstructCameraSpaceDistance(UV + vec2(0.0, px.y), 1.0);
@@ -122,8 +122,8 @@ vec4 getLighting(){
     );
     float fresnel = getthatfuckingfresnel(mix(0.04, 0.4, roughness), normal, dir, roughness);  
                     
-    //result += mix(shadingWater(dataReflection, -SunDirection, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0)) * fresnel * 1.0, getSunColor(0.5) * 0.33 * whites, min(1.0, whites));// + sampleAtmosphere(normal, 0.0) * fresnel;
-    result += shadingWater(dataReflection, -SunDirection, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0, 5)) * fresnel * 1.0 * mix(1.0, 1.0, roughness);
+    //result += mix(shadingWater(dataReflection, -dayData.sunDir, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0)) * fresnel * 1.0, getSunColor(0.5) * 0.33 * whites, min(1.0, whites));// + sampleAtmosphere(normal, 0.0) * fresnel;
+    result += shadingWater(dataReflection, -dayData.sunDir, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0, 5)) * fresnel * 1.0 * mix(1.0, 1.0, roughness);
     vec3 refr = normalize(refract(origdir, normal, 0.15));
     if(length(currentData.normal) < 0.01) currentData.cameraDistance = 299999.0;        
     float hitdepth = currentData.cameraDistance - hitdist;

@@ -42,7 +42,10 @@ Renderer::Renderer(int iwidth, int iheight)
     csm = new CascadeShadowMap(0, 0, { });
 
     cloudsOffset = glm::vec3(1);
-    sunDirection = glm::vec3(0, 0.4, 1);
+    dayElapsed = 0.5;
+    yearElapsed = 0.5;
+    equatorPoleMix = 0.5;
+
     atmosphereScale = 1.0;
     waterWavesScale = 1.0;
 
@@ -332,6 +335,9 @@ void Renderer::combine(int step)
     //   outputShader->setUniform("VPMatrix", vpmatrix);
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
     combineShader->setUniform("VPMatrix", vpmatrix);
+    combineShader->setUniform("DayElapsed", dayElapsed);
+    combineShader->setUniform("YearElapsed", yearElapsed);
+    combineShader->setUniform("EquatorPoleMix", equatorPoleMix);
     combineShader->setUniform("UseAO", useAmbientOcclusion);
  //   combineShader->setUniform("MieScattCoeff", mieScattCoefficent);
     combineShader->setUniform("CombineStep", step);
@@ -354,7 +360,6 @@ void Renderer::combine(int step)
   //  combineShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
   //  combineShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
   //  combineShader->setUniform("CloudsOffset", cloudsOffset);
-    combineShader->setUniform("SunDirection", glm::normalize(sunDirection));
   //  combineShader->setUniform("AtmosphereScale", atmosphereScale);
  //   combineShader->setUniform("CloudsDensityScale", cloudsDensityScale);
   //  combineShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
@@ -374,6 +379,8 @@ void Renderer::combine(int step)
 }
 void Renderer::fxaaTonemap()
 {
+    combineTexture->use(16);
+    exposureComputeShader->dispatch(1, 1, 1);
     fxaaTonemapShader->use();
     exposureBuffer->use(0);
     //lensBlurTextureVertical->use(16);
@@ -512,7 +519,9 @@ void Renderer::ambientLight()
     ambientLightShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
     ambientLightShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
     ambientLightShader->setUniform("Time", Game::instance->time);
-    ambientLightShader->setUniform("SunDirection", glm::normalize(sunDirection));
+    ambientLightShader->setUniform("DayElapsed", dayElapsed);
+    ambientLightShader->setUniform("YearElapsed", yearElapsed);
+    ambientLightShader->setUniform("EquatorPoleMix", equatorPoleMix);
     quad3dInfo->draw();
 }
 
@@ -535,7 +544,9 @@ void Renderer::ambientOcclusion()
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
     ambientOcclusionShader->setUniform("VPMatrix", vpmatrix);
     ambientOcclusionShader->setUniform("Resolution", glm::vec2(width, height));
-    ambientOcclusionShader->setUniform("SunDirection", glm::normalize(sunDirection));
+    ambientOcclusionShader->setUniform("DayElapsed", dayElapsed);
+    ambientOcclusionShader->setUniform("YearElapsed", yearElapsed);
+    ambientOcclusionShader->setUniform("EquatorPoleMix", equatorPoleMix);
     ambientOcclusionShader->setUniform("CameraPosition", currentCamera->transformation->position);
     ambientOcclusionShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
     ambientOcclusionShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
@@ -575,7 +586,9 @@ void Renderer::fog()
     fogShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
     fogShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
     fogShader->setUniform("CloudsOffset", cloudsOffset);
-    fogShader->setUniform("SunDirection", glm::normalize(sunDirection));
+    fogShader->setUniform("DayElapsed", dayElapsed);
+    fogShader->setUniform("YearElapsed", yearElapsed);
+    fogShader->setUniform("EquatorPoleMix", equatorPoleMix);
     fogShader->setUniform("AtmosphereScale", atmosphereScale);
     fogShader->setUniform("CloudsDensityScale", cloudsDensityScale);
     fogShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
@@ -597,8 +610,6 @@ void Renderer::waterMesh()
 {
 
     exposureBuffer->use(0);
-    combineTexture->use(16);
-    exposureComputeShader->dispatch(1, 1, 1);
     waterMeshFbo->use(true);
     waterMeshShader->use();
     mrtDistanceTexture->use(2);
@@ -643,7 +654,9 @@ void Renderer::waterMesh()
     waterMeshShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
     waterMeshShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
     waterMeshShader->setUniform("CloudsOffset", cloudsOffset);
-    waterMeshShader->setUniform("SunDirection", glm::normalize(sunDirection));
+    waterMeshShader->setUniform("DayElapsed", dayElapsed);
+    waterMeshShader->setUniform("YearElapsed", yearElapsed);
+    waterMeshShader->setUniform("EquatorPoleMix", equatorPoleMix);
     waterMeshShader->setUniform("AtmosphereScale", atmosphereScale);
     waterMeshShader->setUniform("CloudsDensityScale", cloudsDensityScale);
     waterMeshShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
@@ -681,6 +694,9 @@ void Renderer::waterColorShaded()
     FrustumCone *cone = currentCamera->cone;
     //   outputShader->setUniform("VPMatrix", vpmatrix);
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
+    waterColorShader->setUniform("DayElapsed", dayElapsed);
+    waterColorShader->setUniform("YearElapsed", yearElapsed);
+    waterColorShader->setUniform("EquatorPoleMix", equatorPoleMix);
     waterColorShader->setUniform("VPMatrix", vpmatrix);
     waterColorShader->setUniform("Resolution", glm::vec2(width, height));
     waterColorShader->setUniform("CameraPosition", currentCamera->transformation->position);
@@ -700,7 +716,6 @@ void Renderer::waterColorShaded()
     waterColorShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
     waterColorShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
     waterColorShader->setUniform("CloudsOffset", cloudsOffset);
-    waterColorShader->setUniform("SunDirection", glm::normalize(sunDirection));
     waterColorShader->setUniform("AtmosphereScale", atmosphereScale);
     waterColorShader->setUniform("CloudsDensityScale", cloudsDensityScale);
     waterColorShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
@@ -724,7 +739,9 @@ void Renderer::atmScatt()
 {
     atmScattShader->use();
     atmScattShader->setUniform("Time", Game::instance->time);
-    atmScattShader->setUniform("SunDirection", glm::normalize(sunDirection));
+    atmScattShader->setUniform("DayElapsed", dayElapsed);
+    atmScattShader->setUniform("YearElapsed", yearElapsed);
+    atmScattShader->setUniform("EquatorPoleMix", equatorPoleMix);
     atmScattShader->setUniform("Resolution", glm::vec2(atmScattTexture->width, atmScattTexture->height));
     atmScattShader->setUniform("MieScattCoeff", mieScattCoefficent);
 
@@ -759,7 +776,9 @@ void Renderer::clouds()
     cloudsShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
     cloudsShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
     cloudsShader->setUniform("CloudsOffset", cloudsOffset);
-    cloudsShader->setUniform("SunDirection", glm::normalize(sunDirection));
+    cloudsShader->setUniform("DayElapsed", dayElapsed);
+    cloudsShader->setUniform("YearElapsed", yearElapsed);
+    cloudsShader->setUniform("EquatorPoleMix", equatorPoleMix);
     cloudsShader->setUniform("AtmosphereScale", atmosphereScale);
     cloudsShader->setUniform("CloudsDensityScale", cloudsDensityScale);
     cloudsShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);

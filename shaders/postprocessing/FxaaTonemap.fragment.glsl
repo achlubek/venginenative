@@ -7,6 +7,7 @@ layout(binding = 16) uniform sampler2D inputTex;
 #include FXAA.glsl
 
 const float SRGB_ALPHA = 0.055;
+uniform float Time;
 
 float linear_to_srgb(float channel) {
     if(channel <= 0.0031308)
@@ -62,12 +63,17 @@ vec3 tonemapA(vec3 x){
     vec3 c = a * white;
     return rgb_to_srgb(c);
 }
+float rand2sTime(vec2 co){
+    co *= Time;
+    return fract(sin(dot(co.xy,vec2(12.9898,78.233))) * 43758.5453);
+}
 vec3 tonemap(vec3 xa){
     
-    vec3 a = xa / (Luminence * 111.0);
+    vec3 a = xa / max(0.1, Luminence);
     vec3 x = max(vec3(0.0),a-0.004);
     vec3 retColor = (x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06);
-    return retColor;
+    vec3 gscale = vec3(retColor.r * 0.7 + retColor.g * 0.25 + retColor.b * 0.2 + rand2sTime(UV) * 0.08) * 0.6;
+    return mix(gscale, retColor, min(1.0, length(retColor)));
 }
 
 

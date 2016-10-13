@@ -29,4 +29,54 @@ float rsi2(in Ray ray, in Sphere sphere)
     if (t0 < 0.0) return t1;
     else return t0; 
 }
+
+uniform float DayElapsed;
+uniform float YearElapsed;
+uniform float EquatorPoleMix;
+
+struct DayData{
+    vec3 sunDir;
+    vec3 moonDir;
+    vec3 sunSpaceDir;
+    mat3 viewFrame;
+    vec3 moonPos;
+    vec3 earthPos;
+};
+
+vec3 transformDirDays(vec3 dir, float elapsed, float yearelapsed, float equator_pole){
+    dir *= rotationMatrix(vec3(1.0, 0.0, 0.0), 3.1415 * equator_pole);// move to geo coords
+    dir *= rotationMatrix(vec3(0.0, 1.0, 0.0), 6.2831 * elapsed);// rotate around rotationaxis
+    dir *= rotationMatrix(vec3(0.0, 1.0, 0.0), -6.2831 * yearelapsed);
+    dir *= rotationMatrix(vec3(0.0, 0.0, 1.0), 0.4);
+    return dir;
+}
+
+DayData calculateDay(float elapsed, float yearelapsed, float equator_pole){
+    vec3 sunorigin = vec3(0.0);
+    vec3 earthpos = sunorigin + rotationMatrix(vec3(0.0, 1.0, 0.0), 6.2831 * yearelapsed) * vec3(0.0, 0.0, 1.0) * 149597.870;
+    
+    //vec3 surfacepos_earthspace = normalize(mix(vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0), equator_pole));
+    //vec3 surfacepos_earthorbitspace = rotationMatrix(vec3(0.0, 1.0, 0.0), 6.2831 * elapsed) * surfacepos_earthspace;
+    
+    mat3 surface_frame = mat3(
+        transformDirDays(vec3(1.0, 0.0, 0.0), elapsed, yearelapsed, equator_pole),
+        transformDirDays(vec3(0.0, 1.0, 0.0), elapsed, yearelapsed, equator_pole),
+        transformDirDays(vec3(0.0, 0.0, 1.0), elapsed, yearelapsed, equator_pole)
+    );
+    
+    vec3 moonpos = earthpos + rotationMatrix(vec3(0.0, 0.0, 1.0), 6.2831 * 0.1 * yearelapsed) * rotationMatrix(vec3(0.0, 1.0, 0.0), 6.2831 * yearelapsed * 12.0) * vec3(0.0, 0.0, 1.0) * 384.402;
+  // earthpos += surfacepos_earthorbitspace;
+    
+    return DayData(
+        inverse(surface_frame) * normalize(sunorigin - earthpos),
+        inverse(surface_frame) * normalize(moonpos - earthpos),
+        -normalize(sunorigin - moonpos),
+        surface_frame,
+        moonpos,
+        earthpos
+    );
+}
+
+DayData dayData = calculateDay(DayElapsed, YearElapsed + 0.25, EquatorPoleMix);
+
 #endif

@@ -3,6 +3,7 @@
 layout(binding = 23) uniform sampler2D waterTileTex;
 
 #include PostProcessEffectBase.glsl
+#include Constants.glsl
 #include PlanetDefinition.glsl
 
 uniform float WaterHeight;
