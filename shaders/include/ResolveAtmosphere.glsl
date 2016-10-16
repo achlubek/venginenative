@@ -105,7 +105,7 @@ vec3 getDiffuseAtmosphereColor(){
 
 vec3 getSunColor(float roughness){
     vec3 atm = textureLod(atmScattTex, dayData.sunDir, roughnessToMipmap(roughness, atmScattTex)).rgb * 1.0;
-    return mix((atm * 1)  , vec3(1.5), max(0.00, dayData.sunDir.y)) * max(0.0, dayData.sunDir.y);
+    return 5.0 * mix((atm * 1)  , vec3(1.5), max(0.00, dayData.sunDir.y)) * max(0.0, dayData.sunDir.y);
 }
 
 vec3 getAtmosphereScattering(vec3 dir, float roughness){
@@ -151,7 +151,7 @@ vec2 xyzToPolar(vec3 xyz){
 vec3 getStars(vec3 dir, float roughness){
     dir = dayData.viewFrame * dir;
     vec3 c = pow(texture(starsTex, xyzToPolar(dir)).rgb, vec3(2.2));
-    return mix(c, vec3(0.01, 0.02, 0.03) * 0.2 * (1.0  - reconstructCameraSpaceDistance(UV, 1.0).y * 0.8), 0.94);
+    return mix(c, vec3(0.01, 0.02, 0.03) * 0.2 * (1.0  - reconstructCameraSpaceDistance(UV, 1.0).y * 0.8), 0.0);
 }
 mat3 calcLookAtMatrix(vec3 origin, vec3 target, float roll) {
   vec3 rr = vec3(sin(roll), cos(roll), 0.0);
@@ -192,21 +192,31 @@ vec3 textureMoon(vec3 dir){
     
     vec3 atmdiff = vec3(0.004) * pow(asin(dot(dir, dayData.moonDir)) * 0.5 + 0.5, 4.0);
     
-    vec3 atm = mix(vec3(1.0, 0.1, 0.0), vec3(1.0), 1.0 - pow(1.0 - max(0.0, dayData.moonDir.y * 1.1 - 0.1), 4.0));
+    vec3 atm = mix(vec3(0.7, 0.2, 0.0), vec3(1.0), 1.0 - pow(1.0 - max(0.0, dayData.moonDir.y * 1.1 - 0.1), 4.0));
     atmdiff *= atm;
     color *= atm;
     sun_moon_mult = step(0.0, i);
     float monsoonconverage = 1.0 - smoothstep(0.995, 1.0, dot(dayData.sunDir, dayData.moonDir));
-    return atmdiff * monsoonconverage + l * color * sun_moon_mult * 0.1 + getStars(dir, 0.0) * (1.0 - sun_moon_mult);
+    return atmdiff + l * color * sun_moon_mult * 0.1 + getStars(dir, 0.0) * (1.0 - sun_moon_mult);
 }
 
 
 float lenssun(vec3 dir){
-    float d = (1.0 - sun_moon_mult) * pow(max(0.0, dot(dayData.sunDir, dir)) * 1.0, 512.0) * 1.0;
-    d += (1.0 - sun_moon_mult) *  pow(max(0.0, dot(dayData.sunDir, dir)) * 1.0, 256.0) * 0.5;
-    d += pow(max(0.0, dot(dayData.sunDir, dir)) * 1.0, 64.0) * 0.25;
-    d += pow(max(0.0, dot(dayData.sunDir, dir)) * 1.0, 16.0) * 0.125;
-    return d * 0.05 + (1.0 - sun_moon_mult) * smoothstep(0.999, 0.999, dot(dir, dayData.sunDir));
+    //return smoothstep(0.997, 0.999, dot(dir, dayData.sunDir));
+    vec2 ss1 = projectvdao(CameraPosition + dir);
+    vec2 ss2 = projectvdao(CameraPosition + dayData.sunDir);
+    ss1.x *= Resolution.x / Resolution.y;
+    ss2.x *= Resolution.x / Resolution.y;
+    
+    float angle = 360.0 + asin(dot(normalize(ss1 - ss2), vec2(0, 1))) * 180.0 / 3.1415;
+    angle = abs(angle / 180.0);
+    angle *= 6.0;
+    angle = min(fract(angle), fract(-angle));
+  //  return angle;
+    float dt = clamp(dot(dir, dayData.sunDir) + 0.001, 0.0, 1.0);
+    float d = pow(dt, 32.0);
+    d = pow(d, 3.0 + 13.0 * (1.0 - pow(1.0 - clamp(angle , 0.0, 1.0), 5.0)));
+    return pow(1.0 / (distance(dir, dayData.sunDir) * 10.0), 4.0);
 }
 
 vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
@@ -216,7 +226,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     vec3 direct = getSunColor(roughness);
    // scattering *= godrays(dir) ;
     vec3 moon = textureMoon(dir);
-    scattering += sun * (1.0 - step(0.1, length(currentData.normal))) * lenssun(dir) * getSunColor(0.0) * 123.0;
+    scattering += sun * (1.0 - step(0.1, length(currentData.normal))) * lenssun(dir) * getSunColor(0.0) * 1.0;
     float monsoonconverage = (1.0 - smoothstep(0.995, 1.0, dot(dayData.sunDir, dayData.moonDir))) * 0.7 + 0.3;
     vec4 cloudsData = smartblur(dir, roughness);
     float coverage = cloudsData.r;
@@ -235,6 +245,7 @@ vec3 shadeFragment(PostProceessingData data){
     vec3 diffuse = shadeColor(data, -data.normal, sampleAtmosphere(data.normal, data.roughness*0.5, 1.0, 0)) * 0.2;
     return sun * CSMQueryVisibility(data.worldPos) + diffuse;
 }
+
 
 
 vec3 getNormalLighting(vec2 uv, PostProceessingData data){

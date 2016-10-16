@@ -74,6 +74,7 @@ vec3 tonemap(vec3 xa){
     vec3 retColor = (x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06);
     vec3 gscale = vec3(retColor.r * 0.7 + retColor.g * 0.25 + retColor.b * 0.2 + rand2sTime(UV) * 0.08) * 0.6;
     return mix(gscale, retColor, min(1.0, length(retColor)));
+    //return retColor;
 }
 
 

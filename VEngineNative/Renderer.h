@@ -41,6 +41,7 @@ public:
     float noiseOctave7;
     float noiseOctave8;
     float mieScattCoefficent;
+    float nightSkyLightPollution;
     float cloudsIntegrate;
     ShaderProgram *cloudsShader;
     glm::vec3 cloudsOffset;

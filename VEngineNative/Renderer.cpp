@@ -32,6 +32,7 @@ Renderer::Renderer(int iwidth, int iheight)
     noiseOctave8 = 1.01;
     cloudsIntegrate = 0.90;
     mieScattCoefficent = 1.0;
+    nightSkyLightPollution = 0.2;
     lensBlurSize = 0.0;
     waterScale = glm::vec2(1.0f, 1.5f);
     waterHeight = 0.3f;
@@ -39,7 +40,7 @@ Renderer::Renderer(int iwidth, int iheight)
     gpuInitialized = false;
 
     //csm = new CascadeShadowMap(4096, 4096, { 64, 256, 768, 4096, 4096 * 4 });
-    csm = new CascadeShadowMap(0, 0, { });
+    csm = new CascadeShadowMap(0, 0, {});
 
     cloudsOffset = glm::vec3(1);
     dayElapsed = 0.5;
@@ -58,13 +59,13 @@ Renderer::Renderer(int iwidth, int iheight)
     quad3dInfo = new Object3dInfo(ppvertices);
     quad3dInfo->drawMode = GL_TRIANGLE_STRIP;
 
-   /* unsigned char* bytes;
-    int bytescount = Media::readBinary("deferredsphere.raw", &bytes);
-    GLfloat * floats = (GLfloat*)bytes;
-    int floatsCount = bytescount / 4;
-    vector<GLfloat> flo(floats, floats + floatsCount);
+    /* unsigned char* bytes;
+     int bytescount = Media::readBinary("deferredsphere.raw", &bytes);
+     GLfloat * floats = (GLfloat*)bytes;
+     int floatsCount = bytescount / 4;
+     vector<GLfloat> flo(floats, floats + floatsCount);
 
-    sphere3dInfo = new Object3dInfo(flo);*/
+     sphere3dInfo = new Object3dInfo(flo);*/
 
     outputShader = new ShaderProgram("PostProcess.vertex.glsl", "Output.fragment.glsl");
     deferredShader = new ShaderProgram("PostProcessPerspective.vertex.glsl", "Deferred.fragment.glsl");
@@ -86,7 +87,7 @@ Renderer::Renderer(int iwidth, int iheight)
     exposureBuffer = new ShaderStorageBuffer();
 
 
-   // skyboxTexture = new CubeMapTexture("posx.jpg", "posy.jpg", "posz.jpg", "negx.jpg", "negy.jpg", "negz.jpg");
+    // skyboxTexture = new CubeMapTexture("posx.jpg", "posy.jpg", "posz.jpg", "negx.jpg", "negy.jpg", "negz.jpg");
     starsTexture = new Texture2d("stars.png");
     moonTexture = new Texture2d("moon.png");
     initializeFbos();
@@ -112,7 +113,7 @@ void Renderer::initializeFbos()
     mrtFbo->attachTexture(mrtNormalMetalnessTex, GL_COLOR_ATTACHMENT1);
     mrtFbo->attachTexture(mrtDistanceTexture, GL_COLOR_ATTACHMENT2);
     mrtFbo->attachTexture(depthTexture, GL_DEPTH_ATTACHMENT);
-    
+
     deferredTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     deferredFbo = new Framebuffer();
     deferredFbo->attachTexture(deferredTexture, GL_COLOR_ATTACHMENT0);
@@ -243,6 +244,56 @@ void Renderer::destroyFbos(bool onlyViewDependant)
 
 void Renderer::setCommonUniforms(ShaderProgram * sp)
 {
+    FrustumCone *cone = currentCamera->cone;
+    //   outputShader->setUniform("VPMatrix", vpmatrix);
+    glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
+    sp->setUniform("VPMatrix", vpmatrix);
+    sp->setUniform("UseAO", useAmbientOcclusion);
+    sp->setUniform("MieScattCoeff", mieScattCoefficent);
+    sp->setUniform("Resolution", glm::vec2(width, height));
+    sp->setUniform("CameraPosition", currentCamera->transformation->position);
+    sp->setUniform("FrustumConeLeftBottom", cone->leftBottom);
+    sp->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
+    sp->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
+    sp->setUniform("FocalLength", currentCamera->focalLength);
+    sp->setUniform("LensBlurSize", lensBlurSize);
+    sp->setUniform("Time", Game::instance->time);
+    sp->setUniform("DayElapsed", dayElapsed);
+    sp->setUniform("YearElapsed", yearElapsed);
+    sp->setUniform("EquatorPoleMix", equatorPoleMix);
+
+    double t100 = Game::instance->time * 100.0;
+    double t001 = Game::instance->time * 0.001;
+    sp->setUniform("T100", (float)t100);
+    sp->setUniform("T001", (float)t001);
+    
+    sp->setUniform("CloudsFloor", cloudsFloor);
+    sp->setUniform("CloudsCeil", cloudsCeil);
+    sp->setUniform("CloudsThresholdLow", cloudsThresholdLow);
+    sp->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
+    sp->setUniform("CloudsWindSpeed", cloudsWindSpeed);
+    sp->setUniform("CloudsOffset", cloudsOffset);
+    sp->setUniform("AtmosphereScale", atmosphereScale);
+    sp->setUniform("CloudsDensityScale", cloudsDensityScale);
+    sp->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
+    sp->setUniform("CloudsDensityThresholdHigh", cloudsDensityThresholdHigh);
+    sp->setUniform("WaterWavesScale", waterWavesScale);
+    sp->setUniform("NoiseOctave1", noiseOctave1);
+    sp->setUniform("NoiseOctave2", noiseOctave2);
+    sp->setUniform("NoiseOctave3", noiseOctave3);
+    sp->setUniform("NoiseOctave4", noiseOctave4);
+    sp->setUniform("NoiseOctave5", noiseOctave5);
+    sp->setUniform("NoiseOctave6", noiseOctave6);
+    sp->setUniform("NoiseOctave7", noiseOctave7);
+    sp->setUniform("NoiseOctave8", noiseOctave8);
+
+    sp->setUniform("WaterScale", waterScale);
+    sp->setUniform("WaterHeight", waterHeight);
+    sp->setUniform("Wind", wind);
+    sp->setUniform("NightSkyLightPollution", nightSkyLightPollution);
+    sp->setUniform("Rand1", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
+    sp->setUniform("Rand2", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
+    sp->setUniform("CloudsIntegrate", cloudsIntegrate);
 }
 
 Renderer::~Renderer()
@@ -284,19 +335,19 @@ void Renderer::renderToFramebuffer(Camera *camera, Framebuffer * fboout)
 void Renderer::draw(Camera *camera)
 {
     if (!gpuInitialized) {
-        float* ones = new float[4] {1.0f, 1.0f, 1.0f, 1.0f};
+        float* ones = new float[4]{ 1.0f, 1.0f, 1.0f, 1.0f };
         exposureBuffer->mapData(4 * 4, &ones);
         starsTexture->generateMipMaps();
     }
-   // csm->map(-sunDirection, camera->transformation->position);
+    // csm->map(-sunDirection, camera->transformation->position);
     mrtFbo->use(true);
     Game::instance->world->setUniforms(Game::instance->shaders->materialGeometryShader, camera);
     Game::instance->world->setUniforms(Game::instance->shaders->materialShader, camera);
     Game::instance->world->setSceneUniforms();
     Game::instance->world->draw(Game::instance->shaders->materialShader, camera);
-   // mrtDistanceTexture->generateMipMaps();
+    // mrtDistanceTexture->generateMipMaps();
     if (useAmbientOcclusion) {
-   //     ambientOcclusion();
+        //     ambientOcclusion();
     }
     //mrtAlbedoRoughnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtNormalMetalnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
@@ -312,7 +363,7 @@ void Renderer::draw(Camera *camera)
     waterMesh();
     waterColorShaded();
     combine(1);
-  //  lensBlur();
+    //  lensBlur();
     gpuInitialized = true;
 }
 
@@ -331,49 +382,10 @@ void Renderer::combine(int step)
     waterColorTexture->use(21);
     starsTexture->use(24);
     moonTexture->use(28);
-    FrustumCone *cone = currentCamera->cone;
-    //   outputShader->setUniform("VPMatrix", vpmatrix);
-    glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
-    combineShader->setUniform("VPMatrix", vpmatrix);
-    combineShader->setUniform("DayElapsed", dayElapsed);
-    combineShader->setUniform("YearElapsed", yearElapsed);
-    combineShader->setUniform("EquatorPoleMix", equatorPoleMix);
-    combineShader->setUniform("UseAO", useAmbientOcclusion);
- //   combineShader->setUniform("MieScattCoeff", mieScattCoefficent);
-    combineShader->setUniform("CombineStep", step);
- //   combineShader->setUniform("UseGamma", useGammaCorrection);
-    combineShader->setUniform("Resolution", glm::vec2(width, height));
-    combineShader->setUniform("CameraPosition", currentCamera->transformation->position);
-    combineShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
-    combineShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-    combineShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
-    double t = glfwGetTime();
-   // double t100 = t * 100.0;
-   // double t001 = t * 0.001;
-    combineShader->setUniform("Time", (float)t);
-  //  combineShader->setUniform("T100", (float)t100);
-  //  combineShader->setUniform("T001", (float)t001);
 
-  //  combineShader->setUniform("CloudsFloor", cloudsFloor);
-  //  combineShader->setUniform("CloudsCeil", cloudsCeil);
-  //  combineShader->setUniform("CloudsThresholdLow", cloudsThresholdLow);
-  //  combineShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
-  //  combineShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
-  //  combineShader->setUniform("CloudsOffset", cloudsOffset);
-  //  combineShader->setUniform("AtmosphereScale", atmosphereScale);
- //   combineShader->setUniform("CloudsDensityScale", cloudsDensityScale);
-  //  combineShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
-  //  combineShader->setUniform("CloudsDensityThresholdHigh", cloudsDensityThresholdHigh);
-  //  combineShader->setUniform("WaterWavesScale", waterWavesScale);
-    combineShader->setUniform("NoiseOctave1", noiseOctave1);
-  //  combineShader->setUniform("NoiseOctave2", noiseOctave2);
-  //  combineShader->setUniform("NoiseOctave3", noiseOctave3);
-   // combineShader->setUniform("NoiseOctave4", noiseOctave4);
-   // combineShader->setUniform("NoiseOctave5", noiseOctave5);
-   // combineShader->setUniform("NoiseOctave6", noiseOctave6);
-   // combineShader->setUniform("NoiseOctave7", noiseOctave7);
-  //  combineShader->setUniform("NoiseOctave8", noiseOctave8);
-  //  csm->setUniformsAndBindSampler(combineShader, 24);
+    setCommonUniforms(combineShader);
+    combineShader->setUniform("CombineStep", step);
+
     quad3dInfo->draw();
     //combineTexture->generateMipMaps();
 }
@@ -385,35 +397,21 @@ void Renderer::fxaaTonemap()
     exposureBuffer->use(0);
     //lensBlurTextureVertical->use(16);
     combineTexture->use(16);
-    FrustumCone *cone = currentCamera->cone;
-    fxaaTonemapShader->setUniform("Resolution", glm::vec2(width, height));
-    fxaaTonemapShader->setUniform("CameraPosition", currentCamera->transformation->position);
-    fxaaTonemapShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
-    fxaaTonemapShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-    fxaaTonemapShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
-    fxaaTonemapShader->setUniform("Time", Game::instance->time);
+    setCommonUniforms(fxaaTonemapShader);
 
     quad3dInfo->draw();
 
 
     Game::instance->firstFullDrawFinished = true;
 }
-    
+
 void Renderer::lensBlur()
 {
     lensBlurFboVertical->use(true);
     lensBlurShader->use();
     mrtDistanceTexture->use(2);
     combineTexture->use(16);
-    FrustumCone *cone = currentCamera->cone;
-    lensBlurShader->setUniform("Resolution", glm::vec2(width, height));
-    lensBlurShader->setUniform("CameraPosition", currentCamera->transformation->position);
-    lensBlurShader->setUniform("FocalLength", currentCamera->focalLength);
-    lensBlurShader->setUniform("LensBlurSize", lensBlurSize);
-    lensBlurShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
-    lensBlurShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-    lensBlurShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
-    lensBlurShader->setUniform("Time", Game::instance->time);
+    setCommonUniforms(lensBlurShader);
 
     quad3dInfo->draw();
     lensBlurTextureVertical->generateMipMaps();
@@ -451,13 +449,7 @@ void Renderer::deferred()
     FrustumCone *cone = currentCamera->cone;
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
     deferredShader->use();
-    deferredShader->setUniform("UseAO", useAmbientOcclusion);
-    deferredShader->setUniform("VPMatrix", vpmatrix);
-    deferredShader->setUniform("Resolution", glm::vec2(width, height));
-    deferredShader->setUniform("CameraPosition", currentCamera->transformation->position);
-    deferredShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
-    deferredShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-    deferredShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
+    setCommonUniforms(deferredShader);
     mrtAlbedoRoughnessTex->use(0);
     mrtNormalMetalnessTex->use(1);
     mrtDistanceTexture->use(2);
@@ -488,14 +480,8 @@ void Renderer::deferred()
 
     glCullFace(GL_BACK);
     envProbesShader->use();
-    envProbesShader->setUniform("UseAO", useAmbientOcclusion);
-    envProbesShader->setUniform("VPMatrix", vpmatrix);
-    envProbesShader->setUniform("Resolution", glm::vec2(width, height));
     envProbesShader->setUniform("EnvProbesLightMultiplier", envProbesLightMultiplier);
-    envProbesShader->setUniform("CameraPosition", currentCamera->transformation->position);
-    envProbesShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
-    envProbesShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-    envProbesShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
+    setCommonUniforms(envProbesShader);
     for (int i = 0; i < probes.size(); i++) {
         probes[i]->texture->use(10);
         probes[i]->setUniforms();
@@ -510,18 +496,7 @@ void Renderer::ambientLight()
     return;
     ambientLightFbo->use(true);
     ambientLightShader->use();
-    FrustumCone *cone = currentCamera->cone;
-    glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
-    ambientLightShader->setUniform("VPMatrix", vpmatrix);
-    ambientLightShader->setUniform("Resolution", glm::vec2(width, height));
-    ambientLightShader->setUniform("CameraPosition", currentCamera->transformation->position);
-    ambientLightShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
-    ambientLightShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-    ambientLightShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
-    ambientLightShader->setUniform("Time", Game::instance->time);
-    ambientLightShader->setUniform("DayElapsed", dayElapsed);
-    ambientLightShader->setUniform("YearElapsed", yearElapsed);
-    ambientLightShader->setUniform("EquatorPoleMix", equatorPoleMix);
+    setCommonUniforms(ambientLightShader);
     quad3dInfo->draw();
 }
 
@@ -540,18 +515,7 @@ void Renderer::ambientOcclusion()
 {
     ambientOcclusionFbo->use(true);
     ambientOcclusionShader->use();
-    FrustumCone *cone = currentCamera->cone;
-    glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
-    ambientOcclusionShader->setUniform("VPMatrix", vpmatrix);
-    ambientOcclusionShader->setUniform("Resolution", glm::vec2(width, height));
-    ambientOcclusionShader->setUniform("DayElapsed", dayElapsed);
-    ambientOcclusionShader->setUniform("YearElapsed", yearElapsed);
-    ambientOcclusionShader->setUniform("EquatorPoleMix", equatorPoleMix);
-    ambientOcclusionShader->setUniform("CameraPosition", currentCamera->transformation->position);
-    ambientOcclusionShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
-    ambientOcclusionShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-    ambientOcclusionShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
-    ambientOcclusionShader->setUniform("Time", Game::instance->time);
+    setCommonUniforms(ambientOcclusionShader);
     quad3dInfo->draw();
 }
 
@@ -565,44 +529,8 @@ void Renderer::fog()
     FrustumCone *cone = currentCamera->cone;
     //   outputShader->setUniform("VPMatrix", vpmatrix);
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
-    fogShader->setUniform("VPMatrix", vpmatrix);
-    fogShader->setUniform("UseAO", useAmbientOcclusion);
-    fogShader->setUniform("UseGamma", useGammaCorrection);
-    fogShader->setUniform("Resolution", glm::vec2(width, height));
-    fogShader->setUniform("CameraPosition", currentCamera->transformation->position);
-    fogShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
-    fogShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-    fogShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
-    double t = glfwGetTime();
-    double t100 = t * 100.0;
-    double t001 = t * 0.001;
-    fogShader->setUniform("Time", (float)t);
-    fogShader->setUniform("T100", (float)t100);
-    fogShader->setUniform("T001", (float)t001);
-
-    fogShader->setUniform("CloudsFloor", cloudsFloor);
-    fogShader->setUniform("CloudsCeil", cloudsCeil);
-    fogShader->setUniform("CloudsThresholdLow", cloudsThresholdLow);
-    fogShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
-    fogShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
-    fogShader->setUniform("CloudsOffset", cloudsOffset);
-    fogShader->setUniform("DayElapsed", dayElapsed);
-    fogShader->setUniform("YearElapsed", yearElapsed);
-    fogShader->setUniform("EquatorPoleMix", equatorPoleMix);
-    fogShader->setUniform("AtmosphereScale", atmosphereScale);
-    fogShader->setUniform("CloudsDensityScale", cloudsDensityScale);
-    fogShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
-    fogShader->setUniform("CloudsDensityThresholdHigh", cloudsDensityThresholdHigh);
-    fogShader->setUniform("WaterWavesScale", waterWavesScale);
-    fogShader->setUniform("NoiseOctave1", noiseOctave1);
-    fogShader->setUniform("NoiseOctave2", noiseOctave2);
-    fogShader->setUniform("NoiseOctave3", noiseOctave3);
-    fogShader->setUniform("NoiseOctave4", noiseOctave4);
-    fogShader->setUniform("NoiseOctave5", noiseOctave5);
-    fogShader->setUniform("NoiseOctave6", noiseOctave6);
-    fogShader->setUniform("NoiseOctave7", noiseOctave7);
-    fogShader->setUniform("NoiseOctave8", noiseOctave8);
-   // csm->setUniformsAndBindSampler(fogShader, 24);
+    setCommonUniforms(fogShader);
+    // csm->setUniformsAndBindSampler(fogShader, 24);
     quad3dInfo->draw();
 }
 
@@ -613,7 +541,7 @@ void Renderer::waterMesh()
     waterMeshFbo->use(true);
     waterMeshShader->use();
     mrtDistanceTexture->use(2);
-   // skyboxTexture->use(3);
+    // skyboxTexture->use(3);
     deferredTexture->use(5);
     ambientLightTexture->use(6);
     ambientOcclusionTexture->use(16);
@@ -629,49 +557,8 @@ void Renderer::waterMesh()
     waterMeshTexture->use(21);
     combineTexture->use(22);
     waterTileTexture->use(23);
-    FrustumCone *cone = currentCamera->cone;
-    //   outputShader->setUniform("VPMatrix", vpmatrix);
-    glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
-    waterMeshShader->setUniform("VPMatrix", vpmatrix);
-    waterMeshShader->setUniform("UseAO", useAmbientOcclusion);
-    waterMeshShader->setUniform("MieScattCoeff", mieScattCoefficent);
-    waterMeshShader->setUniform("UseGamma", useGammaCorrection);
-    waterMeshShader->setUniform("Resolution", glm::vec2(width, height));
-    waterMeshShader->setUniform("CameraPosition", currentCamera->transformation->position);
-    waterMeshShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
-    waterMeshShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-    waterMeshShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
-    double t = glfwGetTime();
-    double t100 = t * 100.0;
-    double t001 = t * 0.001;
-    waterMeshShader->setUniform("Time", (float)t);
-    waterMeshShader->setUniform("T100", (float)t100);
-    waterMeshShader->setUniform("T001", (float)t001);
+    setCommonUniforms(waterMeshShader);
 
-    waterMeshShader->setUniform("CloudsFloor", cloudsFloor);
-    waterMeshShader->setUniform("CloudsCeil", cloudsCeil);
-    waterMeshShader->setUniform("CloudsThresholdLow", cloudsThresholdLow);
-    waterMeshShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
-    waterMeshShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
-    waterMeshShader->setUniform("CloudsOffset", cloudsOffset);
-    waterMeshShader->setUniform("DayElapsed", dayElapsed);
-    waterMeshShader->setUniform("YearElapsed", yearElapsed);
-    waterMeshShader->setUniform("EquatorPoleMix", equatorPoleMix);
-    waterMeshShader->setUniform("AtmosphereScale", atmosphereScale);
-    waterMeshShader->setUniform("CloudsDensityScale", cloudsDensityScale);
-    waterMeshShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
-    waterMeshShader->setUniform("CloudsDensityThresholdHigh", cloudsDensityThresholdHigh);
-    waterMeshShader->setUniform("WaterWavesScale", waterWavesScale);
-    waterMeshShader->setUniform("NoiseOctave1", noiseOctave1);
-    waterMeshShader->setUniform("NoiseOctave4", noiseOctave4);
-    waterMeshShader->setUniform("NoiseOctave5", noiseOctave5);
-    waterMeshShader->setUniform("NoiseOctave6", noiseOctave6);
-    waterMeshShader->setUniform("NoiseOctave7", noiseOctave7);
-    waterMeshShader->setUniform("NoiseOctave8", noiseOctave8);
-    waterMeshShader->setUniform("WaterScale", waterScale);
-    waterMeshShader->setUniform("WaterHeight", waterHeight);
-    waterMeshShader->setUniform("Wind", wind);
-   // csm->setUniformsAndBindSampler(waterMeshShader, 24);
     quad3dInfo->draw();
     //waterColorTexture->generateMipMaps();
 }
@@ -691,46 +578,8 @@ void Renderer::waterColorShaded()
         cloudsTextureEven->use(25);
         cloudsShadowsTextureEven->use(26);
     }
-    FrustumCone *cone = currentCamera->cone;
-    //   outputShader->setUniform("VPMatrix", vpmatrix);
-    glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
-    waterColorShader->setUniform("DayElapsed", dayElapsed);
-    waterColorShader->setUniform("YearElapsed", yearElapsed);
-    waterColorShader->setUniform("EquatorPoleMix", equatorPoleMix);
-    waterColorShader->setUniform("VPMatrix", vpmatrix);
-    waterColorShader->setUniform("Resolution", glm::vec2(width, height));
-    waterColorShader->setUniform("CameraPosition", currentCamera->transformation->position);
-    waterColorShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
-    waterColorShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-    waterColorShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
-    double t = glfwGetTime();
-    double t100 = t * 100.0;
-    double t001 = t * 0.001;
-    waterColorShader->setUniform("Time", (float)t);
-    waterColorShader->setUniform("T100", (float)t100);
-    waterColorShader->setUniform("T001", (float)t001);
 
-    waterColorShader->setUniform("CloudsFloor", cloudsFloor);
-    waterColorShader->setUniform("CloudsCeil", cloudsCeil);
-    waterColorShader->setUniform("CloudsThresholdLow", cloudsThresholdLow);
-    waterColorShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
-    waterColorShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
-    waterColorShader->setUniform("CloudsOffset", cloudsOffset);
-    waterColorShader->setUniform("AtmosphereScale", atmosphereScale);
-    waterColorShader->setUniform("CloudsDensityScale", cloudsDensityScale);
-    waterColorShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
-    waterColorShader->setUniform("CloudsDensityThresholdHigh", cloudsDensityThresholdHigh);
-    waterColorShader->setUniform("WaterWavesScale", waterWavesScale);
-    waterColorShader->setUniform("NoiseOctave1", noiseOctave1);
-    waterColorShader->setUniform("NoiseOctave4", noiseOctave4);
-    waterColorShader->setUniform("NoiseOctave5", noiseOctave5);
-    waterColorShader->setUniform("NoiseOctave6", noiseOctave6);
-    waterColorShader->setUniform("NoiseOctave7", noiseOctave7);
-    waterColorShader->setUniform("NoiseOctave8", noiseOctave8);
-    waterColorShader->setUniform("WaterScale", waterScale);
-    waterColorShader->setUniform("WaterHeight", waterHeight);
-    waterColorShader->setUniform("Wind", wind);
-   // csm->setUniformsAndBindSampler(waterColorShader, 24);
+    setCommonUniforms(waterColorShader);
     quad3dInfo->draw();
     //waterColorTexture->generateMipMaps();
 }
@@ -738,12 +587,7 @@ void Renderer::waterColorShaded()
 void Renderer::atmScatt()
 {
     atmScattShader->use();
-    atmScattShader->setUniform("Time", Game::instance->time);
-    atmScattShader->setUniform("DayElapsed", dayElapsed);
-    atmScattShader->setUniform("YearElapsed", yearElapsed);
-    atmScattShader->setUniform("EquatorPoleMix", equatorPoleMix);
-    atmScattShader->setUniform("Resolution", glm::vec2(atmScattTexture->width, atmScattTexture->height));
-    atmScattShader->setUniform("MieScattCoeff", mieScattCoefficent);
+    setCommonUniforms(atmScattShader);
 
     atmScattFbo->use(false);
     for (int i = 0; i < 6; i++) {
@@ -766,38 +610,9 @@ void Renderer::atmScatt()
 }
 
 void Renderer::clouds()
-{ 
+{
     cloudsShader->use();
-    cloudsShader->setUniform("Time", Game::instance->time);
-    cloudsShader->setUniform("CloudsFloor", cloudsFloor);
-    cloudsShader->setUniform("CloudsCeil", cloudsCeil);
-    cloudsShader->setUniform("MieScattCoeff", mieScattCoefficent);
-    cloudsShader->setUniform("CloudsThresholdLow", cloudsThresholdLow);
-    cloudsShader->setUniform("CloudsThresholdHigh", cloudsThresholdHigh);
-    cloudsShader->setUniform("CloudsWindSpeed", cloudsWindSpeed);
-    cloudsShader->setUniform("CloudsOffset", cloudsOffset);
-    cloudsShader->setUniform("DayElapsed", dayElapsed);
-    cloudsShader->setUniform("YearElapsed", yearElapsed);
-    cloudsShader->setUniform("EquatorPoleMix", equatorPoleMix);
-    cloudsShader->setUniform("AtmosphereScale", atmosphereScale);
-    cloudsShader->setUniform("CloudsDensityScale", cloudsDensityScale);
-    cloudsShader->setUniform("CloudsDensityThresholdLow", cloudsDensityThresholdLow);
-    cloudsShader->setUniform("CloudsDensityThresholdHigh", cloudsDensityThresholdHigh);
-    cloudsShader->setUniform("WaterWavesScale", waterWavesScale);
-    cloudsShader->setUniform("NoiseOctave1", noiseOctave1);
-    cloudsShader->setUniform("NoiseOctave2", noiseOctave2);
-    cloudsShader->setUniform("NoiseOctave3", noiseOctave3);
-    cloudsShader->setUniform("NoiseOctave4", noiseOctave4);
-    cloudsShader->setUniform("NoiseOctave5", noiseOctave5);
-    cloudsShader->setUniform("NoiseOctave6", noiseOctave6);
-    cloudsShader->setUniform("NoiseOctave7", noiseOctave7);
-    cloudsShader->setUniform("NoiseOctave8", noiseOctave8);
-    cloudsShader->setUniform("CloudsIntegrate", cloudsIntegrate);
-    cloudsShader->setUniform("Resolution", glm::vec2(cloudsTextureOdd->width, cloudsTextureOdd->height));
-    srand(static_cast <unsigned> (Game::instance->time * 1000.0));
-    cloudsShader->setUniform("Rand1", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
-    cloudsShader->setUniform("Rand2", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
-
+    setCommonUniforms(cloudsShader);
     // RENDER CLOUD COVERAGE::
     cloudsShader->setUniform("RenderPass", 0);
 
@@ -806,30 +621,30 @@ void Renderer::clouds()
         currentFbo = cloudsFboOdd;
     else
         currentFbo = cloudsFboEven;
-    if (cloudCycleUseOdd) 
+    if (cloudCycleUseOdd)
         cloudsTextureEven->use(18);
-    else 
+    else
         cloudsTextureOdd->use(18);
 
-   // for (int i = 0; i < 6; i++) {
-        currentFbo->use(false);
-        Camera* camera = currentFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, true);
-        camera->transformation->setPosition(currentCamera->transformation->position);
-        FrustumCone *cone = camera->cone;
-        glm::mat4 vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
-        glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
-        glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
-        camera->cone->update(inverse(rpmatrix));
-        cloudsShader->use();
-        cloudsShader->setUniform("VPMatrix", vpmatrix);
-        cloudsShader->setUniform("CameraPosition", camera->transformation->position);
-        cloudsShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
-        cloudsShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-        cloudsShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
-        currentFbo->use(false);
-        cloudsShader->use();
-        quad3dInfo->draw();
-   // }
+    // for (int i = 0; i < 6; i++) {
+    currentFbo->use(false);
+    Camera* camera = currentFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, true);
+    camera->transformation->setPosition(currentCamera->transformation->position);
+    FrustumCone *cone = camera->cone;
+    glm::mat4 vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
+    glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
+    glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
+    camera->cone->update(inverse(rpmatrix));
+    cloudsShader->use();
+    cloudsShader->setUniform("VPMatrix", vpmatrix);
+    cloudsShader->setUniform("CameraPosition", camera->transformation->position);
+    cloudsShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
+    cloudsShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
+    cloudsShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
+    currentFbo->use(false);
+    cloudsShader->use();
+    quad3dInfo->draw();
+    // }
 
     if (cloudCycleUseOdd)
         cloudsTextureOdd->generateMipMaps();

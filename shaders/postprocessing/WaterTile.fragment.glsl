@@ -35,7 +35,7 @@ float heightwater(vec2 uv) {
     float freq = 0.16;
     float amp = 1.0;
     uv *= 192.1;
-    float choppy =3.0;
+    float choppy =5.0;
     
     float d, h = 0.0; 
     float a = 0.0;

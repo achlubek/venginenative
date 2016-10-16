@@ -99,7 +99,7 @@ float fbm(vec3 p){
     p *= 0.001;
 	float a = 0.0;
     float w = 1.0;
-	for(int i=0;i<5;i++){
+	for(int i=0;i<4;i++){
 		a += noise3d(p) * w;	
         w *= 0.5;
 		p = p * 4.0;
@@ -108,9 +108,9 @@ float fbm(vec3 p){
 }
 float cloudsDensity3D(vec3 pos){
     vec3 ps = pos +CloudsOffset * 111;// + wtim;   
-    ps += (getWind(pos * 0.0005  * WindBigScale) * WindBigPower) * 2600.0;
+    ps += (getWind(pos * 0.0005  * WindBigScale) * WindBigPower) * 12600.0;
    // ps.z += Time * 10.0;
-    float density = 1.0 - fbm(ps * 0.05 + 0.5 * fbm(ps * 0.03));
+    float density = 1.0 - fbm(ps * 0.05);
     float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh,  density);
     return  init;
 }
@@ -129,14 +129,14 @@ Sphere sphere2;
 float weightshadow = 2.0;
 float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
     float iter = 0.0;
-    const int stepcount = 5;
+    const int stepcount = 14;
     const float stepsize = 1.0 / float(stepcount);
     float rd = rand2sTime(UV) * stepsize;
     float coverageinv = 1.0;
     float linear = distance(p1, mix(p1, p2, stepsize));
     float mult = weightshadow * stepsize * CloudsDensityScale;
     for(int i=0;i<stepcount;i++){
-        iter += rd;
+        iter += stepsize;
         vec3 pos = mix(p1, p2, iter + rd);
         float clouds = cloudsDensity3D(pos);
         coverageinv -= clouds * mult;
@@ -178,7 +178,7 @@ vec2 internalmarchconservative(vec3 p1, vec3 p2){
     return vec2(cv, depr);
 }
 
-float hash1x = UV.x * UV.y * Time;
+float hash1x = UV.x + UV.y + Time;
 vec3 randdir(){
     float x = rand2sTime(UV * hash1x);
     hash1x += 0.5451;
@@ -209,7 +209,10 @@ float shadows(){
     vec3 hitman = viewdir * data.g;
     sphere1 = Sphere(vec3(0), planetradius + CloudsFloor);
     sphere2 = Sphere(vec3(0), planetradius + CloudsCeil);
-    return data.r < 0.001 ? 1.0 : (getAO(hitman, 0.0) * 0.9 + getAO(hitman, 1.5) * 0.1);
+    float mx1  = clamp(0.0, 1.0, MieScattCoeff * 0.2) * 0.5 + 0.5;
+    float ao = (1.0 - mx1) * clamp(getAO(hitman, 0.0) * 2.0, 0.0, 1.0);
+    ao += mx1 * clamp(getAO(hitman, 0.9) * 2.0, 0.0, 1.0);
+    return data.r < 0.001 ? 1.0 : ( ao );
 }
 
 #define intersects(a) (a >= 0.0)

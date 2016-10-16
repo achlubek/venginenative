@@ -61,7 +61,6 @@ vec4 getLighting(){
     float roughness = clamp((pow(mipmap1 / textureQueryLevels(waterTileTex), 1.0)) * WaterWavesScale, 0.0, 0.5) ;
     
     vec3 normal = normalx(hitpos, 0.53, roughness);
- //   normal = normalize(normal + normalx(hitpos * 10.0, 0.23, roughness));
     
     vec3 dr2 = reconstructCameraSpaceDistance(UV + vec2(px.x, 0.0), 1.0);
     vec3 dr3 = reconstructCameraSpaceDistance(UV + vec2(0.0, px.y), 1.0);

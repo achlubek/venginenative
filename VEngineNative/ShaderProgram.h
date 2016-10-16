@@ -7,6 +7,7 @@
 #define SHADER_VARIABLE_TYPE_IVEC3 6
 #define SHADER_VARIABLE_TYPE_VEC4 7
 #define SHADER_VARIABLE_TYPE_IVEC4 8 
+#include <unordered_map>
 class ShaderProgram
 {
 public:
@@ -68,7 +69,7 @@ private:
     string tessControlFile;
     string tessEvalFile;
     string computeFile;
-    map<string, GLint> uniformLocationsMap;
+    std::unordered_map<string, GLint> uniformLocationsMap;
 
     GLint getUniformLocation(const string &name);
     void compile();
