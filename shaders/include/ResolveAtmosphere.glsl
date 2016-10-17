@@ -100,7 +100,7 @@ vec3 shadingNonMetalic(PostProceessingData data, vec3 lightDir, vec3 color){
 }
     
 vec3 getDiffuseAtmosphereColor(){
-    return textureLod(atmScattTex, VECTOR_UP, textureQueryLevels(atmScattTex) ).rgb;
+    return textureLod(atmScattTex, VECTOR_UP, textureQueryLevels(atmScattTex) - 1.0).rgb;
 }
 
 vec3 getSunColor(float roughness){
@@ -222,7 +222,7 @@ float lenssun(vec3 dir){
 vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float dimmer = max(0, 0.06 + 0.94 * dot(normalize(dayData.sunDir), vec3(0,1,0)));
     vec3 scattering = getAtmosphereScattering(dir, roughness);
-    vec3 diffuse = getDiffuseAtmosphereColor() * (1.0 - pow(1.0 - dimmer, 1.0)) * ( (1.0 - max(0.0, dayData.sunDir.y)) * 0.5 + 0.5);
+    vec3 diffuse = getDiffuseAtmosphereColor();// * (1.0 - pow(1.0 - dimmer, 1.0)) * ( (1.0 - max(0.0, dayData.sunDir.y)) * 0.5 + 0.5);
     vec3 direct = getSunColor(roughness);
    // scattering *= godrays(dir) ;
     vec3 moon = textureMoon(dir);

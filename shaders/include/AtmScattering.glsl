@@ -68,7 +68,8 @@ vec3 mydumbassscatteringfunction(vec3 dir, vec3 sun){
 }
 
 vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
-    return smoothstep(-0.1, 0.0, dir.y) * (0.3 * mydumbassscatteringfunction(dir, sunpos) +
+    dir.y = abs(dir.y);
+    return (0.3 * mydumbassscatteringfunction(dir, sunpos) +
      3.0 * atmosphere(
         dir,           // normalized ray direction
         vec3(0,planetradius  ,0) + origin,               // ray origin

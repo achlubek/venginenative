@@ -37,6 +37,9 @@ uniform float MieScattCoeff;
 
 #export float WindBigScale
 #export float WindBigPower
+#export float FBM1
+#export float FBM2
+#export float FBMSCALE
 
 
 layout(binding = 18) uniform samplerCube cloudsCloudsTex;
@@ -96,15 +99,17 @@ float cloudsDensity3DXXXX(vec3 pos){
 } */
 #define fbm fbm_alu
 float fbm(vec3 p){
-    p *= 0.001;
+    p *= 0.001 * FBMSCALE;
 	float a = 0.0;
     float w = 1.0;
-	for(int i=0;i<4;i++){
+    float wc = 0.0;
+	for(int i=0;i<5;i++){
 		a += noise3d(p) * w;	
-        w *= 0.5;
-		p = p * 4.0;
+        w *= FBM1 * 0.5;
+        wc+=w;
+		p = p * FBM2 * 4.0;
 	}
-	return a;
+	return a / wc;
 }
 float cloudsDensity3D(vec3 pos){
     vec3 ps = pos +CloudsOffset * 111;// + wtim;   
@@ -125,7 +130,7 @@ float rand2sTime(vec2 co){
 
 Sphere sphere1;
 Sphere sphere2;
-
+    
 float weightshadow = 2.0;
 float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
     float iter = 0.0;
@@ -134,12 +139,12 @@ float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
     float rd = rand2sTime(UV) * stepsize;
     float coverageinv = 1.0;
     float linear = distance(p1, mix(p1, p2, stepsize));
-    float mult = weightshadow * stepsize * CloudsDensityScale;
+    float mult = linear * 0.01 * weightshadow * stepsize * CloudsDensityScale;
     for(int i=0;i<stepcount;i++){
-        iter += stepsize;
         vec3 pos = mix(p1, p2, iter + rd);
         float clouds = cloudsDensity3D(pos);
-        coverageinv -= clouds * mult;
+        coverageinv *= max(0.0, 1.0 - clouds * mult);
+        iter += stepsize;
      //   if(coverageinv <= 0.0) break;
     }
     return  clamp(coverageinv, 0.0, 1.0);
@@ -197,8 +202,12 @@ float getAO(vec3 pos, float randomization){
     Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
     float hitceil = rsi2(r, sphere2);
     float hitfloor = rsi2(r, sphere1);
-    //vec3 posceil = hitfloor < hitceil && hitfloor > 0.0 ? (pos + dir * min(hitfloor, planetradius * 0.01)) : (pos + dir * min(hitceil, planetradius * 0.01));
-    vec3 posceil = pos + dir * min(hitceil, planetradius * 0.01);
+    vec3 posceil = pos + dir * hitceil;
+    vec3 posfloor = pos + dir * hitfloor;
+    if(hitfloor > 0.0 && hitceil > 0.0 && hitfloor < hitceil) return internalmarchconservativeCoverageOnly(pos, posceil);
+    if(hitfloor > 0.0 && hitceil > 0.0 && hitfloor > hitceil) return internalmarchconservativeCoverageOnly(pos, posceil);
+    if(hitfloor > 0.0 && hitceil <= 0.0) return internalmarchconservativeCoverageOnly(pos, posfloor);
+    if(hitfloor <= 0.0 && hitceil > 0.0) return internalmarchconservativeCoverageOnly(pos, posceil);
     return internalmarchconservativeCoverageOnly(pos, posceil);
 }
 
@@ -210,9 +219,9 @@ float shadows(){
     sphere1 = Sphere(vec3(0), planetradius + CloudsFloor);
     sphere2 = Sphere(vec3(0), planetradius + CloudsCeil);
     float mx1  = clamp(0.0, 1.0, MieScattCoeff * 0.2) * 0.5 + 0.5;
-    float ao = (1.0 - mx1) * clamp(getAO(hitman, 0.0) * 2.0, 0.0, 1.0);
-    ao += mx1 * clamp(getAO(hitman, 0.9) * 2.0, 0.0, 1.0);
-    return data.r < 0.001 ? 1.0 : ( ao );
+    float sun = getAO(hitman, 1.0) + (0.5 + max(0.0, (getAO(hitman, 1.0) * 2.0 - 1.0 ))) * 0.2 + getAO(hitman, 0.0);
+    float sss = 1.0 - getAO(hitman, 2.0);
+    return data.r < 0.001 ? 1.0 : (sun);
 }
 
 #define intersects(a) (a >= 0.0)
