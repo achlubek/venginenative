@@ -60,7 +60,8 @@ vec4 getLighting(){
     mipmap1 = textureQueryLod(waterTileTex, hitpos.xz * WaterScale *  octavescale1).x * 0.6;
     float roughness = clamp((pow(mipmap1 / textureQueryLevels(waterTileTex), 1.0)) * WaterWavesScale, 0.0, 0.5) ;
     
-    vec3 normal = normalx(hitpos, 0.53, roughness);
+    vec3 normal = normalx(hitpos, 0.153, roughness);
+    vec3 normal2 = normalx(hitpos, 31.53, roughness);
     
     vec3 dr2 = reconstructCameraSpaceDistance(UV + vec2(px.x, 0.0), 1.0);
     vec3 dr3 = reconstructCameraSpaceDistance(UV + vec2(0.0, px.y), 1.0);
@@ -91,7 +92,7 @@ vec4 getLighting(){
         normal = normalize(X);
     }*/
    // return vec3(roughness);
-
+   
    vec3 result = vec3(0);
 
     vec3 origdir = dir;
@@ -142,10 +143,17 @@ vec4 getLighting(){
         result += mixing * textureLod(inputTex, uvX, roughnessToMipmap(roughness, inputTex)).rgb * max(0.0, 1.0 - fresnel);
     }
     
- //   float ssscoeff = mix(0.3, 0.3 + 0.7 * pow(1.0 - distance(hitpos, newpos) / distance(newpos, newpos2), 2.0), clamp(WaterWavesScale * 0.5, 0.0, 1.0));
+    float planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
+    float planethit2 = intersectPlane(CameraPosition, dir, vec3(0.0, WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
+
+    vec3 newpos = CameraPosition + dir * planethit;
+    vec3 newpos2 = CameraPosition + dir * planethit2;
+    
+    float ssscoeff =(1.0 - max(0.0, dot(dayData.sunDir, normal2))) * dayData.sunDir.y * dayData.sunDir.y;
+   // float ssscoeff =  pow(0.74 * ((hitpos.y - WaterLevel) / waterdepth), 6.0);
     //ssscoeff *= 1.0 - max(0, dot(origdir, -normal));
-    float ssscoeff = 0.1 * (1.0 - fresnel);
-    vec3 waterSSScolor = vec3(0.01, 0.49, 0.65) * getDiffuseAtmosphereColor() * 1.2 * (1.0 - fresnel)  * ssscoeff;
+    //float ssscoeff = 0.1 * (1.0 - fresnel);
+    vec3 waterSSScolor = vec3(0.01, 0.49, 0.65) * getDiffuseAtmosphereColor() * 1.2  * ssscoeff;
     result += waterSSScolor;
     
          

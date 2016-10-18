@@ -219,7 +219,7 @@ float shadows(){
     sphere1 = Sphere(vec3(0), planetradius + CloudsFloor);
     sphere2 = Sphere(vec3(0), planetradius + CloudsCeil);
     float mx1  = clamp(0.0, 1.0, MieScattCoeff * 0.2) * 0.5 + 0.5;
-    float sun = getAO(hitman, 1.0) + (0.5 + max(0.0, (getAO(hitman, 1.0) * 2.0 - 1.0 ))) * 0.2 + getAO(hitman, 0.0);
+    float sun = getAO(hitman, 1.0);// + (0.5 + max(0.0, (getAO(hitman, 1.0) * 2.0 - 1.0 ))) * 0.2 + getAO(hitman, 0.0);
     float sss = 1.0 - getAO(hitman, 2.0);
     return data.r < 0.001 ? 1.0 : (sun);
 }
