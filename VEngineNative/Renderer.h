@@ -9,6 +9,7 @@
 #include "CascadeShadowMap.h";
 #include "ShaderStorageBuffer.h";
 #include "FrustumCone.h";
+#include "INIReader.h";
 class Renderer
 {
 public:
@@ -51,6 +52,7 @@ public:
     glm::vec3 wind;
     glm::vec2 waterScale;
     float waterHeight;
+    float waterSpeed;
     int width;
     int height;
 private:
@@ -58,6 +60,8 @@ private:
     void initializeFbos();
     void destroyFbos(bool onlyViewDependant);
     void setCommonUniforms(ShaderProgram *  sp);
+
+    INIReader *config;
 
     CascadeShadowMap *csm;
 

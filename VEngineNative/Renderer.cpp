@@ -6,6 +6,8 @@
 
 Renderer::Renderer(int iwidth, int iheight)
 {
+    config = new INIReader("renderer.ini");
+
     envProbesLightMultiplier = 1.0;
     width = iwidth;
     height = iheight;
@@ -36,6 +38,7 @@ Renderer::Renderer(int iwidth, int iheight)
     lensBlurSize = 0.0;
     waterScale = glm::vec2(1.0f, 1.5f);
     waterHeight = 0.3f;
+    waterSpeed = 1.0f;
     wind = glm::normalize(glm::vec3(0.3, 0.0, 0.3));
     gpuInitialized = false;
 
@@ -122,7 +125,7 @@ void Renderer::initializeFbos()
     ambientLightFbo = new Framebuffer();
     ambientLightFbo->attachTexture(ambientLightTexture, GL_COLOR_ATTACHMENT0);
 
-    waterTileTexture = new Texture2d(1024 * 4, 1024 * 4, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    waterTileTexture = new Texture2d(config->geti("water_tile_resolution"), config->geti("water_tile_resolution"), GL_R16F, GL_RED, GL_HALF_FLOAT);
     waterTileFbo = new Framebuffer();
     waterTileFbo->attachTexture(waterTileTexture, GL_COLOR_ATTACHMENT0);
 
@@ -136,7 +139,7 @@ void Renderer::initializeFbos()
 
     //----*-*-*-*-*-*-*/
 
-    waterMeshTexture = new Texture2d(width / 2, height / 2, GL_R32F, GL_RED, GL_FLOAT);
+    waterMeshTexture = new Texture2d(width * config->getf("water_mesh_resolution_multiplier"), height * config->getf("water_mesh_resolution_multiplier"), GL_R32F, GL_RED, GL_FLOAT);
     waterMeshFbo = new Framebuffer();
     waterMeshFbo->attachTexture(waterMeshTexture, GL_COLOR_ATTACHMENT0);
 
@@ -146,21 +149,21 @@ void Renderer::initializeFbos()
 
     //---------/
 
-    cloudsTextureEven = new CubeMapTexture(512, 512, GL_RG32F, GL_RG, GL_FLOAT);
+    cloudsTextureEven = new CubeMapTexture(config->geti("clouds_coverage_resolution"), config->geti("clouds_coverage_resolution"), GL_RG32F, GL_RG, GL_FLOAT);
     cloudsFboEven = new CubeMapFramebuffer();
     cloudsFboEven->attachTexture(cloudsTextureEven, GL_COLOR_ATTACHMENT0);
 
-    cloudsTextureOdd = new CubeMapTexture(512, 512, GL_RG32F, GL_RG, GL_FLOAT);
+    cloudsTextureOdd = new CubeMapTexture(config->geti("clouds_coverage_resolution"), config->geti("clouds_coverage_resolution"), GL_RG32F, GL_RG, GL_FLOAT);
     cloudsFboOdd = new CubeMapFramebuffer();
     cloudsFboOdd->attachTexture(cloudsTextureOdd, GL_COLOR_ATTACHMENT0);
 
     //
 
-    cloudsShadowsTextureEven = new CubeMapTexture(512, 512, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    cloudsShadowsTextureEven = new CubeMapTexture(config->geti("clouds_shadows_resolution"), config->geti("clouds_shadows_resolution"), GL_R16F, GL_RED, GL_HALF_FLOAT);
     cloudsShadowsFboEven = new CubeMapFramebuffer();
     cloudsShadowsFboEven->attachTexture(cloudsShadowsTextureEven, GL_COLOR_ATTACHMENT0);
 
-    cloudsShadowsTextureOdd = new CubeMapTexture(512, 512, GL_R16F, GL_RED, GL_HALF_FLOAT);
+    cloudsShadowsTextureOdd = new CubeMapTexture(config->geti("clouds_shadows_resolution"), config->geti("clouds_shadows_resolution"), GL_R16F, GL_RED, GL_HALF_FLOAT);
     cloudsShadowsFboOdd = new CubeMapFramebuffer();
     cloudsShadowsFboOdd->attachTexture(cloudsShadowsTextureOdd, GL_COLOR_ATTACHMENT0);
 
@@ -289,6 +292,7 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
 
     sp->setUniform("WaterScale", waterScale);
     sp->setUniform("WaterHeight", waterHeight);
+    sp->setUniform("WaterSpeed", waterSpeed);
     sp->setUniform("Wind", wind);
     sp->setUniform("NightSkyLightPollution", nightSkyLightPollution);
     sp->setUniform("Rand1", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
@@ -505,6 +509,7 @@ void Renderer::waterTile()
     waterTileTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     waterTileFbo->use(true);
     waterTileShader->use();
+    waterTileShader->setUniform("WaterSpeed", waterSpeed);
     waterTileShader->setUniform("Resolution", glm::vec2(width, height));
     waterTileShader->setUniform("Time", Game::instance->time);
     quad3dInfo->draw();

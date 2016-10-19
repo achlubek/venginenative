@@ -17,10 +17,14 @@ layout(binding = 28) uniform sampler2D moonTex;
 uniform float WaterHeight;
 uniform vec3 Wind;
 uniform vec2 WaterScale;
-float octavescale1 = 0.0018;
+float octavescale1 = 0.0008;
 float mipmap1 = 0.0;
 float heightwater(vec2 uv){
-    return textureLod(waterTileTex, uv * WaterScale * 0.0018, mipmap1).r;
+    return textureLod(waterTileTex, uv * WaterScale * 0.0008, mipmap1).r;
+}
+float maxmip = textureQueryLevels(waterTileTex);
+float heightwaterD(vec2 uv, float mipmap){
+    return textureLod(waterTileTex, uv * WaterScale * 0.0008, mipmap * maxmip).r;
 }
 
 
@@ -55,13 +59,17 @@ vec4 getLighting(){
     if(hitdist < 0.0) return  textureLod(inputTex, UV, 0.0);
     vec3 hitpos = CameraPosition + reconstructCameraSpaceDistance(UV, hitdist);
    // return hitdist * vec4(0.01);
+    float height1  = heightwater(hitpos.xz);
+    float height2  = heightwaterD(hitpos.xz, 0.6);
     
     vec2 px = 1.0 / Resolution;
     mipmap1 = textureQueryLod(waterTileTex, hitpos.xz * WaterScale *  octavescale1).x * 0.6;
     float roughness = clamp((pow(mipmap1 / textureQueryLevels(waterTileTex), 1.0)) * WaterWavesScale, 0.0, 0.5) ;
     
-    vec3 normal = normalx(hitpos, 0.153, roughness);
+    vec3 normal = normalx(hitpos, 0.53, roughness);
+    normal = normalize(normal + normalx(hitpos * 11.2467, 0.53, roughness) * 0.5);
     vec3 normal2 = normalx(hitpos, 31.53, roughness);
+    vec3 normal3 = normalx(hitpos, 5.53, roughness);
     
     vec3 dr2 = reconstructCameraSpaceDistance(UV + vec2(px.x, 0.0), 1.0);
     vec3 dr3 = reconstructCameraSpaceDistance(UV + vec2(0.0, px.y), 1.0);
@@ -149,12 +157,15 @@ vec4 getLighting(){
     vec3 newpos = CameraPosition + dir * planethit;
     vec3 newpos2 = CameraPosition + dir * planethit2;
     
-    float ssscoeff =(1.0 - max(0.0, dot(dayData.sunDir, normal2))) * dayData.sunDir.y * dayData.sunDir.y;
+    float ssscoeff = pow(max(0, height1 - height2) * WaterWavesScale * 0.3 * 0.5 + 0.5, 2.0);
+    //float ssscoeff =(1.0 - max(0.0, dot(dayData.sunDir, normal2))) * dayData.sunDir.y * dayData.sunDir.y;
+   // float ssscoeff2 =(1.0 - max(0.0, dot(VECTOR_UP, normal3))) * dayData.sunDir.y * dayData.sunDir.y;
    // float ssscoeff =  pow(0.74 * ((hitpos.y - WaterLevel) / waterdepth), 6.0);
     //ssscoeff *= 1.0 - max(0, dot(origdir, -normal));
     //float ssscoeff = 0.1 * (1.0 - fresnel);
-    vec3 waterSSScolor = vec3(0.01, 0.49, 0.65) * getDiffuseAtmosphereColor() * 1.2  * ssscoeff;
+    vec3 waterSSScolor = vec3(0.01, 0.49, 0.65) * getDiffuseAtmosphereColor() * 1.0  * ssscoeff;
     result += waterSSScolor;
+   // result += 1.0 - smoothstep(0.002, 0.003, ssscoeff2);
     
          
      return vec4(result, 1.0);

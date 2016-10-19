@@ -95,7 +95,7 @@ float edgeDetect(vec2 uv){
 }*/
 
 vec4 shade(){    
-    vec3 color = fxaa(inputTex, UV).rgb;
+    vec3 color = texture(inputTex, UV).rgb;
    // vec3 t = textureLod(inputTex, UV, 1.0).rgb;
    // float d = distance(color, t);
   //  color = mix(color, textureLod(inputTex, UV, 2.0).rgb, smoothstep(0.0,  length(vec3(1.0)),d));

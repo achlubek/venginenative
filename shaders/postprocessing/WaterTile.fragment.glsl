@@ -5,6 +5,7 @@
 layout(binding = 16) uniform sampler2D inputTex;
 
 uniform float Time;
+uniform float WaterSpeed;
 
 
 float hashX( float n ){
@@ -52,8 +53,8 @@ float heightwaterHI(vec2 pos){
     float w = 0.0;
     float wz = 1.0;
     float chop = 6.0;
-    float tmod = 22.1;
-    for(int i=0;i<8;i++){
+    float tmod = 22.1 * WaterSpeed;
+    for(int i=0;i<6;i++){
         vec2 t = vec2(noise2X(pos)*2.0 +  tmod * Time*0.001);
         res += wz * snoisesinpow(pos + t.yx, chop);
         res += wz * snoisesinpow(pos - t.yx, chop);

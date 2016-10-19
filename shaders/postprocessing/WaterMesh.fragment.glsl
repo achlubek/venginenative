@@ -21,7 +21,7 @@ float intersectPlane(vec3 origin, vec3 direction, vec3 point, vec3 normal)
 #define intersects(a) (a >= 0.0)
 
 float heightwater(vec2 uv){
-    return textureLod(waterTileTex, uv * WaterScale * 0.0018, 0.0).r;
+    return textureLod(waterTileTex, uv * WaterScale * 0.0008, 0.0).r;
 }
 
 float raymarchwater3(vec3 start, vec3 end, int stepsI){
