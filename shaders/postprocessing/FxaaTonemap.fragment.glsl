@@ -77,6 +77,11 @@ vec3 tonemap(vec3 xa){
     //return retColor;
 }
 
+float vignette(vec2 uv, float scale, float strength){
+    float d = length(uv * 2.0 - 1.0) * scale;
+    return (1.0 - max(0.0, d - 1.0)) * strength + (1.0 - strength);
+}
+
 
 /*
 float edgeDetect(vec2 uv){
@@ -95,12 +100,13 @@ float edgeDetect(vec2 uv){
 }*/
 
 vec4 shade(){    
-    vec3 color = texture(inputTex, UV).rgb;
+    vec3 color = fxaa(inputTex, UV).rgb;
    // vec3 t = textureLod(inputTex, UV, 1.0).rgb;
    // float d = distance(color, t);
   //  color = mix(color, textureLod(inputTex, UV, 2.0).rgb, smoothstep(0.0,  length(vec3(1.0)),d));
     
    // vec3 color = textureLod(inputTex, UV, float(textureQueryLevels(inputTex) - 2.0)).rgb;
    // vec3 color = BoKeH(UV);
+   //return vec4(vignette(UV, 1.2, 1.0));
     return vec4(tonemap(color), 1.0);
 }

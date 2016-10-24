@@ -73,19 +73,27 @@ vec3 shadingMetalic(PostProceessingData data, vec3 lightDir, vec3 color){
     float x = 1.0 - max(0, dot(lightDir, data.originalNormal));
     return shade(CameraPosition, newBase, data.normal, data.worldPos, data.worldPos - lightDir * 1.0, color,  max(0.004, data.roughness), false) * mix(x, pow(x, 8.0), 1.0 - data.roughness);
 }
-float sun(vec3 dir, vec3 sundir, float gloss, float ansio){
-    float dt = clamp(dot(dir, sundir) + 0.001, 0.0, 1.0);
+float sun(vec3 dir, vec3 sundir, float gloss, float ansiox){
   //  float dt2 = max(0, dot(normalize(vec3(dir.x, abs(sundir.y), dir.z)), sundir));
  //   float dty = 1.0 - max(0, abs(dir.y - sundir.y));
    // dt = mix(dt, dt2, ansio);
     //return dt;
-    return pow(dt, 1121.0 * gloss * gloss * gloss * gloss * gloss + 1.0) * (200.0 * gloss + 10.0) * smoothstep(-0.02, -0.01, sundir.y);
+    float ansio = pow(abs(dir.y), 2.0);
+    //dir.y *= 0.1 + 0.9 * gloss * gloss;
+    //sundir.y *= 0.1 + 0.9 * gloss * gloss;
+   // dir.y *= 0.1 + 0.9 * ansio;
+   // sundir.y *= 0.1 + 0.9 * ansio;
+   // dir = normalize(dir);
+   // sundir = normalize(sundir);
+    float dt = clamp(dot(dir, sundir) + 0.0, 0.0, 1.0);
+    return pow(dt, 521.0 * gloss * gloss * gloss * gloss * gloss + 111.0) * (101.0 * gloss + 10.0) * smoothstep(-0.02, -0.01, sundir.y);
    // return smoothstep(0.997, 1.0, dt);
 }
 float sshadow = 1.0;
-vec3 shadingWater(PostProceessingData data, vec3 lightDir, vec3 colorA, vec3 colorB){
-    float fresnel = getthatfuckingfresnel(0.04, data.normal, normalize(data.cameraPos), 0.0);
-    return sshadow * sun(data.normal, dayData.sunDir, 1.0 - data.roughness , data.roughness) * 1.0 * colorA * fresnel + colorB * (1.0 - fresnel);
+vec3 shadingWater(PostProceessingData data, vec3 n, vec3 lightDir, vec3 colorA, vec3 colorB){
+    float fresnel = getthatfuckingfresnel(0.02, n, normalize(data.cameraPos), 0.0);
+    return sshadow * sun(reflect(normalize(data.cameraPos), n), dayData.sunDir, 1.0 - data.roughness , data.roughness) * 1.0 * colorA * fresnel + colorB * ( fresnel);
+   // return  colorB * (  fresnel);
 }
 
 
@@ -127,6 +135,7 @@ vec4 projectvdao2(vec3 pos){
 }
 
 float godrays(vec3 dir, int steps){
+    if(NoiseOctave1 <= 0.011) return 1.0;
     float bias = 58.0 / float(steps);
     float stepsize = 1.0 / float(steps);
     float rd = rand2sTime(UV) * stepsize;
@@ -233,7 +242,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     sshadow = 1.0 - coverage;
     float dist = cloudsData.g;
     float shadow = cloudsData.b;
-    float rays = godrays(dir, raysteps);
+    float rays = 1.0;//godrays(dir, raysteps);
         
     vec3 cloud = mix(diffuse * rays, direct, shadow);
     return mix(scattering * rays * monsoonconverage + moon, monsoonconverage * cloud, coverage);

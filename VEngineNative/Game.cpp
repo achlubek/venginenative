@@ -118,7 +118,7 @@ void Game::renderThread()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 //#ifdef _DEBUG
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+   // glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 //#endif
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
     //int count;
@@ -155,7 +155,7 @@ void Game::renderThread()
 //    glfwSetKeyCallback(window, glfwKeyCallback);
 
 //#ifdef _DEBUG
-    glDebugMessageCallback(&debugCallback, NULL);
+  //  glDebugMessageCallback(&debugCallback, NULL);
 //#endif
 
     printf("VERSION: %s\nVENDOR: %s", glGetString(GL_VERSION), glGetString(GL_VENDOR));

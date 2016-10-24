@@ -9,24 +9,24 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tester", "Tester\Tester.vcx
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
+		NotOptimization|x64 = NotOptimization|x64
+		NotOptimization|x86 = NotOptimization|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{71125D6E-F4CA-4291-911D-5FEC57635065}.Debug|x64.ActiveCfg = Debug|x64
-		{71125D6E-F4CA-4291-911D-5FEC57635065}.Debug|x64.Build.0 = Debug|x64
-		{71125D6E-F4CA-4291-911D-5FEC57635065}.Debug|x86.ActiveCfg = Debug|Win32
-		{71125D6E-F4CA-4291-911D-5FEC57635065}.Debug|x86.Build.0 = Debug|Win32
+		{71125D6E-F4CA-4291-911D-5FEC57635065}.NotOptimization|x64.ActiveCfg = NotOptimization|x64
+		{71125D6E-F4CA-4291-911D-5FEC57635065}.NotOptimization|x64.Build.0 = NotOptimization|x64
+		{71125D6E-F4CA-4291-911D-5FEC57635065}.NotOptimization|x86.ActiveCfg = NotOptimization|Win32
+		{71125D6E-F4CA-4291-911D-5FEC57635065}.NotOptimization|x86.Build.0 = NotOptimization|Win32
 		{71125D6E-F4CA-4291-911D-5FEC57635065}.Release|x64.ActiveCfg = Release|x64
 		{71125D6E-F4CA-4291-911D-5FEC57635065}.Release|x64.Build.0 = Release|x64
 		{71125D6E-F4CA-4291-911D-5FEC57635065}.Release|x86.ActiveCfg = Release|Win32
 		{71125D6E-F4CA-4291-911D-5FEC57635065}.Release|x86.Build.0 = Release|Win32
-		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.Debug|x64.ActiveCfg = Debug|x64
-		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.Debug|x64.Build.0 = Debug|x64
-		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.Debug|x86.ActiveCfg = Debug|Win32
-		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.Debug|x86.Build.0 = Debug|Win32
+		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.NotOptimization|x64.ActiveCfg = NotOptimization|x64
+		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.NotOptimization|x64.Build.0 = NotOptimization|x64
+		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.NotOptimization|x86.ActiveCfg = NotOptimization|Win32
+		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.NotOptimization|x86.Build.0 = NotOptimization|Win32
 		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.Release|x64.ActiveCfg = Release|x64
 		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.Release|x64.Build.0 = Release|x64
 		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.Release|x86.ActiveCfg = Release|Win32

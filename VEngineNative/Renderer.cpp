@@ -616,6 +616,7 @@ void Renderer::atmScatt()
 
 void Renderer::clouds()
 {
+    return;
     cloudsShader->use();
     setCommonUniforms(cloudsShader);
     // RENDER CLOUD COVERAGE::

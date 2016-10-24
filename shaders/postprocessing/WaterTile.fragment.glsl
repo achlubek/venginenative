@@ -43,25 +43,23 @@ float noise2X( in vec2 x ){
     return res;
 }
 
-#include noise3D.glsl
-#include noise2D.glsl
-
-#define cosinelinear(a) smoothstep(0.0, 1.0, a)
-#define snoisesinpow(a,b) pow(1.0 - cosinelinear(abs(snoise2d(a) )), b)
+#define cosinelinear(a) (smoothstep(0.0, 1.0, a) * 0.7 + 0.4 * a)
+#define snoisesinpow(a,b) pow(1.0 - cosinelinear(abs(noise2X(a) *2.0 - 1.0)), b) 
 float heightwaterHI(vec2 pos){
     float res = 0.0;
+    pos *= 30.0;
     float w = 0.0;
     float wz = 1.0;
-    float chop = 6.0;
-    float tmod = 22.1 * WaterSpeed;
-    for(int i=0;i<6;i++){
+    float chop = 2.0;
+    float tmod = 222.1 * WaterSpeed;
+    for(int i=0;i<4;i++){
         vec2 t = vec2(noise2X(pos)*2.0 +  tmod * Time*0.001);
         res += wz * snoisesinpow(pos + t.yx, chop);
         res += wz * snoisesinpow(pos - t.yx, chop);
-        chop = mix(chop, 0.7, 0.4);
+        chop = mix(chop, 1.7, 0.1);
         w += wz * 2.0;
-        wz *= 0.4;
-        pos *= 2.8;
+        wz *= 0.3;
+        pos *= 2.2;
         tmod *= 1.8;
     }
     return res / w;

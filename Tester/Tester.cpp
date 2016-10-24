@@ -77,8 +77,8 @@ int main()
     game->onRenderUIFrame->add([&](int zero) {
         if (!imugiinit) {
             ImGuiIO& io = ImGui::GetIO();
-           // io.Fonts->ClearFonts();
-           // io.Fonts->AddFontFromFileTTF(Media::getPath("segoeui.ttf").c_str(), 10);
+            // io.Fonts->ClearFonts();
+            // io.Fonts->AddFontFromFileTTF(Media::getPath("segoeui.ttf").c_str(), 10);
             imugiinit = true;
         }
         if (fov != fovnew) {
@@ -112,7 +112,7 @@ int main()
         }
         Game::instance->renderer->cloudsFloor = a1;
         Game::instance->renderer->cloudsCeil = a2;
-        
+
         ImGui::Begin("README", &isOpened2, 0);
         ImGui::Text("You can mimize this message by double clicking on its top bar");
         ImGui::Text("Thank you for trying out this demo!");
@@ -207,42 +207,14 @@ int main()
         }
     }
     */
-   // Light* light = game->asset->loadLightFile("test.light");
-   // light->type = LIGHT_SPOT;
-   // light->angle = 78;
-    //light->cutOffDistance = 90;
-   // game->world->scene->addLight(light);
-
-    Renderer * envRenderer = new Renderer(512, 512);
-    envRenderer->useAmbientOcclusion = false;
-    envRenderer->useGammaCorrection = false;
-    vector<EnvPlane*> planes = {};
-    planes.push_back(new EnvPlane(glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)));/*
-    planes.push_back(new EnvPlane(glm::vec3(0, 90, 0), glm::vec3(0, -1, 0)));
-    planes.push_back(new EnvPlane(glm::vec3(0, 0, -8), glm::vec3(0, 0, 1)));
-    planes.push_back(new EnvPlane(glm::vec3(0, 0, 6), glm::vec3(0, 0, -1)));
-    planes.push_back(new EnvPlane(glm::vec3(-39, 0, 0), glm::vec3(1, 0, 0)));
-    planes.push_back(new EnvPlane(glm::vec3(40, 0, 0), glm::vec3(-1, 0, 0)));*/
-
-    EnvProbe* probe1 = new EnvProbe(envRenderer, planes);
-    probe1->transformation->translate(glm::vec3(15, 6, 15));
-    game->world->scene->addEnvProbe(probe1);
-
-    EnvProbe* probe2 = new EnvProbe(envRenderer, planes);
-    probe2->transformation->translate(glm::vec3(15, 6, -15));
-    game->world->scene->addEnvProbe(probe2);
-
-    EnvProbe* probe3 = new EnvProbe(envRenderer, planes);
-    probe3->transformation->translate(glm::vec3(-15, 6, 15));
-    game->world->scene->addEnvProbe(probe3);
-
-    EnvProbe* probe4 = new EnvProbe(envRenderer, planes);
-    probe4->transformation->translate(glm::vec3(-15, 6, -15));
-    game->world->scene->addEnvProbe(probe4);
+    // Light* light = game->asset->loadLightFile("test.light");
+    // light->type = LIGHT_SPOT;
+    // light->angle = 78;
+     //light->cutOffDistance = 90;
+    // game->world->scene->addLight(light);
 
     bool cursorFree = false;
-    bool envRefresh = true;
-    game->onKeyPress->add([&game, &cursorFree, &cam, &envRefresh](int key) {
+    game->onKeyPress->add([&game, &cursorFree, &cam](int key) {
         if (key == GLFW_KEY_PAUSE) {
             game->shaders->materialShader->recompile();
             game->shaders->depthOnlyShader->recompile();
@@ -265,9 +237,6 @@ int main()
             ca->transformation->orientation = cam->transformation->orientation;
             game->world->scene->addLight(ca);
         }
-        if (key == GLFW_KEY_F4) {
-            envRefresh = true;
-        }
         if (key == GLFW_KEY_TAB) {
             if (!cursorFree) {
                 cursorFree = true;
@@ -286,45 +255,61 @@ int main()
 
     game->setCursorMode(GLFW_CURSOR_DISABLED);
 
+    glm::vec3 newpos = cam->transformation->position;
+
+    float speed = 0.0f;
+    glm::vec3 dir = glm::vec3(0);
     game->onRenderFrame->add([&](int i) {
-        if (envRefresh) {
-            probe1->refresh();
-            probe2->refresh();
-            probe3->refresh();
-            probe4->refresh();
-            envRefresh = false;
-        }
         if (!cursorFree) {
-            float speed = 1.1f;
+            float maxspeed = 10.0;
             if (game->getKeyStatus(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-                speed *= 0.1f;
+                maxspeed *= 0.1f;
             }
             if (game->getKeyStatus(GLFW_KEY_LEFT_ALT) == GLFW_PRESS) {
-                speed *= 10.0f;
+                maxspeed *=30.0f;
             }
             if (game->getKeyStatus(GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-                speed *= 3.0f;
+                maxspeed *= 30.1f;
             }/*
             if (game->getKeyStatus(GLFW_KEY_F1) == GLFW_PRESS) {
                 light->transformation->position = cam->transformation->position;
                 light->transformation->orientation = cam->transformation->orientation;
             }*/
+            glm::vec3 dw = glm::vec3(0);
+            float w = 0.0;
+            bool move = false;
+            // speed = speed * 0.99995;
             if (game->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
-                glm::vec3 dir = cam->transformation->orientation * glm::vec3(0, 0, -1);
-                cam->transformation->translate(dir * speed);
+                dw += cam->transformation->orientation * glm::vec3(0, 0, -1);
+                w += 1.0;
+                move = true;
             }
             if (game->getKeyStatus(GLFW_KEY_S) == GLFW_PRESS) {
-                glm::vec3 dir = cam->transformation->orientation * glm::vec3(0, 0, 1);
-                cam->transformation->translate(dir * speed);
+                dw += cam->transformation->orientation * glm::vec3(0, 0, 1);
+                w += 1.0;
+                move = true;
             }
             if (game->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS) {
-                glm::vec3 dir = cam->transformation->orientation * glm::vec3(-1, 0, 0);
-                cam->transformation->translate(dir * speed);
+                dw += cam->transformation->orientation * glm::vec3(-1, 0, 0);
+                w += 1.0;
+                move = true;
             }
             if (game->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS) {
-                glm::vec3 dir = cam->transformation->orientation * glm::vec3(1, 0, 0);
-                cam->transformation->translate(dir * speed);
+                dw += cam->transformation->orientation * glm::vec3(1, 0, 0);
+                w += 1.0;
+                move = true;
             }
+            if(!move){
+                speed = speed / 1.05;
+            }
+            else {
+                speed = glm::mix(speed, maxspeed, 0.02);
+            }
+            glm::vec3 a = dw / w;
+            //dir = mix(dir, w > 0.0 ? a : dw, 0.02);
+            dir = w > 0.0 ? a : dw;
+            newpos += length(dir) > 0.0 ? (normalize(dir) * speed) : (glm::vec3(0.0));
+
             if (game->getKeyStatus(GLFW_KEY_ESCAPE) == GLFW_PRESS) {
                 game->shouldClose = true;
             }
@@ -346,6 +331,7 @@ int main()
             if (pitch > 360.0f) pitch -= 360.0f;
             glm::quat newrot = glm::angleAxis(deg2rad(pitch), glm::vec3(0, 1, 0)) * glm::angleAxis(deg2rad(yaw), glm::vec3(1, 0, 0));
             cam->transformation->setOrientation(newrot);
+            cam->transformation->setPosition(newpos);
         }
     });
 

@@ -5,10 +5,9 @@ layout(binding = 23) uniform sampler2D waterTileTex;
 #include PostProcessEffectBase.glsl
 #include Constants.glsl
 #include PlanetDefinition.glsl
+uniform float Time;
+#include WaterHeight.glsl
 
-uniform float WaterHeight;
-uniform vec3 Wind;
-uniform vec2 WaterScale;
 uniform float WaterWavesScale;
 
 #define WaterLevel WaterHeight
@@ -19,10 +18,6 @@ float intersectPlane(vec3 origin, vec3 direction, vec3 point, vec3 normal)
 { return dot(point - origin, normal) / dot(direction, normal); }
 
 #define intersects(a) (a >= 0.0)
-
-float heightwater(vec2 uv){
-    return textureLod(waterTileTex, uv * WaterScale * 0.0008, 0.0).r;
-}
 
 float raymarchwater3(vec3 start, vec3 end, int stepsI){
     float stepsize = 1.0 / stepsI;
@@ -95,18 +90,21 @@ float getWaterDistance(){
             } else {
             
                 vec3 newpos2 = CameraPosition + dir * planethit2;
-                int steps = 1 + int(45.0 * WaterWavesScale);
+                int steps = 1 + int(25.0 * WaterWavesScale);
+               //
+                
                 
               //  if(planethit < 14.0 && planethit > 0.0) steps *= 10;
             //    if(planethit2 < 14.0 && planethit2 > 0.0) steps *= 10;
                 if(intersects(planethit) && intersects(planethit2)){
+                  //  mipmap1 = textureQueryLod(waterTileTex, newpos.xz * WaterScale * 0.00008).x * 0.2;
                     dist = raymarchwater(newpos, newpos2, steps);
                 } else if(intersects(planethit)){
-                    planethit = min(999, planethit);
-                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit, 444);
+                    planethit = min(2999, planethit);
+                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit, 25);
                 } else if(intersects(planethit2)){
-                    planethit2 = min(999, planethit2);
-                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit2, 444);
+                    planethit2 = min(2999, planethit2);
+                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit2, 25);
                 }
             }
         } else {
