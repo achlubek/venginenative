@@ -143,7 +143,7 @@ void Renderer::initializeFbos()
     waterMeshFbo = new Framebuffer();
     waterMeshFbo->attachTexture(waterMeshTexture, GL_COLOR_ATTACHMENT0);
 
-    waterColorTexture = new Texture2d(width, height, GL_RGB16F, GL_RGB, GL_HALF_FLOAT);
+    waterColorTexture = new Texture2d(width * config->getf("water_color_resolution_multiplier"), height * config->getf("water_color_resolution_multiplier"), GL_RGB16F, GL_RGB, GL_HALF_FLOAT);
     waterColorFbo = new Framebuffer();
     waterColorFbo->attachTexture(waterColorTexture, GL_COLOR_ATTACHMENT0);
 

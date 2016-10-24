@@ -11,7 +11,7 @@ uniform float Time;
 uniform float WaterWavesScale;
 
 #define WaterLevel WaterHeight
-#define waterdepth 10.0 * WaterWavesScale
+#define waterdepth 30.0 * WaterWavesScale
  
 
 float intersectPlane(vec3 origin, vec3 direction, vec3 point, vec3 normal)
@@ -101,10 +101,10 @@ float getWaterDistance(){
                     dist = raymarchwater(newpos, newpos2, steps);
                 } else if(intersects(planethit)){
                     planethit = min(2999, planethit);
-                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit, 25);
+                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit, 925);
                 } else if(intersects(planethit2)){
                     planethit2 = min(2999, planethit2);
-                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit2, 25);
+                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit2, 925);
                 }
             }
         } else {

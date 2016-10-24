@@ -78,6 +78,7 @@ float sun(vec3 dir, vec3 sundir, float gloss, float ansiox){
  //   float dty = 1.0 - max(0, abs(dir.y - sundir.y));
    // dt = mix(dt, dt2, ansio);
     //return dt;
+    
     float ansio = pow(abs(dir.y), 2.0);
     //dir.y *= 0.1 + 0.9 * gloss * gloss;
     //sundir.y *= 0.1 + 0.9 * gloss * gloss;
@@ -189,6 +190,7 @@ vec3 textureMoon(vec3 dir){
     vec3 n = normalize(posOnMoon - mond * 362600.0);
     float l = pow(max(0.0, dot(n, dayData.sunSpaceDir)), 1.2);
     return l * pow(textureLod(moonTex, clamp((sqrt(1.0 - dt) * ud) * 2.22 * 0.5 + 0.5, 0.0, 1.0), 0.0).rgb, vec3(2.4)) * 2.0 + getStars(dir, 0.0) * (1.0 - st);*/
+    dir.y = abs(dir.y);
     Sphere moon = Sphere(dayData.moonPos, 17.37);
     Ray r = Ray(dayData.earthPos, dayData.viewFrame * dir);
     float i = rsi2(r, moon);
@@ -206,7 +208,7 @@ vec3 textureMoon(vec3 dir){
     color *= atm;
     sun_moon_mult = step(0.0, i);
     float monsoonconverage = 1.0 - smoothstep(0.995, 1.0, dot(dayData.sunDir, dayData.moonDir));
-    return atmdiff + l * color * sun_moon_mult * 0.1 + getStars(dir, 0.0) * (1.0 - sun_moon_mult);
+    return clamp(atmdiff + l * color * sun_moon_mult * 0.1 + getStars(dir, 0.0) * (1.0 - sun_moon_mult), 0.0, 111.0);
 }
 
 

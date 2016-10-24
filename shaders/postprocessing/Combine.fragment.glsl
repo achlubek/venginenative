@@ -37,7 +37,7 @@ vec3 integrateStepsAndSun(){
 }
 
 vec3 integrateCloudsWater(){
-    return texture(waterColorTex, UV).rgb;
+    return fxaa(waterColorTex, UV).rgb;
 }
 
 vec4 shade(){    

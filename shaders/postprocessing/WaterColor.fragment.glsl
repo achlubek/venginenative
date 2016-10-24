@@ -22,7 +22,7 @@ float fogatt(float dist){
     return min(1.0, (dist * dist) );
 }
 
-#define waterdepth 10.0 * WaterWavesScale
+#define waterdepth 30.0 * WaterWavesScale
 
 vec3 normalx(vec3 pos, float e, float roughness){
     vec2 ex = vec2(e, 0);
@@ -112,7 +112,7 @@ vec4 getLighting(){
   //  normal = normalize(normal + normalx(hitpos * 11.2467, 3.0953, roughness) * 0.3);
    // normal = normalize(normal + normalx(hitpos * 51.2467, 3.0953, roughness) * 0.2);
     normal = normalize(normal + normalx(hitpos * 11.2467, 0.0953, roughness) * 0.4 * (1.0 - mipmap2/ textureQueryLevels(waterTileTex)));
-  //  normal = normalize(normal + normalx(hitpos * 151.2467, 3.0953, roughness) * 0.2 * (1.0 - mipmap3/ textureQueryLevels(waterTileTex)));
+    //normal = normalize(normal + normalx(hitpos * 151.2467, 3.0953, roughness) * 0.1 * (1.0 - mipmap3/ textureQueryLevels(waterTileTex)));
     dir = reflect(origdir, normal);
     dir.y = max(0.05, dir.y);
     float fresnel = getthatfuckingfresnel(mix(0.00, 0.00, roughness), normal, dir, roughness);  
@@ -152,7 +152,7 @@ vec4 getLighting(){
     vec3 atm = sampleAtmosphere(dir, roughness, 0.0, 5);// * (1.0 - roughness * 0.5) * (1.0 - roughness * 0.5);
    // return vec4(atm, 1.0); 
     result +=   shadingWater(dataReflection, normal, -dayData.sunDir, getSunColor(0.0), atm)  * 1.0 * mix(1.0, 1.0, roughness);
-    vec3 refr = normalize(refract(origdir, normal, 0.15));
+    vec3 refr = normalize(refract(origdir, normal, 0.66));
     if(length(currentData.normal) < 0.01) currentData.cameraDistance = 299999.0;        
     float hitdepth = currentData.cameraDistance - hitdist;
     vec3 newposrefracted = hitpos + refr * min(25.0, hitdepth);
@@ -182,7 +182,8 @@ vec4 getLighting(){
    // result += waterSSScolor * (1.0 - fresnel) * getSunColor(0) ;
    // result += 1.0 - smoothstep(0.002, 0.003, ssscoeff2);
     result += (vec3(0.1,0.19,0.22) + pow(dot(normal,dayData.sunDir) * 0.4 + 0.6,80.0) * vec3(0.8,0.9,0.6) * 0.12) * getSunColor(0) * (1.0 - fresnel)  * 0.069;
-    result += vec3(0.8,0.9,0.6) * max(0.0, height1 - 0.3) * 0.0001 * waterdepth * length(WaterScale) * getSunColor(0);
+    float superscat = pow(max(0.0, dot(refr, dayData.sunDir)), 4.0) * (1.0 - fresnel);
+    result += vec3(0.8,0.9,0.6) * pow(max(0.0, height1 - 0.3), 2.0) * 0.0003 * waterdepth * length(WaterScale) * getSunColor(0) * (superscat * 12.0 + 0.2) ;
          
      return  vec4(result, 1.0);
 }
