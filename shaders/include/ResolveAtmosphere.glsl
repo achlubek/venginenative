@@ -86,13 +86,15 @@ float sun(vec3 dir, vec3 sundir, float gloss, float ansiox){
    // sundir.y *= 0.1 + 0.9 * ansio;
    // dir = normalize(dir);
    // sundir = normalize(sundir);
+  // return gloss;
     float dt = clamp(dot(dir, sundir) + 0.0, 0.0, 1.0);
-    return pow(dt, 521.0 * gloss * gloss * gloss * gloss * gloss + 111.0) * (101.0 * gloss + 10.0) * smoothstep(-0.02, -0.01, sundir.y);
+    return pow(dt, 521.0 * gloss * gloss * gloss * gloss * gloss + 111.0) * (101.0 * gloss + 1.0) * smoothstep(-0.02, -0.01, sundir.y);
    // return smoothstep(0.997, 1.0, dt);
 }
 float sshadow = 1.0;
 vec3 shadingWater(PostProceessingData data, vec3 n, vec3 lightDir, vec3 colorA, vec3 colorB){
     float fresnel = getthatfuckingfresnel(0.02, n, normalize(data.cameraPos), 0.0);
+    fresnel = mix(fresnel, 0.0, data.roughness);
     return sshadow * sun(reflect(normalize(data.cameraPos), n), dayData.sunDir, 1.0 - data.roughness , data.roughness) * 1.0 * colorA * fresnel + colorB * ( fresnel);
    // return  colorB * (  fresnel);
 }

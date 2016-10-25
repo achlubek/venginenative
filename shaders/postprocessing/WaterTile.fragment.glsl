@@ -12,14 +12,6 @@ float hashX( float n ){
     return fract(sin(n)*758.5453);
 }
 
-float noiseX( in vec3 x ){
-    vec3 p = floor(x);
-    vec3 f = fract(x); 
-    float n = p.x + p.y*57.0 + p.z*800.0;
-    float res = mix(mix(mix( hashX(n+  0.0), hashX(n+  1.0),f.x), mix( hashX(n+ 57.0), hashX(n+ 58.0),f.x),f.y),
-    mix(mix( hashX(n+800.0), hashX(n+801.0),f.x), mix( hashX(n+857.0), hashX(n+858.0),f.x),f.y),f.z);
-    return res;
-}
 float noise2X( in vec2 x ){
     vec2 p = floor(x);
     vec2 f = fract(x); 
@@ -46,16 +38,23 @@ float noise2X( in vec2 x ){
 #define snoisesinpow(a,b) pow(sin(noise2X(a) * 3.1415 * 2.0) , b) 
 float heightwaterHI(vec2 pos){
     float res = 0.0;
-    pos *= 2.0;
+    pos *= 6.0;
     float w = 0.0;
     float wz = 1.0;
-    float chop = 3.0;
-    float tmod = 222.1 * WaterSpeed;
+    float chop = 6.0;
+    float tmod = 122.1 * WaterSpeed;
+    float rotmod = Time * 0.005 * WaterSpeed;
+    float rotmod2 = Time * 1.2134 * 0.005 * WaterSpeed;
+    mat2 rmat = mat2(cos(rotmod), -sin(rotmod), sin(rotmod), cos(rotmod));
+    mat2 rmat2 = mat2(cos(rotmod2), -sin(rotmod2), sin(rotmod2), cos(rotmod2));
+    vec2 v = rmat * vec2(0.5, 0);
+    vec2 v2 = rmat2 * vec2(0.5, 0);
     for(int i=0;i<4;i++){
-        vec2 t = vec2(snoisesinpow(pos, 1.0)*1.0, snoisesinpow(pos.yx, 1.0)*1.0) + tmod * Time*0.001;
-        res += wz * snoisesinpow(pos + t.yx, chop);
-        res += wz * snoisesinpow(pos - t.yx, chop);
-       // chop = mix(chop, 1.7, 0.1);
+        vec2 t = v * (tmod * Time*0.001);
+        vec2 t2 = v2 * (tmod * Time*0.001);
+        res += wz * snoisesinpow(pos + t, chop);
+        res += wz * snoisesinpow(pos - t2, chop);
+        chop = mix(chop, 1.0, 0.1);
         w += wz * 2.0;
         wz *= 0.4;
         pos *= 2.2;

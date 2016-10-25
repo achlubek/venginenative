@@ -13,7 +13,7 @@ layout(binding = 28) uniform sampler2D moonTex;
 #include PostProcessEffectBase.glsl
 #include Atmosphere.glsl
 #include CSM.glsl
-
+uniform float WaterSpeed;
 #include WaterHeight.glsl
 
 
@@ -91,13 +91,16 @@ vec4 getLighting(){
     if(hitdist < 0.0) return  textureLod(inputTex, UV, 0.0);
     vec3 hitpos = CameraPosition + reconstructCameraSpaceDistance(UV, hitdist);
     
-    vec2 px = 1.0 / Resolution; 
-    mipmap1 = textureQueryLod(waterTileTex, hitpos.xz * WaterScale *  octavescale1).x;
-    float mipmap2 = textureQueryLod(waterTileTex, hitpos.xz * WaterScale *  octavescale1 * 11.2467).x;
-    float mipmap3 = textureQueryLod(waterTileTex, hitpos.xz * WaterScale *  octavescale1 * 151.2467).x ;
-    float roughness = clamp((pow(mipmap1/ textureQueryLevels(waterTileTex), 1.0)) , 0.0, 0.99);
-    mipmap1 *= 0.6  ;
+    float planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
+    float planethit2 = intersectPlane(CameraPosition, dir, vec3(0.0, WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
     
+    vec3 nearsurface = CameraPosition + reconstructCameraSpaceDistance(UV, planethit > 0.0 && planethit2 > 0.0 ? planethit : hitdist);
+    vec2 px = 1.0 / Resolution; 
+    mipmap1 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1).x;
+    float mipmap2 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 11.2467).x;
+    float mipmap3 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 151.2467).x ;
+    float roughness = clamp((pow(mipmap1/ textureQueryLevels(waterTileTex), 1.0)) , 0.0, 0.66);
+    mipmap1 *= 0.3  ;
     //mipmap1 *= 0.0;
     float height1  = heightwater(hitpos.xz);
     float height2  = heightwaterD(hitpos.xz, 0.5);
@@ -171,8 +174,6 @@ vec4 getLighting(){
         result += mixing * textureLod(inputTex, uvX, roughnessToMipmap(roughness, inputTex)).rgb * max(0.0, 1.0 - fresnel);
     }
     
-    float planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
-    float planethit2 = intersectPlane(CameraPosition, dir, vec3(0.0, WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
 
     vec3 newpos = CameraPosition + dir * planethit;
     vec3 newpos2 = CameraPosition + dir * planethit2;
