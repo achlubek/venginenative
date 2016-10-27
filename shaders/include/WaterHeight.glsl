@@ -2,15 +2,15 @@
 uniform float WaterHeight;
 uniform vec3 Wind;
 uniform vec2 WaterScale;
-float octavescale1 = 0.0002;
+float octavescale1 = 0.0001;
 float mipmap1 = 0.0;
 float maxmip = textureQueryLevels(waterTileTex);
-float heightwaterX(vec2 uv, float mipmap){
-    return textureLod(waterTileTex, uv * WaterScale * 0.0002 + vec2(Time, Time )* 0.0132 * WaterSpeed, mipmap).r;
+vec2 heightwaterX(vec2 uv, float mipmap){
+    return textureLod(waterTileTex, uv * WaterScale * 0.0001 + vec2(Time, Time )* 0.0082 * WaterSpeed, mipmap).rg;
 }
 float heightwaterD(vec2 uv, float mipmap){
-    return heightwaterX(uv, mipmap * maxmip);
+    return heightwaterX(uv, mipmap ).r;
 }
 float heightwater(vec2 uv){
-    return heightwaterX(uv, mipmap1 * 1.0);
+    return heightwaterD(uv, mipmap1 * 1.0).r;
 }

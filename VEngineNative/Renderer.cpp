@@ -125,9 +125,13 @@ void Renderer::initializeFbos()
     ambientLightFbo = new Framebuffer();
     ambientLightFbo->attachTexture(ambientLightTexture, GL_COLOR_ATTACHMENT0);
 
-    waterTileTexture = new Texture2d(config->geti("water_tile_resolution"), config->geti("water_tile_resolution"), GL_R16F, GL_RED, GL_HALF_FLOAT);
-    waterTileFbo = new Framebuffer();
-    waterTileFbo->attachTexture(waterTileTexture, GL_COLOR_ATTACHMENT0);
+    waterTileTexture1 = new Texture2d(config->geti("water_tile_resolution"), config->geti("water_tile_resolution"), GL_RG16F, GL_RG, GL_HALF_FLOAT);
+    waterTileFbo1 = new Framebuffer();
+    waterTileFbo1->attachTexture(waterTileTexture1, GL_COLOR_ATTACHMENT0);
+
+    waterTileTexture2 = new Texture2d(config->geti("water_tile_resolution"), config->geti("water_tile_resolution"), GL_RG16F, GL_RG, GL_HALF_FLOAT);
+    waterTileFbo2 = new Framebuffer();
+    waterTileFbo2->attachTexture(waterTileTexture2, GL_COLOR_ATTACHMENT0);
 
     ambientOcclusionTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     ambientOcclusionFbo = new Framebuffer();
@@ -201,8 +205,10 @@ void Renderer::destroyFbos(bool onlyViewDependant)
 {
     if (!onlyViewDependant) {
         delete skyboxTexture;
-        delete waterTileFbo;
-        delete waterTileTexture;
+        delete waterTileFbo1;
+        delete waterTileTexture1;
+        delete waterTileFbo2;
+        delete waterTileTexture2;
         delete atmScattFbo;
         delete atmScattTexture;
         delete cloudsFboEven;
@@ -506,14 +512,20 @@ void Renderer::ambientLight()
 
 void Renderer::waterTile()
 {
-    waterTileTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
-    waterTileFbo->use(true);
+    Texture2d * tex = waterTileUseFBO1 ? waterTileTexture1 : waterTileTexture2;
+    Texture2d * tex2 = waterTileUseFBO1 ? waterTileTexture2 : waterTileTexture1;
+    Framebuffer * fbo = waterTileUseFBO1 ? waterTileFbo1 : waterTileFbo2;
+    fbo->use(true);
     waterTileShader->use();
+    tex2->use(23);
     waterTileShader->setUniform("WaterSpeed", waterSpeed);
     waterTileShader->setUniform("Resolution", glm::vec2(width, height));
     waterTileShader->setUniform("Time", Game::instance->time);
     quad3dInfo->draw();
-    waterTileTexture->generateMipMaps();
+    tex->generateMipMaps();
+    tex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
+    waterTileUseFBO1 = !waterTileUseFBO1;
+    tex->use(23);
 }
 
 void Renderer::ambientOcclusion()
@@ -561,7 +573,6 @@ void Renderer::waterMesh()
     fogTexture->use(20);
     waterMeshTexture->use(21);
     combineTexture->use(22);
-    waterTileTexture->use(23);
     setCommonUniforms(waterMeshShader);
 
     quad3dInfo->draw();
@@ -574,7 +585,6 @@ void Renderer::waterColorShaded()
     waterColorShader->use();
     fogTexture->use(20);
     combineTexture->use(22);
-    waterTileTexture->use(23);
     if (!cloudCycleUseOdd) {
         cloudsTextureOdd->use(25);
         cloudsShadowsTextureOdd->use(26);

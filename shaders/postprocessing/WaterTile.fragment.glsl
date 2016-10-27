@@ -3,6 +3,7 @@
 #include PostProcessEffectBase.glsl
 
 layout(binding = 16) uniform sampler2D inputTex;
+layout(binding = 23) uniform sampler2D waterTileTex;
 
 uniform float Time;
 uniform float WaterSpeed;
@@ -42,7 +43,7 @@ float heightwaterHI(vec2 pos){
     float w = 0.0;
     float wz = 1.0;
     float chop = 6.0;
-    float tmod = 122.1 * WaterSpeed;
+    float tmod = 22.1 * WaterSpeed;
     float rotmod = Time * 0.005 * WaterSpeed;
     float rotmod2 = Time * 1.2134 * 0.005 * WaterSpeed;
     mat2 rmat = mat2(cos(rotmod), -sin(rotmod), sin(rotmod), cos(rotmod));
@@ -58,13 +59,22 @@ float heightwaterHI(vec2 pos){
         w += wz * 2.0;
         wz *= 0.4;
         pos *= 2.2;
-        tmod *= 1.8;
+        //tmod *= 0.8;
     }
     return res / w;
 }
+
+float foam(float val){
+    float oldval = textureLod(waterTileTex, UV, 0.1).r;
+    float oldval2 = textureLod(waterTileTex, UV, textureQueryLevels(waterTileTex)).r;
+    float oldfoam = textureLod(waterTileTex, UV, 0.0).g * 0.999987;
+    float diff = pow(max(0.0, (oldval - val) / (oldval - oldfoam)) * 111.0, 16.0);
+    return min(1.0, diff + oldfoam);
+}
+
 vec4 shade(){
     vec2 uv = UV;
     float c1 = heightwaterHI(uv);
     float color = c1;
-    return vec4(color);
+    return vec4(color, foam(color) * color, 0.0, 0.0);
 }

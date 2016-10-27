@@ -22,7 +22,7 @@ float fogatt(float dist){
     return min(1.0, (dist * dist) );
 }
 
-#define waterdepth 30.0 * WaterWavesScale
+#define waterdepth 80.0 * WaterWavesScale
 
 vec3 normalx(vec3 pos, float e, float roughness){
     vec2 ex = vec2(e, 0);
@@ -81,6 +81,32 @@ float hitwater2(vec3 pos, inout vec3 dir){
     }
     return clamp(a, 0.0, 1.0);
 }
+float hashX( float n ){
+    return fract(sin(n)*758.5453);
+}
+
+float noise2X( in vec2 x ){
+    vec2 p = floor(x);
+    vec2 f = fract(x); 
+    float n = p.x + p.y*57.0;
+    float res = 
+        mix (
+            mix (
+                hashX (
+                    n + 0.0
+                ), hashX (
+                    n + 1.0
+                ), f.x
+            ), mix (
+                hashX (
+                    n + 57.0
+                ), hashX (
+                    n + 58.0
+                ), f.x
+            ), f.y
+        );
+    return res;
+}
 
 vec4 getLighting(){
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
@@ -103,6 +129,7 @@ vec4 getLighting(){
     mipmap1 *= 0.3  ;
     //mipmap1 *= 0.0;
     float height1  = heightwater(hitpos.xz);
+   // float foam  = foamwater(hitpos.xz, 0);
     float height2  = heightwaterD(hitpos.xz, 0.5);
     
     vec3 origdir = dir;
@@ -114,7 +141,9 @@ vec4 getLighting(){
     
   //  normal = normalize(normal + normalx(hitpos * 11.2467, 3.0953, roughness) * 0.3);
    // normal = normalize(normal + normalx(hitpos * 51.2467, 3.0953, roughness) * 0.2);
+    mipmap1 = mipmap2;
     normal = normalize(normal + normalx(hitpos * 11.2467, 0.0953, roughness) * 0.4 * (1.0 - mipmap2/ textureQueryLevels(waterTileTex)));
+    //return normal.xyzz;
     //normal = normalize(normal + normalx(hitpos * 151.2467, 3.0953, roughness) * 0.1 * (1.0 - mipmap3/ textureQueryLevels(waterTileTex)));
     dir = reflect(origdir, normal);
     dir.y = max(0.05, dir.y);
@@ -126,7 +155,7 @@ vec4 getLighting(){
       //  dir = mix(normalize(VECTOR_UP * 2.0 - dir), dir, h);
     /////    fresnel *= mix(0.9, 1.0, h);
      
-   vec3 result = vec3(0);
+   vec3 result = vec3(0.0);
 
    // roughness = clamp(roughness, 0.0, 1.0);
    // roughness = 1.0 - pow(1.0 - roughness, 2.0);

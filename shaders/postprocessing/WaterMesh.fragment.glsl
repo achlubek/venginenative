@@ -12,14 +12,14 @@ uniform float WaterSpeed;
 uniform float WaterWavesScale;
 
 #define WaterLevel WaterHeight
-#define waterdepth 30.0 * WaterWavesScale
+#define waterdepth 80.0 * WaterWavesScale
  
 
 float intersectPlane(vec3 origin, vec3 direction, vec3 point, vec3 normal)
 { return dot(point - origin, normal) / dot(direction, normal); }
 
 #define intersects(a) (a >= 0.0)
-#define mipmapx 0.2
+float mipmapx = 0.2;
 float raymarchwater3(vec3 start, vec3 end, int stepsI){
     float stepsize = 1.0 / stepsI;
     float iter = 0;
@@ -91,17 +91,19 @@ float getWaterDistance(){
             } else {
             
                 vec3 newpos2 = CameraPosition + dir * planethit2;
-                int steps = 1 + int(37.0 * WaterWavesScale);
+                float mult2 = 1.0 - max(0.0, dot(newpos2, -VECTOR_UP));
+                float wvw = WaterWavesScale / 10.0;
+                int steps = 1 + int((1.0 + mult2 * 40.0) * wvw);
                //
-                
                 
               //  if(planethit < 14.0 && planethit > 0.0) steps *= 10;
             //    if(planethit2 < 14.0 && planethit2 > 0.0) steps *= 10;
                 if(intersects(planethit) && intersects(planethit2)){
-                    if(planethit > 122000){
+                    mipmapx = textureQueryLod(waterTileTex, newpos.xz * WaterScale *  octavescale1).x;
+                    if(planethit > 122000 || mipmapx / textureQueryLevels(waterTileTex) > 0.9){
                         dist = planethit;               
                     } else {
-                        mipmap1 = 2.9;
+                      //  mipmap1 = 2.9;
                         dist = raymarchwater(newpos, newpos2, steps);
                     }
                 } else if(intersects(planethit)){

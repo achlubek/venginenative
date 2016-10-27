@@ -95,8 +95,11 @@ private:
     void ambientLight();
 
     ShaderProgram *waterTileShader;
-    Framebuffer *waterTileFbo;
-    Texture2d *waterTileTexture;
+    Framebuffer *waterTileFbo1;
+    Texture2d *waterTileTexture1;
+    Framebuffer *waterTileFbo2;
+    Texture2d *waterTileTexture2;
+    bool waterTileUseFBO1 = true;
     void waterTile();
 
     ShaderProgram *ambientOcclusionShader;
