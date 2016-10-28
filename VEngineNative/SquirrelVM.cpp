@@ -76,6 +76,7 @@ char * sq_read_string(HSQUIRRELVM v, SQInteger idx) {
 SQInteger sqapi_game_load_scene(HSQUIRRELVM v) {
     initargs();
     char* name = argstring;
+    return 1;
 }
 
 SQInteger print_args(HSQUIRRELVM v)
