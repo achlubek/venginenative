@@ -365,6 +365,7 @@ void Renderer::draw(Camera *camera)
     //depthTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
    // deferred();
   //  ambientLight();
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     waterTile();
     atmScatt();
     clouds();

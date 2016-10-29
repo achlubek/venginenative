@@ -11,7 +11,7 @@ uniform float MieScattCoeff;
 
 vec4 shade(){
     vec3 val = getAtmosphereForDirectionReal(
-        CameraPosition, 
+        vec3(0.0), 
         normalize(reconstructCameraSpaceDistance(UV, 1.0)), 
         normalize(dayData.sunDir));
     return vec4(val, 0);

@@ -26,5 +26,9 @@ vec4 shade(){
         retavg.r = mix(val, lastData, CloudsIntegrate);
     }
 
-    return mix(retavg, retedg, 0.1);
+    return vec4(
+    mix(retavg.r, retedg.r, 0.0),
+    mix(retavg.g, retedg.g, 0.9),
+    mix(retavg.b, retedg.b, 0.0),
+    mix(retavg.a, retedg.a, 0.0));;
 }
