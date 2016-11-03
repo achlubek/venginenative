@@ -110,14 +110,26 @@ float fbm(vec3 p){
 		p = p * FBM2 * 4.0;
 	}
 	return a / wc;
-}float fbmX(vec3 p){
+}float fbmLOW(vec3 p){
    // p *= 0.1;
     p *= 0.001 * FBMSCALE;
 	float a = 0.0;
     float w = 1.0;
-	for(int i=0;i<7;i++){
+	for(int i=0;i<4;i++){
         //p += noise(vec3(a));
-		a += noise3d(p) * w;	
+		a += supernoise3d(p) * w;	
+        w *= 0.5;
+		p = p * 3.0;
+	}
+	return a;// + noise(p * 100.0) * 11;
+}float fbmHI(vec3 p){
+   // p *= 0.1;
+    p *= 0.001 * FBMSCALE;
+	float a = 0.0;
+    float w = 1.0;
+	for(int i=0;i<5;i++){
+        //p += noise(vec3(a));
+		a += supernoise3d(p) * w;	
         w *= 0.5;
 		p = p * 3.0;
 	}
@@ -125,9 +137,17 @@ float fbm(vec3 p){
 }
 float cloudsDensity3D(vec3 pos){
     vec3 ps = pos +CloudsOffset * 1111;// + wtim;   
-    ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
+   // ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
     
-    float density = 1.0 - fbmX(ps * 0.05);
+    float density = 1.0 - fbmHI(ps * 0.05);
+    float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh,  density );
+    return  init;
+}
+float cloudsDensity3DLOW(vec3 pos){
+    vec3 ps = pos +CloudsOffset * 1111;// + wtim;   
+   // ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
+    
+    float density = 1.0 - fbmLOW(ps * 0.05);
     float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh,  density );
     return  init;
 }
@@ -154,7 +174,7 @@ float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
     float mult = weightshadow * stepsize * CloudsDensityScale;
     for(int i=0;i<stepcount;i++){
         vec3 pos = mix(p1, p2, iter + rd);
-        float clouds = cloudsDensity3D(pos);
+        float clouds = cloudsDensity3DLOW(pos);
         coverageinv -=  clouds * mult;
         iter += stepsize;
      //   if(coverageinv <= 0.0) break;
@@ -210,6 +230,7 @@ vec3 randdir(){
 
 float getAO(vec3 pos, float randomization){
     //vec3 dir = normalize(dayData.sunDir);
+    //vec3 dir = normalize(dayData.sunDir + randdir() * randomization);
     vec3 dir = normalize(dayData.sunDir + randdir() * randomization);
     Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
     float hitceil = rsi2(r, sphere2);
@@ -232,8 +253,8 @@ float shadows(){
     sphere2 = Sphere(vec3(0), planetradius + CloudsCeil);
 //    float mx1  = clamp(0.0, 1.0, MieScattCoeff * 0.2) * 0.5 + 0.5;
     float sun = getAO(hitman, 0.5);// + (0.5 + max(0.0, (getAO(hitman, 1.0) * 2.0 - 1.0 ))) * 0.2 + getAO(hitman, 0.0);
-    float sss =  getAO(hitman, 1.0);
-    return data.r < 0.001 ? 1.0 : 0.5 * (sss);
+    float sss =  getAO(hitman, 11.0);
+    return data.r < 0.001 ? 1.0 :   (0.1 * (1.0 - sss) + sun) * 0.9;
 }
 
 #define intersects(a) (a >= 0.0)

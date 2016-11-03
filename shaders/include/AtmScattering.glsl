@@ -70,19 +70,19 @@ vec3 mydumbassscatteringfunction(vec3 dir, vec3 sun){
 vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
    // dir.y = abs(dir.y);
     return (0.3 * mydumbassscatteringfunction(dir, sunpos) +
-     3.0 * atmosphere(
+     6.0 * atmosphere(
         dir,           // normalized ray direction
         vec3(0,planetradius  ,0) + origin,               // ray origin
         sunpos,                        // position of the sun
-        12.0,                           // intensity of the sun
+        22.0,                           // intensity of the sun
         planetradius,                         // radius of the planet in meters
         6471e3,                         // radius of the atmosphere in meters
        // vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
-        vec3(0.09e-5, 0.28e-5, 0.50e-5) * 3.0, // Rayleigh scattering coefficient
+        vec3(0.05e-5, 0.10e-5, 0.25e-5) * 2.0, // Rayleigh scattering coefficient
       //  vec3(4.5e-6, 10.0e-6, 2.4e-6), // Rayleigh scattering coefficient
-        21e-6,                          // Mie scattering coefficient
+        11e-6,                          // Mie scattering coefficient
         8e3,                            // Rayleigh scale height
-        1.2e3 * MieScattCoeff,                          // Mie scale height
-        0.1758                           // Mie preferred scattering direction
+        1.2e3  * MieScattCoeff ,                          // Mie scale height
+        0.11758                         // Mie preferred scattering direction
     ));
 }
