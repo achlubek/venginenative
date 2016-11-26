@@ -245,8 +245,8 @@ float thatsunglowIdontknownamefor(vec3 dir, float strength, float power){
 vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float dimmer = max(0, 0.06 + 0.94 * dot(normalize(dayData.sunDir), vec3(0,1,0)));
     vec3 scattering = getAtmosphereScattering(dir, roughness);
-    vec3 diffuse = getDiffuseAtmosphereColor() * thatsunglowIdontknownamefor(dir, 0.2, 16.0); // * (1.0 - pow(1.0 - dimmer, 1.0)) * ( (1.0 - max(0.0, dayData.sunDir.y)) * 0.5 + 0.5);
-    vec3 direct = getSunColor(roughness) * thatsunglowIdontknownamefor(dir, 6.0, 8.0);
+    vec3 diffuse = getDiffuseAtmosphereColor(); // * (1.0 - pow(1.0 - dimmer, 1.0)) * ( (1.0 - max(0.0, dayData.sunDir.y)) * 0.5 + 0.5);
+    vec3 direct = getSunColor(roughness) ;
    // scattering *= godrays(dir) ;
     vec3 moon = textureMoon(dir);
     scattering += sun * (1.0 - step(0.1, length(currentData.normal))) * lenssun(dir) * getSunColor(0.0) * 1.0;
@@ -259,7 +259,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float rays = godrays(dir, raysteps);
     
     vec3 raycolor = getSunColor(0.0) * NoiseOctave1 * 0.1;
-    vec3 cloud = mix(diffuse + raycolor * rays, direct, shadow);
+    vec3 cloud = mix(diffuse + raycolor * rays, direct + (1.0 - smoothstep(0.0, 0.3, shadow)) * 0.1 * thatsunglowIdontknownamefor(dir, 6.0, 8.0), shadow);
     return mix(scattering  * monsoonconverage + moon + raycolor * rays, monsoonconverage * cloud, coverage);
 }
 

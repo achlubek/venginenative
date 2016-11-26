@@ -4,62 +4,90 @@
 
 layout(binding = 16) uniform sampler2D inputTex;
 layout(binding = 23) uniform sampler2D waterTileTex;
+#include ProceduralValueNoise.glsl
 
 uniform float Time;
 uniform float WaterSpeed;
 
-
-float hashX( float n ){
+float hashx( float n ){
     return fract(sin(n)*758.5453);
 }
 
-float noise2X( in vec2 x ){
-    vec2 p = floor(x);
-    vec2 f = fract(x); 
-    float n = p.x + p.y*57.0;
-    float res = 
-        mix (
-            mix (
-                hashX (
-                    n + 0.0
-                ), hashX (
-                    n + 1.0
-                ), f.x
-            ), mix (
-                hashX (
-                    n + 57.0
-                ), hashX (
-                    n + 58.0
-                ), f.x
-            ), f.y
-        );
-    return res;
+float noise2X( vec2 x2 , float a, float b, float off){
+	vec3 x = vec3(x2.x, x2.y,Time * 0.1 + off);
+	vec3 p = floor(x);
+	vec3 f = fract(x);
+	f       = f*f*(3.0-2.0*f);
+	
+	float h2 = a;
+	 float h1 = b;
+	#define h3 (h2 + h1)
+	 
+	 float n = p.x + p.y*h1+ h2*p.z;
+	return mix(mix(	mix( hashx(n+0.0), hashx(n+1.0),f.x),
+			mix( hashx(n+h1), hashx(n+h1+1.0),f.x),f.y),
+		   mix(	mix( hashx(n+h2), hashx(n+h2+1.0),f.x),
+			mix( hashx(n+h3), hashx(n+h3+1.0),f.x),f.y),f.z);
 }
-#define cosinelinear(a) (cos(a * 3.1415 * 2.0))
-#define snoisesinpow(a,b) pow(sin(noise2X(a) * 3.1415 * 2.0) , b) 
-float heightwaterHI(vec2 pos){
+
+float supernoise(vec2 x){
+    float a = noise2X(x, 55.0, 92.0, 0.0);
+    float b = noise2X(x + 0.5, 133.0, 326.0, 0.5);
+    return (a * b);
+}
+#define cosinelinear(a) (cos(a * 3.1415 * 2.0) * 0.5 + 0.5)
+#define snoisesinpow(a,b) pow(1.0 - abs(supernoise(a) - 0.5) * 2.0, b)
+#define snoisesinpow2(a,b) pow(cosinelinear(supernoise(a)), b)
+
+float heightwaterHI2(vec2 pos){
     float res = 0.0;
     pos *= 6.0;
-    float w = 0.0;
+    float w = 1.0;
     float wz = 1.0;
-    float chop = 6.0;
-    float tmod = 22.1 * WaterSpeed;
-    float rotmod = Time * 0.005 * WaterSpeed;
-    float rotmod2 = Time * 1.2134 * 0.005 * WaterSpeed;
-    mat2 rmat = mat2(cos(rotmod), -sin(rotmod), sin(rotmod), cos(rotmod));
-    mat2 rmat2 = mat2(cos(rotmod2), -sin(rotmod2), sin(rotmod2), cos(rotmod2));
-    vec2 v = rmat * vec2(0.5, 0);
-    vec2 v2 = rmat2 * vec2(0.5, 0);
+    float chop = 1.0;
+    float tmod = 1122.1 * WaterSpeed;
+
+    vec2 t = vec2(tmod * Time*0.0001);
+    res += wz * snoisesinpow2(pos + t, chop);
+    wz *= 0.4;
+    pos *= 2.0;
+    tmod *= 0.8;
     for(int i=0;i<4;i++){
-        vec2 t = v * (tmod * Time*0.001);
-        vec2 t2 = v2 * (tmod * Time*0.001);
+        t = vec2(tmod * Time*0.001);
         res += wz * snoisesinpow(pos + t, chop);
-        res += wz * snoisesinpow(pos - t2, chop);
-        chop = mix(chop, 1.0, 0.1);
+        res += wz * snoisesinpow(pos - t, chop);
+        chop = mix(chop, 3.0, 0.5);
         w += wz * 2.0;
         wz *= 0.4;
-        pos *= 2.2;
-        //tmod *= 0.8;
+        pos *= vec2(2.78, 2.0);
+        tmod *= 0.8;
+    }
+    return res / w;
+}
+float heightwaterHI(vec2 posx){
+    float res = 0.0;
+    posx *= 12.0;
+    float w = 0.0;
+    float wz = 1.0;
+    float chop = 2.0;
+    float tmod = 212.1 * WaterSpeed;
+
+	vec3 pos = vec3(posx.x, posx.y, Time * 1.01 * WaterSpeed);
+    vec3 t = vec3(tmod * Time*0.0001);
+   // res += wz * snoisesinpow(pos + t, chop);
+   // wz *= 0.4;
+    //pos *= 2.0;
+   // tmod *= 0.8;
+    for(int i=0;i<4;i++){
+        t = vec3(tmod * Time*0.001);
+        res += wz * pow(supernoise3dX(pos), chop);
+     //   res += wz * snoisesinpow(pos - t, chop);
+        chop = mix(chop, 1.0, 0.5);
+        w += wz * 2.0;
+        wz *= 0.3;
+        pos.xy *= 2.0;
+      //  pos.z *= 0.;
+        //tmod *= 2.8;
     }
     return res / w;
 }

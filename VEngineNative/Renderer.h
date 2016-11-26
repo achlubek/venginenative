@@ -174,7 +174,5 @@ private:
     ShaderProgram *outputShader;
     void output();
 
-
-
     Camera* currentCamera;
 };

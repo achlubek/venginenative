@@ -7,12 +7,11 @@ layout(binding = 23) uniform sampler2D waterTileTex;
 #include PlanetDefinition.glsl
 uniform float Time;
 uniform float WaterSpeed;
+#include ProceduralValueNoise.glsl
 #include WaterHeight.glsl
 
 uniform float WaterWavesScale;
 
-#define WaterLevel WaterHeight
-#define waterdepth 80.0 * WaterWavesScale
  
 
 float intersectPlane(vec3 origin, vec3 direction, vec3 point, vec3 normal)
@@ -98,20 +97,17 @@ float getWaterDistance(){
                 
               //  if(planethit < 14.0 && planethit > 0.0) steps *= 10;
             //    if(planethit2 < 14.0 && planethit2 > 0.0) steps *= 10;
+				mipmapx = textureQueryLod(waterTileTex, newpos.xz * WaterScale *  octavescale1).x;
                 if(intersects(planethit) && intersects(planethit2)){
-                    mipmapx = textureQueryLod(waterTileTex, newpos.xz * WaterScale *  octavescale1).x;
-                    if(planethit > 122000 || mipmapx / textureQueryLevels(waterTileTex) > 0.9){
-                        dist = planethit;               
-                    } else {
-                      //  mipmap1 = 2.9;
+          
                         dist = raymarchwater(newpos, newpos2, steps);
-                    }
+                    
                 } else if(intersects(planethit)){
-                    planethit = min(14999, planethit);
-                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit, 525);
+                 //   planethit = min(14999, planethit);
+                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit, steps);
                 } else if(intersects(planethit2)){
-                    planethit2 = min(14999, planethit2);
-                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit2, 525);
+                //    planethit2 = min(14999, planethit2);
+                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit2, steps);
                 }
             }
         } else {

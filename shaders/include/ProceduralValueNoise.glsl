@@ -40,7 +40,13 @@ float noise2d( in vec2 x ){
 
 float supernoise3d(vec3 p){
 
-	float a =  configurablenoise(p + 0.5, 883.0, 971.0);
+	float a =  configurablenoise(p, 883.0, 971.0);
 	float b =  configurablenoise(p + 0.5, 113.0, 157.0);
 	return (a + b) * 0.5;
+}
+float supernoise3dX(vec3 p){
+
+	float a =  configurablenoise(p, 883.0, 971.0);
+	float b =  configurablenoise(p + 0.5, 113.0, 157.0);
+	return (a * b);
 }

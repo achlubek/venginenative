@@ -2,16 +2,3 @@ diffuse 0 1 0
 #diffuse 0.0
 roughness 1.0
 metalness 0.0
-
-node
-texture colorchecker.jpg
-mix REPLACE
-target DIFFUSE
-modifier LINEARIZE
-uvscale 100.0
-
-#node
-#texture ds1n.png
-#mix REPLACE
-#target NORMAL
-#uvscale 240.0

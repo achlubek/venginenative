@@ -127,7 +127,7 @@ float fbm(vec3 p){
     p *= 0.001 * FBMSCALE;
 	float a = 0.0;
     float w = 1.0;
-	for(int i=0;i<5;i++){
+	for(int i=0;i<6;i++){
         //p += noise(vec3(a));
 		a += supernoise3d(p) * w;	
         w *= 0.5;

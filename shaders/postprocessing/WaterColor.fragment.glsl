@@ -22,13 +22,12 @@ float fogatt(float dist){
     return min(1.0, (dist * dist) );
 }
 
-#define waterdepth 80.0 * WaterWavesScale
-
+float MIP = 0.0;
 vec3 normalx(vec3 pos, float e, float roughness){
     vec2 ex = vec2(e, 0);
-    vec3 a = vec3(pos.x, heightwater(pos.xz) * waterdepth, pos.z);    
-    vec3 b = vec3(pos.x - e, heightwater(pos.xz - ex.xy) * waterdepth, pos.z);
-    vec3 c = vec3(pos.x, heightwater(pos.xz + ex.yx) * waterdepth, pos.z + e);      
+    vec3 a = vec3(pos.x, heightwaterD(pos.xz, MIP) * waterdepth, pos.z);    
+    vec3 b = vec3(pos.x - e, heightwaterD(pos.xz - ex.xy, MIP) * waterdepth, pos.z);
+    vec3 c = vec3(pos.x, heightwaterD(pos.xz + ex.yx, MIP) * waterdepth, pos.z + e);      
     vec3 normal = (cross(normalize(a-b), normalize(a-c)));
     //vec3 p2 = pos * 76.0 + Time;
     return normalize(normal);// + 0.3 * (vec3(noise3d(p2), noise3d(-p2), noise3d(p2.zxy)) * 2.0 - 1.0) * (1.0 - roughness) * (1.0 - roughness)).xyz;
@@ -125,8 +124,9 @@ vec4 getLighting(){
     mipmap1 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1).x;
     float mipmap2 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 11.2467).x;
     float mipmap3 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 151.2467).x ;
-    float roughness = clamp((pow(mipmap1/ textureQueryLevels(waterTileTex), 1.0)) , 0.0, 0.66);
-    mipmap1 *= 0.3  ;
+    float roughness = clamp((pow(mipmap1/ textureQueryLevels(waterTileTex), 1.0)) , 0.0, 1.0);
+    //return vec4(1) * roughness;
+    MIP = mipmap1 *0.3  ;
     //mipmap1 *= 0.0;
     float height1  = heightwater(hitpos.xz);
    // float foam  = foamwater(hitpos.xz, 0);
@@ -134,15 +134,15 @@ vec4 getLighting(){
     
     vec3 origdir = dir;
     
-    vec3 normal = normalx(hitpos, 0.098, roughness);
-    
+    vec3 normal = normalx(hitpos, 0.098 + roughness, roughness);
+    normal = mix(normal, VECTOR_UP, roughness);
    // return pow(max(0.0, dot(normal, dayData.sunDir)), 10.0) * vec4(1);
   //  return vec4(normal.xyzz * vec4(1,0.2,1,0));
     
   //  normal = normalize(normal + normalx(hitpos * 11.2467, 3.0953, roughness) * 0.3);
    // normal = normalize(normal + normalx(hitpos * 51.2467, 3.0953, roughness) * 0.2);
     mipmap1 = mipmap2;
-    normal = normalize(normal + normalx(hitpos * 11.2467, 0.0953, roughness) * 0.4 * (1.0 - mipmap2/ textureQueryLevels(waterTileTex)));
+   // normal = normalize(normal + (1.0 - roughness) * normalx(hitpos * 11.2467, 0.0953, roughness) * 0.2 * (1.0 - mipmap2/ textureQueryLevels(waterTileTex)));
     //return normal.xyzz;
     //normal = normalize(normal + normalx(hitpos * 151.2467, 3.0953, roughness) * 0.1 * (1.0 - mipmap3/ textureQueryLevels(waterTileTex)));
     dir = reflect(origdir, normal);
@@ -154,7 +154,7 @@ vec4 getLighting(){
      
       //  dir = mix(normalize(VECTOR_UP * 2.0 - dir), dir, h);
     /////    fresnel *= mix(0.9, 1.0, h);
-     
+     dir.y = abs(dir.y);
    vec3 result = vec3(0.0);
 
    // roughness = clamp(roughness, 0.0, 1.0);
@@ -176,7 +176,7 @@ vec4 getLighting(){
         hitpos,
         origdir * camdist,
         camdist,
-        roughness,
+        roughness * 0.5,
         1.0
     );
                     
@@ -208,12 +208,12 @@ vec4 getLighting(){
     vec3 newpos2 = CameraPosition + dir * planethit2;
     
     float ssscoeff = pow(max(0, height1 - height2) * WaterWavesScale * 0.05 * length(WaterScale) , 2.0) ;
-    vec3 waterSSScolor = vec3(0.01, 0.33, 0.22) * 0.02 + vec3(0.01, 0.33, 0.22)*  4.71  * ssscoeff  ;
+    vec3 waterSSScolor = vec3(0.01, 0.44, 0.22) * 0.02 + vec3(0.01, 0.33, 0.22)*  4.71  * ssscoeff  ;
    // result += waterSSScolor * (1.0 - fresnel) * getSunColor(0) ;
    // result += 1.0 - smoothstep(0.002, 0.003, ssscoeff2);
-    result += (vec3(0.1,0.19,0.22) + pow(dot(normal,dayData.sunDir) * 0.4 + 0.6,80.0) * vec3(0.8,0.9,0.6) * 0.12) * getSunColor(0) * (1.0 - fresnel)  * 0.069;
+    result += (vec3(0.0,0.06,0.11) + pow(dot(normal,dayData.sunDir) * 0.4 + 0.6,80.0) * vec3(0.8,0.9,0.6) * 0.12) * getSunColor(0) * (1.0 - fresnel)  * 0.069;
     float superscat = pow(max(0.0, dot(refr, dayData.sunDir)), 4.0) * (1.0 - fresnel);
-    result += vec3(0.8,0.9,0.6) * pow(max(0.0, height1 - 0.3), 2.0) * 0.0003 * waterdepth * length(WaterScale) * getSunColor(0) * (superscat * 12.0 + 0.2) ;
+    result += vec3(0.5,0.9,0.8) * pow(max(0.0, height1 - 0.3), 2.0) * 0.0001 * waterdepth * length(WaterScale) * getSunColor(0) * (superscat * 12.0 + 0.2) ;
          
      return  vec4(result, 1.0);
 }
