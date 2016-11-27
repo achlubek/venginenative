@@ -72,24 +72,24 @@ float heightwaterHI(vec2 posx){
     float chop = 2.0;
     float tmod = 212.1 * WaterSpeed;
 
-	vec3 pos = vec3(posx.x, posx.y, Time * 1.01 * WaterSpeed);
+	vec3 pos = vec3(posx.x, posx.y, Time * 0.11 * WaterSpeed);
     vec3 t = vec3(tmod * Time*0.0001);
    // res += wz * snoisesinpow(pos + t, chop);
    // wz *= 0.4;
     //pos *= 2.0;
    // tmod *= 0.8;
-    for(int i=0;i<4;i++){
+    for(int i=0;i<6;i++){
         t = vec3(tmod * Time*0.001);
-        res += wz * pow(supernoise3dX(pos), chop);
+        res += wz * pow(1.0 - abs(supernoise3dX(pos) - 0.5), chop);
      //   res += wz * snoisesinpow(pos - t, chop);
         chop = mix(chop, 1.0, 0.5);
         w += wz * 2.0;
-        wz *= 0.3;
+        wz *= 0.4;
         pos.xy *= 2.0;
       //  pos.z *= 0.;
         //tmod *= 2.8;
     }
-    return res / w;
+    return pow(res / w * 2.0, 3.0);
 }
 
 float foam(float val){

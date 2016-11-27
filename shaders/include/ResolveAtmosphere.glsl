@@ -55,6 +55,19 @@ vec4 smartblur(vec3 dir, float roughness){
     return ret;
 }
 
+float getCloudsAO(vec3 dir){
+	float center = textureLod(coverageDistTex, dir, 0.0).g;
+	
+	float sumao = 0.0;
+	
+	for(int i=0;i<24;i++){
+		vec2 there = textureLod(coverageDistTex, dir + randpoint3() * 0.08, 2.0).rg;
+		sumao += there.r *(1.0 -  clamp((there.g - center) * 0.1, 0.0, 1.0));
+	}
+	
+	return 1.0 - sumao / 24.0;
+}
+
 float getthatfuckingfresnel(float reflectivity, vec3 normal, vec3 cameraSpace, float roughness){
     vec3 dir = normalize(reflect(normalize(cameraSpace), normal));
     float base =  1.0 - abs(dot(normalize(normal), dir));
@@ -257,9 +270,11 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float dist = cloudsData.g;
     float shadow = cloudsData.b;
     float rays = godrays(dir, raysteps);
+	
+	direct += (1.0 - smoothstep(0.0, 0.3, shadow)) * 0.1 * thatsunglowIdontknownamefor(dir, 6.0, 8.0);
     
     vec3 raycolor = getSunColor(0.0) * NoiseOctave1 * 0.1;
-    vec3 cloud = mix(diffuse + raycolor * rays, direct + (1.0 - smoothstep(0.0, 0.3, shadow)) * 0.1 * thatsunglowIdontknownamefor(dir, 6.0, 8.0), shadow);
+    vec3 cloud = mix(diffuse * (getCloudsAO(dir) * 0.7 + 0.3) + raycolor * rays, direct , shadow);
     return mix(scattering  * monsoonconverage + moon + raycolor * rays, monsoonconverage * cloud, coverage);
 }
 

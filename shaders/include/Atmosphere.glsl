@@ -68,10 +68,10 @@ vec3 getAtmosphereForDirection(vec3 dir, float roughness){
 #define ssnoise(a) (snoise(a) * 0.5 + 0.5)
 vec3 getWind(vec3 p){
     return normalize(vec3(
-        noise3d(p),
-        noise3d(-p),
-        noise3d(p.zxy)
-    ) * 2.0 - 1.0) * (noise3d(p * 0.1) * 0.5 + 0.5);
+        supernoise3d(p),
+        supernoise3d(-p),
+        supernoise3d(p.zxy)
+    ) * 2.0 - 1.0) * (supernoise3d(p * 0.1) * 0.5 + 0.5);
 }
 /*
 #define xdnoise(a) ssnoise(a + ssnoise(a * 0.5) * 0.5)
@@ -137,7 +137,7 @@ float fbm(vec3 p){
 }
 float cloudsDensity3D(vec3 pos){
     vec3 ps = pos +CloudsOffset * 1111;// + wtim;   
-   // ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
+    ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
     
     float density = 1.0 - fbmHI(ps * 0.05);
     float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh,  density );
@@ -145,7 +145,7 @@ float cloudsDensity3D(vec3 pos){
 }
 float cloudsDensity3DLOW(vec3 pos){
     vec3 ps = pos +CloudsOffset * 1111;// + wtim;   
-   // ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
+    ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
     
     float density = 1.0 - fbmLOW(ps * 0.05);
     float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh,  density );
@@ -233,6 +233,8 @@ float getAO(vec3 pos, float randomization){
     //vec3 dir = normalize(dayData.sunDir + randdir() * randomization);
     vec3 dir = normalize(dayData.sunDir + randdir() * randomization);
     Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
+    float hitplanet = rsi2(r, planet);
+	if(hitplanet > 0.0) return 0.0;
     float hitceil = rsi2(r, sphere2);
     float hitfloor = rsi2(r, sphere1);
     vec3 posceil = pos + dir * hitceil;
@@ -251,10 +253,11 @@ float shadows(){
     vec3 hitman = vec3(0.0, 1.0, 0.0) + viewdir * data.g;
     sphere1 = Sphere(vec3(0), planetradius + CloudsFloor);
     sphere2 = Sphere(vec3(0), planetradius + CloudsCeil);
+    planet = Sphere(vec3(0), planetradius);
 //    float mx1  = clamp(0.0, 1.0, MieScattCoeff * 0.2) * 0.5 + 0.5;
-    float sun = getAO(hitman, 0.5);// + (0.5 + max(0.0, (getAO(hitman, 1.0) * 2.0 - 1.0 ))) * 0.2 + getAO(hitman, 0.0);
-    float sss =  getAO(hitman, 11.0);
-    return data.r < 0.001 ? 1.0 :   (0.1 * (1.0 - sss) + sun) * 0.9;
+    float sun = getAO(hitman, 0.2);// + (0.5 + max(0.0, (getAO(hitman, 1.0) * 2.0 - 1.0 ))) * 0.2 + getAO(hitman, 0.0);
+    float sss =  getAO(hitman, 0.6);
+    return data.r < 0.001 ? 1.0 : (sun*0.8 + sss * 0.2);
 }
 
 #define intersects(a) (a >= 0.0)

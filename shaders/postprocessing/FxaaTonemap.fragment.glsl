@@ -70,7 +70,7 @@ float rand2sTime(vec2 co){
 vec3 tonemap(vec3 xa){
     
     vec3 a = xa / max(0.1, Luminence);
-    a *= 0.3;
+    a *= 0.9;
     vec3 x = max(vec3(0.0),a-0.004);
     vec3 retColor = (x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06);
     vec3 gscale = vec3(retColor.r * 0.7 + retColor.g * 0.25 + retColor.b * 0.2 + rand2sTime(UV) * 0.08) * 0.6;
@@ -105,7 +105,7 @@ float edgeDetect(vec2 uv){
 }*/
 
 vec4 shade(){    
-    vec3 color = fxaa(inputTex, UV).rgb;
+    vec3 color = texture(inputTex, UV).rgb;
    // vec3 t = textureLod(inputTex, UV, 1.0).rgb;
    // float d = distance(color, t);
   //  color = mix(color, textureLod(inputTex, UV, 2.0).rgb, smoothstep(0.0,  length(vec3(1.0)),d));
