@@ -9,6 +9,7 @@ layout(binding = 26) uniform samplerCube shadowsTex;
 layout(binding = 27) uniform samplerCube skyfogTex;
 layout(binding = 24) uniform sampler2D starsTex;
 layout(binding = 28) uniform sampler2D moonTex;
+layout(binding = 29) uniform samplerCube resolvedAtmosphereTex;
 
 #include PostProcessEffectBase.glsl
 #include Atmosphere.glsl
@@ -181,7 +182,7 @@ vec4 getLighting(){
     );
                     
     //result += mix(shadingWater(dataReflection, -dayData.sunDir, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0)) * fresnel * 1.0, getSunColor(0.5) * 0.33 * whites, min(1.0, whites));// + sampleAtmosphere(normal, 0.0) * fresnel;
-    vec3 atm = sampleAtmosphere(dir, roughness * 0.1, 0.0, 5);// * (1.0 - roughness * 0.5) * (1.0 - roughness * 0.5);
+    vec3 atm =  texture(resolvedAtmosphereTex, dir).rgb;// * (1.0 - roughness * 0.5) * (1.0 - roughness * 0.5);
    // return vec4(atm, 1.0); 
     result +=   shadingWater(dataReflection, normal, -dayData.sunDir, getSunColor(0.0), atm)  * 1.0 * mix(1.0, 1.0, roughness);
     vec3 refr = normalize(refract(origdir, normal, 0.66));

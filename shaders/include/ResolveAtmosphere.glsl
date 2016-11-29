@@ -19,7 +19,7 @@ vec3 randpoint3(){
     float y = rand2s(UV * rdhash);
     rdhash += 1.6271255;
     float z = rand2s(UV * rdhash);
-    rdhash += 1.6271255;
+    rdhash += 1.1231255;
     return vec3(x, y, z) * 2.0 - 1.0;
 }
 float blurshadows(vec3 dir, float roughness){
@@ -58,14 +58,27 @@ vec4 smartblur(vec3 dir, float roughness){
 float getCloudsAO(vec3 dir){
 	float center = textureLod(coverageDistTex, dir, 0.0).g;
 	
-	float sumao = 0.0;
+	vec3 point = vec3(0.0) + dir * center;
+	vec3 normal = -normalize(vec3(0.0, planetradius, 0.0) + point);
 	
+	float sumao = 0.0;
+	float r = Time;
 	for(int i=0;i<24;i++){
-		vec2 there = textureLod(coverageDistTex, dir + randpoint3() * 0.08, 2.0).rg;
-		sumao += there.r *(1.0 -  clamp((there.g - center) * 0.1, 0.0, 1.0));
+	    float x = rand2s(UV * r);
+		r += 2.1231255;
+		float y = rand2s(UV * r);
+		r += 1.6271255;
+		float z = rand2s(UV * r);
+		r += 1.1231255;
+		vec3 px = vec3(x, y, z) * 2.0 - 1.0;
+		vec2 there = textureLod(coverageDistTex, dir + px * 0.18 / (center * 0.0001) , 1.0).rg;
+		vec3 p = vec3(0.0) + (dir + px * 0.18 / (center * 0.0001) ) * there.g;
+		float dst = distance(p, point);
+		float occ = max(0.0, dot(normal, normalize(p - point)));
+		sumao += clamp(1.0 - occ / (dst * 0.0001), 0.0, 1.0);
 	}
 	
-	return 1.0 - sumao / 24.0;
+	return sumao / 24.0;
 }
 
 float getthatfuckingfresnel(float reflectivity, vec3 normal, vec3 cameraSpace, float roughness){
@@ -258,7 +271,7 @@ float thatsunglowIdontknownamefor(vec3 dir, float strength, float power){
 vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float dimmer = max(0, 0.06 + 0.94 * dot(normalize(dayData.sunDir), vec3(0,1,0)));
     vec3 scattering = getAtmosphereScattering(dir, roughness);
-    vec3 diffuse = getDiffuseAtmosphereColor(); // * (1.0 - pow(1.0 - dimmer, 1.0)) * ( (1.0 - max(0.0, dayData.sunDir.y)) * 0.5 + 0.5);
+    vec3 diffuse = getDiffuseAtmosphereColor() * 2.0; // * (1.0 - pow(1.0 - dimmer, 1.0)) * ( (1.0 - max(0.0, dayData.sunDir.y)) * 0.5 + 0.5);
     vec3 direct = getSunColor(roughness) ;
    // scattering *= godrays(dir) ;
     vec3 moon = textureMoon(dir);
@@ -274,14 +287,14 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
 	direct += (1.0 - smoothstep(0.0, 0.3, shadow)) * 0.1 * thatsunglowIdontknownamefor(dir, 6.0, 8.0);
     
     vec3 raycolor = getSunColor(0.0) * NoiseOctave1 * 0.1;
-    vec3 cloud = mix(diffuse * (getCloudsAO(dir) * 0.7 + 0.3) + raycolor * rays, direct , shadow);
+    vec3 cloud = mix(diffuse * (getCloudsAO(dir) ) + raycolor * rays, direct , shadow);
     return mix(scattering  * monsoonconverage + moon + raycolor * rays, monsoonconverage * cloud, coverage);
 }
 
 vec3 shadeFragment(PostProceessingData data){
     vec3 suncolor = getSunColor(0.0);
     vec3 sun = shadeColor(data, -dayData.sunDir, suncolor);
-    vec3 diffuse = shadeColor(data, -data.normal, sampleAtmosphere(data.normal, data.roughness*0.5, 1.0, 0)) * 0.2;
+    vec3 diffuse = shadeColor(data, -data.normal,  texture(resolvedAtmosphereTex, data.normal).rgb) * 0.2;
     return sun * CSMQueryVisibility(data.worldPos) + diffuse;
 }
 
@@ -291,7 +304,7 @@ vec3 getNormalLighting(vec2 uv, PostProceessingData data){
     if(length(data.normal) < 0.01){
         data.roughness = 0.0;
         vec3 dir = reconstructCameraSpaceDistance(uv, 1.0);
-        return sampleAtmosphere(dir, 0.0, 1.0, 23);
+        return texture(resolvedAtmosphereTex, dir).rgb;
     } else {
         return shadeFragment(data);
     }

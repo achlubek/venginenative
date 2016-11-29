@@ -80,7 +80,10 @@ float heightwaterHI(vec2 posx){
    // tmod *= 0.8;
     for(int i=0;i<6;i++){
         t = vec3(tmod * Time*0.001);
-        res += wz * pow(1.0 - abs(supernoise3dX(pos) - 0.5), chop);
+		float X = supernoise3dX(pos);
+       // res += wz * pow(1.0 - abs(X - 0.5), chop);
+       // res += wz * pow(sin(X * 3.1415) * 0.5 + 0.5, chop
+	    res += wz * mix(pow(1.0 - abs(X - 0.5), chop), pow(sin(X * 3.1415) * 0.5 + 0.5, chop), 0.5);
      //   res += wz * snoisesinpow(pos - t, chop);
         chop = mix(chop, 1.0, 0.5);
         w += wz * 2.0;

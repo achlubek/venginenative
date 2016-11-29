@@ -15,6 +15,7 @@ layout(binding = 27) uniform samplerCube skyfogTex;
 layout(binding = 28) uniform sampler2D moonTex;
 layout(binding = 23) uniform sampler2D waterTileTex;
 layout(binding = 24) uniform sampler2D starsTex;
+layout(binding = 29) uniform samplerCube resolvedAtmosphereTex;
 
 uniform int UseAO;
 

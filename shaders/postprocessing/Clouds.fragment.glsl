@@ -27,8 +27,8 @@ vec4 shade(){
     }
 
     return vec4(
-    mix(retavg.r, retedg.r, 0.0),
-    mix(retavg.g, retedg.g, 0.9),
-    mix(retavg.b, retedg.b, 0.0),
+    mix(retavg.r, retedg.r, 0.1),
+    mix(retavg.g, retedg.g, 0.1),
+    mix(retavg.b, retedg.b, 0.5),
     mix(retavg.a, retedg.a, 0.0));;
 }

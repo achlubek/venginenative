@@ -139,7 +139,16 @@ private:
     CubeMapTexture *cloudsShadowsTextureEven;
     CubeMapFramebuffer *cloudsShadowsFboOdd;
     CubeMapTexture *cloudsShadowsTextureOdd;
+
+    ShaderProgram *cloudResolveShader;
+    CubeMapFramebuffer *cloudsResolvedFboEven;
+    CubeMapTexture *cloudsResolvedTextureEven;
+    CubeMapFramebuffer *cloudsResolvedFboOdd;
+    CubeMapTexture *cloudsResolvedTextureOdd;
+
     void clouds();
+    void cloudsResolve();
+
 
 
     ShaderProgram *fxaaTonemapShader;

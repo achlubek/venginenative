@@ -86,6 +86,7 @@ Renderer::Renderer(int iwidth, int iheight)
     waterTileShader = new ShaderProgram("PostProcess.vertex.glsl", "WaterTile.fragment.glsl");
     waterMeshShader = new ShaderProgram("PostProcess.vertex.glsl", "WaterMesh.fragment.glsl");
     waterColorShader = new ShaderProgram("PostProcess.vertex.glsl", "WaterColor.fragment.glsl");
+    cloudResolveShader = new ShaderProgram("PostProcess.vertex.glsl", "CloudResolve.fragment.glsl");
     exposureComputeShader = new ShaderProgram("CalculateExposure.compute.glsl");
     exposureBuffer = new ShaderStorageBuffer();
 
@@ -170,6 +171,15 @@ void Renderer::initializeFbos()
     cloudsShadowsTextureOdd = new CubeMapTexture(config->geti("clouds_shadows_resolution"), config->geti("clouds_shadows_resolution"), GL_R16F, GL_RED, GL_HALF_FLOAT);
     cloudsShadowsFboOdd = new CubeMapFramebuffer();
     cloudsShadowsFboOdd->attachTexture(cloudsShadowsTextureOdd, GL_COLOR_ATTACHMENT0);
+
+
+    cloudsResolvedTextureEven = new CubeMapTexture(1024, 1024, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    cloudsResolvedFboEven = new CubeMapFramebuffer();
+    cloudsResolvedFboEven->attachTexture(cloudsResolvedTextureEven, GL_COLOR_ATTACHMENT0);
+
+    cloudsResolvedTextureOdd = new CubeMapTexture(1024, 1024, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    cloudsResolvedFboOdd = new CubeMapFramebuffer();
+    cloudsResolvedFboOdd->attachTexture(cloudsResolvedTextureOdd, GL_COLOR_ATTACHMENT0);
 
     //---------/
 
@@ -319,6 +329,7 @@ Renderer::~Renderer()
     delete bloomShader;
     delete combineShader;
     delete outputShader;
+    delete cloudResolveShader;
 }
 
 void Renderer::renderToFramebuffer(glm::vec3 position, CubeMapFramebuffer * fboout)
@@ -370,16 +381,62 @@ void Renderer::draw(Camera *camera)
     atmScatt();
     clouds();
     fog();
+    cloudsResolve();
     combine(0);
     waterMesh();
     waterColorShaded();
     combine(1);
     //  lensBlur();
+    cloudFace++;
+    if (cloudFace > 5) {
+        cloudFace = 0;
+        cloudCycleUseOdd = !cloudCycleUseOdd;
+    }
     gpuInitialized = true;
 }
 
 void Renderer::bloom()
 {
+}
+void Renderer::cloudsResolve()
+{
+    CubeMapFramebuffer* currentFbo = cloudsResolvedFboOdd;
+    if (cloudCycleUseOdd)
+        currentFbo = cloudsResolvedFboOdd;
+    else
+        currentFbo = cloudsResolvedFboEven;
+    if (cloudCycleUseOdd)
+        cloudsResolvedTextureEven->use(29);
+    else
+        cloudsResolvedTextureOdd->use(29);
+    currentFbo->use(false);
+    cloudResolveShader->use();
+    setCommonUniforms(cloudResolveShader);
+    deferredTexture->use(5);
+    ambientLightTexture->use(6);
+    ambientOcclusionTexture->use(16);
+    //fogTexture->use(20);
+    waterColorTexture->use(21);
+    starsTexture->use(24);
+    moonTexture->use(28);
+    Camera* camera = currentFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, true);
+    camera->transformation->setPosition(currentCamera->transformation->position);
+    FrustumCone *cone = camera->cone;
+    glm::mat4 vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
+    glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
+    glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
+    camera->cone->update(inverse(rpmatrix));
+    cloudResolveShader->setUniform("VPMatrix", vpmatrix);
+    cloudResolveShader->setUniform("CameraPosition", camera->transformation->position);
+    cloudResolveShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
+    cloudResolveShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
+    cloudResolveShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
+    quad3dInfo->draw();
+    
+    if (cloudCycleUseOdd)
+        cloudsResolvedTextureOdd->generateMipMaps();
+    else
+        cloudsResolvedTextureEven->generateMipMaps();
 }
 
 void Renderer::combine(int step)
@@ -393,6 +450,10 @@ void Renderer::combine(int step)
     waterColorTexture->use(21);
     starsTexture->use(24);
     moonTexture->use(28);
+    if (!cloudCycleUseOdd)
+        cloudsResolvedTextureOdd->use(29);
+    else
+        cloudsResolvedTextureEven->use(29);
 
     setCommonUniforms(combineShader);
     combineShader->setUniform("CombineStep", step);
@@ -449,6 +510,7 @@ void Renderer::recompileShaders()
     waterTileShader->recompile();
     waterColorShader->recompile();
     waterMeshShader->recompile();
+    cloudResolveShader->recompile();
 }
 
 void Renderer::deferred()
@@ -589,10 +651,12 @@ void Renderer::waterColorShaded()
     if (!cloudCycleUseOdd) {
         cloudsTextureOdd->use(25);
         cloudsShadowsTextureOdd->use(26);
+        cloudsResolvedTextureEven->use(29);
     }
     else {
         cloudsTextureEven->use(25);
         cloudsShadowsTextureEven->use(26);
+        cloudsResolvedTextureOdd->use(29);
     }
 
     setCommonUniforms(waterColorShader);
@@ -711,11 +775,6 @@ void Renderer::clouds()
     else
         cloudsShadowsTextureEven->generateMipMaps();
 
-    cloudFace++;
-    if (cloudFace > 5) {
-        cloudFace = 0;
-        cloudCycleUseOdd = !cloudCycleUseOdd;
-    }
 }
 
 void Renderer::motionBlur()
