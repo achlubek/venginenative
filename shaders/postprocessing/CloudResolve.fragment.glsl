@@ -32,21 +32,15 @@ uniform int CombineStep;
 #include FXAA.glsl
 #include ResolveAtmosphere.glsl
 
-vec3 integrateStepsAndSun(){
-    currentData.cameraDistance = length(currentData.normal) < 0.01 ? 999999.0 : currentData.cameraDistance;
-    return getNormalLighting(UV, currentData);
-}
-
-vec3 integrateCloudsWater(){
-    return texture(waterColorTex, UV).rgb;
+vec3 integrateStepsAndSun(vec3 dir){        
+	return sampleAtmosphere(dir, 0.0, 1.0, 23);
 }
 
 vec4 shade(){    
     vec3 color = vec3(0);
-    if(CombineStep == STEP_PREVIOUS_SUN){
-        color = integrateStepsAndSun();
-    } else {
-        color = integrateCloudsWater();
-    }
-    return vec4( clamp(color, 0.0, 110.0), currentData.cameraDistance * 0.001);
+	vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
+	color = integrateStepsAndSun(dir);
+	vec3 last = textureLod(resolvedAtmosphereTex, dir, 0.0).rgb;
+	color = mix(color, last, CloudsIntegrate);
+    return vec4( clamp(color, 0.0, 1110.0), 1.0);
 }

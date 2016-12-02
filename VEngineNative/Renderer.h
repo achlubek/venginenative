@@ -41,6 +41,8 @@ public:
     float noiseOctave6;
     float noiseOctave7;
     float noiseOctave8;
+    float contrast;
+    float exposure;
     float mieScattCoefficent;
     float nightSkyLightPollution;
     float cloudsIntegrate;

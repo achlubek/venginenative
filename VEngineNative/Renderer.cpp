@@ -32,6 +32,8 @@ Renderer::Renderer(int iwidth, int iheight)
     noiseOctave6 = 4.0;
     noiseOctave7 = 1.01;
     noiseOctave8 = 1.01;
+    exposure = 1.0;
+    contrast = 1.0;
     cloudsIntegrate = 0.90;
     mieScattCoefficent = 1.0;
     nightSkyLightPollution = 0.2;
@@ -280,6 +282,8 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     sp->setUniform("DayElapsed", dayElapsed);
     sp->setUniform("YearElapsed", yearElapsed);
     sp->setUniform("EquatorPoleMix", equatorPoleMix);
+    sp->setUniform("Exposure", exposure);
+    sp->setUniform("Contrast", contrast);
 
     double t100 = Game::instance->time * 100.0;
     double t001 = Game::instance->time * 0.001;

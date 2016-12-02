@@ -67,10 +67,15 @@ float rand2sTime(vec2 co){
     co *= Time;
     return fract(sin(dot(co.xy,vec2(12.9898,78.233))) * 43758.5453);
 }
+
+uniform float Exposure;
+uniform float Contrast;
+
 vec3 tonemap(vec3 xa){
     
     vec3 a = xa / max(0.1, Luminence);
-    a *= 0.9;
+    a *= Exposure;
+	a = ((a - 0.5) * Contrast) + 0.5;
     vec3 x = max(vec3(0.0),a-0.004);
     vec3 retColor = (x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06);
     vec3 gscale = vec3(retColor.r * 0.7 + retColor.g * 0.25 + retColor.b * 0.2 + rand2sTime(UV) * 0.08) * 0.6;

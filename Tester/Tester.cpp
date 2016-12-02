@@ -86,7 +86,7 @@ int main()
             cam->createProjectionPerspective((fovnew), (float)game->width / (float)game->height, 0.01f, 1000);
             fov = fovnew;
         }
-        static float f = 0.0f;
+        static float f = 0.0f;/*
         float a1 = Game::instance->renderer->cloudsThresholdLow;
         float a2 = Game::instance->renderer->cloudsThresholdHigh;
         if (Game::instance->renderer->cloudsThresholdHigh < Game::instance->renderer->cloudsThresholdLow) {
@@ -98,10 +98,10 @@ int main()
             a2 = Game::instance->renderer->cloudsThresholdLow;
         }
         Game::instance->renderer->cloudsThresholdLow = a1;
-        Game::instance->renderer->cloudsThresholdHigh = a2;
+        Game::instance->renderer->cloudsThresholdHigh = a2;*/
 
-        a1 = Game::instance->renderer->cloudsFloor;
-        a2 = Game::instance->renderer->cloudsCeil;
+        auto a1 = Game::instance->renderer->cloudsFloor;
+        auto a2 = Game::instance->renderer->cloudsCeil;
         if (Game::instance->renderer->cloudsCeil < Game::instance->renderer->cloudsFloor) {
             a1 = Game::instance->renderer->cloudsCeil;
             a2 = Game::instance->renderer->cloudsCeil;
@@ -147,10 +147,12 @@ int main()
        //     ImGui::Text("Terrain metalness:");
        //     ImGui::SliderFloat("metalness", &t->getLodLevel(0)->material->metalness, 0.0f, 1.0f);
         ImGui::SliderFloat("FOV", &fovnew, 5.0f, 175.0f);
+        ImGui::SliderFloat("Exposure", &Game::instance->renderer->exposure, 0.01f, 10.0f);
+        ImGui::SliderFloat("Contrast", &Game::instance->renderer->contrast, 0.01f, 10.0f);
         ImGui::SliderFloat("CloudsHeightStart", &Game::instance->renderer->cloudsFloor, 100.0f, 30000.0f);
         ImGui::SliderFloat("CloudsHeightEnd", &Game::instance->renderer->cloudsCeil, 100.0f, 30000.0f);
-        ImGui::SliderFloat("CloudsThresholdLow", &Game::instance->renderer->cloudsThresholdLow, -1.0f, 1.0f);
-        ImGui::SliderFloat("CloudsThresholdHigh", &Game::instance->renderer->cloudsThresholdHigh, -1.0f, 1.0f);
+        ImGui::SliderFloat("CloudsThreshold", &Game::instance->renderer->cloudsThresholdLow, 0.0f, 1.0f);
+        ImGui::SliderFloat("CloudsThresholdHigh", &Game::instance->renderer->cloudsThresholdHigh, 0.0f, 1.0f);
         //ImGui::SliderFloat("CloudsAtmosphereShaftsMultiplier", &Game::instance->renderer->cloudsAtmosphereShaftsMultiplier, 0.0f, 10.0f);
         //ImGui::SliderFloat("CloudsWindSpeed", &Game::instance->renderer->cloudsWindSpeed, 0.0f, 10.0f);
         ImGui::SliderFloat("CloudsDensity", &Game::instance->renderer->cloudsDensityScale, 0.0f, 5.0f);
