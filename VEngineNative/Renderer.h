@@ -144,10 +144,8 @@ private:
     CubeMapTexture *cloudsShadowsTextureOdd;
 
     ShaderProgram *cloudResolveShader;
-    CubeMapFramebuffer *cloudsResolvedFboEven;
-    CubeMapTexture *cloudsResolvedTextureEven;
-    CubeMapFramebuffer *cloudsResolvedFboOdd;
-    CubeMapTexture *cloudsResolvedTextureOdd;
+    CubeMapFramebuffer *cloudsResolvedFbo;
+    CubeMapTexture *cloudsResolvedTexture;
 
     void clouds();
     void cloudsResolve();

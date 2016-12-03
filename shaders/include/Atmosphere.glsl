@@ -142,8 +142,8 @@ float getHeightOverSea(vec3 p){
 }
 
 float cloudsDensity3D(vec3 pos){
-    vec3 ps = pos +CloudsOffset * 1111 + Time * 20.0 ;// + wtim;   
-    ps += (getWind(pos * 0.0005  * WindBigScale + Time * 0.04* WindBigScale ) * (WindBigPower / WindBigScale)) * 600.0;
+    vec3 ps = pos +CloudsOffset * 1111 + Time * 5.0 ;// + wtim;   
+    ps += (getWind(pos * 0.0005  * WindBigScale + Time * 0.01* WindBigScale ) * (WindBigPower / WindBigScale)) * 600.0;
     
     float density = fbmHI(ps * 0.005);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
 	float measurement = (CloudsCeil - CloudsFloor) * 0.5;
@@ -153,8 +153,8 @@ float cloudsDensity3D(vec3 pos){
     return  init;
 }
 float cloudsDensity3DLOW(vec3 pos){
-    vec3 ps = pos +CloudsOffset * 1111 + Time * 20.0;// + wtim;   
-    ps += (getWind(pos * 0.0005  * WindBigScale + Time * 0.04* WindBigScale ) * (WindBigPower / WindBigScale)) * 600.0;
+    vec3 ps = pos +CloudsOffset * 1111 + Time * 5.0;// + wtim;   
+    ps += (getWind(pos * 0.0005  * WindBigScale + Time * 0.01* WindBigScale ) * (WindBigPower / WindBigScale)) * 600.0;
     
     float density = fbmHI(ps * 0.005);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
 	float measurement = (CloudsCeil - CloudsFloor) * 0.5;

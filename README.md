@@ -6,6 +6,13 @@ The software is licensed under MIT license.
 
 Come here to see captures of engine running: https://www.youtube.com/user/afluby/videos
 
+![A screenshot](http://i.imgur.com/l0gqXox.jpg "Screenshot")
+![A screenshot](http://i.imgur.com/sS5Tyd6.jpg "Screenshot")
+![A screenshot](http://i.imgur.com/HAa3zoL.jpg "Screenshot")
+![A screenshot](http://i.imgur.com/dKOTp4e.jpg "Screenshot")
+![A screenshot](http://i.imgur.com/v541cST.jpg "Screenshot")
+![A screenshot](http://i.imgur.com/66VKQfj.jpg "Screenshot")
+
 ![A screenshot](http://i.imgur.com/LrM3XEr.jpg "Screenshot")
 ![A screenshot](http://i.imgur.com/I2pNgIF.jpg "Screenshot")
 ![A screenshot](http://i.imgur.com/sICFuIb.jpg "Screenshot")

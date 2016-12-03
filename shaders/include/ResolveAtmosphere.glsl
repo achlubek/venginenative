@@ -265,7 +265,7 @@ vec3 textureMoon(vec3 dir){
     color *= atm;
     sun_moon_mult = step(0.0, i);
     float monsoonconverage = 1.0 - smoothstep(0.995, 1.0, dot(dayData.sunDir, dayData.moonDir));
-    return clamp(atmdiff + l * color * sun_moon_mult * 0.1 + getStars(dir, 0.0) * (1.0 - sun_moon_mult), 0.0, 111.0);
+    return clamp(atmdiff + l * color * sun_moon_mult * 0.1 + getStars(dir, 0.0) * (1.0 - sun_moon_mult), 0.0, 2.0);
 }
 
 
