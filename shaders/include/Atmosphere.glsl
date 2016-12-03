@@ -112,7 +112,7 @@ float fbm(vec3 p){
 	return a / wc;
 }float fbmLOW(vec3 p){
    // p *= 0.1;
-    p *= 0.001 * FBMSCALE;
+    p *= 0.011 * FBMSCALE;
 	float a = 0.0;
     float w = 0.5;
 	for(int i=0;i<8;i++){
@@ -124,7 +124,7 @@ float fbm(vec3 p){
 	return a;// + noise(p * 100.0) * 11;
 }float fbmHI(vec3 p){
    // p *= 0.1;
-    p *= 0.001 * FBMSCALE;
+    p *= 0.011 * FBMSCALE;
 	float a = 0.0;
     float w = 0.5;
 	for(int i=0;i<8;i++){
@@ -142,8 +142,8 @@ float getHeightOverSea(vec3 p){
 }
 
 float cloudsDensity3D(vec3 pos){
-    vec3 ps = pos +CloudsOffset * 1111;// + wtim;   
-  //  ps += (getWind(pos * 0.0005  * WindBigScale + Time * 0.01* WindBigScale ) * (WindBigPower / WindBigScale)) * 600.0;
+    vec3 ps = pos +CloudsOffset * 1111 + Time * 20.0 ;// + wtim;   
+    ps += (getWind(pos * 0.0005  * WindBigScale + Time * 0.04* WindBigScale ) * (WindBigPower / WindBigScale)) * 600.0;
     
     float density = fbmHI(ps * 0.005);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
 	float measurement = (CloudsCeil - CloudsFloor) * 0.5;
@@ -153,8 +153,8 @@ float cloudsDensity3D(vec3 pos){
     return  init;
 }
 float cloudsDensity3DLOW(vec3 pos){
-    vec3 ps = pos +CloudsOffset * 1111;// + wtim;   
-   // ps += (getWind(pos * 0.0005  * WindBigScale + Time * 0.01* WindBigScale ) * (WindBigPower / WindBigScale)) * 600.0;
+    vec3 ps = pos +CloudsOffset * 1111 + Time * 20.0;// + wtim;   
+    ps += (getWind(pos * 0.0005  * WindBigScale + Time * 0.04* WindBigScale ) * (WindBigPower / WindBigScale)) * 600.0;
     
     float density = fbmHI(ps * 0.005);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
 	float measurement = (CloudsCeil - CloudsFloor) * 0.5;
@@ -182,7 +182,7 @@ float getCloudsAO(vec3 dir, float dirmult){
 	
 	float sumao = 0.0;
 	float r = Time;
-	for(int i=0;i<24;i++){
+	for(int i=0;i<14;i++){
 	    float x = rand2s(UV * r);
 		r += 2.1231255;
 		float y = rand2s(UV * r);
@@ -197,21 +197,21 @@ float getCloudsAO(vec3 dir, float dirmult){
 		sumao += clamp(1.0 - occ / (dst * 0.0001), 0.0, 1.0);
 	}
 	
-	return 1.0 - sqrt(1.0 - clamp(sumao / 24.0, 0.35, 1.0));
+	return 1.0 - sqrt(1.0 - clamp(sumao / 14.0, 0.35, 1.0));
 }
 
 Sphere sphere1;
 Sphere sphere2;
     
 float weightshadow = 1.1;
-float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
-    const int stepcount = 27;
+float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2, float weight){
+    const int stepcount = 17;
     const float stepsize = 1.0 / float(stepcount);
     float iter = 0.0;
     float rd = rand2sTime(UV) * stepsize;
     float coverageinv = 1.0;
     float linear = distance(p1, mix(p1, p2, stepsize));
-    float mult = weightshadow * stepsize * CloudsDensityScale;
+    float mult = weight * stepsize;
     for(int i=0;i<stepcount;i++){
         vec3 pos = mix(p1, p2, iter + rd);
         float clouds = cloudsDensity3DLOW(pos);
@@ -225,7 +225,7 @@ float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
 vec3 CAMERA = vec3(0.0, 1.0, 0.0);
 
 vec2 internalmarchconservative(vec3 p1, vec3 p2){
-    int stepcount = 27;
+    int stepcount = 17;
     float stepsize = 1.0 / float(stepcount);
     float rd = fract(rand2sTime(UV)) * stepsize;
     float c = 0.0;
@@ -271,7 +271,7 @@ vec3 randdir(){
     ) * 2.0 - 1.0);
 }
 
-float getAO(vec3 pos, float randomization){
+float getAO(vec3 pos, float randomization, float weight){
     //vec3 dir = normalize(dayData.sunDir);
     //vec3 dir = normalize(dayData.sunDir + randdir() * randomization);
     vec3 dir = normalize(dayData.sunDir + randdir() * randomization);
@@ -282,11 +282,11 @@ float getAO(vec3 pos, float randomization){
     float hitfloor = rsi2(r, sphere1);
     vec3 posceil = pos + dir * hitceil;
     vec3 posfloor = pos + dir * hitfloor;
-    if(hitfloor > 0.0 && hitceil > 0.0 && hitfloor < hitceil) return internalmarchconservativeCoverageOnly(pos, posceil);
-    if(hitfloor > 0.0 && hitceil > 0.0 && hitfloor > hitceil) return internalmarchconservativeCoverageOnly(pos, posceil);
-    if(hitfloor > 0.0 && hitceil <= 0.0) return internalmarchconservativeCoverageOnly(pos, posfloor);
-    if(hitfloor <= 0.0 && hitceil > 0.0) return internalmarchconservativeCoverageOnly(pos, posceil);
-    return internalmarchconservativeCoverageOnly(pos, posceil);
+    if(hitfloor > 0.0 && hitceil > 0.0 && hitfloor < hitceil) return internalmarchconservativeCoverageOnly(pos, posceil, weight);
+    if(hitfloor > 0.0 && hitceil > 0.0 && hitfloor > hitceil) return internalmarchconservativeCoverageOnly(pos, posceil, weight);
+    if(hitfloor > 0.0 && hitceil <= 0.0) return internalmarchconservativeCoverageOnly(pos, posfloor, weight);
+    if(hitfloor <= 0.0 && hitceil > 0.0) return internalmarchconservativeCoverageOnly(pos, posceil, weight);
+    return internalmarchconservativeCoverageOnly(pos, posceil, weight);
 }
 
 float shadows(){
@@ -298,11 +298,12 @@ float shadows(){
     sphere2 = Sphere(vec3(0), planetradius + CloudsCeil);
     planet = Sphere(vec3(0), planetradius);
 //    float mx1  = clamp(0.0, 1.0, MieScattCoeff * 0.2) * 0.5 + 0.5;
-	weightshadow = 100.0;
-    float sun = getAO(hitman, 0.0);// + (0.5 + max(0.0, (getAO(hitman, 1.0) * 2.0 - 1.0 ))) * 0.2 + getAO(hitman, 0.0);
-	//weightshadow  =1.0;
- //   float sss =  getAO(hitman, 0.6);
-    return sun ;//* 0.8 + sss * 0.2;
+	weightshadow = 1001.0;
+    float sun = getAO(hitman, 0.0, 1001.0);// + (0.5 + max(0.0, (getAO(hitman, 1.0) * 2.0 - 1.0 ))) * 0.2 + getAO(hitman, 0.0);
+	//weightshadow  = 0.000;//1 * CloudsDensityScale;
+   // float sss =  getAO(hitman, 0.6, CloudsDensityScale  );
+    return sun;
+    //return sun * 0.8 + sss * 0.2;
 }
 
 #define intersects(a) (a >= 0.0)

@@ -14,7 +14,7 @@ float fbmHI(vec3 p){
    // p *= 0.1;
     p *= 0.0000005;
 	p += Time * 0.001;
-	p += getWind(p * 0.1) * 12.0;
+	p += getWind(p * 0.1) * 6.0;
 	float a = 0.0;
     float w = 1.0;
 	for(int i=0;i<4;i++){
@@ -30,7 +30,7 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
     r = normalize(r);
 	float rs = rsi2(Ray(r0, r), Sphere(vec3(0), rAtmos));
 	vec3 px = r0 + r * rs;
-	shMie *= fbmHI(px) * 2.0;
+	shMie *= fbmHI(px) * 0.5;
     float iStepSize = rs / float(iSteps);
     float iTime = 0.0;
     vec3 totalRlh = vec3(0,0,0);

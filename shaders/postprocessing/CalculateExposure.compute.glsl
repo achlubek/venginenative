@@ -17,7 +17,7 @@ void main(){
     for(int x=0;x<grid.length();x++){
         for(int y=0;y<grid.length();y++){
             vec2 coord = vec2(grid[x], grid[y]);
-            vec3 c = textureLod(inputTex, coord, float(textureQueryLevels(inputTex) - 1.0)).rgb;
+            vec3 c = textureLod(inputTex, coord, float(textureQueryLevels(inputTex) - 0.0)).rgb;
             float w = 1.4- distance(coord, vec2(0.5));
             luma += w * length(c);
             lumaw += 1.0;

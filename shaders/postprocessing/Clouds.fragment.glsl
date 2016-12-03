@@ -20,8 +20,8 @@ vec4 shade(){
         retedg.rg = vec2(max(val.r, lastData.r), min(val.g, lastData.g));
         retavg.rg = vec2(mix(val.r, lastData.r, CloudsIntegrate), val.g);
 		
-		retavg.r = mix(retavg.r, retedg.r, 0.1);
-		retavg.g = mix(retavg.g, retedg.g, 0.1);
+		retavg.r = mix(retavg.r, retedg.r, 0.0);
+		retavg.g = mix(retavg.g, retedg.g, 0.5);
     } else if(RenderPass == 1){
         vec4 lastData = texture(cloudsCloudsTex, dir).rgba;
         float val = shadows();
@@ -34,9 +34,9 @@ vec4 shade(){
         retedg.b = min(AOSky, lastData.b);
         retavg.b = mix(AOSky, lastData.b, CloudsIntegrate);
 		
-		retavg.r = mix(retavg.r, retedg.r, 0.3);
-		retavg.g = mix(retavg.g, retedg.g, 0.1);
-		retavg.b = mix(retavg.b, retedg.b, 0.1);
+		retavg.r = mix(retavg.r, retedg.r, 0.4);
+		retavg.g = mix(retavg.g, retedg.g, 0.4);
+		retavg.b = mix(retavg.b, retedg.b, 0.4);
     }
 
     return retavg;

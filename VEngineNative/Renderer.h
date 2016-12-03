@@ -130,6 +130,7 @@ private:
     void atmScatt();
 
     bool cloudCycleUseOdd = false;
+    bool shadowTurn = false;
     int cloudFace = 0;
 
     CubeMapFramebuffer *cloudsFboEven;

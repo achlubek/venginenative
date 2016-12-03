@@ -51,11 +51,11 @@ float blurshadowsCV(vec3 dir, float roughness){
     float aoc = 1.0;
     
     float centerval = textureLod(coverageDistTex, dir, mlvel).r;
-    float blurrange = 0.05;
+    float blurrange = 0.002;
     for(int i=0;i<7;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
         float there = textureLod(coverageDistTex, rdp, mlvel).g;
-        float w =1.0;// clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
+        float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
         centerval += w * textureLod(coverageDistTex, rdp, mlvel).r;
         aoc += w;
     }
@@ -67,7 +67,7 @@ vec2 blurshadowsAO(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(shadowsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
-	return textureLod(shadowsTex, dir, mlvel).gb;
+	//return textureLod(shadowsTex, dir, mlvel).gb;
     float dst = textureLod(coverageDistTex, dir, mlvel).g;
     float aoc = 1.0;
     
@@ -89,9 +89,9 @@ vec4 smartblur(vec3 dir, float roughness){
     float mlvel = mx * levels;
     vec4 ret = vec4(0);
     ret.xy = textureLod(coverageDistTex, dir, mlvel).rg;
-	//ret.x = blurshadowsCV(dir, roughness);
-    ret.z = textureLod(shadowsTex, dir, mlvel).r;
-   // ret.z = blurshadows(dir, roughness);
+//	ret.x = blurshadowsCV(dir, roughness);
+   // ret.z = textureLod(shadowsTex, dir, mlvel).r;
+    ret.z = blurshadows(dir, roughness);
    // ret.w = textureLod(skyfogTex, dir, mlvel).r;
    // ret.w = blurskyfog(dir, roughness);
     return ret;
@@ -159,11 +159,20 @@ vec3 getDiffuseAtmosphereColor(){
     return textureLod(atmScattTex, dif1, textureQueryLevels(atmScattTex) - 1.0).rgb;
 }
 
-vec3 getSunColor(float roughness){
-    vec3 sunBase = vec3(10.0);
+vec3 getSunColorDirectly(float roughness){
+    vec3 sunBase = vec3(2.0);
 	float dt = max(0.0, (dot(dayData.sunDir, VECTOR_UP)));
-	return dt * max(vec3(0.3, 1.7, 0.0), (  sunBase - vec3(5.5, 18.0, 20.4) *  pow(1.0 - dt, 8.0)));
+	float dt2 = 0.9 + 0.1 * (1.0 - max(0.0, (dot(dayData.sunDir, VECTOR_UP))));
+	vec3 supersundir = textureLod(atmScattTex, vec3(dayData.sunDir.x, 0.0, dayData.sunDir.z), 0.0).rgb;
+	return mix(supersundir, sunBase, dt);
+	//return  max(vec3(0.3, 0.3, 0.0), (  sunBase - vec3(5.5, 18.0, 20.4) *  pow(1.0 - dt, 8.0)));
 }
+
+vec3 getSunColor(float roughness){
+	float dt = max(0.0, (dot(dayData.sunDir, VECTOR_UP)));
+	return dt * getSunColorDirectly(roughness);
+}
+
 
 vec3 getAtmosphereScattering(vec3 dir, float roughness){
     return textureLod(atmScattTex, dir, roughnessToMipmap(roughness, atmScattTex)).rgb;
@@ -268,7 +277,8 @@ float lenssun(vec3 dir){
     ss2.x *= Resolution.x / Resolution.y;
 			
     vec3 differente = normalize(dir - dayData.sunDir) * 4.0;
-    return smoothstep(0.997, 0.998, dot(dir, dayData.sunDir));// fuck it pow(1.0 / (distance(dir, dayData.sunDir) * 22.0 - 0.05), 5.0);
+    //return smoothstep(0.997, 0.998, dot(dir, dayData.sunDir));// fuck it pow(1.0 / (distance(dir, dayData.sunDir) * 22.0 - 0.05), 5.0);
+    return pow(1.0 / abs((distance(dir, dayData.sunDir) * 22.0 - 0.05)), 4.0 + supernoise3dX(differente) * 4.0);
 }
 
 float thatsunglowIdontknownamefor(vec3 dir, float strength, float power){
@@ -280,13 +290,13 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float dimmer = max(0, 0.06 + 0.94 * dot(normalize(dayData.sunDir), vec3(0,1,0)));
     vec3 scattering = getAtmosphereScattering(dir, roughness);
     vec3 moon = textureMoon(dir);
-    scattering += (1.0 - step(0.1, length(currentData.normal))) * lenssun(dir) * getSunColor(0.0) * 13.0;
+    scattering += (1.0 - step(0.1, length(currentData.normal))) * lenssun(dir) * getSunColorDirectly(0.0) * 13.0;
     float monsoonconverage = (1.0 - smoothstep(0.995, 1.0, dot(dayData.sunDir, dayData.moonDir))) * 0.7 + 0.3;
     vec4 cloudsData = smartblur(dir, roughness);
     float coverage = cloudsData.r;
     sshadow = 1.0 - coverage;
     float dist = cloudsData.g;
-    float shadow = cloudsData.b;
+    float shadow = cloudsData.b; 
     float rays = godrays(dir, raysteps);
 	
 	// hmm
@@ -308,7 +318,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
 	SunC * GroundC * SunDT * AOGround + 
 	AtmDiffuse * GroundC * AOGround + 
 	vec3(0.001) * GroundC * AOGround + 
-	AtmDiffuse * 0.5 * AOSky,
+	AtmDiffuse * 1.0 * AOSky,
 	
 	SunC * GroundC * 0.1 * AOGround + AtmDiffuse * AOSky, 
 	
