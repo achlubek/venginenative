@@ -6,6 +6,7 @@ uniform float MieScattCoeff;
 #include PostProcessEffectBase.glsl
 #include Constants.glsl
 #include PlanetDefinition.glsl
+#include ProceduralValueNoise.glsl
 #include AtmScattering.glsl
 
 

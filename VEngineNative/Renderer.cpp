@@ -166,11 +166,11 @@ void Renderer::initializeFbos()
 
     //
 
-    cloudsShadowsTextureEven = new CubeMapTexture(config->geti("clouds_shadows_resolution"), config->geti("clouds_shadows_resolution"), GL_R16F, GL_RED, GL_HALF_FLOAT);
+    cloudsShadowsTextureEven = new CubeMapTexture(config->geti("clouds_shadows_resolution"), config->geti("clouds_shadows_resolution"), GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     cloudsShadowsFboEven = new CubeMapFramebuffer();
     cloudsShadowsFboEven->attachTexture(cloudsShadowsTextureEven, GL_COLOR_ATTACHMENT0);
 
-    cloudsShadowsTextureOdd = new CubeMapTexture(config->geti("clouds_shadows_resolution"), config->geti("clouds_shadows_resolution"), GL_R16F, GL_RED, GL_HALF_FLOAT);
+    cloudsShadowsTextureOdd = new CubeMapTexture(config->geti("clouds_shadows_resolution"), config->geti("clouds_shadows_resolution"), GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     cloudsShadowsFboOdd = new CubeMapFramebuffer();
     cloudsShadowsFboOdd->attachTexture(cloudsShadowsTextureOdd, GL_COLOR_ATTACHMENT0);
 

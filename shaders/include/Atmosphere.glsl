@@ -46,7 +46,7 @@ layout(binding = 18) uniform samplerCube cloudsCloudsTex;
 layout(binding = 19) uniform samplerCube atmScattTex;
 layout(binding = 29) uniform samplerCube mainPassTex;
 //layout(binding = 22) uniform sampler2D atmScattTex;
-layout(binding = 20) uniform sampler2D cloudsRefShadowTex;
+layout(binding = 20) uniform samplerCube cloudsRefShadowTex;
 
 #include Shade.glsl
 #include noise3D.glsl
@@ -143,24 +143,24 @@ float getHeightOverSea(vec3 p){
 
 float cloudsDensity3D(vec3 pos){
     vec3 ps = pos +CloudsOffset * 1111;// + wtim;   
-    ps += (getWind(pos * 0.0005  * WindBigScale + Time * 0.01* WindBigScale ) * (WindBigPower / WindBigScale)) * 600.0;
+  //  ps += (getWind(pos * 0.0005  * WindBigScale + Time * 0.01* WindBigScale ) * (WindBigPower / WindBigScale)) * 600.0;
     
     float density = fbmHI(ps * 0.005);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
 	float measurement = (CloudsCeil - CloudsFloor) * 0.5;
 	float mediana = (CloudsCeil + CloudsFloor) * 0.5;
 	float mlt = sqrt(sqrt( 1.0 - (abs( getHeightOverSea(pos) - mediana ) / measurement )));
-    float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh, density * mlt);
+    float init = step(CloudsThresholdLow, density * mlt);
     return  init;
 }
 float cloudsDensity3DLOW(vec3 pos){
     vec3 ps = pos +CloudsOffset * 1111;// + wtim;   
-    ps += (getWind(pos * 0.0005  * WindBigScale + Time * 0.01* WindBigScale ) * (WindBigPower / WindBigScale)) * 600.0;
+   // ps += (getWind(pos * 0.0005  * WindBigScale + Time * 0.01* WindBigScale ) * (WindBigPower / WindBigScale)) * 600.0;
     
     float density = fbmHI(ps * 0.005);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
 	float measurement = (CloudsCeil - CloudsFloor) * 0.5;
 	float mediana = (CloudsCeil + CloudsFloor) * 0.5;
 	float mlt = sqrt(sqrt( 1.0 - (abs( getHeightOverSea(pos) - mediana ) / measurement) ));
-    float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh, density * mlt);
+    float init = step(CloudsThresholdLow, density * mlt);
     return  init;
 }
 
@@ -172,12 +172,40 @@ float rand2sTime(vec2 co){
     return fract(sin(dot(co.xy,vec2(12.9898,78.233))) * 43758.5453);
 }
 
+float getCloudsAO(vec3 dir, float dirmult){
+	vec2 asd = textureLod(mainPassTex, dir, 0.0).rg;
+	float center = asd.g;
+	vec3 c = vec3(0.0, 1.0, 0.0);
+	vec3 point = c + dir * center;
+	vec3 normal = mix(-normalize(vec3(0.0, planetradius, 0.0) + point), normalize(-normalize(vec3(0.0, planetradius, 0.0) + point) + dayData.sunDir), dirmult);
+	//vec3 normal = -normalize(vec3(0.0, planetradius, 0.0) + point);
+	
+	float sumao = 0.0;
+	float r = Time;
+	for(int i=0;i<24;i++){
+	    float x = rand2s(UV * r);
+		r += 2.1231255;
+		float y = rand2s(UV * r);
+		r += 1.6271255;
+		float z = rand2s(UV * r);
+		r += 1.1231255;
+		vec3 px = vec3(x, y, z) * 2.0 - 1.0;
+		vec2 there = textureLod(mainPassTex, dir + px * 0.18 / (center * 0.0001) , 1.0).rg;
+		vec3 p = c + (dir + px * 0.18 / (center * 0.0001) ) * there.g;
+		float dst = distance(p, point);
+		float occ = max(0.0, dot(normal, normalize(p - point)));
+		sumao += clamp(1.0 - occ / (dst * 0.0001), 0.0, 1.0);
+	}
+	
+	return 1.0 - sqrt(1.0 - clamp(sumao / 24.0, 0.35, 1.0));
+}
+
 Sphere sphere1;
 Sphere sphere2;
     
 float weightshadow = 1.1;
 float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
-    const int stepcount = 13;
+    const int stepcount = 27;
     const float stepsize = 1.0 / float(stepcount);
     float iter = 0.0;
     float rd = rand2sTime(UV) * stepsize;
@@ -197,7 +225,7 @@ float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2){
 vec3 CAMERA = vec3(0.0, 1.0, 0.0);
 
 vec2 internalmarchconservative(vec3 p1, vec3 p2){
-    int stepcount = 13;
+    int stepcount = 27;
     float stepsize = 1.0 / float(stepcount);
     float rd = fract(rand2sTime(UV)) * stepsize;
     float c = 0.0;

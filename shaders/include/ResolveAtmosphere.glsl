@@ -27,16 +27,57 @@ float blurshadows(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(shadowsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
-    float dst = textureLod(cloudsCloudsTex, dir, mlvel).g;
+    float dst = textureLod(coverageDistTex, dir, mlvel).g;
     float aoc = 1.0;
     
     float centerval = textureLod(shadowsTex, dir, mlvel).r;
     float blurrange = 0.005;
     for(int i=0;i<7;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
-        float there = textureLod(cloudsCloudsTex, rdp, mlvel).g;
+        float there = textureLod(coverageDistTex, rdp, mlvel).g;
         float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
         centerval += w * textureLod(shadowsTex, rdp, mlvel).r;
+        aoc += w;
+    }
+    centerval /= aoc;
+    return centerval;
+}
+float blurshadowsCV(vec3 dir, float roughness){
+    //if(CloudsDensityScale <= 0.010) return 0.0;
+    float levels = max(0, float(textureQueryLevels(shadowsTex)));
+    float mx = log2(roughness*1024+1)/log2(1024);
+    float mlvel = mx * levels;
+    float dst = textureLod(coverageDistTex, dir, mlvel).g;
+    float aoc = 1.0;
+    
+    float centerval = textureLod(coverageDistTex, dir, mlvel).r;
+    float blurrange = 0.05;
+    for(int i=0;i<7;i++){
+        vec3 rdp = normalize(dir + randpoint3() * blurrange);
+        float there = textureLod(coverageDistTex, rdp, mlvel).g;
+        float w =1.0;// clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
+        centerval += w * textureLod(coverageDistTex, rdp, mlvel).r;
+        aoc += w;
+    }
+    centerval /= aoc;
+    return centerval;
+}
+vec2 blurshadowsAO(vec3 dir, float roughness){
+    //if(CloudsDensityScale <= 0.010) return 0.0;
+    float levels = max(0, float(textureQueryLevels(shadowsTex)));
+    float mx = log2(roughness*1024+1)/log2(1024);
+    float mlvel = mx * levels;
+	return textureLod(shadowsTex, dir, mlvel).gb;
+    float dst = textureLod(coverageDistTex, dir, mlvel).g;
+    float aoc = 1.0;
+    
+    vec2 centerval = textureLod(shadowsTex, dir, mlvel).gb;
+    float blurrange = 0.005;
+    for(int i=0;i<7;i++){
+        vec3 rdp = normalize(dir + randpoint3() * blurrange);
+        float there = textureLod(coverageDistTex, rdp, mlvel).g;
+        float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
+        centerval += w * textureLod(shadowsTex, rdp, mlvel).gb;
         aoc += w;
     }
     centerval /= aoc;
@@ -48,39 +89,12 @@ vec4 smartblur(vec3 dir, float roughness){
     float mlvel = mx * levels;
     vec4 ret = vec4(0);
     ret.xy = textureLod(coverageDistTex, dir, mlvel).rg;
-   // ret.z = textureLod(shadowsTex, dir, mlvel).r;
-    ret.z = blurshadows(dir, roughness);
+	//ret.x = blurshadowsCV(dir, roughness);
+    ret.z = textureLod(shadowsTex, dir, mlvel).r;
+   // ret.z = blurshadows(dir, roughness);
    // ret.w = textureLod(skyfogTex, dir, mlvel).r;
    // ret.w = blurskyfog(dir, roughness);
     return ret;
-}
-
-float getCloudsAO(vec3 dir, float dirmult){
-	vec2 asd = textureLod(coverageDistTex, dir, 0.0).rg;
-	float center = asd.g;
-	vec3 c = vec3(0.0, 1.0, 0.0);
-	vec3 point = c + dir * center;
-	vec3 normal = mix(-normalize(vec3(0.0, planetradius, 0.0) + point), normalize(-normalize(vec3(0.0, planetradius, 0.0) + point) + dayData.sunDir), dirmult);
-	//vec3 normal = -normalize(vec3(0.0, planetradius, 0.0) + point);
-	
-	float sumao = 0.0;
-	float r = Time;
-	for(int i=0;i<24;i++){
-	    float x = rand2s(UV * r);
-		r += 2.1231255;
-		float y = rand2s(UV * r);
-		r += 1.6271255;
-		float z = rand2s(UV * r);
-		r += 1.1231255;
-		vec3 px = vec3(x, y, z) * 2.0 - 1.0;
-		vec2 there = textureLod(coverageDistTex, dir + px * 0.18 / (center * 0.0001) , 1.0).rg;
-		vec3 p = c + (dir + px * 0.18 / (center * 0.0001) ) * there.g;
-		float dst = distance(p, point);
-		float occ = max(0.0, dot(normal, normalize(p - point)));
-		sumao += clamp(1.0 - occ / (dst * 0.0001), 0.0, 1.0);
-	}
-	
-	return 1.0 - sqrt(1.0 - clamp(sumao / 24.0, 0.35, 1.0));
 }
 
 float getthatfuckingfresnel(float reflectivity, vec3 normal, vec3 cameraSpace, float roughness){
@@ -281,12 +295,13 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
 	float Shadow = shadow;
 	vec3 GroundC = vec3(0.9, 0.8, 0.7);
 	float Coverage = 1.0 - smoothstep(0.4, 0.55, CloudsThresholdLow);//texture(coverageDistTex, VECTOR_UP, textureQueryLevels(coverageDistTex)).r;
-	float AOGround = getCloudsAO(dir, 0.0);
-	float AOSky = getCloudsAO(dir, 1.0);
+	vec2 aabbdd = blurshadowsAO(dir, roughness);
+	float AOGround = aabbdd.r;
+	float AOSky = aabbdd.g;
 	
 	float SunDT = max(0.0, dot(dayData.sunDir, VECTOR_UP));
 	
-    vec3 raycolor = getSunColor(0.0) * NoiseOctave1 ; 
+    vec3 raycolor = getSunColor(0.0) * NoiseOctave1 * 0.1; 
 	vec3 CC = (SunC * Shadow) + (
 	mix(
 	

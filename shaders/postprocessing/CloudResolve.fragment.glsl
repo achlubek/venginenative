@@ -41,6 +41,6 @@ vec4 shade(){
 	vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
 	color = integrateStepsAndSun(dir);
 	vec3 last = textureLod(resolvedAtmosphereTex, dir, 0.0).rgb;
-	color = mix(color, last, CloudsIntegrate);
+	color = mix(color, last,   0.0);
     return vec4( clamp(color, 0.0, 1110.0), 1.0);
 }
