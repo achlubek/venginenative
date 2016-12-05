@@ -150,11 +150,9 @@ private:
     void clouds();
     void cloudsResolve();
 
-
-
     ShaderProgram *fxaaTonemapShader;
-   // Framebuffer *fxaaTonemapFbo;
-    //Texture2d *fxaaTonemapTexture;
+    // Framebuffer *fxaaTonemapFbo;
+     //Texture2d *fxaaTonemapTexture;
     void fxaaTonemap();
 
     ShaderProgram *motionBlurShader;

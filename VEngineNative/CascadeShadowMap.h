@@ -22,4 +22,3 @@ private:
     Texture2dArray *textureDepth;
     Camera * camera;
 };
-

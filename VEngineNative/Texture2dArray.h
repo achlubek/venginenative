@@ -19,4 +19,3 @@ private:
     GLenum formatRequested;
     GLenum typeRequested;
 };
-

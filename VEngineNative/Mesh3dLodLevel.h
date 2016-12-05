@@ -18,7 +18,7 @@ public:
     float needBufferUpdate;
     void draw();
     void setUniforms();
-    void updateBuffer(const vector<Mesh3dInstance*> &instances);    
+    void updateBuffer(const vector<Mesh3dInstance*> &instances);
 private:
     ShaderStorageBuffer *modelInfosBuffer;
     ShaderStorageBuffer *drawInfoBuffer;

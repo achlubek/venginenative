@@ -13,7 +13,6 @@ static int fsize(FILE* fh) {
     return sz;
 }
 
-
 char* get_file_contents(const char* path) {
     FILE* fh = fopen(path, "r");
     int size = fsize(fh);

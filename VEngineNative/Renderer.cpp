@@ -92,7 +92,6 @@ Renderer::Renderer(int iwidth, int iheight)
     exposureComputeShader = new ShaderProgram("CalculateExposure.compute.glsl");
     exposureBuffer = new ShaderStorageBuffer();
 
-
     // skyboxTexture = new CubeMapTexture("posx.jpg", "posy.jpg", "posz.jpg", "negx.jpg", "negy.jpg", "negz.jpg");
     starsTexture = new Texture2d("stars.png");
     moonTexture = new Texture2d("moon.png");
@@ -174,11 +173,9 @@ void Renderer::initializeFbos()
     cloudsShadowsFboOdd = new CubeMapFramebuffer();
     cloudsShadowsFboOdd->attachTexture(cloudsShadowsTextureOdd, GL_COLOR_ATTACHMENT0);
 
-
     cloudsResolvedTexture = new CubeMapTexture(512, 512, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     cloudsResolvedFbo = new CubeMapFramebuffer();
     cloudsResolvedFbo->attachTexture(cloudsResolvedTexture, GL_COLOR_ATTACHMENT0);
-     
 
     //---------/
 
@@ -207,7 +204,6 @@ void Renderer::initializeFbos()
     lensBlurTextureVertical = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     lensBlurFboVertical = new Framebuffer();
     lensBlurFboVertical->attachTexture(lensBlurTextureVertical, GL_COLOR_ATTACHMENT0);
-
 }
 
 void Renderer::destroyFbos(bool onlyViewDependant)
@@ -257,7 +253,6 @@ void Renderer::destroyFbos(bool onlyViewDependant)
     delete lensBlurFboVertical;
     delete lensBlurTextureHorizontal;
     delete lensBlurTextureVertical;
-
 }
 
 void Renderer::setCommonUniforms(ShaderProgram * sp)
@@ -286,7 +281,7 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     double t001 = Game::instance->time * 0.001;
     sp->setUniform("T100", (float)t100);
     sp->setUniform("T001", (float)t001);
-    
+
     sp->setUniform("CloudsFloor", cloudsFloor);
     sp->setUniform("CloudsCeil", cloudsCeil);
     sp->setUniform("CloudsThresholdLow", cloudsThresholdLow);
@@ -462,7 +457,6 @@ void Renderer::fxaaTonemap()
 
     quad3dInfo->draw();
 
-
     Game::instance->firstFullDrawFinished = true;
 }
 
@@ -480,7 +474,6 @@ void Renderer::lensBlur()
 
 void Renderer::output()
 {
-
 }
 
 void Renderer::recompileShaders()
@@ -590,7 +583,6 @@ void Renderer::ambientOcclusion()
 
 void Renderer::fog()
 {
-
     atmScattTexture->use(19);
     return;
     fogFbo->use(true);
@@ -605,7 +597,6 @@ void Renderer::fog()
 
 void Renderer::waterMesh()
 {
-
     exposureBuffer->use(0);
     waterMeshFbo->use(true);
     waterMeshShader->use();
@@ -657,7 +648,7 @@ void Renderer::atmScatt()
     atmScattShader->use();
     setCommonUniforms(atmScattShader);
 
-    atmScattFbo->use(false); 
+    atmScattFbo->use(false);
     Camera* camera = atmScattFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, true);
     camera->transformation->setPosition(currentCamera->transformation->position);
     FrustumCone *cone = camera->cone;
@@ -671,7 +662,7 @@ void Renderer::atmScatt()
     atmScattShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
     atmScattShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
     quad3dInfo->draw();
-     
+
     atmScattTexture->generateMipMaps();
 }
 
@@ -768,7 +759,6 @@ void Renderer::clouds()
         cloudsShadowsTextureOdd->generateMipMaps();
     else
         cloudsShadowsTextureEven->generateMipMaps();
-
 }
 
 void Renderer::motionBlur()

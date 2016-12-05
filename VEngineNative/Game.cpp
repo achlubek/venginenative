@@ -117,10 +117,10 @@ void Game::renderThread()
     }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
-//#ifdef _DEBUG
-   // glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-//#endif
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
+    //#ifdef _DEBUG
+       // glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+    //#endif
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     //int count;
     //GLFWmonitor** monitors = glfwGetMonitors(&count);
     //GLFWmonitor* primary = glfwGetPrimaryMonitor();
@@ -130,7 +130,7 @@ void Game::renderThread()
    // glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
    // glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
     window = glfwCreateWindow(width, height, "VENGINE", NULL, NULL);
-   // glfwSetWindowMonitor(window, primary, 0, 0, mode->width, mode->height, mode->refreshRate);
+    // glfwSetWindowMonitor(window, primary, 0, 0, mode->width, mode->height, mode->refreshRate);
     glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
     if (!window)
     {
@@ -138,7 +138,7 @@ void Game::renderThread()
         glfwTerminate();
         return;
     }
-        
+
     glfwMakeContextCurrent(window);
 
     if (!gladLoadGL())
@@ -152,11 +152,11 @@ void Game::renderThread()
         instance->onWindowResize->invoke(0);
     });
 
-//    glfwSetKeyCallback(window, glfwKeyCallback);
+    //    glfwSetKeyCallback(window, glfwKeyCallback);
 
-//#ifdef _DEBUG
-  //  glDebugMessageCallback(&debugCallback, NULL);
-//#endif
+    //#ifdef _DEBUG
+      //  glDebugMessageCallback(&debugCallback, NULL);
+    //#endif
 
     printf("VERSION: %s\nVENDOR: %s", glGetString(GL_VERSION), glGetString(GL_VENDOR));
 

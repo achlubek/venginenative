@@ -8,19 +8,18 @@ using namespace glm;
 CascadeShadowMap::CascadeShadowMap(int width, int height, vector<float> iradiuses)
 {
     cascadeCount = iradiuses.size();
- //   texture = new Texture2dArray(width, height, cascadeCount, GL_R32F, GL_RED, GL_FLOAT);
+    //   texture = new Texture2dArray(width, height, cascadeCount, GL_R32F, GL_RED, GL_FLOAT);
     textureDepth = new Texture2dArray(width, height, cascadeCount, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
     framebuffer = new Array2dFramebuffer();
-   // framebuffer->attachTexture(texture, GL_COLOR_ATTACHMENT0);
+    // framebuffer->attachTexture(texture, GL_COLOR_ATTACHMENT0);
     framebuffer->attachTexture(textureDepth, GL_DEPTH_ATTACHMENT);
     for (int i = 0; i < cascadeCount; i++) {
         float radius = iradiuses[i];
         pmatrices.push_back(glm::ortho(-1, 1, -1, 1, -1, 1));
         farplanes.push_back(radius * 2.0f);
-    } 
+    }
     camera = new Camera();
     radiuses = iradiuses;
-
 }
 
 void CascadeShadowMap::map(glm::vec3 ddirection, glm::vec3 iposition)
@@ -40,7 +39,7 @@ void CascadeShadowMap::map(glm::vec3 ddirection, glm::vec3 iposition)
         camera->projectionMatrix = pmat;
         camera->transformation->setPosition(position);
         camera->transformation->setOrientation(glm::inverse(glm::lookAt(vec3(0), direction, (direction == vec3(0, -1, 0) ? vec3(0, 0, 1) : vec3(0, 1, 0)))));
-        camera->transformation->setSize(glm::vec3( radiuses[i]));
+        camera->transformation->setSize(glm::vec3(radiuses[i]));
         //camera->cone->update(pmat);
         Game::instance->world->setUniforms(Game::instance->shaders->depthOnlyGeometryShader, camera);
         Game::instance->shaders->depthOnlyGeometryShader->setUniform("CSMRadius", radiuses[i]);
@@ -48,7 +47,6 @@ void CascadeShadowMap::map(glm::vec3 ddirection, glm::vec3 iposition)
         Game::instance->shaders->depthOnlyShader->setUniform("CSMRadius", radiuses[i]);
         Game::instance->shaders->depthOnlyShader->setUniform("CSMFarPlane", farplanes[i]);
         Game::instance->world->draw(Game::instance->shaders->depthOnlyShader, camera);
-            
     }
     glClearColor(0.0, 0.0, 0.0, 1.0);
 }
@@ -69,7 +67,7 @@ void CascadeShadowMap::setUniformsAndBindSampler(ShaderProgram * shader, int sam
    // shader->setUniform("CSMCenter", camera->transformation->position);
     shader->setUniformVector("CSMVPMatrices", vpmats);
     shader->setUniform("CSMLayers", cascadeCount);
-   // shader->setUniformVector("CSMFarplanes", farplanes);
+    // shader->setUniformVector("CSMFarplanes", farplanes);
     shader->setUniformVector("CSMRadiuses", radiuses);
     textureDepth->use(sampler);
 }

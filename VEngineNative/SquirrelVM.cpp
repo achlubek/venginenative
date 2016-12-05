@@ -8,13 +8,13 @@ void error_handler(HSQUIRRELVM v, const SQChar * desc, const SQChar * source,
     cout << "Squirrel Error" << endl << desc << endl << source << ":" << line;
 }
 
-#ifdef SQUNICODE 
+#ifdef SQUNICODE
 
 #define scvprintf vfwprintf
-#else 
+#else
 
 #define scvprintf vfprintf
-#endif 
+#endif
 void printfunc(HSQUIRRELVM v, const SQChar *s, ...)
 {
     va_list vl;
@@ -71,7 +71,6 @@ char * sq_read_string(HSQUIRRELVM v, SQInteger idx) {
 #define argfloat sq_read_float(v, argvc++)
 #define argbool sq_read_bool(v, argvc++)
 #define argstring sq_read_string(v, argvc++)
-
 
 SQInteger sqapi_game_load_scene(HSQUIRRELVM v) {
     initargs();
@@ -140,11 +139,11 @@ SQInteger print_args(HSQUIRRELVM v)
 }
 SquirrelVM::SquirrelVM()
 {
-    vm = sq_open(1024); 
-   // sq_pushroottable(vm); 
-   // sqstd_register_iolib(vm);
-   // sq_pop(vm,1); 
-    //sqstd_seterrorhandlers(vm);
+    vm = sq_open(1024);
+    // sq_pushroottable(vm);
+    // sqstd_register_iolib(vm);
+    // sq_pop(vm,1);
+     //sqstd_seterrorhandlers(vm);
     sq_setprintfunc(vm, printfunc, errorfunc);
     sq_setcompilererrorhandler(vm, error_handler);
     sq_pushroottable(vm);
@@ -157,7 +156,7 @@ SQInteger file_lexfeedASCII(SQUserPointer file)
 {
     int ret;
     char c;
-    if ((ret = fread(&c, sizeof(c), 1, (FILE *)file)>0))
+    if ((ret = fread(&c, sizeof(c), 1, (FILE *)file) > 0))
         return c;
     return 0;
 }
@@ -171,7 +170,7 @@ int compile_file(HSQUIRRELVM v, const char *filename)
         wchar_t* wstr = new wchar_t[len];
         mbstowcs(wstr, filename, len);
 
-        cout << sq_compile(v, file_lexfeedASCII, f, wstr, 1);        
+        cout << sq_compile(v, file_lexfeedASCII, f, wstr, 1);
         sq_push(v, -2);
         cout << sq_call(v, 1, SQFalse, SQTrue);
         sq_remove(v, -1); //removes the closure
@@ -198,7 +197,7 @@ void SquirrelVM::callProcedureVoid(std::string name)
     sq_pushstring(vm, wstr, len);
     sq_get(vm, -2); //get the function from the root table
     sq_pushroottable(vm); //'this' (function environment object)
-    sq_call(vm, 1, SQFalse, SQTrue); 
+    sq_call(vm, 1, SQFalse, SQTrue);
     sq_settop(vm, top);
     delete[] wstr;
 }
@@ -206,12 +205,11 @@ void SquirrelVM::callProcedureVoid(std::string name)
 void SquirrelVM::compileFile(std::string file)
 {
     sq_pushroottable(vm);
-   // compile_file(vm, file.c_str());
+    // compile_file(vm, file.c_str());
     size_t len = strlen(file.c_str());
     wchar_t* wstr = new wchar_t[len];
     mbstowcs(wstr, file.c_str(), len);
     compile_file(vm, "C:/Code/VEngineNative/media/squireeltest.txt");
     delete[] wstr;
     sq_pop(vm, 1);
-
 }

@@ -2,12 +2,10 @@
 #include "INIReader.h"
 #include "Media.h"
 
-
 INIReader::INIReader(string mediakey)
 {
     readString(Media::readString(mediakey));
 }
-
 
 float INIReader::getf(string key)
 {

@@ -69,7 +69,6 @@ int main()
     bool isOpened = true;
     bool isOpened2 = true;
 
-
     unsigned char* pixels;
     int width, height;
     //io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
@@ -82,7 +81,6 @@ int main()
             imugiinit = true;
         }
         if (fov != fovnew) {
-
             cam->createProjectionPerspective((fovnew), (float)game->width / (float)game->height, 0.01f, 1000);
             fov = fovnew;
         }
@@ -183,7 +181,6 @@ int main()
         //ImGui::SliderFloat("Noise8", &Game::instance->renderer->noiseOctave8, 0.01f, 10.0f);
 //        ImGui::SliderFloat("RoughnessTerra", &game->world->scene->getMeshes()[0]->getLodLevel(0)->material->roughness, 0.01f, 10.0f);
         for (auto i = Game::instance->renderer->cloudsShader->shaderVariables.begin(); i != Game::instance->renderer->cloudsShader->shaderVariables.end(); i++) {
-
             if (i->second->type == SHADER_VARIABLE_TYPE_FLOAT) ImGui::SliderFloat(i->first.c_str(), &i->second->var_float, 0.01f, 10.0f);
             if (i->second->type == SHADER_VARIABLE_TYPE_INT) ImGui::SliderInt(i->first.c_str(), &i->second->var_int, 0, 20);
             if (i->second->type == SHADER_VARIABLE_TYPE_VEC2) ImGui::SliderFloat2(i->first.c_str(), &i->second->var_vec2.x, 0.01f, 10.0f);
@@ -197,7 +194,6 @@ int main()
     });
     /*
     for (int i = 0; i < 11; i++) {
-
         for (int g = 0; g < 11; g++) {
             float rough = (float)i / 11.0f;
             float met = (float)g / 11.0f;
@@ -268,7 +264,7 @@ int main()
                 maxspeed *= 0.1f;
             }
             if (game->getKeyStatus(GLFW_KEY_LEFT_ALT) == GLFW_PRESS) {
-                maxspeed *=30.0f;
+                maxspeed *= 30.0f;
             }
             if (game->getKeyStatus(GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
                 maxspeed *= 30.1f;
@@ -301,7 +297,7 @@ int main()
                 w += 1.0;
                 move = true;
             }
-            if(!move){
+            if (!move) {
                 speed = speed / 1.05;
             }
             else {

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "CubeMapFramebuffer.h"
- 
+
 Camera* CubeMapFramebuffer::switchFace(GLenum face, bool clear)
 {
     int vindex = face - GL_TEXTURE_CUBE_MAP_POSITIVE_X;

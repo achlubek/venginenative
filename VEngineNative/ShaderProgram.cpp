@@ -37,15 +37,14 @@ void ShaderProgram::use()
     if (current != this) {
         glUseProgram(handle);
         for (auto i = shaderVariables.begin(); i != shaderVariables.end(); i++) {
-
             if (i->second->type == SHADER_VARIABLE_TYPE_FLOAT) setUniform(i->first, i->second->var_float);
             if (i->second->type == SHADER_VARIABLE_TYPE_INT) setUniform(i->first, i->second->var_int);
             if (i->second->type == SHADER_VARIABLE_TYPE_VEC2) setUniform(i->first, i->second->var_vec2);
             if (i->second->type == SHADER_VARIABLE_TYPE_IVEC2) setUniform(i->first, i->second->var_ivec2);
             if (i->second->type == SHADER_VARIABLE_TYPE_VEC3) setUniform(i->first, i->second->var_vec3);
-           // if (i->second->type == SHADER_VARIABLE_TYPE_IVEC3) setUniform(i->first, i->second->var_ivec3);
+            // if (i->second->type == SHADER_VARIABLE_TYPE_IVEC3) setUniform(i->first, i->second->var_ivec3);
             if (i->second->type == SHADER_VARIABLE_TYPE_VEC4) setUniform(i->first, i->second->var_vec4);
-           // if (i->second->type == SHADER_VARIABLE_TYPE_IVEC4) setUniform(i->first, i->second->var_ivec4);
+            // if (i->second->type == SHADER_VARIABLE_TYPE_IVEC4) setUniform(i->first, i->second->var_ivec4);
         }
         current = this;
     }
@@ -186,7 +185,7 @@ void ShaderProgram::setUniformVector(const string &name, const vector<glm::mat3>
 void ShaderProgram::setUniformVector(const string &name, const vector<glm::mat4> &value)
 {
     GLint location = getUniformLocation(name);
-    if (location < 0) return; 
+    if (location < 0) return;
     vector<float> floats;
     floats.reserve(16 * value.size());
     for (unsigned int i = 0; i < value.size(); i++) {
@@ -293,7 +292,7 @@ string ShaderProgram::resolveVariables(string source)
         if (vartype == "ivec3") var->type = SHADER_VARIABLE_TYPE_IVEC3;
         if (vartype == "vec4") var->type = SHADER_VARIABLE_TYPE_VEC4;
         if (vartype == "ivec4") var->type = SHADER_VARIABLE_TYPE_IVEC4;
-        if(shaderVariables.find(varname) == shaderVariables.end())shaderVariables[varname] = var;
+        if (shaderVariables.find(varname) == shaderVariables.end())shaderVariables[varname] = var;
         stringstream ss;
         ss << src.substr(0, pos) << "\nuniform " << vartype << " " << varname << ";\n" << src.substr(pos + len);
         src = ss.str();

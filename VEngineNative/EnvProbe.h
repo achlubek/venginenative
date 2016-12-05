@@ -1,7 +1,7 @@
 #pragma once
 #include "Renderer.h"
 
-class EnvPlane 
+class EnvPlane
 {
 public:
     glm::vec3 point;
@@ -24,4 +24,3 @@ public:
     CubeMapTexture * texture;
     vector<EnvPlane*> planes;
 };
-

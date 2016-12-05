@@ -11,7 +11,7 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial, float di
     distanceStart = distancestart;
     distanceEnd = distanceend;
     instancesFiltered = 0;
-    modelInfosBuffer = new ShaderStorageBuffer();   
+    modelInfosBuffer = new ShaderStorageBuffer();
     drawInfoBuffer = new ShaderStorageBuffer();
     samplerIndices = {};
     modes = {};
@@ -76,7 +76,6 @@ Mesh3dLodLevel::~Mesh3dLodLevel()
 
 void Mesh3dLodLevel::draw()
 {
-
     if (useGeometryShader && ShaderProgram::current == Game::instance->shaders->depthOnlyShader) {
         Game::instance->shaders->depthOnlyGeometryShader->use();
     }

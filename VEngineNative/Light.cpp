@@ -118,10 +118,10 @@ void Light::recreateFbo()
         cubeMapper = new CubeMapFramebuffer();
         cubeMapper->attachTexture(depthCubeMap, GL_DEPTH_ATTACHMENT);
     });
-   /* 
-        mapper->use(true);
-        cubeMapper->use();
-    });*/
+    /*
+         mapper->use(true);
+         cubeMapper->use();
+     });*/
 }
 
 void Light::destroyFbo()

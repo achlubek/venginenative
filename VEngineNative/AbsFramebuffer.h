@@ -29,4 +29,3 @@ protected:
     virtual void generate() = 0;
     vector<Attachment*> attachedTextures;
 };
-

@@ -6,7 +6,7 @@
 #define SHADER_VARIABLE_TYPE_VEC3 5
 #define SHADER_VARIABLE_TYPE_IVEC3 6
 #define SHADER_VARIABLE_TYPE_VEC4 7
-#define SHADER_VARIABLE_TYPE_IVEC4 8 
+#define SHADER_VARIABLE_TYPE_IVEC4 8
 #include <unordered_map>
 class ShaderProgram
 {

@@ -11,4 +11,3 @@ private:
     unordered_map<string, string> data;
     void readString(string str);
 };
-

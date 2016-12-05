@@ -2,5 +2,5 @@
 #include "Framebuffer.h"
 
 void Framebuffer::generate()
-{ 
+{
 }
