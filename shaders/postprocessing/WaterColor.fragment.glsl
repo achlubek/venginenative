@@ -108,6 +108,12 @@ float noise2X( in vec2 x ){
     return res;
 }
 
+float roughnessToMipmapX(float roughness, samplerCube txt){
+    //roughness = roughness * roughness;
+    float levels = max(0, float(textureQueryLevels(txt)));
+    float mx = log2(roughness*1024+1)/log2(1024);
+    return mx * levels;
+}
 vec4 getLighting(){
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
 
@@ -127,7 +133,7 @@ vec4 getLighting(){
     float mipmap3 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 151.2467).x ;
     float roughness = clamp((pow(mipmap1/ textureQueryLevels(waterTileTex), 1.0)) , 0.0, 1.0);
     //return vec4(1) * roughness;
-    MIP = mipmap1 *0.3  ;
+    MIP = mipmap1 *0.6 ;
     //mipmap1 *= 0.0;
     float height1  = heightwater(hitpos.xz);
    // float foam  = foamwater(hitpos.xz, 0);
@@ -135,18 +141,19 @@ vec4 getLighting(){
     
     vec3 origdir = dir;
     
-    vec3 normal = normalx(hitpos, 0.298 + roughness, roughness);
-    normal = mix(normal, VECTOR_UP, roughness);
+    vec3 normal = normalx(hitpos, 0.298 + roughness * 20.0, roughness * 0.3);
+   // normal = mix(normal, VECTOR_UP, roughness);
    // return pow(max(0.0, dot(normal, dayData.sunDir)), 10.0) * vec4(1);
   //  return vec4(normal.xyzz * vec4(1,0.2,1,0));
     
-  //  normal = normalize(normal + normalx(hitpos * 11.2467, 3.0953, roughness) * 0.3);
+  //  normal = normalize(normal + 	normalx(hitpos * 11.2467, 3.0953, roughness) * 0.3);
    // normal = normalize(normal + normalx(hitpos * 51.2467, 3.0953, roughness) * 0.2);
     mipmap1 = mipmap2;
    // normal = normalize(normal + (1.0 - roughness) * normalx(hitpos * 11.2467, 0.0953, roughness) * 0.2 * (1.0 - mipmap2/ textureQueryLevels(waterTileTex)));
     //return normal.xyzz;
     //normal = normalize(normal + normalx(hitpos * 151.2467, 3.0953, roughness) * 0.1 * (1.0 - mipmap3/ textureQueryLevels(waterTileTex)));
     dir = reflect(origdir, normal);
+     dir.y = abs(dir.y);
   //  dir.y = max(0.05, dir.y);
     float fresnel = getthatfuckingfresnel(mix(0.00, 0.00, roughness), normal, dir, roughness);  
   //  return fresnel * vec4(1);
@@ -155,7 +162,6 @@ vec4 getLighting(){
      
       //  dir = mix(normalize(VECTOR_UP * 2.0 - dir), dir, h);
     /////    fresnel *= mix(0.9, 1.0, h);
-     dir.y = abs(dir.y);
    vec3 result = vec3(0.0);
 
    // roughness = clamp(roughness, 0.0, 1.0);
@@ -177,12 +183,12 @@ vec4 getLighting(){
         hitpos,
         origdir * camdist,
         camdist,
-        roughness * 0.5,
+        roughness * 0.3  ,
         1.0
     );
                     
     //result += mix(shadingWater(dataReflection, -dayData.sunDir, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0)) * fresnel * 1.0, getSunColor(0.5) * 0.33 * whites, min(1.0, whites));// + sampleAtmosphere(normal, 0.0) * fresnel;
-    vec3 atm =  texture(resolvedAtmosphereTex, dir).rgb;// * (1.0 - roughness * 0.5) * (1.0 - roughness * 0.5);
+    vec3 atm =  textureLod(resolvedAtmosphereTex, dir, roughnessToMipmapX(roughness * (0.02 * WaterWavesScale), resolvedAtmosphereTex)).rgb;// * (1.0 - roughness * 0.5) * (1.0 - roughness * 0.5);
    // return vec4(atm, 1.0); 
     result +=   shadingWater(dataReflection, normal, -dayData.sunDir, getSunColor(0.0), atm)  * 1.0 * mix(1.0, 1.0, roughness);
     vec3 refr = normalize(refract(origdir, normal, 0.66));

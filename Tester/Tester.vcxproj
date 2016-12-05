@@ -235,6 +235,7 @@
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="WeatherManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -246,6 +247,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NotOptimization|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Tester.cpp" />
+    <ClCompile Include="WeatherManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\VEngineNative\VEngineNative.vcxproj">

@@ -90,8 +90,8 @@ vec4 smartblur(vec3 dir, float roughness){
     vec4 ret = vec4(0);
     ret.xy = textureLod(coverageDistTex, dir, mlvel).rg;
 //	ret.x = blurshadowsCV(dir, roughness);
-   // ret.z = textureLod(shadowsTex, dir, mlvel).r;
-    ret.z = blurshadows(dir, roughness);
+    ret.z = textureLod(shadowsTex, dir, mlvel).r;
+    //ret.z = blurshadows(dir, roughness);
    // ret.w = textureLod(skyfogTex, dir, mlvel).r;
    // ret.w = blurskyfog(dir, roughness);
     return ret;
@@ -303,7 +303,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
 	vec3 SunC = getSunColor(roughness);
 	vec3 AtmDiffuse = getDiffuseAtmosphereColor();
 	float Shadow = shadow;
-	vec3 GroundC = vec3(0.9, 0.8, 0.7);
+	vec3 GroundC = vec3(0.9, 0.9, 0.9);
 	float Coverage = 1.0 - smoothstep(0.4, 0.55, CloudsThresholdLow);//texture(coverageDistTex, VECTOR_UP, textureQueryLevels(coverageDistTex)).r;
 	vec2 aabbdd = blurshadowsAO(dir, roughness);
 	float AOGround = aabbdd.r;
@@ -317,10 +317,10 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
 	
 	SunC * GroundC * SunDT * AOGround + 
 	AtmDiffuse * GroundC * AOGround + 
-	vec3(0.001) * GroundC * AOGround + 
-	AtmDiffuse * 1.0 * AOSky,
+	vec3(0.001) * GroundC * AOGround,// + 
+	//AtmDiffuse * 1.0 * AOSky,
 	
-	SunC * GroundC * 0.1 * AOGround + AtmDiffuse * AOSky, 
+	SunC * GroundC * 1.0 * AOGround + AtmDiffuse * AOSky, 
 	
 	Coverage));
 	

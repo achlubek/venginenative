@@ -64,8 +64,8 @@ int main()
      //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->scale(glm::vec3(0.1));
     //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->rotate(glm::angleAxis(deg2rad(73.75f), glm::vec3(-0.006f, -0.005f, 1.0f)));
   //  game->world->scene->addMesh(game->asset->loadMeshFile("treeground.mesh3d"));
-   // auto t = game->asset->loadMeshFile("lucy.mesh3d");
-   // game->world->scene->addMesh(t);
+    auto t = game->asset->loadMeshFile("lucy.mesh3d");
+    game->world->scene->addMesh(t);
     bool isOpened = true;
     bool isOpened2 = true;
 

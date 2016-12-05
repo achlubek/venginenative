@@ -441,6 +441,7 @@ void Renderer::combine(int step)
     waterColorTexture->use(21);
     starsTexture->use(24);
     moonTexture->use(28);
+    cloudsResolvedTexture->generateMipMaps();
     cloudsResolvedTexture->use(29);
 
     setCommonUniforms(combineShader);
