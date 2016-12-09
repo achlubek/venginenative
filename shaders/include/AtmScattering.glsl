@@ -80,7 +80,7 @@ vec3 mydumbassscatteringfunction(vec3 dir, vec3 sun){
     float halfskysun = max(0.0, dot(dir, sun));
      
     vec3 blue = vec3(0) * 2.0;
-    vec3 orange = vec3(0.8, 0.29, 0.03) * 3.0;
+    vec3 orange = vec3(0.9, 0.18, 0.03) * 3.0;
     vec3 dust = vec3(3.2) + blue * 3.0;
     vec3 farScatter = mix(orange, dust, 1.0 - pow(1.0 - daynight2, 4.0));
     
@@ -96,8 +96,8 @@ vec3 mydumbassscatteringfunction(vec3 dir, vec3 sun){
     return skycolor * ( pow(1.0 - daynight, 4.0)) * 3.0;
 }
 vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
-   // dir.y = abs(dir.y);
-    return (6.3 * mydumbassscatteringfunction(dir, sunpos) +
+    dir.y = abs(dir.y);
+    return 3.3 * mydumbassscatteringfunction(dir, sunpos) +
      6.0 * atmosphere(
         dir,           // normalized ray direction
         vec3(0,planetradius  ,0) + origin,               // ray origin
@@ -112,5 +112,5 @@ vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
         8e3,                            // Rayleigh scale height
         1.2e3  * MieScattCoeff ,                          // Mie scale height
         0.11758                         // Mie preferred scattering direction
-    ));
+    );
 }

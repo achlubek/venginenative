@@ -107,7 +107,7 @@ float fbm(vec3 p){
 		a += (0.5 + 0.5 *snoise(p)) * w;	
         w *= FBM1 * 0.5;
         wc+=w;
-		p = p * FBM2 * 4.0 + Time * 0.01 * w;
+		p = p * FBM2 * 4.0 ;
 	}
 	return a / wc;
 }float fbmLOW(vec3 p){
@@ -119,7 +119,7 @@ float fbm(vec3 p){
         //p += noise(vec3(a));
 		a += supernoise3d(p) * w;	
         w *= 0.59;
-		p = p * 3.0 + Time * 0.001 * w;
+		p = p * 3.0 ;
 	}
 	return a;// + noise(p * 100.0) * 11;
 }float fbmHI(vec3 p){
@@ -131,7 +131,7 @@ float fbm(vec3 p){
         //p += noise(vec3(a));
 		a += supernoise3d(p) * w;	
         w *= 0.59;
-		p = p * 3.0 + Time * 0.001 * w;
+		p = p * 3.0  ;
 	}
 	return a;// + noise(p * 100.0) * 11;
 }
@@ -177,7 +177,7 @@ float getCloudsAO(vec3 dir, float dirmult){
 	float center = asd.g;
 	vec3 c = vec3(0.0, 1.0, 0.0);
 	vec3 point = c + dir * center;
-	vec3 normal = mix(-normalize(vec3(0.0, planetradius, 0.0) + point), normalize(-normalize(vec3(0.0, planetradius, 0.0) + point) + dayData.sunDir), dirmult);
+	vec3 normal = normalize(mix(-normalize(vec3(0.0, planetradius, 0.0) + point), dayData.sunDir, dirmult));
 	//vec3 normal = -normalize(vec3(0.0, planetradius, 0.0) + point);
 	
 	float sumao = 0.0;
@@ -194,10 +194,61 @@ float getCloudsAO(vec3 dir, float dirmult){
 		vec3 p = c + (dir + px * 0.18 / (center * 0.0001) ) * there.g;
 		float dst = distance(p, point);
 		float occ = max(0.0, dot(normal, normalize(p - point)));
-		sumao += clamp(1.0 - occ / (dst * 0.0001), 0.0, 1.0);
+		sumao += 1.0 - clamp( occ / (dst * 0.0001), 0.0, 1.0);
 	}
 	
-	return 1.0 - sqrt(1.0 - clamp(sumao / 14.0, 0.35, 1.0));
+	return 1.0 - clamp(sumao / 14.0, 0.0, 1.0);
+}
+
+float visibility(vec3 dir1, vec3 dir2, float d1, float d2){
+	float v = 1.0;
+	float iter = 0.0;
+	float stepsize = 1.0 / 10.0;
+	float rd = stepsize * rand2s(UV * Time);
+	iter += stepsize;
+	for(int i=0;i<8;i++){
+		vec3 md = mix(dir1, dir2, iter + rd);
+		float dd = mix(d1, d2, iter + rd);
+		float dx = textureLod(mainPassTex, md, 0.0).g;
+		if(dx < dd) return 0.0;
+		iter += stepsize;
+	}
+	return v;
+}
+float getAO(vec3 pos, float randomization, float weight);
+float getAODIR(vec3 pos, vec3 dir, float weight);
+vec3 getCloudsAL(vec3 dir){
+	vec2 asd = textureLod(mainPassTex, dir, 0.0).rg;
+	if(asd.r == 0) return vec3(0.0);
+	float center = asd.g;
+	vec3 c = vec3(0.0, 1.0, 0.0);
+	vec3 point = c + dir * center;
+	
+	vec3 sum = vec3(0.0);
+	float r = Time;
+	float vdt = max(0.0, dot(dayData.sunDir, VECTOR_UP));
+	for(int i=0;i<32;i++){
+	    float x = rand2s(UV * r);
+		r += 2.1231255;
+		float y = rand2s(UV * r);
+		r += 1.6271255;
+		float z = rand2s(UV * r);
+		r += 1.1231255;
+		vec3 px = normalize( normalize(vec3(x, y, z) * 2.0 - 1.0));
+		float mult = mix(sqrt(dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, vdt);
+		
+		vec3 p = point + px * 5010.0;
+		vec3 newdir = normalize(p - c);
+		float v = visibility(dir, newdir, asd.g, textureLod(mainPassTex, newdir, 0.0).g);
+		sum += textureLod(atmScattTex, px, 0.0).rgb * v * mult; 
+	}
+	
+	float dao = (1.0 -  getCloudsAO(dir, 1.0 - vdt)) * pow(vdt, 2.0) * 3.0;
+	float sao =  mix(1.0, getCloudsAO(dir, 0.0), (1.0 - pow(1.0 - max(0.0, dot(dir, VECTOR_UP)), 3.0))) * pow(vdt, 2.0) * 14.0 / ((CloudsCeil - CloudsFloor) * 0.0005 + 1.0);
+	
+	//float dshadow = getAODIR(point, px, 113.0);
+		
+	return clamp(sum / 32.0 , 0.0, 111.0) + sao;
 }
 
 Sphere sphere1;
@@ -219,7 +270,7 @@ float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2, float weight){
         iter += stepsize;
         if(coverageinv <= 0.0) break;
     }
-    return clamp(coverageinv, 0.0, 1.0);
+    return clamp(coverageinv, 0.0, 1.0);// * max(0.0, dot(dayData.sunDir, normalize(p2 - p1)));//* (1.0 - smoothstep(14000.0, 19000.0, distance(p1, p2)));
 }
 
 vec3 CAMERA = vec3(0.0, 1.0, 0.0);
@@ -275,6 +326,22 @@ float getAO(vec3 pos, float randomization, float weight){
     //vec3 dir = normalize(dayData.sunDir);
     //vec3 dir = normalize(dayData.sunDir + randdir() * randomization);
     vec3 dir = normalize(dayData.sunDir + randdir() * randomization);
+    Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
+    float hitplanet = rsi2(r, planet);
+	if(hitplanet > 0.0) return 0.0;
+    float hitceil = rsi2(r, sphere2);
+    float hitfloor = rsi2(r, sphere1);
+    vec3 posceil = pos + dir * hitceil;
+    vec3 posfloor = pos + dir * hitfloor;
+    if(hitfloor > 0.0 && hitceil > 0.0 && hitfloor < hitceil) return internalmarchconservativeCoverageOnly(pos, posceil, weight);
+    if(hitfloor > 0.0 && hitceil > 0.0 && hitfloor > hitceil) return internalmarchconservativeCoverageOnly(pos, posceil, weight);
+    if(hitfloor > 0.0 && hitceil <= 0.0) return internalmarchconservativeCoverageOnly(pos, posfloor, weight);
+    if(hitfloor <= 0.0 && hitceil > 0.0) return internalmarchconservativeCoverageOnly(pos, posceil, weight);
+    return internalmarchconservativeCoverageOnly(pos, posceil, weight);
+}
+float getAODIR(vec3 pos, vec3 dir, float weight){
+    //vec3 dir = normalize(dayData.sunDir);
+    //vec3 dir = normalize(dayData.sunDir + randdir() * randomization); 
     Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
     float hitplanet = rsi2(r, planet);
 	if(hitplanet > 0.0) return 0.0;

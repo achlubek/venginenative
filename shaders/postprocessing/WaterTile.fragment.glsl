@@ -3,11 +3,67 @@
 #include PostProcessEffectBase.glsl
 
 layout(binding = 16) uniform sampler2D inputTex;
-layout(binding = 23) uniform sampler2D waterTileTex;
-#include ProceduralValueNoise.glsl
+layout(binding = 23) uniform sampler2D bb;
 
 uniform float Time;
 uniform float WaterSpeed;
+
+
+#include ProceduralValueNoise.glsl
+
+vec4 textureSurround(vec2 q, vec3 e, bool odd){
+	
+	float p10 = 0.0;
+	float p01 = 0.0;
+	float p21 = 0.0;
+	float p12 = 0.0;
+	if(odd){
+		p10 = texture2D(bb, q-e.zy).y;
+		p01 = texture2D(bb, q-e.xz).y;
+		p21 = texture2D(bb, q+e.xz).y;
+		p12 = texture2D(bb, q+e.zy).y;
+	
+	} else {
+		
+		p10 = texture2D(bb, q-e.zy).x;
+		p01 = texture2D(bb, q-e.xz).x;
+		p21 = texture2D(bb, q+e.xz).x;
+		p12 = texture2D(bb, q+e.zy).x;
+	} 
+	return vec4(p10, p01, p21, p12);
+}
+#include noise3D.glsl
+#define ssnoise(a) (0.5 + 0.5 * snoise(a))
+vec4 shade(){
+	vec2 q = UV;
+	vec3 e = vec3(vec2(1.0)/Resolution.xy,0.) * WaterSpeed;
+	vec4 c = texture2D(bb, q);
+	float p11 = c.a > 0.5 ? c.x : c.y;
+		
+	vec4 pp = textureSurround(q, e, c.a > 0.5);
+	
+	float d =  0.0; 
+	//p11 *= 1.001;
+	d += -p11 + (pp.x + pp.y + pp.z + pp.w)*mix(0.499, 0.50007, smoothstep(0.0, 0.4, WaterSpeed));
+	//d += smoothstep(0.997,0.997,1.0 - length(mouse.xy - q.xy)); 
+	float rain = 0.0;
+	rain += smoothstep(0.99, 0.99, ssnoise(vec3(q.x * 40.0, q.y * 40.0, Time * 30.0)));
+	rain += smoothstep(0.99, 0.99, ssnoise(vec3(q.x * -40.0, q.y * 40.0, Time * 30.0)));
+	rain += smoothstep(0.99, 0.99, ssnoise(vec3(q.x * 40.0, q.y * -40.0, Time * 30.0)));
+	rain += smoothstep(0.99, 0.99, ssnoise(vec3(q.x * -40.0, q.y * -40.0, Time * 30.0)));
+	rain += smoothstep(0.99, 0.99, ssnoise(vec3(q.x * 40.0, q.y * 40.0, Time * 23.0)));
+	rain += smoothstep(0.99, 0.99, ssnoise(vec3(q.x * 40.0, q.y * 40.0, Time * 14.0)));
+	d += rain * 0.02;
+	//d *= 1.0 - smoothstep(0.98, 1.0, d);
+	d = clamp(d, 0.01, 7.0);
+	if(c.a > 0.5){
+		return vec4( d, c.y, 0.0, 1.0 - c.a );
+	} else {
+		return vec4( c.x, d, 0.0, 1.0 - c.a );
+	}
+}
+
+/*
 
 float hashx( float n ){
     return fract(sin(n)*758.5453);
@@ -107,5 +163,5 @@ vec4 shade(){
     vec2 uv = UV;
     float c1 = heightwaterHI(uv);
     float color = c1;
-    return vec4(color, foam(color) * color, 0.0, 0.0);
-}
+    return vec4(color, 0.0, 0.0, 0.0);
+}*/

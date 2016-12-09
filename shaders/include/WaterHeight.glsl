@@ -67,6 +67,7 @@ float heightwaterHI(vec2 posx){
 
 
 vec2 heightwaterX(vec2 uv, float mipmap){
+	return textureLod(waterTileTex, uv * WaterScale * 0.0001, mipmap).rg;
 	vec2 zuv1 = (uv * WaterScale * 0.0001) + vec2(Time * 0.01 * WaterSpeed);
 	vec2 zuv2 = zuv1 - vec2(Time * 0.014 * WaterSpeed);
 	vec2 zuv3 = zuv1 + vec2(Time * 0.017 * WaterSpeed);

@@ -62,7 +62,7 @@ float blurshadowsCV(vec3 dir, float roughness){
     centerval /= aoc;
     return centerval;
 }
-vec2 blurshadowsAO(vec3 dir, float roughness){
+vec3 blurshadowsAO(vec3 dir, float roughness){
     //if(CloudsDensityScale <= 0.010) return 0.0;
     float levels = max(0, float(textureQueryLevels(shadowsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
@@ -71,13 +71,13 @@ vec2 blurshadowsAO(vec3 dir, float roughness){
     float dst = textureLod(coverageDistTex, dir, mlvel).g;
     float aoc = 1.0;
     
-    vec2 centerval = textureLod(shadowsTex, dir, mlvel).gb;
+    vec3 centerval = textureLod(shadowsTex, dir, mlvel).gba;
     float blurrange = 0.005;
     for(int i=0;i<7;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
         float there = textureLod(coverageDistTex, rdp, mlvel).g;
         float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
-        centerval += w * textureLod(shadowsTex, rdp, mlvel).gb;
+        centerval += w * textureLod(shadowsTex, rdp, mlvel).gba;
         aoc += w;
     }
     centerval /= aoc;
@@ -160,11 +160,11 @@ vec3 getDiffuseAtmosphereColor(){
 }
 
 vec3 getSunColorDirectly(float roughness){
-    vec3 sunBase = vec3(2.0);
+    vec3 sunBase = vec3(8.0);
 	float dt = max(0.0, (dot(dayData.sunDir, VECTOR_UP)));
 	float dt2 = 0.9 + 0.1 * (1.0 - max(0.0, (dot(dayData.sunDir, VECTOR_UP))));
-	vec3 supersundir = textureLod(atmScattTex, vec3(dayData.sunDir.x, 0.0, dayData.sunDir.z), 0.0).rgb;
-	return mix(supersundir, sunBase, dt);
+	vec3 supersundir = textureLod(atmScattTex, vec3(dayData.sunDir.x, 0.0, dayData.sunDir.z), 0.0).rgb ;
+	return mix(supersundir, sunBase, dt * dt * dt* dt* dt);
 	//return  max(vec3(0.3, 0.3, 0.0), (  sunBase - vec3(5.5, 18.0, 20.4) *  pow(1.0 - dt, 8.0)));
 }
 
@@ -297,22 +297,23 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     sshadow = 1.0 - coverage;
     float dist = cloudsData.g;
     float shadow = cloudsData.b; 
+	//return ;
     float rays = godrays(dir, raysteps);
 	
 	// hmm
-	vec3 SunC = getSunColor(roughness);
+	vec3 SunC = getSunColor(roughness) * max(0.0, dot(VECTOR_UP, dayData.sunDir));
 	vec3 AtmDiffuse = getDiffuseAtmosphereColor();
 	float Shadow = shadow;
 	vec3 GroundC = vec3(0.9, 0.9, 0.9);
 	float Coverage = 1.0 - smoothstep(0.4, 0.55, CloudsThresholdLow);//texture(coverageDistTex, VECTOR_UP, textureQueryLevels(coverageDistTex)).r;
-	vec2 aabbdd = blurshadowsAO(dir, roughness);
-	float AOGround = aabbdd.r;
-	float AOSky = aabbdd.g;
+	//vec2 aabbdd = blurshadowsAO(dir, roughness);
+	float AOGround = 0.15;//aabbdd.r;
+	float AOSky = 0.15;//aabbdd.g;
 	
 	float SunDT = max(0.0, dot(dayData.sunDir, VECTOR_UP));
 	
     vec3 raycolor = getSunColor(0.0) * NoiseOctave1 * 0.1; 
-	vec3 CC = (SunC * Shadow) + (
+	vec3 CC = blurshadowsAO(dir, roughness)   + (SunC * Shadow) + (
 	mix(
 	
 	SunC * GroundC * SunDT * AOGround + 
@@ -333,11 +334,55 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     return mix(scattering  * monsoonconverage + moon + raycolor * rays, monsoonconverage * cloud, coverage);*/
 }
 
+vec2 projectvdaox(vec3 pos){
+    vec4 tmp = (VPMatrix * vec4(pos, 1.0));
+    return (tmp.xy / tmp.w) * 0.5 + 0.5;
+}
+
+float visibility(vec3 p1, vec3 p2){
+	float v = 1.0;
+	int steps = 16;
+	float stepsize = 1.0 / 16.0;
+	float iter = 0.0;
+	float rd = stepsize * rand2s(UV * Time);
+	vec2 u1 = UV;//projectvdaox(p1);
+	vec2 u2 = projectvdaox(p2);
+	float w = 1.0;
+	for(int i=0;i<steps;i++){
+		vec2 u = mix(u1, u2, iter + rd);
+		vec3 p = mix(p1, p2, iter + rd);
+		float dst = textureLod(mrt_Distance_Bump_Tex, u, 0.0).r;
+		//dst = mix(99999.0, dst, step(0.1, dst));
+		if(dst > 0.0)
+		v -= stepsize * w * clamp(distance(p, CameraPosition) - dst, 0.0, 1.0);
+		w -= stepsize;
+		iter += stepsize;
+	}
+	return pow(v, 8.0);
+}
+
+vec3 vdao(){ 
+	vec3 c = vec3(0.0);
+	int steps = 32;
+	vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
+    float fresnel = mix(getthatfuckingfresnel(0.04, currentData.normal, normalize(currentData.cameraPos), currentData.roughness), 1.0, currentData.roughness);
+	for(int i=0;i<steps;i++){
+		vec3 p = normalize(randpoint3());
+		p *= sign(dot(p, currentData.normal));
+		p = normalize(mix(reflect(dir, currentData.normal), p, currentData.roughness));
+		float v = visibility(currentData.worldPos, currentData.worldPos + p * 19.0);
+		c += fresnel * v * textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness * 0.2, resolvedAtmosphereTex)).rgb;
+	}
+	return c / 32.0;
+}
+
 vec3 shadeFragment(PostProceessingData data){
     vec3 suncolor = getSunColor(0.0);
     vec3 sun = shadeColor(data, -dayData.sunDir, suncolor);
-    vec3 diffuse = shadeColor(data, -data.normal,  texture(resolvedAtmosphereTex, data.normal).rgb) * 0.2;
-    return sun * CSMQueryVisibility(data.worldPos) + diffuse;
+	vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
+	vec3 mx = normalize(mix(reflect(dir, data.normal), data.normal, data.roughness));
+    vec3 diffuse = vdao();
+    return diffuse;
 }
 
 

@@ -127,14 +127,14 @@ void Renderer::initializeFbos()
     ambientLightFbo = new Framebuffer();
     ambientLightFbo->attachTexture(ambientLightTexture, GL_COLOR_ATTACHMENT0);
 
-    waterTileTexture1 = new Texture2d(config->geti("water_tile_resolution"), config->geti("water_tile_resolution"), GL_RG16F, GL_RG, GL_HALF_FLOAT);
+    waterTileTexture1 = new Texture2d(config->geti("water_tile_resolution"), config->geti("water_tile_resolution"), GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     waterTileFbo1 = new Framebuffer();
     waterTileFbo1->attachTexture(waterTileTexture1, GL_COLOR_ATTACHMENT0);
 
-    waterTileTexture2 = new Texture2d(config->geti("water_tile_resolution"), config->geti("water_tile_resolution"), GL_RG16F, GL_RG, GL_HALF_FLOAT);
+    waterTileTexture2 = new Texture2d(config->geti("water_tile_resolution"), config->geti("water_tile_resolution"), GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     waterTileFbo2 = new Framebuffer();
     waterTileFbo2->attachTexture(waterTileTexture2, GL_COLOR_ATTACHMENT0);
-
+    
     ambientOcclusionTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     ambientOcclusionFbo = new Framebuffer();
     ambientOcclusionFbo->attachTexture(ambientOcclusionTexture, GL_COLOR_ATTACHMENT0);
@@ -370,8 +370,8 @@ void Renderer::draw(Camera *camera)
     //mrtNormalMetalnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtDistanceTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //depthTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
-   // deferred();
-  //  ambientLight();
+    deferred();
+   // ambientLight();
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     waterTile();
     atmScatt();
@@ -389,7 +389,7 @@ void Renderer::draw(Camera *camera)
             cloudFace = 0;
             cloudCycleUseOdd = !cloudCycleUseOdd;
         }
-        if (cloudFace == 3) cloudFace++;
+        //if (cloudFace == 3) cloudFace++;
     }
     shadowTurn = !shadowTurn;
     gpuInitialized = true;
@@ -423,6 +423,7 @@ void Renderer::cloudsResolve()
     cloudResolveShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
     cloudResolveShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
     quad3dInfo->draw();
+    cloudsResolvedTexture->generateMipMaps();
 }
 
 void Renderer::combine(int step)
@@ -436,7 +437,6 @@ void Renderer::combine(int step)
     waterColorTexture->use(21);
     starsTexture->use(24);
     moonTexture->use(28);
-    cloudsResolvedTexture->generateMipMaps();
     cloudsResolvedTexture->use(29);
 
     setCommonUniforms(combineShader);
@@ -682,6 +682,7 @@ void Renderer::clouds()
         cloudsTextureEven->use(18);
     else
         cloudsTextureOdd->use(18);
+    atmScattTexture->use(19);
     Camera* camera = nullptr;
     FrustumCone *cone = nullptr;
     glm::mat4 vpmatrix;
@@ -733,6 +734,7 @@ void Renderer::clouds()
     else
         cloudsTextureOdd->use(29);
 
+    atmScattTexture->use(19);
     if (shadowTurn) {
         // for (int i = 0; i < 6; i++) {
         currentFbo->use(false);

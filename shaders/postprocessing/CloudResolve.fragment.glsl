@@ -39,8 +39,10 @@ vec3 integrateStepsAndSun(vec3 dir){
 vec4 shade(){    
     vec3 color = vec3(0);
 	vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
+	//if(dir.y < 0.0){
+	//	return textureLod(atmScattTex, vec3(dir.x, -dir.y, dir.z), textureQueryLevels(atmScattTex)).rgba  ;
+	//}
+	dir.y = abs(dir.y);
 	color = integrateStepsAndSun(dir);
-	vec3 last = textureLod(resolvedAtmosphereTex, dir, 0.0).rgb;
-	color = mix(color, last,   0.0);
     return vec4( clamp(color, 0.0, 1110.0), 1.0);
 }
