@@ -67,7 +67,7 @@ vec3 blurshadowsAO(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(shadowsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
-	//return textureLod(shadowsTex, dir, mlvel).gb;
+	return textureLod(shadowsTex, dir, mlvel).gba;
     float dst = textureLod(coverageDistTex, dir, mlvel).g;
     float aoc = 1.0;
     
@@ -313,7 +313,8 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
 	float SunDT = max(0.0, dot(dayData.sunDir, VECTOR_UP));
 	
     vec3 raycolor = getSunColor(0.0) * NoiseOctave1 * 0.1; 
-	vec3 CC = blurshadowsAO(dir, roughness)   + (SunC * Shadow) + (
+	vec3 vdao = blurshadowsAO(dir, roughness);
+	vec3 CC = vdao + (SunC * Shadow) + (
 	mix(
 	
 	SunC * GroundC * SunDT * AOGround + 

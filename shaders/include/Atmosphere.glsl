@@ -143,16 +143,21 @@ float getHeightOverSea(vec3 p){
 
 float cloudsDensity3D(vec3 pos){
     vec3 ps = pos +CloudsOffset * 1111;// + wtim;   
-   // ps += (getWind(pos * 0.0005  * WindBigScale + Time * 0.01* WindBigScale ) * (WindBigPower / WindBigScale)) * 600.0;
+    ps += (getWind(pos * 0.0005  * WindBigScale + Time * 0.01* WindBigScale ) * (WindBigPower / WindBigScale)) * 600.0;
     
     float density = fbmHI(ps * 0.005);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
 	float measurement = (CloudsCeil - CloudsFloor) * 0.5;
 	float mediana = (CloudsCeil + CloudsFloor) * 0.5;
 	float mlt = sqrt(sqrt( 1.0 - (abs( getHeightOverSea(pos) - mediana ) / measurement )));
-    float init = step(CloudsThresholdLow, density * mlt);
+    float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh, density * mlt);
     return  init;
 }
 float cloudsDensity3DLOW(vec3 pos){
+
+
+return cloudsDensity3D(pos);
+
+
     vec3 ps = pos +CloudsOffset * 1111;// + wtim;   
     //ps += (getWind(pos * 0.0005  * WindBigScale + Time * 0.01* WindBigScale ) * (WindBigPower / WindBigScale)) * 600.0;
     
@@ -244,11 +249,14 @@ vec3 getCloudsAL(vec3 dir){
 	}
 	
 	float dao = (1.0 -  getCloudsAO(dir, 1.0 - vdt)) * pow(vdt, 2.0) * 3.0;
-	float sao =  mix(1.0, getCloudsAO(dir, 0.0), (1.0 - pow(1.0 - max(0.0, dot(dir, VECTOR_UP)), 3.0))) * pow(vdt, 2.0) * 14.0 / ((CloudsCeil - CloudsFloor) * 0.0005 + 1.0);
+	float daox = ( getCloudsAO(dir, 1.0  ) * 2.0 - 1.0)   * pow(vdt * 0.8 + 0.2, 2.0) ;
+	float sao =  (mix(1.0, getCloudsAO(dir, 0.0), (1.0 - pow(1.0 - max(0.0, dot(dir, VECTOR_UP)), 16.0))) * (1.0 - pow(1.0 - vdt, 8.0)) * pow(vdt * 0.97 + 0.03, 1.0) * 14.0) / ((CloudsCeil - CloudsFloor) * 0.0005 + 1.0);
 	
 	//float dshadow = getAODIR(point, px, 113.0);
-		
-	return clamp(sum / 32.0 , 0.0, 111.0) + sao;
+			
+	float coverage =  smoothstep(0.464, 0.6, CloudsThresholdLow);
+//	return vec3(sao) ;
+	return clamp(sum / 32.0 , 0.0, 111.0) * coverage + sao + daox * 0.1 ;
 }
 
 Sphere sphere1;
@@ -304,7 +312,7 @@ vec2 internalmarchconservative(vec3 p1, vec3 p2){
         iter += stepsize;
         //rd = fract(rd + iter * 124.345345);
     }
-	if(coverageinv > 0.0) depr = distance(CAMERA, (p1 + p2) * 0.5);
+	if(coverageinv > 0.99) depr = distance(CAMERA, (p1 + p2) * 0.5);
     float cv = 1.0 - clamp(coverageinv, 0.0, 1.0);
     return vec2(cv, depr);
 }
@@ -366,7 +374,7 @@ float shadows(){
     planet = Sphere(vec3(0), planetradius);
 //    float mx1  = clamp(0.0, 1.0, MieScattCoeff * 0.2) * 0.5 + 0.5;
 	weightshadow = 1001.0;
-    float sun = getAO(hitman, 0.0, 1001.0);// + (0.5 + max(0.0, (getAO(hitman, 1.0) * 2.0 - 1.0 ))) * 0.2 + getAO(hitman, 0.0);
+    float sun = getAO(hitman, 8.0 * (CloudsThresholdHigh - CloudsThresholdLow), 1001.0);// + (0.5 + max(0.0, (getAO(hitman, 1.0) * 2.0 - 1.0 ))) * 0.2 + getAO(hitman, 0.0);
 	//weightshadow  = 0.000;//1 * CloudsDensityScale;
    // float sss =  getAO(hitman, 0.6, CloudsDensityScale  );
     return sun;
