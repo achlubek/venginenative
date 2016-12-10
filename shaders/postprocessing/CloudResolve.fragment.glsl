@@ -33,7 +33,7 @@ uniform int CombineStep;
 #include ResolveAtmosphere.glsl
 
 vec3 integrateStepsAndSun(vec3 dir){        
-	return sampleAtmosphere(dir, 0.0, 1.0, 23);
+	return sampleAtmosphere(dir, 0.0, 1.0, 11);
 }
 
 vec4 shade(){    

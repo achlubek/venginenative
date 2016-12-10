@@ -173,7 +173,7 @@ void Renderer::initializeFbos()
     cloudsShadowsFboOdd = new CubeMapFramebuffer();
     cloudsShadowsFboOdd->attachTexture(cloudsShadowsTextureOdd, GL_COLOR_ATTACHMENT0);
 
-    cloudsResolvedTexture = new CubeMapTexture(512, 512, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    cloudsResolvedTexture = new CubeMapTexture(2048, 2048, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     cloudsResolvedFbo = new CubeMapFramebuffer();
     cloudsResolvedFbo->attachTexture(cloudsResolvedTexture, GL_COLOR_ATTACHMENT0);
 

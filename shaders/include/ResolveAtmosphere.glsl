@@ -218,7 +218,7 @@ vec2 xyzToPolar(vec3 xyz){
 vec3 getStars(vec3 dir, float roughness){
     dir = dayData.viewFrame * dir;
     vec3 c = pow(texture(starsTex, xyzToPolar(dir)).rgb, vec3(2.2));
-    return mix(c * 0.1, vec3(0.001, 0.002, 0.003) * 0.2 * (1.0  - reconstructCameraSpaceDistance(UV, 1.0).y * 0.8), 0.9);
+    return mix(c * 0.1, vec3(0.001, 0.002, 0.003) * 0.2 * (1.0  - reconstructCameraSpaceDistance(UV, 1.0).y * 0.8), 0.0);
 }
 mat3 calcLookAtMatrix(vec3 origin, vec3 target, float roll) {
   vec3 rr = vec3(sin(roll), cos(roll), 0.0);
@@ -254,9 +254,10 @@ vec3 textureMoon(vec3 dir){
     vec3 posOnMoon = dayData.earthPos + dayData.viewFrame * dir * i;
     vec3 n = normalize(dayData.moonPos - posOnMoon);
     float l = pow(max(0.0, dot(n, dayData.sunSpaceDir)), 1.2);
-    n *= rotationMatrix(vec3(0.0, 1.0, 0.0), 6.1415);
-    n *= rotationMatrix(vec3(0.0, 0.0, 1.0), 3.1415);
-    vec3 color = vec3(0.5) + pow(textureLod(moonTex, xyzToPolar(calcLookAtMatrix(dayData.moonPos, dayData.earthPos, 0.0) * n.xyz) , 0.0).rgb, vec3(2.4));
+	n = calcLookAtMatrix(dayData.moonPos, dayData.earthPos, 0.0) * n;
+    n *= rotationMatrix(vec3(0.0, 1.0, 0.0), 1.8415);
+   // n *= rotationMatrix(vec3(0.0, 0.0, 1.0), -3.1415);
+    vec3 color = vec3(0.1) + pow(textureLod(moonTex, xyzToPolar(n) , 0.0).rgb, vec3(2.4));
     
     vec3 atmdiff = vec3(0.004) * pow(asin(dot(dir, dayData.moonDir)) * 0.5 + 0.5, 16.0) * 0.01;
     

@@ -21,7 +21,7 @@ vec4 shade(){
         retavg.rg = vec2(mix(val.r, lastData.r, CloudsIntegrate), val.g);
 		
 		retavg.r = mix(retavg.r, retedg.r, 0.2);
-		retavg.g = mix(retavg.g, retedg.g, 0.5);
+		retavg.g = mix(retavg.g, retedg.g, 0.3);
     } else if(RenderPass == 1){
         vec4 lastData = textureLod(cloudsCloudsTex, dir, 0.0).rgba;
         float val = shadows();
@@ -38,7 +38,7 @@ vec4 shade(){
 		
 		retavg.g = mix(retavg.g, retedg.g, 0.5);
 		retavg.b = mix(retavg.b, retedg.b, 0.5);*/
-		retavg.r = mix(retavg.r, retedg.r, 0.5);
+		retavg.r = mix(retavg.r, retedg.r, 0.25);
 		
         retavg.gba = mix(AOGround, lastData.gba, CloudsIntegrate);
     }
