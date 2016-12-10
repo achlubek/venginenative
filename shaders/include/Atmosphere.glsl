@@ -250,7 +250,7 @@ vec3 getCloudsAL(vec3 dir){
 	
 	float dao = (1.0 -  getCloudsAO(dir, 1.0 - vdt)) * pow(vdt, 2.0) * 3.0;
 	float daox = ( getCloudsAO(dir, 1.0  ) * 2.0 - 1.0)   * pow(vdt * 0.8 + 0.2, 2.0) ;
-	float sao =  (mix(1.0, getCloudsAO(dir, 0.0), (1.0 - pow(1.0 - max(0.0, dot(dir, VECTOR_UP)), 16.0))) * (1.0 - pow(1.0 - vdt, 8.0)) * pow(vdt * 0.97 + 0.03, 1.0) * 14.0) / ((CloudsCeil - CloudsFloor) * 0.0005 + 1.0);
+	float sao =  (mix(1.0, getCloudsAO(dir, 0.0), (1.0 - pow(1.0 - max(0.0, dot(dir, VECTOR_UP)), 8.0))) * (1.0 - pow(1.0 - vdt, 8.0)) * pow(vdt * 0.97 + 0.03, 1.0) * 14.0) / ((CloudsCeil - CloudsFloor) * 0.0005 + 1.0);
 	
 	//float dshadow = getAODIR(point, px, 113.0);
 			
