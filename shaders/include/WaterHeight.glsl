@@ -80,7 +80,7 @@ vec2 heightwaterXO(vec2 uv, vec2 offset, float mipmap){
     //return heightwaterHI(uv * WaterScale * 0.0001) * vec2(1.0);
 }
 vec2 heightwaterX(vec2 uv, float mipmap){
-	return textureLod(waterTileTex, uv * WaterScale * octavescale1, mipmap).rg;
+	return textureLod(waterTileTex, uv * WaterScale * octavescale1, mipmap).rg;// + vec2(sin(uv.x * 0.001 * (1.0 + 0.2 * supernoise(vec2(uv.y * 0.0001, Time * 0.1)) - 0.2 * supernoise(vec2(uv.x * 0.0001, Time * 0.1))) + Time ) * 0.5 + 0.5, 0.0);
 	vec2 zuv1 = (uv * WaterScale * octavescale1) + vec2(Time * 0.01 * WaterSpeed);
 	vec2 zuv2 = zuv1 - vec2(Time * 0.014 * WaterSpeed);
 	vec2 zuv3 = zuv1 + vec2(Time * 0.017 * WaterSpeed);

@@ -38,7 +38,7 @@ vec4 shade(){
 		
 		retavg.g = mix(retavg.g, retedg.g, 0.5);
 		retavg.b = mix(retavg.b, retedg.b, 0.5);*/
-		retavg.r = mix(retavg.r, retedg.r, 0.25);
+		retavg.r = mix(retavg.r, retedg.r, 0.1);
 		
         retavg.gba = mix(AOGround, lastData.gba, CloudsIntegrate);
     }

@@ -160,7 +160,7 @@ vec3 getDiffuseAtmosphereColor(){
 }
 
 vec3 getSunColorDirectly(float roughness){
-    vec3 sunBase = vec3(8.0);
+    vec3 sunBase = vec3(6.0);
 	float dt = max(0.0, (dot(dayData.sunDir, VECTOR_UP)));
 	float dt2 = 0.9 + 0.1 * (1.0 - max(0.0, (dot(dayData.sunDir, VECTOR_UP))));
 	vec3 supersundir = textureLod(atmScattTex, vec3(dayData.sunDir.x, 0.0, dayData.sunDir.z), 0.0).rgb ;
@@ -169,7 +169,7 @@ vec3 getSunColorDirectly(float roughness){
 }
 
 vec3 getSunColor(float roughness){
-	float dt = max(0.0, (dot(dayData.sunDir, VECTOR_UP)));
+	float dt = pow(max(0.0, (dot(dayData.sunDir, VECTOR_UP))), 2.0);
 	return dt * getSunColorDirectly(roughness);
 }
 
@@ -272,14 +272,19 @@ vec3 textureMoon(vec3 dir){
 
 float lenssun(vec3 dir){
     //return smoothstep(0.997, 0.999, dot(dir, dayData.sunDir));
+	vec3 sdir = dayData.sunDir;
+	float x = sdir.y * 0.5 + 0.5;
+	x *= 0.94;
+	x = x * 2.0 - 1.0;
+	sdir.y = mix(x, sdir.y, sdir.y);
     vec2 ss1 = projectvdao(CameraPosition + dir);
-    vec2 ss2 = projectvdao(CameraPosition + dayData.sunDir);
+    vec2 ss2 = projectvdao(CameraPosition + sdir);
     ss1.x *= Resolution.x / Resolution.y;
     ss2.x *= Resolution.x / Resolution.y;
 			
-    vec3 differente = normalize(dir - dayData.sunDir) * 4.0;
+    vec3 differente = normalize(dir - sdir) * 4.0;
     //return smoothstep(0.997, 0.998, dot(dir, dayData.sunDir));// fuck it pow(1.0 / (distance(dir, dayData.sunDir) * 22.0 - 0.05), 5.0);
-    return pow(1.0 / abs((distance(dir, dayData.sunDir) * 22.0 - 0.05)), 4.0 + supernoise3dX(differente) * 4.0);
+    return pow(1.0 / abs((distance(dir, sdir) * 22.0 - 0.05)), 4.0 + supernoise3dX(differente) * 4.0);
 }
 
 float thatsunglowIdontknownamefor(vec3 dir, float strength, float power){
@@ -302,9 +307,10 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float rays = godrays(dir, raysteps);
 	
 	// hmm
-	vec3 SunC = getSunColor(roughness) * max(0.0, dot(VECTOR_UP, dayData.sunDir));
+	vec3 SunC = getSunColor(roughness);// * max(0.0, dot(VECTOR_UP, dayData.sunDir));
 	vec3 AtmDiffuse = getDiffuseAtmosphereColor();
 	float Shadow = shadow;
+	//return coverage * vec3(SunC * Shadow);
 	vec3 GroundC = vec3(0.9, 0.9, 0.9);
 	float Coverage = 1.0 - smoothstep(0.4, 0.55, CloudsThresholdLow);//texture(coverageDistTex, VECTOR_UP, textureQueryLevels(coverageDistTex)).r;
 	//vec2 aabbdd = blurshadowsAO(dir, roughness);
@@ -315,6 +321,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
 	
     vec3 raycolor = getSunColor(0.0) * NoiseOctave1 * 0.1; 
 	vec3 vdao = blurshadowsAO(dir, roughness);
+	
 	vec3 CC = vdao + (SunC * Shadow) + (
 	mix(
 	
@@ -390,8 +397,7 @@ float traceReflection(vec3 pos, vec3 dir){
 	
 	vec2 uv = projectvdaox(pos);
 	vec3 vdir = reconstructCameraSpaceDistance(uv, 1.0);
-	float horizon = projectvdaox(CameraPosition + vec3(vdir.x, 0.0, vdir.z)).y * 2.0 - 1.0;
-	float ymu = -vdir.y;
+	float horizon = projectvdaox(CameraPosition + vec3(vdir.x, 0.0, vdir.z)).y * 2.0 - 1.0; 
 	
 	return textureLod(mrt_Distance_Bump_Tex, vec2(uv.x, horizon - uv.y), 0).r;
 }
