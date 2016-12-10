@@ -36,7 +36,7 @@ vec4 textureSurround(vec2 q, vec3 e, bool odd){
 #define ssnoise(a) (0.5 + 0.5 * snoise(a))
 vec4 shade(){
 	vec2 q = UV;
-	vec3 e = vec3(vec2(1.0)/Resolution.xy,0.) * WaterSpeed;
+	vec3 e = vec3(vec2(1.0)/Resolution.xy,0.) * clamp(WaterSpeed, 0.01, 10.0);
 	vec4 c = texture2D(bb, q);
 	float p11 = c.a > 0.5 ? c.x : c.y;
 		
@@ -44,7 +44,7 @@ vec4 shade(){
 	
 	float d =  0.0; 
 	//p11 *= 1.001;
-	d += -p11 + (pp.x + pp.y + pp.z + pp.w)*mix(0.499, 0.50007, smoothstep(0.0, 0.4, WaterSpeed));
+	d += -p11 + (pp.x + pp.y + pp.z + pp.w)*mix(0.4999, 0.50007, smoothstep(0.0, 0.4, WaterSpeed));
 	//d += smoothstep(0.997,0.997,1.0 - length(mouse.xy - q.xy)); 
 	float rain = 0.0;
 	rain += smoothstep(0.99, 0.99, ssnoise(vec3(q.x * 40.0, q.y * 40.0, Time * 30.0)));
@@ -53,7 +53,7 @@ vec4 shade(){
 	rain += smoothstep(0.99, 0.99, ssnoise(vec3(q.x * -40.0, q.y * -40.0, Time * 30.0)));
 	rain += smoothstep(0.99, 0.99, ssnoise(vec3(q.x * 40.0, q.y * 40.0, Time * 23.0)));
 	rain += smoothstep(0.99, 0.99, ssnoise(vec3(q.x * 40.0, q.y * 40.0, Time * 14.0)));
-	d += rain * 0.02;
+	d += rain * 0.02 * WaterSpeed ;
 	//d *= 1.0 - smoothstep(0.98, 1.0, d);
 	d = clamp(d, 0.01, 7.0);
 	if(c.a > 0.5){

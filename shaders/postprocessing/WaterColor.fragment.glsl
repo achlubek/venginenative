@@ -141,7 +141,7 @@ vec4 getLighting(){
     
     vec3 origdir = dir;
     
-    vec3 normal = normalx(hitpos, 0.298 + roughness * 20.0, roughness * 0.3);
+    vec3 normal = normalx(hitpos, 13.698 + roughness * 20.0, roughness * 0.3);
    // normal = mix(normal, VECTOR_UP, roughness);
    // return pow(max(0.0, dot(normal, dayData.sunDir)), 10.0) * vec4(1);
   //  return vec4(normal.xyzz * vec4(1,0.2,1,0));
@@ -149,7 +149,7 @@ vec4 getLighting(){
   //  normal = normalize(normal + 	normalx(hitpos * 11.2467, 3.0953, roughness) * 0.3);
    // normal = normalize(normal + normalx(hitpos * 51.2467, 3.0953, roughness) * 0.2);
     mipmap1 = mipmap2;
-   // normal = normalize(normal + (1.0 - roughness) * normalx(hitpos * 11.2467, 0.0953, roughness) * 0.2 * (1.0 - mipmap2/ textureQueryLevels(waterTileTex)));
+    normal = normalize(normal + (1.0 - roughness) * normalx(hitpos * 11.2467, 0.0953, roughness) * 0.2 * (1.0 - mipmap2/ textureQueryLevels(waterTileTex)));
     //return normal.xyzz;
     //normal = normalize(normal + normalx(hitpos * 151.2467, 3.0953, roughness) * 0.1 * (1.0 - mipmap3/ textureQueryLevels(waterTileTex)));
     dir = reflect(origdir, normal);
@@ -190,6 +190,10 @@ vec4 getLighting(){
     //result += mix(shadingWater(dataReflection, -dayData.sunDir, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0)) * fresnel * 1.0, getSunColor(0.5) * 0.33 * whites, min(1.0, whites));// + sampleAtmosphere(normal, 0.0) * fresnel;
     vec3 atm =  textureLod(resolvedAtmosphereTex, dir, roughnessToMipmapX(roughness * (0.02 * WaterWavesScale), resolvedAtmosphereTex)).rgb;// * (1.0 - roughness * 0.5) * (1.0 - roughness * 0.5);
    // return vec4(atm, 1.0); 
+  // vec2 ssr = traceReflection(hitpos, dir);
+   //ssr.x = 1.0 - step(0.0, ssr.x);
+	//float dst = traceReflection(hitpos, dir);
+	//return vec4(dst);
     result +=   shadingWater(dataReflection, normal, -dayData.sunDir, getSunColor(0.0), atm)  * 1.0 * mix(1.0, 1.0, roughness);
     vec3 refr = normalize(refract(origdir, normal, 0.66));
     if(length(currentData.normal) < 0.01) currentData.cameraDistance = 299999.0;        
@@ -220,7 +224,7 @@ vec4 getLighting(){
    // result += 1.0 - smoothstep(0.002, 0.003, ssscoeff2);
     result += (vec3(0.0,0.06,0.11) + pow(dot(normal,dayData.sunDir) * 0.4 + 0.6,80.0) * vec3(0.8,0.9,0.6) * 0.12) * getSunColor(0) * (1.0 - fresnel)  * 0.069;
     float superscat = pow(max(0.0, dot(refr, dayData.sunDir)), 4.0) * (1.0 - fresnel);
-    result += vec3(0.5,0.9,0.8) * pow(max(0.0, height1 - 0.3), 2.0) * 0.0001 * waterdepth * length(WaterScale) * getSunColor(0) * (superscat * 12.0 + 0.2) ;
+    result += vec3(0.5,0.9,0.8) * pow(max(0.0, height1 - 0.3), 2.0) * octavescale1 * waterdepth * length(WaterScale) * getSunColor(0) * (superscat * 12.0 + 0.2) ;
          
      return  vec4(result, 1.0);
 }

@@ -93,6 +93,7 @@ Renderer::Renderer(int iwidth, int iheight)
     exposureBuffer = new ShaderStorageBuffer();
 
     // skyboxTexture = new CubeMapTexture("posx.jpg", "posy.jpg", "posz.jpg", "negx.jpg", "negy.jpg", "negz.jpg");
+    fresnelTexture = new Texture2d("fresnel.png");
     starsTexture = new Texture2d("stars.png");
     moonTexture = new Texture2d("moon.png");
     initializeFbos();
@@ -433,6 +434,7 @@ void Renderer::combine(int step)
     deferredTexture->use(5);
     ambientLightTexture->use(6);
     ambientOcclusionTexture->use(16);
+    fresnelTexture->use(14);
     //fogTexture->use(20);
     waterColorTexture->use(21);
     starsTexture->use(24);
@@ -554,6 +556,7 @@ void Renderer::ambientLight()
     setCommonUniforms(ambientLightShader);
     quad3dInfo->draw();
 }
+ 
 
 void Renderer::waterTile()
 {

@@ -72,6 +72,7 @@ private:
     ShaderStorageBuffer * exposureBuffer;
 
     CubeMapTexture *skyboxTexture;
+    Texture2d *fresnelTexture;
     Texture2d *starsTexture;
     Texture2d *moonTexture;
     Object3dInfo *quad3dInfo;
@@ -95,7 +96,7 @@ private:
     Framebuffer *ambientLightFbo;
     Texture2d *ambientLightTexture;
     void ambientLight();
-
+     
     ShaderProgram *waterTileShader;
     Framebuffer *waterTileFbo1;
     Texture2d *waterTileTexture1;

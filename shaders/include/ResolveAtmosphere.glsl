@@ -363,19 +363,53 @@ float visibility(vec3 p1, vec3 p2){
 	return pow(v, 8.0);
 }
 
+vec2 traceReflectionX(vec3 pos, vec3 dir){
+	vec2 res = vec2(-1.0);
+	float score = 0.9992;
+	
+	vec2 uv = projectvdaox(pos);
+	vec2 uvd = normalize(projectvdaox(pos + dir * 0.1) - uv);
+	
+	vec2 e = 2.0 / Resolution;
+	for(int i=0;i<444;i++){
+		float dd = textureLod(mrt_Distance_Bump_Tex, uv, 0).r;	
+		if(dd > 0.0){
+			vec3 p = CameraPosition + reconstructCameraSpaceDistance(uv, dd);
+			float dt = dot(dir, normalize(p - pos));
+			if(score < dt) { score = dt; res = uv; }
+		}
+		uv += uvd * e;
+		if(uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) break;
+	}
+	return res;
+}
+
+float traceReflection(vec3 pos, vec3 dir){
+	vec2 res = vec2(-1.0);
+	float score = 0.9992;
+	
+	vec2 uv = projectvdaox(pos);
+	vec3 vdir = reconstructCameraSpaceDistance(uv, 1.0);
+	float horizon = projectvdaox(CameraPosition + vec3(vdir.x, 0.0, vdir.z)).y * 2.0 - 1.0;
+	float ymu = -vdir.y;
+	
+	return textureLod(mrt_Distance_Bump_Tex, vec2(uv.x, horizon - uv.y), 0).r;
+}
+
+layout(binding = 14) uniform sampler2D fresnelTex;
 vec3 vdao(){ 
 	vec3 c = vec3(0.0);
-	int steps = 32;
+	int steps = 132;
 	vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
-    float fresnel = mix(getthatfuckingfresnel(0.04, currentData.normal, normalize(currentData.cameraPos), currentData.roughness), 1.0, currentData.roughness);
+    float fresnel = 0.04 + 0.96 * textureLod(fresnelTex, vec2(clamp(currentData.roughness, 0.01, 0.98), 1.0 - max(0.0, dot(-dir, currentData.normal))), 0.0).r;
 	for(int i=0;i<steps;i++){
 		vec3 p = normalize(randpoint3());
 		p *= sign(dot(p, currentData.normal));
 		p = normalize(mix(reflect(dir, currentData.normal), p, currentData.roughness));
-		float v = visibility(currentData.worldPos, currentData.worldPos + p * 19.0);
+		float v = 1.0;//visibility(currentData.worldPos, currentData.worldPos + p * 919.0);
 		c += fresnel * v * textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness * 0.2, resolvedAtmosphereTex)).rgb;
 	}
-	return c / 32.0;
+	return c / 132.0;
 }
 
 vec3 shadeFragment(PostProceessingData data){
