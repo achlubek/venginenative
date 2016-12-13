@@ -156,11 +156,11 @@ void Renderer::initializeFbos()
 
     //---------/
 
-    cloudsTextureEven = new CubeMapTexture(config->geti("clouds_coverage_resolution"), config->geti("clouds_coverage_resolution"), GL_RG32F, GL_RG, GL_FLOAT);
+    cloudsTextureEven = new CubeMapTexture(config->geti("clouds_coverage_resolution"), config->geti("clouds_coverage_resolution"), GL_RG16F, GL_RG, GL_HALF_FLOAT);
     cloudsFboEven = new CubeMapFramebuffer();
     cloudsFboEven->attachTexture(cloudsTextureEven, GL_COLOR_ATTACHMENT0);
 
-    cloudsTextureOdd = new CubeMapTexture(config->geti("clouds_coverage_resolution"), config->geti("clouds_coverage_resolution"), GL_RG32F, GL_RG, GL_FLOAT);
+    cloudsTextureOdd = new CubeMapTexture(config->geti("clouds_coverage_resolution"), config->geti("clouds_coverage_resolution"), GL_RG16F, GL_RG, GL_HALF_FLOAT);
     cloudsFboOdd = new CubeMapFramebuffer();
     cloudsFboOdd->attachTexture(cloudsTextureOdd, GL_COLOR_ATTACHMENT0);
 
@@ -174,7 +174,7 @@ void Renderer::initializeFbos()
     cloudsShadowsFboOdd = new CubeMapFramebuffer();
     cloudsShadowsFboOdd->attachTexture(cloudsShadowsTextureOdd, GL_COLOR_ATTACHMENT0);
 
-    cloudsResolvedTexture = new CubeMapTexture(2048, 2048, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    cloudsResolvedTexture = new CubeMapTexture(1024, 1024, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     cloudsResolvedFbo = new CubeMapFramebuffer();
     cloudsResolvedFbo->attachTexture(cloudsResolvedTexture, GL_COLOR_ATTACHMENT0);
 

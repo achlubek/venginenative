@@ -96,9 +96,10 @@ vec3 mydumbassscatteringfunction(vec3 dir, vec3 sun){
     return skycolor * ( pow(1.0 - daynight, 4.0)) * 3.0;
 }
 vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
+	float mult = 0.0 + 0.9 * step(0.0, dir.y);
     dir.y = abs(dir.y);
-    return 3.3 * mydumbassscatteringfunction(dir, sunpos) +
-     6.0 * atmosphere(
+    return mult * 3.3 * mydumbassscatteringfunction(dir, sunpos) +
+     mult * 6.0 * atmosphere(
         dir,           // normalized ray direction
         vec3(0,planetradius  ,0) + origin,               // ray origin
         sunpos,                        // position of the sun
@@ -113,7 +114,7 @@ vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
         1.2e3  * MieScattCoeff ,                          // Mie scale height
         0.11758                         // Mie preferred scattering direction
     ) +
-     6.0 * atmosphere(
+     mult * 6.0 * atmosphere(
         dir,           // normalized ray direction
         vec3(0,planetradius  ,0) + origin,               // ray origin
         dayData.moonDir,                        // position of the sun

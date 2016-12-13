@@ -60,13 +60,15 @@ int main()
   //  sq->compileFile(Media::getPath("squireeltest.txt"));
   //  sq->callProcedureVoid("testme");
 
-    // game->world->scene = game->asset->loadSceneFile("terrain.scene");
+     game->world->scene = game->asset->loadSceneFile("geralts.scene");
      //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->translate(glm::vec3(0, -62.5f, 0));
-     //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->scale(glm::vec3(0.1));
+     for (int i = 0; i < game->world->scene->getMeshes().size(); i++) {
+      //   game->world->scene->getMeshes()[i]->getInstance(0)->transformation->scale(glm::vec3(100.0f));
+     }
     //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->rotate(glm::angleAxis(deg2rad(73.75f), glm::vec3(-0.006f, -0.005f, 1.0f)));
   //  game->world->scene->addMesh(game->asset->loadMeshFile("treeground.mesh3d"));
-    auto t = game->asset->loadMeshFile("lucy.mesh3d");
-    game->world->scene->addMesh(t);
+   // auto t = game->asset->loadMeshFile("terrain.mesh3d");
+  //  game->world->scene->addMesh(t);
     bool isOpened = true;
     bool isOpened2 = true;
 
@@ -168,7 +170,7 @@ int main()
         ImGui::SliderFloat("WaterWavesHeight", &Game::instance->renderer->waterWavesScale, 0.0f, 10.0f);
         ImGui::SliderFloat("WaterSpeed", &Game::instance->renderer->waterSpeed, 0.0f, 7.0f);
         ImGui::SliderFloat2("WaterScale", &Game::instance->renderer->waterScale.x, 0.0f, 10.0f);
-        ImGui::SliderFloat2("MeshRoughness", &t->getLodLevel(0)->material->roughness, 0.0f, 1.0f);
+//        ImGui::SliderFloat2("MeshRoughness", &t->getLodLevel(0)->material->roughness, 0.0f, 1.0f);
         //ImGui::SliderFloat("CloudsDensityThresholdLow", &Game::instance->renderer->cloudsDensityThresholdLow, 0.0f, 1.0f);
        // ImGui::SliderFloat("CloudsDensityThresholdHigh", &Game::instance->renderer->cloudsDensityThresholdHigh, 0.0f, 1.0f);
         //ImGui::SliderFloat("AtmosphereScale", &Game::instance->renderer->atmosphereScale, 0.0f, 1000.0f);
@@ -261,12 +263,12 @@ int main()
     glm::vec3 dir = glm::vec3(0);
     game->onRenderFrame->add([&](int i) {
         if (!cursorFree) {
-            float maxspeed = 10.0;
+            float maxspeed = 0.1;
             if (game->getKeyStatus(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
                 maxspeed *= 0.1f;
             }
             if (game->getKeyStatus(GLFW_KEY_LEFT_ALT) == GLFW_PRESS) {
-                maxspeed *= 30.0f;
+                maxspeed *= 10;
             }
             if (game->getKeyStatus(GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
                 maxspeed *= 30.1f;

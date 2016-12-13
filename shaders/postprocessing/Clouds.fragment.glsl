@@ -8,6 +8,41 @@
 
 uniform int RenderPass;
 
+float rdhash = 0.453451 + Time;
+vec3 randpoint3(){
+    float x = rand2s(UV * rdhash);
+    rdhash += 2.1231255;
+    float y = rand2s(UV * rdhash);
+    rdhash += 1.6271255;
+    float z = rand2s(UV * rdhash);
+    rdhash += 1.1231255;
+    return vec3(x, y, z) * 2.0 - 1.0;
+}
+vec3 blurshadowsAOXA(vec3 dir, float roughness){
+    //if(CloudsDensityScale <= 0.010) return 0.0;
+    float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));
+    float mx = log2(roughness*1024+1)/log2(1024);
+    float mlvel = mx * levels;
+//	return textureLod(cloudsCloudsTex, dir, mlvel).gba;
+   // float dst = textureLod(coverageDistTex, dir, mlvel).g;
+    float aoc = 1.0;
+    
+    vec3 centerval = textureLod(cloudsCloudsTex, dir, mlvel).gba;
+	float cluma = length(centerval);
+    float blurrange = 0.0003;
+    for(int i=0;i<7;i++){
+        vec3 rdp = normalize(dir + randpoint3() * blurrange);
+        //float there = textureLod(coverageDistTex, rdp, mlvel).g;
+        //float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
+        vec3 th = textureLod(cloudsCloudsTex, rdp, mlvel).gba;
+		
+        cluma += length(textureLod(cloudsCloudsTex, rdp, mlvel).gba);
+        aoc += 1.0;
+    }
+    cluma /= aoc;
+    //return centerval;
+    return normalize(centerval) * cluma;
+}
 vec4 shade(){    
    // return vec4(0);
     vec3 dir = normalize(reconstructCameraSpaceDistance(UV, 1.0));
@@ -37,10 +72,11 @@ vec4 shade(){
         retavg.b = mix(AOSky, lastData.b, CloudsIntegrate);
 		
 		retavg.g = mix(retavg.g, retedg.g, 0.5);
-		retavg.b = mix(retavg.b, retedg.b, 0.5);*/
-		retavg.r = mix(retavg.r, retedg.r, 0.1);
+		retavg.b = mix(retavg.b, retedg.b, 0.5);
+		retavg.r = mix(retavg.r, retedg.r, 0.1);*/
+		retavg.r = mix(retavg.r, retedg.r, 0.2);
 		
-        retavg.gba = mix(AOGround, lastData.gba, CloudsIntegrate);
+        retavg.gba = mix(AOGround, blurshadowsAOXA(dir, 0.0), CloudsIntegrate);
     }
 
     return retavg;

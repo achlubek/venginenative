@@ -38,13 +38,14 @@ vec4 shade(){
 	vec2 q = UV;
 	vec3 e = vec3(vec2(1.0)/Resolution.xy,0.) * clamp(WaterSpeed, 0.01, 10.0);
 	vec4 c = texture2D(bb, q);
+	//q.x -= e.x;
 	float p11 = c.a > 0.5 ? c.x : c.y;
 		
 	vec4 pp = textureSurround(q, e, c.a > 0.5);
 	
 	float d =  0.0; 
 	//p11 *= 1.001;
-	d += -p11 + (pp.x + pp.y + pp.z + pp.w)*mix(0.4999, 0.50007, smoothstep(0.0, 0.4, WaterSpeed));
+	d += -p11 + (pp.x + pp.y + pp.z + pp.w)*mix(0.4999, 0.50000, smoothstep(0.0, 0.4, WaterSpeed));
 	//d += smoothstep(0.997,0.997,1.0 - length(mouse.xy - q.xy)); 
 	float rain = 0.0;
 	rain += smoothstep(0.99, 0.99, ssnoise(vec3(q.x * 40.0, q.y * 40.0, Time * 30.0)));

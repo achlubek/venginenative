@@ -92,7 +92,7 @@ float getWaterDistance(){
                 vec3 newpos2 = CameraPosition + dir * planethit2;
                 float mult2 = 1.0 - max(0.0, dot(newpos2, -VECTOR_UP));
                 float wvw = WaterWavesScale / 10.0;
-                int steps = 1 + int((6.0 + mult2 * 140.0) * wvw);
+                int steps = 1 + int((6.0 + mult2 * 24.0) * wvw);
                //
                 
               //  if(planethit < 14.0 && planethit > 0.0) steps *= 10;

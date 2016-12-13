@@ -62,26 +62,62 @@ float blurshadowsCV(vec3 dir, float roughness){
     centerval /= aoc;
     return centerval;
 }
+
+#define s2(a, b)                temp = a; a = min(a, b); b = max(temp, b);
+#define mn3(a, b, c)            s2(a, b); s2(a, c);
+#define mx3(a, b, c)            s2(b, c); s2(a, c);
+
+#define mnmx3(a, b, c)          mx3(a, b, c); s2(a, b);                                   // 3 exchanges
+#define mnmx4(a, b, c, d)       s2(a, b); s2(c, d); s2(a, c); s2(b, d);                   // 4 exchanges
+#define mnmx5(a, b, c, d, e)    s2(a, b); s2(c, d); mn3(a, c, e); mx3(b, d, e);           // 6 exchanges
+#define mnmx6(a, b, c, d, e, f) s2(a, d); s2(b, e); s2(c, f); mn3(a, b, c); mx3(d, e, f); // 7 exchanges
+vec3 median(sampler2D tex, vec2 uv){
+    vec2 Tinvsize = 1.0 / textureSize(tex, 0);
+    vec3 v[9];
+
+    // Add the pixels which make up our window to the pixel array.
+    for(int dX = -1; dX <= 1; ++dX) {
+        for(int dY = -1; dY <= 1; ++dY) {       
+            vec2 offset = vec2(float(dX), float(dY));
+            v[(dX + 1) * 3 + (dY + 1)] = texture2D(tex, uv + offset * Tinvsize).rgb;
+        }
+    }
+
+    vec3 temp;
+
+    // Starting with a subset of size 6, remove the min and max each time
+    mnmx6(v[0], v[1], v[2], v[3], v[4], v[5]);
+    mnmx5(v[1], v[2], v[3], v[4], v[6]);
+    mnmx4(v[2], v[3], v[4], v[7]);
+    mnmx3(v[3], v[4], v[8]);
+    return v[4];
+
+}
+
 vec3 blurshadowsAO(vec3 dir, float roughness){
     //if(CloudsDensityScale <= 0.010) return 0.0;
     float levels = max(0, float(textureQueryLevels(shadowsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
-	return textureLod(shadowsTex, dir, mlvel).gba;
+    //return textureLod(shadowsTex, dir, mlvel).gba;
     float dst = textureLod(coverageDistTex, dir, mlvel).g;
     float aoc = 1.0;
     
     vec3 centerval = textureLod(shadowsTex, dir, mlvel).gba;
-    float blurrange = 0.005;
+    float cluma = length(centerval);
+    float blurrange = 0.0001;
     for(int i=0;i<7;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
-        float there = textureLod(coverageDistTex, rdp, mlvel).g;
-        float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
-        centerval += w * textureLod(shadowsTex, rdp, mlvel).gba;
-        aoc += w;
+        //float there = textureLod(coverageDistTex, rdp, mlvel).g;
+        //float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
+        vec3 th = textureLod(shadowsTex, rdp, mlvel).gba;
+        
+        cluma += length(textureLod(shadowsTex, rdp, mlvel).gba);
+        aoc += 1.0;
     }
-    centerval /= aoc;
-    return centerval;
+    cluma /= aoc;
+    //return centerval;
+    return normalize(centerval) * cluma;
 }
 vec4 smartblur(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));
@@ -89,7 +125,7 @@ vec4 smartblur(vec3 dir, float roughness){
     float mlvel = mx * levels;
     vec4 ret = vec4(0);
     ret.xy = textureLod(coverageDistTex, dir, mlvel).rg;
-//	ret.x = blurshadowsCV(dir, roughness);
+//  ret.x = blurshadowsCV(dir, roughness);
     ret.z = textureLod(shadowsTex, dir, mlvel).r;
     //ret.z = blurshadows(dir, roughness);
    // ret.w = textureLod(skyfogTex, dir, mlvel).r;
@@ -161,16 +197,16 @@ vec3 getDiffuseAtmosphereColor(){
 
 vec3 getSunColorDirectly(float roughness){
     vec3 sunBase = vec3(6.0);
-	float dt = max(0.0, (dot(dayData.sunDir, VECTOR_UP)));
-	float dt2 = 0.9 + 0.1 * (1.0 - max(0.0, (dot(dayData.sunDir, VECTOR_UP))));
-	vec3 supersundir = textureLod(atmScattTex, vec3(dayData.sunDir.x, 0.0, dayData.sunDir.z), 0.0).rgb ;
-	return mix(supersundir, sunBase, dt * dt * dt* dt* dt);
-	//return  max(vec3(0.3, 0.3, 0.0), (  sunBase - vec3(5.5, 18.0, 20.4) *  pow(1.0 - dt, 8.0)));
+    float dt = max(0.0, (dot(dayData.sunDir, VECTOR_UP)));
+    float dt2 = 0.9 + 0.1 * (1.0 - max(0.0, (dot(dayData.sunDir, VECTOR_UP))));
+    vec3 supersundir = textureLod(atmScattTex, vec3(dayData.sunDir.x, 0.0, dayData.sunDir.z), 0.0).rgb ;
+    return mix(supersundir, sunBase, dt * dt * dt* dt* dt);
+    //return  max(vec3(0.3, 0.3, 0.0), (  sunBase - vec3(5.5, 18.0, 20.4) *  pow(1.0 - dt, 8.0)));
 }
 
 vec3 getSunColor(float roughness){
-	float dt = pow(max(0.0, (dot(dayData.sunDir, VECTOR_UP))), 2.0);
-	return dt * getSunColorDirectly(roughness);
+    float dt = pow(max(0.0, (dot(dayData.sunDir, VECTOR_UP))), 2.0);
+    return dt * getSunColorDirectly(roughness);
 }
 
 
@@ -185,7 +221,7 @@ vec3 shadeColor(PostProceessingData data, vec3 lightdir, vec3 c){
 
 vec2 projectvdao(vec3 pos){
     vec4 tmp = (VPMatrix * vec4(pos, 1.0));
-    return (tmp.xy / tmp.w) * 0.5 + 0.5;	
+    return (tmp.xy / tmp.w) * 0.5 + 0.5;    
 }
 vec4 projectvdao2(vec3 pos){
     vec4 tmp = (VPMatrix * vec4(pos, 1.0));
@@ -254,7 +290,7 @@ vec3 textureMoon(vec3 dir){
     vec3 posOnMoon = dayData.earthPos + dayData.viewFrame * dir * i;
     vec3 n = normalize(dayData.moonPos - posOnMoon);
     float l = pow(max(0.0, dot(n, dayData.sunSpaceDir)), 1.2);
-	n = calcLookAtMatrix(dayData.moonPos, dayData.earthPos, 0.0) * n;
+    n = calcLookAtMatrix(dayData.moonPos, dayData.earthPos, 0.0) * n;
     n *= rotationMatrix(vec3(0.0, 1.0, 0.0), 1.8415);
    // n *= rotationMatrix(vec3(0.0, 0.0, 1.0), -3.1415);
     vec3 color = vec3(0.1) + pow(textureLod(moonTex, xyzToPolar(n) , 0.0).rgb, vec3(2.4));
@@ -272,16 +308,16 @@ vec3 textureMoon(vec3 dir){
 
 float lenssun(vec3 dir){
     //return smoothstep(0.997, 0.999, dot(dir, dayData.sunDir));
-	vec3 sdir = dayData.sunDir;
-	float x = sdir.y * 0.5 + 0.5;
-	x *= 0.94;
-	x = x * 2.0 - 1.0;
-	sdir.y = mix(x, sdir.y, sdir.y);
+    vec3 sdir = dayData.sunDir;
+    float x = sdir.y * 0.5 + 0.5;
+    x *= 0.94;
+    x = x * 2.0 - 1.0;
+    sdir.y = mix(x, sdir.y, sdir.y);
     vec2 ss1 = projectvdao(CameraPosition + dir);
     vec2 ss2 = projectvdao(CameraPosition + sdir);
     ss1.x *= Resolution.x / Resolution.y;
     ss2.x *= Resolution.x / Resolution.y;
-			
+            
     vec3 differente = normalize(dir - sdir) * 4.0;
     //return smoothstep(0.997, 0.998, dot(dir, dayData.sunDir));// fuck it pow(1.0 / (distance(dir, dayData.sunDir) * 22.0 - 0.05), 5.0);
     return pow(1.0 / abs((distance(dir, sdir) * 22.0 - 0.05)), 4.0 + supernoise3dX(differente) * 4.0);
@@ -301,43 +337,43 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     vec4 cloudsData = smartblur(dir, roughness);
     float coverage = cloudsData.r;
     sshadow = 1.0 - coverage;
-    float dist = cloudsData.g;
+    //float dist = cloudsData.g;
     float shadow = cloudsData.b; 
-	//return ;
+    //return ;
     float rays = godrays(dir, raysteps);
-	
-	// hmm
-	vec3 SunC = getSunColor(roughness);// * max(0.0, dot(VECTOR_UP, dayData.sunDir));
-	vec3 AtmDiffuse = getDiffuseAtmosphereColor();
-	float Shadow = shadow;
-	//return coverage * vec3(SunC * Shadow);
-	vec3 GroundC = vec3(0.9, 0.9, 0.9);
-	float Coverage = 1.0 - smoothstep(0.4, 0.55, CloudsThresholdLow);//texture(coverageDistTex, VECTOR_UP, textureQueryLevels(coverageDistTex)).r;
-	//vec2 aabbdd = blurshadowsAO(dir, roughness);
-	float AOGround = 0.15;//aabbdd.r;
-	float AOSky = 0.15;//aabbdd.g;
-	
-	float SunDT = max(0.0, dot(dayData.sunDir, VECTOR_UP));
-	
+    
+    // hmm
+    vec3 SunC = getSunColor(roughness);// * max(0.0, dot(VECTOR_UP, dayData.sunDir));
+    vec3 AtmDiffuse = getDiffuseAtmosphereColor();
+    float Shadow = shadow;
+    //return coverage * vec3(SunC * Shadow);
+    vec3 GroundC = vec3(0.9, 0.9, 0.9);
+    float Coverage = 1.0 - smoothstep(0.4, 0.55, CloudsThresholdLow);//texture(coverageDistTex, VECTOR_UP, textureQueryLevels(coverageDistTex)).r;
+    //vec2 aabbdd = blurshadowsAO(dir, roughness);
+    float AOGround = 0.15;//aabbdd.r;
+    float AOSky = 0.15;//aabbdd.g;
+    
+    float SunDT = max(0.0, dot(dayData.sunDir, VECTOR_UP));
+    
     vec3 raycolor = getSunColor(0.0) * NoiseOctave1 * 0.1; 
-	vec3 vdao = blurshadowsAO(dir, roughness);
-	
-	vec3 CC = vdao + (SunC * Shadow) + (
-	mix(
-	
-	SunC * GroundC * SunDT * AOGround + 
-	AtmDiffuse * GroundC * AOGround + 
-	vec3(0.001) * GroundC * AOGround,// + 
-	//AtmDiffuse * 1.0 * AOSky,
-	
-	SunC * GroundC * 1.0 * AOGround + AtmDiffuse * AOSky, 
-	
-	Coverage));
-	
-	return mix(scattering * monsoonconverage + moon, monsoonconverage * CC, coverage) + raycolor * rays;
-	
-	/*
-	direct += (1.0 - smoothstep(0.0, 0.3, shadow)) * 0.1 * thatsunglowIdontknownamefor(dir, 6.0, 8.0);
+    vec3 vdao = blurshadowsAO(dir, roughness);
+    
+    vec3 CC = vdao + (SunC * Shadow) + (
+    mix(
+    
+    SunC * GroundC * SunDT * AOGround + 
+    AtmDiffuse * GroundC * AOGround + 
+    vec3(0.001) * GroundC * AOGround,// + 
+    //AtmDiffuse * 1.0 * AOSky,
+    
+    SunC * GroundC * 1.0 * AOGround + AtmDiffuse * AOSky, 
+    
+    Coverage));
+    
+    return mix(scattering * monsoonconverage + moon, monsoonconverage * CC, coverage) + raycolor * rays;
+    
+    /*
+    direct += (1.0 - smoothstep(0.0, 0.3, shadow)) * 0.1 * thatsunglowIdontknownamefor(dir, 6.0, 8.0);
     
     vec3 cloud = mix(diffuse * (getCloudsAO(dir) ) + raycolor * rays, direct , shadow);
     return mix(scattering  * monsoonconverage + moon + raycolor * rays, monsoonconverage * cloud, coverage);*/
@@ -349,80 +385,80 @@ vec2 projectvdaox(vec3 pos){
 }
 
 float visibility(vec3 p1, vec3 p2){
-	float v = 1.0;
-	int steps = 16;
-	float stepsize = 1.0 / 16.0;
-	float iter = 0.0;
-	float rd = stepsize * rand2s(UV * Time);
-	vec2 u1 = UV;//projectvdaox(p1);
-	vec2 u2 = projectvdaox(p2);
-	float w = 1.0;
-	for(int i=0;i<steps;i++){
-		vec2 u = mix(u1, u2, iter + rd);
-		vec3 p = mix(p1, p2, iter + rd);
-		float dst = textureLod(mrt_Distance_Bump_Tex, u, 0.0).r;
-		//dst = mix(99999.0, dst, step(0.1, dst));
-		if(dst > 0.0)
-		v -= stepsize * w * clamp(distance(p, CameraPosition) - dst, 0.0, 1.0);
-		w -= stepsize;
-		iter += stepsize;
-	}
-	return pow(v, 8.0);
+    float v = 1.0;
+    int steps = 16;
+    float stepsize = 1.0 / 16.0;
+    float iter = 0.0;
+    float rd = stepsize * rand2s(UV * Time);
+    vec2 u1 = UV;//projectvdaox(p1);
+    vec2 u2 = projectvdaox(p2);
+    float w = 1.0;
+    for(int i=0;i<steps;i++){
+        vec2 u = mix(u1, u2, iter + rd);
+        vec3 p = mix(p1, p2, iter + rd);
+        float dst = textureLod(mrt_Distance_Bump_Tex, u, 0.0).r;
+        //dst = mix(99999.0, dst, step(0.1, dst));
+        if(dst > 0.0)
+        v -= stepsize * w * clamp(distance(p, CameraPosition) - dst, 0.0, 1.0);
+        w -= stepsize;
+        iter += stepsize;
+    }
+    return pow(v, 8.0);
 }
 
 vec2 traceReflectionX(vec3 pos, vec3 dir){
-	vec2 res = vec2(-1.0);
-	float score = 0.9992;
-	
-	vec2 uv = projectvdaox(pos);
-	vec2 uvd = normalize(projectvdaox(pos + dir * 0.1) - uv);
-	
-	vec2 e = 2.0 / Resolution;
-	for(int i=0;i<444;i++){
-		float dd = textureLod(mrt_Distance_Bump_Tex, uv, 0).r;	
-		if(dd > 0.0){
-			vec3 p = CameraPosition + reconstructCameraSpaceDistance(uv, dd);
-			float dt = dot(dir, normalize(p - pos));
-			if(score < dt) { score = dt; res = uv; }
-		}
-		uv += uvd * e;
-		if(uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) break;
-	}
-	return res;
+    vec2 res = vec2(-1.0);
+    float score = 0.9992;
+    
+    vec2 uv = projectvdaox(pos);
+    vec2 uvd = normalize(projectvdaox(pos + dir * 0.1) - uv);
+    
+    vec2 e = 2.0 / Resolution;
+    for(int i=0;i<444;i++){
+        float dd = textureLod(mrt_Distance_Bump_Tex, uv, 0).r;  
+        if(dd > 0.0){
+            vec3 p = CameraPosition + reconstructCameraSpaceDistance(uv, dd);
+            float dt = dot(dir, normalize(p - pos));
+            if(score < dt) { score = dt; res = uv; }
+        }
+        uv += uvd * e;
+        if(uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) break;
+    }
+    return res;
 }
 
 float traceReflection(vec3 pos, vec3 dir){
-	vec2 res = vec2(-1.0);
-	float score = 0.9992;
-	
-	vec2 uv = projectvdaox(pos);
-	vec3 vdir = reconstructCameraSpaceDistance(uv, 1.0);
-	float horizon = projectvdaox(CameraPosition + vec3(vdir.x, 0.0, vdir.z)).y * 2.0 - 1.0; 
-	
-	return textureLod(mrt_Distance_Bump_Tex, vec2(uv.x, horizon - uv.y), 0).r;
+    vec2 res = vec2(-1.0);
+    float score = 0.9992;
+    
+    vec2 uv = projectvdaox(pos);
+    vec3 vdir = reconstructCameraSpaceDistance(uv, 1.0);
+    float horizon = projectvdaox(CameraPosition + vec3(vdir.x, 0.0, vdir.z)).y * 2.0 - 1.0; 
+    
+    return textureLod(mrt_Distance_Bump_Tex, vec2(uv.x, horizon - uv.y), 0).r;
 }
 
 layout(binding = 14) uniform sampler2D fresnelTex;
 vec3 vdao(){ 
-	vec3 c = vec3(0.0);
-	int steps = 132;
-	vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
+    vec3 c = vec3(0.0);
+    int steps = 132;
+    vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
     float fresnel = 0.04 + 0.96 * textureLod(fresnelTex, vec2(clamp(currentData.roughness, 0.01, 0.98), 1.0 - max(0.0, dot(-dir, currentData.normal))), 0.0).r;
-	for(int i=0;i<steps;i++){
-		vec3 p = normalize(randpoint3());
-		p *= sign(dot(p, currentData.normal));
-		p = normalize(mix(reflect(dir, currentData.normal), p, currentData.roughness));
-		float v = 1.0;//visibility(currentData.worldPos, currentData.worldPos + p * 919.0);
-		c += fresnel * v * textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness * 0.2, resolvedAtmosphereTex)).rgb;
-	}
-	return c / 132.0;
+    for(int i=0;i<steps;i++){
+        vec3 p = normalize(randpoint3());
+        p *= sign(dot(p, currentData.normal));
+        p = normalize(mix(reflect(dir, currentData.normal), p, currentData.roughness));
+        float v = 1.0;//visibility(currentData.worldPos, currentData.worldPos + p * 919.0);
+        c += fresnel * v * textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness * 0.2, resolvedAtmosphereTex)).rgb;
+    }
+    return c / 132.0;
 }
 
 vec3 shadeFragment(PostProceessingData data){
     vec3 suncolor = getSunColor(0.0);
     vec3 sun = shadeColor(data, -dayData.sunDir, suncolor);
-	vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
-	vec3 mx = normalize(mix(reflect(dir, data.normal), data.normal, data.roughness));
+    vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
+    vec3 mx = normalize(mix(reflect(dir, data.normal), data.normal, data.roughness));
     vec3 diffuse = vdao();
     return diffuse;
 }

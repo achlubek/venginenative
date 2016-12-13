@@ -2,35 +2,9 @@
 uniform float WaterHeight;
 uniform vec3 Wind;
 uniform vec2 WaterScale;
-float octavescale1 = 0.0001;
+float octavescale1 = 0.1;
 float mipmap1 = 0.0;
-float maxmip = textureQueryLevels(waterTileTex);
-float hashZ( float n ){
-    return fract(sin(n)*758.5453);
-}
-
-float noise2X( vec2 x2 , float a, float b, float off){
-	vec3 x = vec3(x2.x, x2.y,Time * 0.1 + off);
-	vec3 p = floor(x);
-	vec3 f = fract(x);
-	f       = f*f*(3.0-2.0*f);
-	
-	float h2 = a;
-	 float h1 = b;
-	#define h3 (h2 + h1)
-	 
-	 float n = p.x + p.y*h1+ h2*p.z;
-	return mix(mix(	mix( hashZ(n+0.0), hashZ(n+1.0),f.x),
-			mix( hashZ(n+h1), hashZ(n+h1+1.0),f.x),f.y),
-		   mix(	mix( hashZ(n+h2), hashZ(n+h2+1.0),f.x),
-			mix( hashZ(n+h3), hashZ(n+h3+1.0),f.x),f.y),f.z);
-}
-
-float supernoise(vec2 x){
-    float a = noise2X(x, 55.0, 92.0, 0.0);
-    float b = noise2X(x + 0.5, 133.0, 326.0, 0.5);
-    return (a * b);
-}
+float maxmip = textureQueryLevels(waterTileTex); 
 
 
 #define cosinelinear(a) (cos(a * 3.1415 * 2.0) * 0.5 + 0.5)
@@ -80,7 +54,8 @@ vec2 heightwaterXO(vec2 uv, vec2 offset, float mipmap){
     //return heightwaterHI(uv * WaterScale * 0.0001) * vec2(1.0);
 }
 vec2 heightwaterX(vec2 uv, float mipmap){
-	return textureLod(waterTileTex, uv * WaterScale * octavescale1, mipmap).rg;// + vec2(sin(uv.x * 0.001 * (1.0 + 0.2 * supernoise(vec2(uv.y * 0.0001, Time * 0.1)) - 0.2 * supernoise(vec2(uv.x * 0.0001, Time * 0.1))) + Time ) * 0.5 + 0.5, 0.0);
+	//return textureLod(waterTileTex, uv * WaterScale * octavescale1, mipmap).rg +  pow(textureLod(waterTileTex, uv * WaterScale * octavescale1 * 0.03, mipmap +3.0).rg * 2.0, vec2(3.0)) * 1100.0;;
+	return textureLod(waterTileTex, uv * WaterScale * octavescale1, mipmap).rg  + vec2(supernoise3dX(vec3(WaterScale.x * uv.x * 0.2 + Time* 0.2, WaterScale.y * uv.y * 0.3 + Time * 0.1, Time * 0.1)) * 4.0, 0.0) * (1.0 - smoothstep(0.0, maxmip - 4.0, mipmap));
 	vec2 zuv1 = (uv * WaterScale * octavescale1) + vec2(Time * 0.01 * WaterSpeed);
 	vec2 zuv2 = zuv1 - vec2(Time * 0.014 * WaterSpeed);
 	vec2 zuv3 = zuv1 + vec2(Time * 0.017 * WaterSpeed);
@@ -102,4 +77,4 @@ float heightwater(vec2 uv){
     return heightwaterD(uv, mipmap1 * 1.0).r;
 }
 #define WaterLevel WaterHeight
-#define waterdepth 80.0 * WaterWavesScale
+#define waterdepth 0.2 * WaterWavesScale
