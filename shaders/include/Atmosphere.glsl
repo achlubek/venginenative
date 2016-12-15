@@ -66,13 +66,7 @@ vec3 getAtmosphereForDirection(vec3 dir, float roughness){
 }
 
 #define ssnoise(a) (snoise(a) * 0.5 + 0.5)
-vec3 getWind(vec3 p){
-    return vec3(
-        supernoise3d(p),
-        supernoise3d(-p),
-        supernoise3d(p.zxy)
-    ) * 2.0 - 1.0;// * (supernoise3d(p * 0.1) * 0.5 + 0.5);
-}
+
 /*
 #define xdnoise(a) ssnoise(a + ssnoise(a * 0.5) * 0.5)
 
@@ -135,7 +129,13 @@ float fbm(vec3 p){
     }
     return a;// + noise(p * 100.0) * 11;
 }
-
+vec3 getWind(vec3 p){
+    return (vec3(
+        supernoise3d(p),
+        supernoise3d(-p * 0.2),
+        supernoise3d(p.zxy)
+    ) * 2.0 - 1.0);// * (supernoise3d(p * 0.1) * 0.5 + 0.5);
+}
 float getHeightOverSea(vec3 p){
     vec3 atmpos = vec3(0.0, planetradius, 0.0) + p;
     return length(atmpos) - planetradius;
@@ -143,7 +143,7 @@ float getHeightOverSea(vec3 p){
 
 float cloudsDensity3D(vec3 pos){
     vec3 ps = pos +CloudsOffset * 1111;// + wtim;   
-   // ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
+    ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0; 
     
     float density = fbmHI(ps * 0.005);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
     float measurement = (CloudsCeil - CloudsFloor) * 0.5;
@@ -154,7 +154,7 @@ float cloudsDensity3D(vec3 pos){
 }
 float cloudsDensity3DLOW(vec3 pos){
     vec3 ps = pos +CloudsOffset * 1111;// + wtim;   
-    //ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
+    ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
     
     float density = fbmLOW(ps * 0.005);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
     float measurement = (CloudsCeil - CloudsFloor) * 0.5;
@@ -206,7 +206,7 @@ float visibility(vec3 dir1, vec3 dir2, float d1, float d2){
     float stepsize = 1.0 / 10.0;
     float rd = stepsize * rand2s(UV * Time);
     iter += stepsize;
-    for(int i=0;i<8;i++){
+    for(int i=0;i<6;i++){
         vec3 md = mix(dir1, dir2, iter + rd);
         float dd = mix(d1, d2, iter + rd);
         float dx = textureLod(mainPassTex, md, 0.0).g + hitfloorX;
@@ -231,7 +231,7 @@ vec3 getCloudsAL(vec3 dir){
     vec2 uv = UV * Time;
     float rd = rand2s(uv) * 12.1232343456;
     float mult = mix(sqrt(dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, vdt) + 0.02;
-    for(int i=0;i<11;i++){
+    for(int i=0;i<7;i++){
         float x = hash(rd) * 2.0 - 1.0;
         //rd *= 2.7897;
         rd += 15.46456;
@@ -257,7 +257,7 @@ vec3 getCloudsAL(vec3 dir){
             
     float coverage =  smoothstep(0.464, 0.6, CloudsThresholdLow);
 //  return vec3(sao) ;
-    return clamp(sum / 11.0 , 0.0, 111.0) * coverage + sao * 3.0 + daox * 0.1 ;
+    return clamp(sum / 7.0 , 0.0, 111.0) * coverage + sao * 3.0 + daox * 0.1 ;
 }
 
 Sphere sphere1;

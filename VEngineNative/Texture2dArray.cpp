@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Texture2dArray.h"
 #include "Media.h"
+#include "Game.h"
 
 Texture2dArray::Texture2dArray(GLuint ihandle)
 {
@@ -45,8 +46,7 @@ void Texture2dArray::use(int unit)
     if (!generated) {
         generate();
     }
-    glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
+    Game::instance->bindTexture(GL_TEXTURE_2D_ARRAY, handle, unit);
 }
 
 void Texture2dArray::bind(int unit) {

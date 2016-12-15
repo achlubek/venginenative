@@ -76,6 +76,7 @@ float getWaterDistance(){
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
     
     float planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
+    
     float planethit2 = intersectPlane(CameraPosition, dir, vec3(0.0, WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
     bool hitwater = (intersects(planethit) || intersects(planethit2)) && (length(currentData.normal) < 0.01 || currentData.cameraDistance > planethit);
     float dist = -1.0;

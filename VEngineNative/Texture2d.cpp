@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Texture2d.h"
 #include "Media.h"
+#include "Game.h"
 
 Texture2d::Texture2d(GLuint ihandle)
 {
@@ -79,8 +80,7 @@ void Texture2d::use(int unit)
     if (!generated) {
         generate();
     }
-    glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D, handle);
+    Game::instance->bindTexture(GL_TEXTURE_2D, handle, unit);
 }
 
 void Texture2d::bind(int unit, int level) {

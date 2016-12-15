@@ -105,17 +105,17 @@ vec3 blurshadowsAO(vec3 dir, float roughness){
     
     vec3 centerval = textureLod(shadowsTex, dir, mlvel).gba;
     float cluma = length(centerval);
-    float blurrange = 0.0001;
+    float blurrange = 0.00003;
     for(int i=0;i<7;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
         //float there = textureLod(coverageDistTex, rdp, mlvel).g;
         //float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
         vec3 th = textureLod(shadowsTex, rdp, mlvel).gba;
         
-        cluma += length(textureLod(shadowsTex, rdp, mlvel).gba);
+        centerval += textureLod(shadowsTex, rdp, mlvel).gba;
         aoc += 1.0;
     }
-    cluma /= aoc;
+    centerval /= aoc;
     //return centerval;
     return normalize(centerval) * cluma;
 }

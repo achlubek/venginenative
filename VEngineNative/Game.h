@@ -44,9 +44,11 @@ public:
     EventHandler<int> *onKeyRelease;
     EventHandler<int> *onKeyRepeat;
     void display(string str);
+    void bindTexture(GLenum type, GLuint handle, int bindpoint);
 private:
 
     queue<function<void(void)>> invokeQueue;
+    map<int, GLint> textureMap;
     void renderThread();
     void onRenderFrameFunc();
     unsigned int uniqueIdCounter = 0;

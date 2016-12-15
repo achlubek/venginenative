@@ -60,11 +60,11 @@ int main()
   //  sq->compileFile(Media::getPath("squireeltest.txt"));
   //  sq->callProcedureVoid("testme");
 
-     game->world->scene = game->asset->loadSceneFile("geralts.scene");
+   //  game->world->scene = game->asset->loadSceneFile("geralts.scene");
      //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->translate(glm::vec3(0, -62.5f, 0));
-     for (int i = 0; i < game->world->scene->getMeshes().size(); i++) {
+    // for (int i = 0; i < game->world->scene->getMeshes().size(); i++) {
       //   game->world->scene->getMeshes()[i]->getInstance(0)->transformation->scale(glm::vec3(100.0f));
-     }
+   //  }
     //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->rotate(glm::angleAxis(deg2rad(73.75f), glm::vec3(-0.006f, -0.005f, 1.0f)));
   //  game->world->scene->addMesh(game->asset->loadMeshFile("treeground.mesh3d"));
    // auto t = game->asset->loadMeshFile("terrain.mesh3d");
@@ -76,125 +76,128 @@ int main()
     int width, height;
     //io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
     bool imugiinit = false;
+    bool displayimgui = true;
     game->onRenderUIFrame->add([&](int zero) {
-        if (!imugiinit) {
-            ImGuiIO& io = ImGui::GetIO();
-            // io.Fonts->ClearFonts();
-            // io.Fonts->AddFontFromFileTTF(Media::getPath("segoeui.ttf").c_str(), 10);
-            imugiinit = true;
-        }
-        if (fov != fovnew) {
-            cam->createProjectionPerspective((fovnew), (float)game->width / (float)game->height, 0.01f, 1000);
-            fov = fovnew;
-        }
-        static float f = 0.0f;/*
-        float a1 = Game::instance->renderer->cloudsThresholdLow;
-        float a2 = Game::instance->renderer->cloudsThresholdHigh;
-        if (Game::instance->renderer->cloudsThresholdHigh < Game::instance->renderer->cloudsThresholdLow) {
-            a1 = Game::instance->renderer->cloudsThresholdHigh;
-            a2 = Game::instance->renderer->cloudsThresholdHigh;
-        }
-        if (Game::instance->renderer->cloudsThresholdLow > Game::instance->renderer->cloudsThresholdHigh) {
-            a1 = Game::instance->renderer->cloudsThresholdLow;
-            a2 = Game::instance->renderer->cloudsThresholdLow;
-        }
-        Game::instance->renderer->cloudsThresholdLow = a1;
-        Game::instance->renderer->cloudsThresholdHigh = a2;*/
+        if (displayimgui) {
+            if (!imugiinit) {
+                ImGuiIO& io = ImGui::GetIO();
+                // io.Fonts->ClearFonts();
+                // io.Fonts->AddFontFromFileTTF(Media::getPath("segoeui.ttf").c_str(), 10);
+                imugiinit = true;
+            }
+            if (fov != fovnew) {
+                cam->createProjectionPerspective((fovnew), (float)game->width / (float)game->height, 0.01f, 1000);
+                fov = fovnew;
+            }
+            static float f = 0.0f;/*
+            float a1 = Game::instance->renderer->cloudsThresholdLow;
+            float a2 = Game::instance->renderer->cloudsThresholdHigh;
+            if (Game::instance->renderer->cloudsThresholdHigh < Game::instance->renderer->cloudsThresholdLow) {
+                a1 = Game::instance->renderer->cloudsThresholdHigh;
+                a2 = Game::instance->renderer->cloudsThresholdHigh;
+            }
+            if (Game::instance->renderer->cloudsThresholdLow > Game::instance->renderer->cloudsThresholdHigh) {
+                a1 = Game::instance->renderer->cloudsThresholdLow;
+                a2 = Game::instance->renderer->cloudsThresholdLow;
+            }
+            Game::instance->renderer->cloudsThresholdLow = a1;
+            Game::instance->renderer->cloudsThresholdHigh = a2;*/
 
-        auto a1 = Game::instance->renderer->cloudsFloor;
-        auto a2 = Game::instance->renderer->cloudsCeil;
-        if (Game::instance->renderer->cloudsCeil < Game::instance->renderer->cloudsFloor) {
-            a1 = Game::instance->renderer->cloudsCeil;
-            a2 = Game::instance->renderer->cloudsCeil;
-        }
-        if (Game::instance->renderer->cloudsFloor > Game::instance->renderer->cloudsCeil) {
-            a1 = Game::instance->renderer->cloudsFloor;
-            a2 = Game::instance->renderer->cloudsFloor;
-        }
-        Game::instance->renderer->cloudsFloor = a1;
-        Game::instance->renderer->cloudsCeil = a2;
+            auto a1 = Game::instance->renderer->cloudsFloor;
+            auto a2 = Game::instance->renderer->cloudsCeil;
+            if (Game::instance->renderer->cloudsCeil < Game::instance->renderer->cloudsFloor) {
+                a1 = Game::instance->renderer->cloudsCeil;
+                a2 = Game::instance->renderer->cloudsCeil;
+            }
+            if (Game::instance->renderer->cloudsFloor > Game::instance->renderer->cloudsCeil) {
+                a1 = Game::instance->renderer->cloudsFloor;
+                a2 = Game::instance->renderer->cloudsFloor;
+            }
+            Game::instance->renderer->cloudsFloor = a1;
+            Game::instance->renderer->cloudsCeil = a2;
 
-        ImGui::Begin("README", &isOpened2, 0);
-        ImGui::Text("You can mimize this message by double clicking on its top bar");
-        ImGui::Text("Thank you for trying out this demo!");
-        ImGui::Text("Source code can be found here https://github.com/achlubek/venginenative");
-        ImGui::Text("Window size changing works but can sometimes break GUI");
-        ImGui::Separator();
-        ImGui::Text("Controls:");
-        ImGui::Text("* Press TAB to capture mouse and look around");
-        ImGui::Text("* Use WASD keys to move around");
-        ImGui::Text("* Use CTRL, SHIFT, ALT to control movement speed");
-        ImGui::Separator();
-        ImGui::Text("Settings meaning:");
-        ImGui::Text("* FOV - Main camera fov");
-        ImGui::Text("* CloudsHeightStart - How high clouds should start (in kilometers)");
-        ImGui::Text("* CloudsHeightEnd - How high clouds should end (in kilometers)");
-        ImGui::Text("* CloudsThresholdLow - Lower this to get more clouds");
-        ImGui::Text("* CloudsThresholdHigh - Put it closed to CloudsThresholdLow to get more sharp clouds");
-        ImGui::Text("* CloudsDensity - Cloud density, used in shadows");
-        ImGui::Text("* CloudsIntegration - Higher this to make clouds less noisy, lower this if you change something");
-        ImGui::Text("* CloudsOffset - Clouds offset over the sky, you can use Y coord to change clouds seed somehow");
-        ImGui::Text("* SunDirection - Sky direction, (0, 1, 0) is UP");
-        ImGui::Text("* MieScattering - Air pollution, close to zero is clear, max Pekin, zero is broken");
-        ImGui::Text("* GodRaysStrength - How strong should god rays be");
-        ImGui::Text("* WaterWavesHeight - Water terrain mesh horizontal scale");
-        ImGui::Text("* WaterScale - Water terrain mesh vertical scale");
-        ImGui::End();
+            ImGui::Begin("README", &isOpened2, 0);
+            ImGui::Text("You can mimize this message by double clicking on its top bar");
+            ImGui::Text("Thank you for trying out this demo!");
+            ImGui::Text("Source code can be found here https://github.com/achlubek/venginenative");
+            ImGui::Text("Window size changing works but can sometimes break GUI");
+            ImGui::Separator();
+            ImGui::Text("Controls:");
+            ImGui::Text("* Press TAB to capture mouse and look around");
+            ImGui::Text("* Use WASD keys to move around");
+            ImGui::Text("* Use CTRL, SHIFT, ALT to control movement speed");
+            ImGui::Separator();
+            ImGui::Text("Settings meaning:");
+            ImGui::Text("* FOV - Main camera fov");
+            ImGui::Text("* CloudsHeightStart - How high clouds should start (in kilometers)");
+            ImGui::Text("* CloudsHeightEnd - How high clouds should end (in kilometers)");
+            ImGui::Text("* CloudsThresholdLow - Lower this to get more clouds");
+            ImGui::Text("* CloudsThresholdHigh - Put it closed to CloudsThresholdLow to get more sharp clouds");
+            ImGui::Text("* CloudsDensity - Cloud density, used in shadows");
+            ImGui::Text("* CloudsIntegration - Higher this to make clouds less noisy, lower this if you change something");
+            ImGui::Text("* CloudsOffset - Clouds offset over the sky, you can use Y coord to change clouds seed somehow");
+            ImGui::Text("* SunDirection - Sky direction, (0, 1, 0) is UP");
+            ImGui::Text("* MieScattering - Air pollution, close to zero is clear, max Pekin, zero is broken");
+            ImGui::Text("* GodRaysStrength - How strong should god rays be");
+            ImGui::Text("* WaterWavesHeight - Water terrain mesh horizontal scale");
+            ImGui::Text("* WaterScale - Water terrain mesh vertical scale");
+            ImGui::End();
 
-        ImGui::Begin("Clouds", &isOpened, 0);
-        ImGui::Text("%.3f ms/frame %.1f FPS", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        //    ImGui::Text("Terrain roughness:");
-       //     ImGui::SliderFloat("roughness", &t->getLodLevel(0)->material->roughness, 0.0f, 1.0f);
-       //     ImGui::Text("Terrain metalness:");
-       //     ImGui::SliderFloat("metalness", &t->getLodLevel(0)->material->metalness, 0.0f, 1.0f);
-        ImGui::SliderFloat("FOV", &fovnew, 5.0f, 175.0f);
-        ImGui::SliderFloat("Exposure", &Game::instance->renderer->exposure, 0.01f, 10.0f);
-        ImGui::SliderFloat("Contrast", &Game::instance->renderer->contrast, 0.01f, 10.0f);
-        ImGui::SliderFloat("CloudsHeightStart", &Game::instance->renderer->cloudsFloor, 100.0f, 30000.0f);
-        ImGui::SliderFloat("CloudsHeightEnd", &Game::instance->renderer->cloudsCeil, 100.0f, 30000.0f);
-        ImGui::SliderFloat("CloudsThreshold", &Game::instance->renderer->cloudsThresholdLow, 0.0f, 1.0f);
-        ImGui::SliderFloat("CloudsThresholdHigh", &Game::instance->renderer->cloudsThresholdHigh, 0.0f, 1.0f);
-        //ImGui::SliderFloat("CloudsAtmosphereShaftsMultiplier", &Game::instance->renderer->cloudsAtmosphereShaftsMultiplier, 0.0f, 10.0f);
-        //ImGui::SliderFloat("CloudsWindSpeed", &Game::instance->renderer->cloudsWindSpeed, 0.0f, 10.0f);
-        ImGui::SliderFloat("CloudsDensity", &Game::instance->renderer->cloudsDensityScale, 0.0f, 5.0f);
-        ImGui::SliderFloat("CloudsIntegration", &Game::instance->renderer->cloudsIntegrate, 0.3f, 0.999f);
-        ImGui::SliderFloat3("CloudsOffset", (float*)&Game::instance->renderer->cloudsOffset, -1000.0f, 1000.0f);
-        ImGui::Separator();
-        ImGui::SliderFloat("DayElapsed", (float*)&Game::instance->renderer->dayElapsed, 0.0f, 1.0f);
-        ImGui::SliderFloat("YearElapsed", (float*)&Game::instance->renderer->yearElapsed, 0.0f, 1.0f);
-        ImGui::SliderFloat("Equator/Pole", (float*)&Game::instance->renderer->equatorPoleMix, 0.0f, 1.0f);
+            ImGui::Begin("Clouds", &isOpened, 0);
+            ImGui::Text("%.3f ms/frame %.1f FPS", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            //    ImGui::Text("Terrain roughness:");
+           //     ImGui::SliderFloat("roughness", &t->getLodLevel(0)->material->roughness, 0.0f, 1.0f);
+           //     ImGui::Text("Terrain metalness:");
+           //     ImGui::SliderFloat("metalness", &t->getLodLevel(0)->material->metalness, 0.0f, 1.0f);
+            ImGui::SliderFloat("FOV", &fovnew, 5.0f, 175.0f);
+            ImGui::SliderFloat("Exposure", &Game::instance->renderer->exposure, 0.01f, 10.0f);
+            ImGui::SliderFloat("Contrast", &Game::instance->renderer->contrast, 0.01f, 10.0f);
+            ImGui::SliderFloat("CloudsHeightStart", &Game::instance->renderer->cloudsFloor, 100.0f, 30000.0f);
+            ImGui::SliderFloat("CloudsHeightEnd", &Game::instance->renderer->cloudsCeil, 100.0f, 30000.0f);
+            ImGui::SliderFloat("CloudsThreshold", &Game::instance->renderer->cloudsThresholdLow, 0.0f, 1.0f);
+            ImGui::SliderFloat("CloudsThresholdHigh", &Game::instance->renderer->cloudsThresholdHigh, 0.0f, 1.0f);
+            //ImGui::SliderFloat("CloudsAtmosphereShaftsMultiplier", &Game::instance->renderer->cloudsAtmosphereShaftsMultiplier, 0.0f, 10.0f);
+            //ImGui::SliderFloat("CloudsWindSpeed", &Game::instance->renderer->cloudsWindSpeed, 0.0f, 10.0f);
+            ImGui::SliderFloat("CloudsDensity", &Game::instance->renderer->cloudsDensityScale, 0.0f, 5.0f);
+            ImGui::SliderFloat("CloudsIntegration", &Game::instance->renderer->cloudsIntegrate, 0.3f, 0.999f);
+            ImGui::SliderFloat3("CloudsOffset", (float*)&Game::instance->renderer->cloudsOffset, -1000.0f, 1000.0f);
+            ImGui::Separator();
+            ImGui::SliderFloat("DayElapsed", (float*)&Game::instance->renderer->dayElapsed, 0.0f, 1.0f);
+            ImGui::SliderFloat("YearElapsed", (float*)&Game::instance->renderer->yearElapsed, 0.0f, 1.0f);
+            ImGui::SliderFloat("Equator/Pole", (float*)&Game::instance->renderer->equatorPoleMix, 0.0f, 1.0f);
 
-        ImGui::SliderFloat("MieScattering", (float*)&Game::instance->renderer->mieScattCoefficent, 0.0f, 20.0f);
-        ImGui::SliderFloat("GodRaysStrength", &Game::instance->renderer->noiseOctave1, 0.01f, 10.0f);
-        ImGui::Separator();
-        ImGui::SliderFloat("WaterWavesHeight", &Game::instance->renderer->waterWavesScale, 0.0f, 10.0f);
-        ImGui::SliderFloat("WaterSpeed", &Game::instance->renderer->waterSpeed, 0.0f, 7.0f);
-        ImGui::SliderFloat2("WaterScale", &Game::instance->renderer->waterScale.x, 0.0f, 10.0f);
-//        ImGui::SliderFloat2("MeshRoughness", &t->getLodLevel(0)->material->roughness, 0.0f, 1.0f);
-        //ImGui::SliderFloat("CloudsDensityThresholdLow", &Game::instance->renderer->cloudsDensityThresholdLow, 0.0f, 1.0f);
-       // ImGui::SliderFloat("CloudsDensityThresholdHigh", &Game::instance->renderer->cloudsDensityThresholdHigh, 0.0f, 1.0f);
-        //ImGui::SliderFloat("AtmosphereScale", &Game::instance->renderer->atmosphereScale, 0.0f, 1000.0f);
-       // ImGui::SliderFloat("Noise2", &Game::instance->renderer->noiseOctave2, 0.01f, 10.0f);
-       // ImGui::SliderFloat("Noise3", &Game::instance->renderer->noiseOctave3, 0.01f, 10.0f);
-      //  ImGui::SliderFloat("Noise4", &Game::instance->renderer->noiseOctave4, 0.01f, 10.0f);
-      //  ImGui::SliderFloat("Noise5", &Game::instance->renderer->noiseOctave5, 0.01f, 400.0f);
-      //  ImGui::SliderFloat("Noise6", &Game::instance->renderer->noiseOctave6, 0.01f, 10.0f);
-      //  ImGui::SliderFloat("Noise7", &Game::instance->renderer->noiseOctave7, 0.01f, 10.0f);
-      //  ImGui::SliderFloat("Noise8", &Game::instance->renderer->noiseOctave8, 0.01f, 10.0f);
-      //  ImGui::SliderFloat("LensBlurAmout", &Game::instance->renderer->lensBlurSize, 0.01f, 10.0f);
-        //ImGui::SliderFloat("Noise8", &Game::instance->renderer->noiseOctave8, 0.01f, 10.0f);
-//        ImGui::SliderFloat("RoughnessTerra", &game->world->scene->getMeshes()[0]->getLodLevel(0)->material->roughness, 0.01f, 10.0f);
-        for (auto i = Game::instance->renderer->cloudsShader->shaderVariables.begin(); i != Game::instance->renderer->cloudsShader->shaderVariables.end(); i++) {
-            if (i->second->type == SHADER_VARIABLE_TYPE_FLOAT) ImGui::SliderFloat(i->first.c_str(), &i->second->var_float, 0.01f, 10.0f);
-            if (i->second->type == SHADER_VARIABLE_TYPE_INT) ImGui::SliderInt(i->first.c_str(), &i->second->var_int, 0, 20);
-            if (i->second->type == SHADER_VARIABLE_TYPE_VEC2) ImGui::SliderFloat2(i->first.c_str(), &i->second->var_vec2.x, 0.01f, 10.0f);
-            if (i->second->type == SHADER_VARIABLE_TYPE_IVEC2) ImGui::SliderInt2(i->first.c_str(), &i->second->var_ivec2.x, 0.0, 20);
-            if (i->second->type == SHADER_VARIABLE_TYPE_VEC3) ImGui::SliderFloat3(i->first.c_str(), &i->second->var_vec3.x, 0.01f, 10.0f);
-            if (i->second->type == SHADER_VARIABLE_TYPE_IVEC3) ImGui::SliderInt3(i->first.c_str(), &i->second->var_ivec3.x, 0.0, 20);
-            if (i->second->type == SHADER_VARIABLE_TYPE_VEC4) ImGui::SliderFloat4(i->first.c_str(), &i->second->var_vec4.x, 0.01f, 10.0f);
-            if (i->second->type == SHADER_VARIABLE_TYPE_IVEC4) ImGui::SliderInt4(i->first.c_str(), &i->second->var_ivec4.x, 0.0, 20);
+            ImGui::SliderFloat("MieScattering", (float*)&Game::instance->renderer->mieScattCoefficent, 0.0f, 20.0f);
+            ImGui::SliderFloat("GodRaysStrength", &Game::instance->renderer->noiseOctave1, 0.01f, 10.0f);
+            ImGui::Separator();
+            ImGui::SliderFloat("WaterWavesHeight", &Game::instance->renderer->waterWavesScale, 0.0f, 10.0f);
+            ImGui::SliderFloat("WaterSpeed", &Game::instance->renderer->waterSpeed, 0.0f, 7.0f);
+            ImGui::SliderFloat2("WaterScale", &Game::instance->renderer->waterScale.x, 0.0f, 10.0f);
+            //        ImGui::SliderFloat2("MeshRoughness", &t->getLodLevel(0)->material->roughness, 0.0f, 1.0f);
+                    //ImGui::SliderFloat("CloudsDensityThresholdLow", &Game::instance->renderer->cloudsDensityThresholdLow, 0.0f, 1.0f);
+                   // ImGui::SliderFloat("CloudsDensityThresholdHigh", &Game::instance->renderer->cloudsDensityThresholdHigh, 0.0f, 1.0f);
+                    //ImGui::SliderFloat("AtmosphereScale", &Game::instance->renderer->atmosphereScale, 0.0f, 1000.0f);
+                   // ImGui::SliderFloat("Noise2", &Game::instance->renderer->noiseOctave2, 0.01f, 10.0f);
+                   // ImGui::SliderFloat("Noise3", &Game::instance->renderer->noiseOctave3, 0.01f, 10.0f);
+                  //  ImGui::SliderFloat("Noise4", &Game::instance->renderer->noiseOctave4, 0.01f, 10.0f);
+                  //  ImGui::SliderFloat("Noise5", &Game::instance->renderer->noiseOctave5, 0.01f, 400.0f);
+                  //  ImGui::SliderFloat("Noise6", &Game::instance->renderer->noiseOctave6, 0.01f, 10.0f);
+                  //  ImGui::SliderFloat("Noise7", &Game::instance->renderer->noiseOctave7, 0.01f, 10.0f);
+                  //  ImGui::SliderFloat("Noise8", &Game::instance->renderer->noiseOctave8, 0.01f, 10.0f);
+                  //  ImGui::SliderFloat("LensBlurAmout", &Game::instance->renderer->lensBlurSize, 0.01f, 10.0f);
+                    //ImGui::SliderFloat("Noise8", &Game::instance->renderer->noiseOctave8, 0.01f, 10.0f);
+            //        ImGui::SliderFloat("RoughnessTerra", &game->world->scene->getMeshes()[0]->getLodLevel(0)->material->roughness, 0.01f, 10.0f);
+            for (auto i = Game::instance->renderer->cloudsShader->shaderVariables.begin(); i != Game::instance->renderer->cloudsShader->shaderVariables.end(); i++) {
+                if (i->second->type == SHADER_VARIABLE_TYPE_FLOAT) ImGui::SliderFloat(i->first.c_str(), &i->second->var_float, 0.01f, 10.0f);
+                if (i->second->type == SHADER_VARIABLE_TYPE_INT) ImGui::SliderInt(i->first.c_str(), &i->second->var_int, 0, 20);
+                if (i->second->type == SHADER_VARIABLE_TYPE_VEC2) ImGui::SliderFloat2(i->first.c_str(), &i->second->var_vec2.x, 0.01f, 10.0f);
+                if (i->second->type == SHADER_VARIABLE_TYPE_IVEC2) ImGui::SliderInt2(i->first.c_str(), &i->second->var_ivec2.x, 0.0, 20);
+                if (i->second->type == SHADER_VARIABLE_TYPE_VEC3) ImGui::SliderFloat3(i->first.c_str(), &i->second->var_vec3.x, 0.01f, 10.0f);
+                if (i->second->type == SHADER_VARIABLE_TYPE_IVEC3) ImGui::SliderInt3(i->first.c_str(), &i->second->var_ivec3.x, 0.0, 20);
+                if (i->second->type == SHADER_VARIABLE_TYPE_VEC4) ImGui::SliderFloat4(i->first.c_str(), &i->second->var_vec4.x, 0.01f, 10.0f);
+                if (i->second->type == SHADER_VARIABLE_TYPE_IVEC4) ImGui::SliderInt4(i->first.c_str(), &i->second->var_ivec4.x, 0.0, 20);
+            }
+            ImGui::End();
         }
-        ImGui::End();
     });
     /*
     for (int i = 0; i < 11; i++) {
@@ -216,13 +219,16 @@ int main()
     // game->world->scene->addLight(light);
 
     bool cursorFree = false;
-    game->onKeyPress->add([&game, &cursorFree, &cam](int key) {
+    game->onKeyPress->add([&game, &cursorFree, &cam, &displayimgui](int key) {
         if (key == GLFW_KEY_PAUSE) {
             game->shaders->materialShader->recompile();
             game->shaders->depthOnlyShader->recompile();
             game->shaders->depthOnlyGeometryShader->recompile();
             game->shaders->materialGeometryShader->recompile();
             game->renderer->recompileShaders();
+        }
+        if (key == GLFW_KEY_O) {
+           // displayimgui = !displayimgui;
         }
         if (key == GLFW_KEY_0) {
             game->renderer->useAmbientOcclusion = !game->renderer->useAmbientOcclusion;

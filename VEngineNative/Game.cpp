@@ -10,6 +10,7 @@ Game::Game(int windowwidth, int windowheight)
     width = windowwidth;
     height = windowheight;
     invokeQueue = {};
+    textureMap = {};
     onRenderFrame = {};
     asset = new AssetLoader();
     world = new World();
@@ -34,6 +35,26 @@ void Game::start()
     renderthread.detach();
 }
 
+void Game::bindTexture(GLenum type, GLuint handle, int bindpoint)
+{ 
+    if (textureMap.find(bindpoint) == textureMap.end()) { 
+        textureMap[bindpoint] = handle;
+        glActiveTexture(GL_TEXTURE0 + bindpoint);
+        glBindTexture(type, handle);
+        glActiveTexture(GL_TEXTURE0 + 32);
+    }
+    else {
+        if (textureMap[bindpoint] != handle) {
+            textureMap[bindpoint] = handle;
+            glActiveTexture(GL_TEXTURE0 + bindpoint);
+            glBindTexture(type, handle);
+            glActiveTexture(GL_TEXTURE0 + 32);
+        }
+        else {
+
+        }
+    }
+}
 void Game::invoke(const function<void(void)> &func)
 {
     invokeQueue.push(func);
@@ -152,7 +173,7 @@ void Game::renderThread()
         instance->onWindowResize->invoke(0);
     });
 
-    //    glfwSetKeyCallback(window, glfwKeyCallback);
+//    glfwSetKeyCallback(window, glfwKeyCallback);
 
     //#ifdef _DEBUG
       //  glDebugMessageCallback(&debugCallback, NULL);

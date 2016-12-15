@@ -23,13 +23,13 @@ vec3 blurshadowsAOXA(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
-//	return textureLod(cloudsCloudsTex, dir, mlvel).gba;
+	//return textureLod(cloudsCloudsTex, dir, mlvel).gba;
    // float dst = textureLod(coverageDistTex, dir, mlvel).g;
     float aoc = 1.0;
     
     vec3 centerval = textureLod(cloudsCloudsTex, dir, mlvel).gba;
 	float cluma = length(centerval);
-    float blurrange = 0.0003;
+    float blurrange = 0.00001;
     for(int i=0;i<7;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
         //float there = textureLod(coverageDistTex, rdp, mlvel).g;
@@ -46,6 +46,7 @@ vec3 blurshadowsAOXA(vec3 dir, float roughness){
 vec4 shade(){    
    // return vec4(0);
     vec3 dir = normalize(reconstructCameraSpaceDistance(UV, 1.0));
+    if(dir.y < -0.01) return vec4(0.0);
     vec4 retedg = vec4(0);
     vec4 retavg = vec4(0);
     

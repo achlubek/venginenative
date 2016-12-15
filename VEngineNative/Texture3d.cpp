@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Texture3d.h"
 #include "Media.h"
+#include "Game.h"
 
 Texture3d::Texture3d(GLuint ihandle)
 {
@@ -45,8 +46,7 @@ void Texture3d::use(int unit)
     if (!generated) {
         generate();
     }
-    glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_3D, handle);
+    Game::instance->bindTexture(GL_TEXTURE_3D, handle, unit);
 }
 
 void Texture3d::bind(int unit) {

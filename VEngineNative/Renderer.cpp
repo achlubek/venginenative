@@ -15,16 +15,16 @@ Renderer::Renderer(int iwidth, int iheight)
     useAmbientOcclusion = false;
     useGammaCorrection = true;
 
-    cloudsFloor = 7800;
-    cloudsCeil = 10000;
-    cloudsThresholdLow = 0.24;
-    cloudsThresholdHigh = 0.30;
+    cloudsFloor = 3333;
+    cloudsCeil = 7700;
+    cloudsThresholdLow = 0.53;
+    cloudsThresholdHigh = 0.56;
     cloudsDensityThresholdLow = 0.0;
     cloudsDensityThresholdHigh = 1.0;
-    cloudsDensityScale = 0.6;
+    cloudsDensityScale = 0.7;
     cloudsWindSpeed = 0.4;
 
-    noiseOctave1 = 1.0;
+    noiseOctave1 = 0.0001;
     noiseOctave2 = 1.02;
     noiseOctave3 = 1.03;
     noiseOctave4 = 0.0;
@@ -34,7 +34,7 @@ Renderer::Renderer(int iwidth, int iheight)
     noiseOctave8 = 1.01;
     exposure = 1.0;
     contrast = 1.0;
-    cloudsIntegrate = 0.90;
+    cloudsIntegrate = 0.98;
     mieScattCoefficent = 1.0;
     nightSkyLightPollution = 0.2;
     lensBlurSize = 0.0;
@@ -355,14 +355,14 @@ void Renderer::draw(Camera *camera)
     if (!gpuInitialized) {
         float* ones = new float[4]{ 1.0f, 1.0f, 1.0f, 1.0f };
         exposureBuffer->mapData(4 * 4, &ones);
-        starsTexture->generateMipMaps();
+       // starsTexture->generateMipMaps();
     }
     // csm->map(-sunDirection, camera->transformation->position);
-    mrtFbo->use(true);
-    Game::instance->world->setUniforms(Game::instance->shaders->materialGeometryShader, camera);
+   // mrtFbo->use(true);
+    //Game::instance->world->setUniforms(Game::instance->shaders->materialGeometryShader, camera);
     Game::instance->world->setUniforms(Game::instance->shaders->materialShader, camera);
-    Game::instance->world->setSceneUniforms();
-    Game::instance->world->draw(Game::instance->shaders->materialShader, camera);
+   // Game::instance->world->setSceneUniforms();
+   // Game::instance->world->draw(Game::instance->shaders->materialShader, camera);
     // mrtDistanceTexture->generateMipMaps();
     if (useAmbientOcclusion) {
         //     ambientOcclusion();
@@ -371,7 +371,7 @@ void Renderer::draw(Camera *camera)
     //mrtNormalMetalnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtDistanceTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //depthTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
-    deferred();
+    //deferred();
    // ambientLight();
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     waterTile();
@@ -384,7 +384,7 @@ void Renderer::draw(Camera *camera)
     waterColorShaded();
     combine(1);
     //  lensBlur();
-    if (shadowTurn) {
+    if (passPhrase == 0) {
         cloudFace++;
         if (cloudFace > 5) {
             cloudFace = 0;
@@ -392,7 +392,8 @@ void Renderer::draw(Camera *camera)
         }
         //if (cloudFace == 3) cloudFace++;
     }
-    shadowTurn = !shadowTurn;
+    passPhrase++;
+    if (passPhrase > 3) passPhrase = 0;
     gpuInitialized = true;
 }
 
@@ -401,9 +402,6 @@ void Renderer::bloom()
 }
 void Renderer::cloudsResolve()
 {
-    cloudsResolvedFbo->use(false);
-    cloudResolveShader->use();
-    setCommonUniforms(cloudResolveShader);
     deferredTexture->use(5);
     ambientLightTexture->use(6);
     ambientOcclusionTexture->use(16);
@@ -411,25 +409,30 @@ void Renderer::cloudsResolve()
     waterColorTexture->use(21);
     starsTexture->use(24);
     moonTexture->use(28);
-    Camera* camera = cloudsResolvedFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, true);
-    camera->transformation->setPosition(currentCamera->transformation->position);
-    FrustumCone *cone = camera->cone;
-    glm::mat4 vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
-    glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
-    glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
-    camera->cone->update(inverse(rpmatrix));
-    cloudResolveShader->setUniform("VPMatrix", vpmatrix);
-    cloudResolveShader->setUniform("CameraPosition", camera->transformation->position);
-    cloudResolveShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
-    cloudResolveShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-    cloudResolveShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
-    quad3dInfo->draw();
-    cloudsResolvedTexture->generateMipMaps();
+    if (passPhrase == 3) {
+        cloudsResolvedFbo->use(false);
+        cloudResolveShader->use();
+        setCommonUniforms(cloudResolveShader);
+        Camera* camera = cloudsResolvedFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, false);
+        camera->transformation->setPosition(currentCamera->transformation->position);
+        FrustumCone *cone = camera->cone;
+        glm::mat4 vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
+        glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
+        glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
+        camera->cone->update(inverse(rpmatrix));
+        cloudResolveShader->setUniform("VPMatrix", vpmatrix);
+        cloudResolveShader->setUniform("CameraPosition", camera->transformation->position);
+        cloudResolveShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
+        cloudResolveShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
+        cloudResolveShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
+        quad3dInfo->draw();
+    }
+   // cloudsResolvedTexture->generateMipMaps();
 }
 
 void Renderer::combine(int step)
 {
-    combineFbo->use(true);
+    combineFbo->use(false);
     combineShader->use();
     deferredTexture->use(5);
     ambientLightTexture->use(6);
@@ -464,14 +467,14 @@ void Renderer::fxaaTonemap()
 
 void Renderer::lensBlur()
 {
-    lensBlurFboVertical->use(true);
+    lensBlurFboVertical->use(false);
     lensBlurShader->use();
     mrtDistanceTexture->use(2);
     combineTexture->use(16);
     setCommonUniforms(lensBlurShader);
 
     quad3dInfo->draw();
-    lensBlurTextureVertical->generateMipMaps();
+   // lensBlurTextureVertical->generateMipMaps();
 }
 
 void Renderer::output()
@@ -502,7 +505,7 @@ void Renderer::deferred()
     if (!gpuInitialized) return;
     vector<Light*> lights = Game::instance->world->scene->getLights();
 
-    deferredFbo->use(true);
+    deferredFbo->use(false);
     FrustumCone *cone = currentCamera->cone;
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
     deferredShader->use();
@@ -551,7 +554,7 @@ void Renderer::deferred()
 void Renderer::ambientLight()
 {
     return;
-    ambientLightFbo->use(true);
+    ambientLightFbo->use(false);
     ambientLightShader->use();
     setCommonUniforms(ambientLightShader);
     quad3dInfo->draw();
@@ -563,14 +566,14 @@ void Renderer::waterTile()
     Texture2d * tex = waterTileUseFBO1 ? waterTileTexture1 : waterTileTexture2;
     Texture2d * tex2 = waterTileUseFBO1 ? waterTileTexture2 : waterTileTexture1;
     Framebuffer * fbo = waterTileUseFBO1 ? waterTileFbo1 : waterTileFbo2;
-    fbo->use(true);
+    fbo->use(false);
     waterTileShader->use();
     tex2->use(23);
     waterTileShader->setUniform("WaterSpeed", waterSpeed);
     waterTileShader->setUniform("Resolution", glm::vec2(width, height));
     waterTileShader->setUniform("Time", Game::instance->time);
     quad3dInfo->draw();
-    tex->generateMipMaps();
+   // tex->generateMipMaps();
     tex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     waterTileUseFBO1 = !waterTileUseFBO1;
     tex->use(23);
@@ -588,7 +591,7 @@ void Renderer::fog()
 {
     atmScattTexture->use(19);
     return;
-    fogFbo->use(true);
+    fogFbo->use(false);
     fogShader->use();
     FrustumCone *cone = currentCamera->cone;
     //   outputShader->setUniform("VPMatrix", vpmatrix);
@@ -601,7 +604,7 @@ void Renderer::fog()
 void Renderer::waterMesh()
 {
     exposureBuffer->use(0);
-    waterMeshFbo->use(true);
+    waterMeshFbo->use(false);
     waterMeshShader->use();
     mrtDistanceTexture->use(2);
     // skyboxTexture->use(3);
@@ -627,7 +630,7 @@ void Renderer::waterMesh()
 
 void Renderer::waterColorShaded()
 {
-    waterColorFbo->use(true);
+    waterColorFbo->use(false);
     waterColorShader->use();
     fogTexture->use(20);
     combineTexture->use(22);
@@ -648,25 +651,26 @@ void Renderer::waterColorShaded()
 
 void Renderer::atmScatt()
 {
-    atmScattShader->use();
-    setCommonUniforms(atmScattShader);
+    if (passPhrase == 2) {
+        atmScattShader->use();
+        setCommonUniforms(atmScattShader);
 
-    atmScattFbo->use(false);
-    Camera* camera = atmScattFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, true);
-    camera->transformation->setPosition(currentCamera->transformation->position);
-    FrustumCone *cone = camera->cone;
-    glm::mat4 vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
-    glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
-    glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
-    camera->cone->update(inverse(rpmatrix));
-    atmScattShader->setUniform("VPMatrix", vpmatrix);
-    atmScattShader->setUniform("CameraPosition", camera->transformation->position);
-    atmScattShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
-    atmScattShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-    atmScattShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
-    quad3dInfo->draw();
-
-    atmScattTexture->generateMipMaps();
+        atmScattFbo->use(false);
+        Camera* camera = atmScattFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, false);
+        camera->transformation->setPosition(currentCamera->transformation->position);
+        FrustumCone *cone = camera->cone;
+        glm::mat4 vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
+        glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
+        glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
+        camera->cone->update(inverse(rpmatrix));
+        atmScattShader->setUniform("VPMatrix", vpmatrix);
+        atmScattShader->setUniform("CameraPosition", camera->transformation->position);
+        atmScattShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
+        atmScattShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
+        atmScattShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
+        quad3dInfo->draw();
+    }
+    //atmScattTexture->generateMipMaps();
 }
 
 void Renderer::clouds()
@@ -692,9 +696,9 @@ void Renderer::clouds()
     glm::mat4 cameraRotMatrix;
     glm::mat4 rpmatrix;
     // for (int i = 0; i < 6; i++) {
-    if (!shadowTurn) {
+    if (passPhrase == 1) {
         currentFbo->use(false);
-        Camera* camera = currentFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, true);
+        Camera* camera = currentFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, false);
         camera->transformation->setPosition(currentCamera->transformation->position);
         FrustumCone *cone = camera->cone;
         vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
@@ -713,10 +717,10 @@ void Renderer::clouds()
     }
     // }
 
-    if (cloudCycleUseOdd)
-        cloudsTextureOdd->generateMipMaps();
-    else
-        cloudsTextureEven->generateMipMaps();
+   // if (cloudCycleUseOdd)
+   //     cloudsTextureOdd->generateMipMaps();
+   // else
+   //     cloudsTextureEven->generateMipMaps();
 
     // RENDER SHADOWS
     cloudsShader->setUniform("RenderPass", 1);
@@ -738,10 +742,10 @@ void Renderer::clouds()
         cloudsTextureOdd->use(29);
 
     atmScattTexture->use(19);
-    if (shadowTurn) {
+    if (passPhrase == 0) {
         // for (int i = 0; i < 6; i++) {
         currentFbo->use(false);
-        camera = currentFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, true);
+        camera = currentFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, false);
         camera->transformation->setPosition(currentCamera->transformation->position);
         cone = camera->cone;
         vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
@@ -760,10 +764,10 @@ void Renderer::clouds()
     }
     // }
 
-    if (cloudCycleUseOdd)
-        cloudsShadowsTextureOdd->generateMipMaps();
-    else
-        cloudsShadowsTextureEven->generateMipMaps();
+   // if (cloudCycleUseOdd)
+   //     cloudsShadowsTextureOdd->generateMipMaps();
+  //  else
+   //     cloudsShadowsTextureEven->generateMipMaps();
 }
 
 void Renderer::motionBlur()

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CubeMapTexture.h"
 #include "Media.h"
+#include "Game.h"
 
 CubeMapTexture::CubeMapTexture(GLuint ihandle)
 {
@@ -66,8 +67,7 @@ void CubeMapTexture::use(int unit)
     if (!generated) {
         generate();
     }
-    glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
+    Game::instance->bindTexture(GL_TEXTURE_CUBE_MAP, handle, unit);
 }
 
 void CubeMapTexture::generate()

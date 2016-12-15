@@ -12,9 +12,10 @@ vec3 getWind(vec3 p){
 uniform float Time;
 float fbmHI(vec3 p){
    // p *= 0.1;
-    p *= 0.0000003;
-	p += Time * 0.001;
-	p += getWind(p * 0.2) * 6.0;
+    p *= 0.0000009;
+    p.x *= 0.3;
+	p += Time * 0.002;
+	//p += getWind(p * 0.2) * 6.0;
 	float a = 0.0;
     float w = 1.0;
     float wc = 1.0;
@@ -97,7 +98,8 @@ vec3 mydumbassscatteringfunction(vec3 dir, vec3 sun){
 }
 vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
 	float mult = 0.0 + 0.9 * step(0.0, dir.y);
-    dir.y = abs(dir.y);
+    if(dir.y < -0.01) return vec3(0.0);
+   // dir.y = abs(dir.y);
     return mult * 3.3 * mydumbassscatteringfunction(dir, sunpos) +
      mult * 6.0 * atmosphere(
         dir,           // normalized ray direction

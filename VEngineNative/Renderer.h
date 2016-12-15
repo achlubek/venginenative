@@ -131,7 +131,7 @@ private:
     void atmScatt();
 
     bool cloudCycleUseOdd = false;
-    bool shadowTurn = false;
+    int passPhrase = 0;
     int cloudFace = 0;
 
     CubeMapFramebuffer *cloudsFboEven;
