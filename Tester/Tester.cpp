@@ -34,7 +34,7 @@ int main()
 
     Media::loadFileMap("../../media");
     Media::loadFileMap("../../shaders");
-    Game *game = new Game(1280, 720);
+    Game *game = new Game(1920, 1020);
     game->start();
     volatile bool ready = false;
     game->invoke([&ready]() {
@@ -60,7 +60,7 @@ int main()
   //  sq->compileFile(Media::getPath("squireeltest.txt"));
   //  sq->callProcedureVoid("testme");
 
-   //  game->world->scene = game->asset->loadSceneFile("geralts.scene");
+   //  game->world->scene = game->asset->loadSceneFile("sp.scene");
      //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->translate(glm::vec3(0, -62.5f, 0));
     // for (int i = 0; i < game->world->scene->getMeshes().size(); i++) {
       //   game->world->scene->getMeshes()[i]->getInstance(0)->transformation->scale(glm::vec3(100.0f));

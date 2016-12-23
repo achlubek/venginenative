@@ -134,7 +134,7 @@ bool ignoreAtt
     
     
     
-    return  specularComponent * albedo * att;// * CalculateFallof(distance(lightPosition, fragmentPosition));
+    return  lightColor * albedo * att;// * CalculateFallof(distance(lightPosition, fragmentPosition));
 }
 
 vec3 shadeDiffuse(

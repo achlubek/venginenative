@@ -37,7 +37,7 @@ float intersectPlane(vec3 origin, vec3 direction, vec3 point, vec3 normal)
 { return dot(point - origin, normal) / dot(direction, normal); }
 
 float currentFalloff = 1.0;
-vec3 ENVMMALMetallic(PostProceessingData data, vec3 dir){
+vec3 ENVMMALMetallic(PostProcessingData data, vec3 dir){
     
     float fresnelR = fresnel_again(vec3(data.diffuseColor.r), data.normal, data.cameraPos, data.roughness);
     float fresnelG = fresnel_again(vec3(data.diffuseColor.g), data.normal, data.cameraPos, data.roughness);
@@ -52,7 +52,7 @@ vec3 ENVMMALMetallic(PostProceessingData data, vec3 dir){
     
 }
 
-vec3 ENVMMALNonMetallic(PostProceessingData data, vec3 dir){
+vec3 ENVMMALNonMetallic(PostProcessingData data, vec3 dir){
     
     float fresnel = fresnel_again(vec3(0.04), data.normal, data.cameraPos, data.roughness);
     
@@ -64,7 +64,7 @@ vec3 ENVMMALNonMetallic(PostProceessingData data, vec3 dir){
     return nonmetallic;
     
 }
-vec3 ENVMMALNonMetallicDiffuse(PostProceessingData data, vec3 dir){
+vec3 ENVMMALNonMetallicDiffuse(PostProcessingData data, vec3 dir){
     
     vec3 nonmetallic = vec3(0);
     

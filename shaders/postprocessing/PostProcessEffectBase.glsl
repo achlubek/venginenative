@@ -17,7 +17,7 @@ uniform vec3 FrustumConeLeftBottom;
 uniform vec3 FrustumConeBottomLeftToBottomRight;
 uniform vec3 FrustumConeBottomLeftToTopLeft;
 
-struct PostProceessingData
+struct PostProcessingData
 {
     vec3 diffuseColor;
     vec3 normal;
@@ -29,7 +29,7 @@ struct PostProceessingData
     float metalness;
 };
 
-PostProceessingData currentData;
+PostProcessingData currentData;
 
 vec3 reconstructCameraSpaceDistance(vec2 uv, float dist){
     vec3 dir = normalize((FrustumConeLeftBottom + FrustumConeBottomLeftToBottomRight * uv.x + FrustumConeBottomLeftToTopLeft * uv.y));
@@ -60,7 +60,7 @@ void createData(){
     vec3 cameraSpace = reconstructCameraSpaceDistance(UV,dist);
     vec3 worldSpace = FromCameraSpace(cameraSpace);
         
-    currentData = PostProceessingData(
+    currentData = PostProcessingData(
     albedo_roughness.rgb,
     normal_metalness.rgb,
     normalize(cross(
@@ -74,14 +74,14 @@ void createData(){
     normal_metalness.a
     );
 }
-PostProceessingData loadData(vec2 uv){
+PostProcessingData loadData(vec2 uv){
     vec4 albedo_roughness = textureLod(mrt_Albedo_Roughness_Tex, uv, 0).rgba;
     vec4 normal_metalness = textureLod(mrt_Normal_Metalness_Tex, uv, 0).rgba;
     float dist = textureLod(mrt_Distance_Bump_Tex, uv, 0).r;
     vec3 cameraSpace = reconstructCameraSpaceDistance(uv,dist);
     vec3 worldSpace = FromCameraSpace(cameraSpace);
         
-    return PostProceessingData(
+    return PostProcessingData(
     albedo_roughness.rgb,
     normal_metalness.rgb,
     normalize(cross(

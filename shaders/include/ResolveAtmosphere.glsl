@@ -12,6 +12,14 @@ float roughnessToMipmap(float roughness, sampler2D txt){
     return mx * levels;
 }
 
+
+#include ShadeFramework.glsl
+
+//layout(binding = 14) uniform sampler2D fresnelTex;
+float fresneleffect(float base, float roughness, vec3 cameradir, vec3 normal){
+    return base + (1.0 - base) * textureLod(fresnelTex, vec2(clamp(  roughness, 0.01, 0.98), 1.0 - max(0.0, dot(-cameradir, normal))), 0.0).r;
+}
+
 float rdhash = 0.453451 + Time;
 vec3 randpoint3(){
     float x = rand2s(UV * rdhash);
@@ -133,23 +141,15 @@ vec4 smartblur(vec3 dir, float roughness){
     return ret;
 }
 
-float getthatfuckingfresnel(float reflectivity, vec3 normal, vec3 cameraSpace, float roughness){
-    vec3 dir = normalize(reflect(normalize(cameraSpace), normal));
-    float base =  1.0 - abs(dot(normalize(normal), dir));
-    float fresnel = (reflectivity + (1-reflectivity)*(pow(base, mix(5.0, 0.8, roughness))));
-    float angle = 1.0 - base;
-    return fresnel * (1.0 - roughness);
-}
-
-vec3 shadingMetalic(PostProceessingData data, vec3 lightDir, vec3 color){
-    float fresnelR = getthatfuckingfresnel(data.diffuseColor.r, data.normal, data.cameraPos, data.roughness);
-    float fresnelG = getthatfuckingfresnel(data.diffuseColor.g, data.normal, data.cameraPos, data.roughness);
-    float fresnelB = getthatfuckingfresnel(data.diffuseColor.b, data.normal, data.cameraPos, data.roughness);
-    float fresnel = getthatfuckingfresnel(0.04, data.normal, normalize(data.cameraPos), data.roughness);
+vec3 shadingMetalic(PostProcessingData data, vec3 lightDir, vec3 color){
+    float fresnelR = fresneleffect(data.diffuseColor.r, data.roughness, normalize(data.cameraPos), data.normal);
+    float fresnelG = fresneleffect(data.diffuseColor.g, data.roughness, normalize(data.cameraPos), data.normal);
+    float fresnelB = fresneleffect(data.diffuseColor.b, data.roughness, normalize(data.cameraPos), data.normal);
+    float fresnel  = fresneleffect(0.04               , 0.0, normalize(data.cameraPos), data.normal);
     vec3 newBase = vec3(fresnelR, fresnelG, fresnelB);
     //   return vec3(fresnel);
     float x = 1.0 - max(0, dot(lightDir, data.originalNormal));
-    return shade(CameraPosition, newBase, data.normal, data.worldPos, data.worldPos - lightDir * 1.0, color,  max(0.004, data.roughness), false) * mix(x, pow(x, 8.0), 1.0 - data.roughness);
+    return newBase * color;//shade(CameraPosition, data.diffuseColor, data.normal, data.worldPos, data.worldPos - lightDir * 1.0, color,  max(0.004, data.roughness), false) * mix(x, pow(x, 8.0), 1.0 - data.roughness);
 }
 float sun(vec3 dir, vec3 sundir, float gloss, float ansiox){
   //  float dt2 = max(0, dot(normalize(vec3(dir.x, abs(sundir.y), dir.z)), sundir));
@@ -170,20 +170,20 @@ float sun(vec3 dir, vec3 sundir, float gloss, float ansiox){
    // return smoothstep(0.997, 1.0, dt);
 }
 float sshadow = 1.0;
-vec3 shadingWater(PostProceessingData data, vec3 n, vec3 lightDir, vec3 colorA, vec3 colorB){
-    float fresnel = getthatfuckingfresnel(0.02, n, normalize(data.cameraPos), 0.0);
+vec3 shadingWater(PostProcessingData data, vec3 n, vec3 lightDir, vec3 colorA, vec3 colorB){
+    float fresnel  = fresneleffect(0.04               , 0.0, normalize(data.cameraPos), n);
     fresnel = mix(fresnel, 0.0, data.roughness);
     return colorB * ( fresnel);
    // return  colorB * (  fresnel);
 }
 
 
-vec3 shadingNonMetalic(PostProceessingData data, vec3 lightDir, vec3 color){
-    float fresnel = getthatfuckingfresnel(0.04, data.normal, normalize(data.cameraPos), data.roughness);
+vec3 shadingNonMetalic(PostProcessingData data, vec3 lightDir, vec3 color){
+    float fresnel  = fresneleffect(0.04               , data.roughness, normalize(data.cameraPos), data.normal);
     float x = 1.0 - max(0, dot(lightDir, data.normal));
-    vec3 radiance = shade(CameraPosition, vec3(fresnel), data.normal, data.worldPos, data.worldPos - lightDir * 1.0, color * data.diffuseColor, max(0.004, data.roughness), false) * mix(x, pow(x, 8.0), 1.0 - data.roughness);    
+    vec3 radiance = fresnel * shade(CameraPosition, vec3(data.diffuseColor), data.normal, data.worldPos, data.worldPos - lightDir * 1.0, color, max(0.004, data.roughness), false) * mix(x, pow(x, 8.0), 1.0 - data.roughness);    
 
-    vec3 difradiance = shadeDiffuse(CameraPosition, data.diffuseColor * (1.0 - fresnel), data.normal, data.worldPos, data.worldPos - lightDir * 1.0, color, 0.0, false) * x;
+    vec3 difradiance = shadeDiffuse(CameraPosition, data.diffuseColor , data.normal, data.worldPos, data.worldPos - lightDir * 1.0, color, 0.0, false) * x;
     //   return vec3(0);
     return radiance + difradiance; 
 }
@@ -215,8 +215,8 @@ vec3 getAtmosphereScattering(vec3 dir, float roughness){
 }
 
 
-vec3 shadeColor(PostProceessingData data, vec3 lightdir, vec3 c){
-    return mix(shadingNonMetalic(data, lightdir, c), shadingMetalic(data, lightdir, c), data.metalness);// * (UseAO == 1 ? texture(aoxTex, UV).r : 1.0);
+vec3 shadeColor(PostProcessingData data, vec3 lightdir, vec3 c){
+    return mix(shadingNonMetalic(data, lightdir, c), shadingMetalic(data, lightdir, c),1.0);// * (UseAO == 1 ? texture(aoxTex, UV).r : 1.0);
 }
 
 vec2 projectvdao(vec3 pos){
@@ -347,7 +347,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     vec3 AtmDiffuse = getDiffuseAtmosphereColor();
     float Shadow = shadow;
     //return coverage * vec3(SunC * Shadow);
-    vec3 GroundC = vec3(0.9, 0.9, 0.9);
+    vec3 GroundC = vec3(0.2, 0.2, 0.2);
     float Coverage = 1.0 - smoothstep(0.4, 0.55, CloudsThresholdLow);//texture(coverageDistTex, VECTOR_UP, textureQueryLevels(coverageDistTex)).r;
     //vec2 aabbdd = blurshadowsAO(dir, roughness);
     float AOGround = 0.15;//aabbdd.r;
@@ -438,23 +438,25 @@ float traceReflection(vec3 pos, vec3 dir){
     return textureLod(mrt_Distance_Bump_Tex, vec2(uv.x, horizon - uv.y), 0).r;
 }
 
-layout(binding = 14) uniform sampler2D fresnelTex;
 vec3 vdao(){ 
     vec3 c = vec3(0.0);
-    int steps = 132;
+    int steps = 11;
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
-    float fresnel = 0.04 + 0.96 * textureLod(fresnelTex, vec2(clamp(currentData.roughness, 0.01, 0.98), 1.0 - max(0.0, dot(-dir, currentData.normal))), 0.0).r;
+    //float fresnel = 0.04 + 0.96 * textureLod(fresnelTex, vec2(clamp(currentData.roughness, 0.01, 0.98), 1.0 - max(0.0, dot(-dir, currentData.normal))), 0.0).r;
     for(int i=0;i<steps;i++){
         vec3 p = normalize(randpoint3());
-        p *= sign(dot(p, currentData.normal));
+        p *= sign(dot(p, currentData.normal)); 
         p = normalize(mix(reflect(dir, currentData.normal), p, currentData.roughness));
-        float v = 1.0;//visibility(currentData.worldPos, currentData.worldPos + p * 919.0);
-        c += fresnel * v * textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness * 0.2, resolvedAtmosphereTex)).rgb;
+        vec3 x = -p;
+        float v = 0.1 + 0.8 * smoothstep(-0.5, 0.0, p.y);// visibility(currentData.worldPos, currentData.worldPos + p * 1.0);
+            
+        p.y = abs(p.y);
+        c += v * shade_ray_data(currentData, -x,  textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness * 1.0, resolvedAtmosphereTex)).rgb);
     }
-    return c / 132.0;
+    return c / 11.0;
 }
 
-vec3 shadeFragment(PostProceessingData data){
+vec3 shadeFragment(PostProcessingData data){
     vec3 suncolor = getSunColor(0.0);
     vec3 sun = shadeColor(data, -dayData.sunDir, suncolor);
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
@@ -465,7 +467,7 @@ vec3 shadeFragment(PostProceessingData data){
 
 
 
-vec3 getNormalLighting(vec2 uv, PostProceessingData data){
+vec3 getNormalLighting(vec2 uv, PostProcessingData data){
     if(length(data.normal) < 0.01){
         data.roughness = 0.0;
         vec3 dir = reconstructCameraSpaceDistance(uv, 1.0);

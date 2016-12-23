@@ -77,7 +77,7 @@ float toLogDepth(float depth, float far){
 
 #define MIN_ROUGHNESS_DIRECT 0.04
 
-vec3 shadingMetalic(PostProceessingData data){
+vec3 shadingMetalic(PostProcessingData data){
     float fresnelR = fresnel_again(vec3(data.diffuseColor.r), data.normal, data.cameraPos, data.roughness);
     float fresnelG = fresnel_again(vec3(data.diffuseColor.g), data.normal, data.cameraPos, data.roughness);
     float fresnelB = fresnel_again(vec3(data.diffuseColor.b), data.normal, data.cameraPos, data.roughness);
@@ -88,7 +88,7 @@ vec3 shadingMetalic(PostProceessingData data){
     return shade(CameraPosition, newBase, data.normal, data.worldPos, LightPosition, abs(LightColor),  max(MIN_ROUGHNESS_DIRECT, data.roughness), false) * mix(x, pow(x, 8.0), 1.0 - currentData.roughness);
 }
 
-vec3 shadingNonMetalic(PostProceessingData data){
+vec3 shadingNonMetalic(PostProcessingData data){
     float fresnel = fresnel_again(vec3(0.04), data.normal, normalize(data.cameraPos), data.roughness);
     
     float x = 1.0 - max(0, -dot(normalize(LightPosition), currentData.originalNormal));
@@ -99,13 +99,13 @@ vec3 shadingNonMetalic(PostProceessingData data){
     return radiance + difradiance ;
 }
 
-vec3 MakeShading(PostProceessingData data){
+vec3 MakeShading(PostProcessingData data){
     return mix(shadingNonMetalic(data), shadingMetalic(data), data.metalness);
 }
 
 float AO = 1.0;
 
-vec3 ApplyLighting(PostProceessingData data)
+vec3 ApplyLighting(PostProcessingData data)
 {
     AO = lookupAO(UV, 1.0);
     vec3 result = vec3(0);

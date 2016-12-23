@@ -120,7 +120,7 @@ vec4 getLighting(){
     float hitdist = textureLod(waterDistanceTex, UV, 0.0).r;
    // return vec4(mod(hitdist, 11.0));
 
-    return  textureLod(inputTex, UV, 0.0);
+    //return  textureLod(inputTex, UV, 0.0);
     if(hitdist < 0.0) return  textureLod(inputTex, UV, 0.0);
     vec3 hitpos = CameraPosition + reconstructCameraSpaceDistance(UV, hitdist);
     
@@ -155,8 +155,8 @@ vec4 getLighting(){
     //normal = normalize(normal + normalx(hitpos * 151.2467, 3.0953, roughness) * 0.1 * (1.0 - mipmap3/ textureQueryLevels(waterTileTex)));
     dir = reflect(origdir, normal);
      dir.y = abs(dir.y);
-  //  dir.y = max(0.05, dir.y);
-    float fresnel = getthatfuckingfresnel(mix(0.00, 0.00, roughness), normal, dir, roughness);  
+  //  dir.y = max(0.05, dir.y);  
+    float fresnel  = fresneleffect(0.04               , roughness, dir, normal);
   //  return fresnel * vec4(1);
     //float x =  textureQueryLod(waterTileTex, hitpos.xz * WaterScale *  octavescale1).x / textureQueryLevels(waterTileTex);
     // float h = hitwater2(hitpos, dir) * (1.0 - x) + x;
@@ -174,7 +174,7 @@ vec4 getLighting(){
   //  whites *= 45.0;
    // return vec4(whites );
             
-    PostProceessingData dataReflection = PostProceessingData(
+    PostProcessingData dataReflection = PostProcessingData(
         vec3(1.0),
         normal,
         normalize(cross(
@@ -201,7 +201,7 @@ vec4 getLighting(){
     float hitdepth = currentData.cameraDistance - hitdist;
     vec3 newposrefracted = hitpos + refr * min(25.0, hitdepth);
     
-    PostProceessingData dataRefracted = currentData;
+    PostProcessingData dataRefracted = currentData;
     dataRefracted.roughness = 1.0;
     if(length(dataRefracted.normal) > 0.01) {
         vec3 mixing = vec3(

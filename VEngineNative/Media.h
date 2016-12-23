@@ -6,7 +6,8 @@ public:
     static void loadFileMap(string path);
     static string readString(string key);
     static string getPath(string key);
-    static int Media::readBinary(string key, unsigned char** out_bytes);
+    static bool exists(string key);
+    static int readBinary(string key, unsigned char** out_bytes);
     static void saveCache(string key, void* data);
     static void* checkCache(string key);
 

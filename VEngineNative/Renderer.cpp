@@ -358,11 +358,11 @@ void Renderer::draw(Camera *camera)
        // starsTexture->generateMipMaps();
     }
     // csm->map(-sunDirection, camera->transformation->position);
-   // mrtFbo->use(true);
+    mrtFbo->use(true);
     //Game::instance->world->setUniforms(Game::instance->shaders->materialGeometryShader, camera);
     Game::instance->world->setUniforms(Game::instance->shaders->materialShader, camera);
-   // Game::instance->world->setSceneUniforms();
-   // Game::instance->world->draw(Game::instance->shaders->materialShader, camera);
+    Game::instance->world->setSceneUniforms();
+    Game::instance->world->draw(Game::instance->shaders->materialShader, camera);
     // mrtDistanceTexture->generateMipMaps();
     if (useAmbientOcclusion) {
         //     ambientOcclusion();
@@ -373,8 +373,11 @@ void Renderer::draw(Camera *camera)
     //depthTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //deferred();
    // ambientLight();
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    //glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     waterTile();
+    mrtAlbedoRoughnessTex->use(0);
+    mrtNormalMetalnessTex->use(1);
+    mrtDistanceTexture->use(2);
     atmScatt();
     clouds();
     fog();
@@ -393,7 +396,10 @@ void Renderer::draw(Camera *camera)
         //if (cloudFace == 3) cloudFace++;
     }
     passPhrase++;
-    if (passPhrase > 3) passPhrase = 0;
+    if (passPhrase > 3) {
+        passPhrase = 0;
+        cloudsResolvedTexture->generateMipMaps();
+    }
     gpuInitialized = true;
 }
 
@@ -427,7 +433,6 @@ void Renderer::cloudsResolve()
         cloudResolveShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
         quad3dInfo->draw();
     }
-   // cloudsResolvedTexture->generateMipMaps();
 }
 
 void Renderer::combine(int step)
@@ -510,9 +515,6 @@ void Renderer::deferred()
     glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
     deferredShader->use();
     setCommonUniforms(deferredShader);
-    mrtAlbedoRoughnessTex->use(0);
-    mrtNormalMetalnessTex->use(1);
-    mrtDistanceTexture->use(2);
     moonTexture->use(28);
     glCullFace(GL_FRONT);
     glEnable(GL_BLEND);
@@ -573,7 +575,7 @@ void Renderer::waterTile()
     waterTileShader->setUniform("Resolution", glm::vec2(width, height));
     waterTileShader->setUniform("Time", Game::instance->time);
     quad3dInfo->draw();
-   // tex->generateMipMaps();
+    tex->generateMipMaps();
     tex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     waterTileUseFBO1 = !waterTileUseFBO1;
     tex->use(23);

@@ -51,6 +51,13 @@ string Media::getPath(string key)
     return mediaMap.at(key);
 }
 
+bool Media::exists(string key)
+{
+    if (mediaMap.find(key) == mediaMap.end())
+        return false;
+    return true;
+}
+
 int Media::readBinary(string key, unsigned char** out_bytes)
 {
     return get_file_contents_binary(out_bytes, getPath(key).c_str());
