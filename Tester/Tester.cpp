@@ -5,7 +5,6 @@
 
 #include "../VEngineNative/Camera.h";
 #include "../VEngineNative/Object3dInfo.h";
-#include "../VEngineNative/Object3dManager.h";
 #include "../VEngineNative/Media.h";
 #include "../VEngineNative/World.h";
 #include "../VEngineNative/Scene.h";
@@ -67,8 +66,17 @@ int main()
    //  }
     //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->rotate(glm::angleAxis(deg2rad(73.75f), glm::vec3(-0.006f, -0.005f, 1.0f)));
   //  game->world->scene->addMesh(game->asset->loadMeshFile("treeground.mesh3d"));
-   // auto t = game->asset->loadMeshFile("terrain.mesh3d");
-  //  game->world->scene->addMesh(t);
+    auto t = game->asset->loadMeshFile("testcube.mesh3d");
+    game->world->scene->addMesh(t);
+
+    auto phys = Game::instance->world->physics;
+    auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btStaticPlaneShape(btVector3(0.0, 1.0, 0.0), 0.0));
+    groundpb->enable();
+    for (int i = 0; i < t->getInstances().size(); i++) {
+        auto cube = phys->createBody(1.0f, t->getInstance(i)->transformation, new btBoxShape(btVector3(1.0, 1.0, 1.0)));
+        cube->enable();
+    }
+
     bool isOpened = true;
     bool isOpened2 = true;
 
@@ -78,6 +86,7 @@ int main()
     bool imugiinit = false;
     bool displayimgui = true;
     game->onRenderUIFrame->add([&](int zero) {
+        t->needBufferUpdate = true;
         if (displayimgui) {
             if (!imugiinit) {
                 ImGuiIO& io = ImGui::GetIO();

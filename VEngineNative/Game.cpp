@@ -130,6 +130,20 @@ void Game::display(string str)
     cout << str;
 }
 
+void Game::physicsThread()
+{
+    double time = glfwGetTime();
+    while (true)
+    {
+        if (!Game::instance->physicsNeedsUpdate)
+            continue;
+        double now = glfwGetTime();
+        Game::instance->world->physics->simulationStep((float)(now - time));
+        time = now;
+        Game::instance->physicsNeedsUpdate = false;
+    }
+}
+
 void Game::renderThread()
 {
     if (!glfwInit()) {
@@ -195,6 +209,8 @@ void Game::renderThread()
     shouldClose = false;
     double lastTime = glfwGetTime();
     int nbFrames = 0;
+    std::thread ptask(physicsThread);
+    ptask.detach();
     while (!glfwWindowShouldClose(window) && !shouldClose)
     {
         double currentTime = glfwGetTime();
@@ -211,6 +227,7 @@ void Game::renderThread()
     }
     shouldClose = true;
 }
+
 
 void Game::onRenderFrameFunc()
 {
@@ -236,4 +253,5 @@ void Game::onRenderFrameFunc()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     ImGui::Render();
     glDisable(GL_BLEND);
+    physicsNeedsUpdate = true;
 }

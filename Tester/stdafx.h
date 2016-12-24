@@ -19,6 +19,7 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include <set>
 #include <unordered_set>
 #include <functional>
 #include <thread>
@@ -52,3 +53,6 @@ using namespace std;
 #define deg2rad(a) (a * (PI / 180.0f))
 
 // TODO: reference additional headers your program requires here
+
+#include "btBulletCollisionCommon.h"
+#include "btBulletDynamicsCommon.h"

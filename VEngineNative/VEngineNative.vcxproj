@@ -187,7 +187,7 @@
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Code\squirrel3\include;C:\Code\bullet3\src;C:\Code\glfw-3.2.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Code\squirrel3\include;C:\Code\bullet3\src;C:\Code\glfw-3.2.1\include;%(AdditionalIncludeDirectories);C:\Code\bullet3\src</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -270,7 +270,8 @@
     <ClInclude Include="Mesh3dInstance.h" />
     <ClInclude Include="Mesh3dLodLevel.h" />
     <ClInclude Include="Object3dInfo.h" />
-    <ClInclude Include="Object3dManager.h" />
+    <ClInclude Include="PhysicalBody.h" />
+    <ClInclude Include="Physics.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ShaderProgram.h" />
@@ -323,7 +324,8 @@
     <ClCompile Include="Mesh3dInstance.cpp" />
     <ClCompile Include="Mesh3dLodLevel.cpp" />
     <ClCompile Include="Object3dInfo.cpp" />
-    <ClCompile Include="Object3dManager.cpp" />
+    <ClCompile Include="PhysicalBody.cpp" />
+    <ClCompile Include="Physics.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />

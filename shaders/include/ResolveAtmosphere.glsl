@@ -107,25 +107,25 @@ vec3 blurshadowsAO(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(shadowsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
-    //return textureLod(shadowsTex, dir, mlvel).gba;
+    return textureLod(shadowsTex, dir, mlvel).gba;
     float dst = textureLod(coverageDistTex, dir, mlvel).g;
     float aoc = 1.0;
     
     vec3 centerval = textureLod(shadowsTex, dir, mlvel).gba;
     float cluma = length(centerval);
-    float blurrange = 0.00003;
+    float blurrange = 0.003;
     for(int i=0;i<7;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
         //float there = textureLod(coverageDistTex, rdp, mlvel).g;
         //float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
         vec3 th = textureLod(shadowsTex, rdp, mlvel).gba;
         
-        centerval += textureLod(shadowsTex, rdp, mlvel).gba;
+        cluma += length(textureLod(shadowsTex, rdp, mlvel).gba);
         aoc += 1.0;
     }
-    centerval /= aoc;
+    cluma /= aoc;
     //return centerval;
-    return normalize(centerval) * cluma;
+    return normalize(centerval) * cluma * 1.0;
 }
 vec4 smartblur(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));

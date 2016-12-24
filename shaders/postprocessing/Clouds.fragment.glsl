@@ -29,7 +29,7 @@ vec3 blurshadowsAOXA(vec3 dir, float roughness){
     
     vec3 centerval = textureLod(cloudsCloudsTex, dir, mlvel).gba;
 	float cluma = length(centerval);
-    float blurrange = 0.0000010;
+    float blurrange = 0.00010;
     for(int i=0;i<7;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
         //float there = textureLod(coverageDistTex, rdp, mlvel).g;

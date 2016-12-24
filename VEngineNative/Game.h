@@ -45,6 +45,7 @@ public:
     EventHandler<int> *onKeyRepeat;
     void display(string str);
     void bindTexture(GLenum type, GLuint handle, int bindpoint);
+    bool physicsNeedsUpdate = false;
 private:
 
     queue<function<void(void)>> invokeQueue;
@@ -52,4 +53,5 @@ private:
     void renderThread();
     void onRenderFrameFunc();
     unsigned int uniqueIdCounter = 0;
+    static void physicsThread();
 };

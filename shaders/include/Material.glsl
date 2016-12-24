@@ -1,16 +1,16 @@
 
 #extension GL_ARB_bindless_texture : require
 
-layout(binding = 0)  uniform sampler2D texBind0 ;
-layout(binding = 1)  uniform sampler2D texBind1 ;
-layout(binding = 2)  uniform sampler2D texBind2 ;
-layout(binding = 3)  uniform sampler2D texBind3 ;
-layout(binding = 4)  uniform sampler2D texBind4 ;
-layout(binding = 5)  uniform sampler2D texBind5 ;
-layout(binding = 6)  uniform sampler2D texBind6 ;
-layout(binding = 7)  uniform sampler2D texBind7 ;
-layout(binding = 8)  uniform sampler2D texBind8 ;
-layout(binding = 9)  uniform sampler2D texBind9 ;
+layout(binding = 10)  uniform sampler2D texBind0 ;
+layout(binding = 11)  uniform sampler2D texBind1 ;
+layout(binding = 12)  uniform sampler2D texBind2 ;
+layout(binding = 13)  uniform sampler2D texBind3 ;
+layout(binding = 14)  uniform sampler2D texBind4 ;
+layout(binding = 15)  uniform sampler2D texBind5 ;
+layout(binding = 16)  uniform sampler2D texBind6 ;
+layout(binding = 17)  uniform sampler2D texBind7 ;
+layout(binding = 18)  uniform sampler2D texBind8 ;
+layout(binding = 19)  uniform sampler2D texBind9 ;
 
 vec4 sampleNode(int i, vec2 uv){
     if(i == 0)  return texture(texBind0 , uv).rgba;

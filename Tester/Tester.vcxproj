@@ -187,7 +187,7 @@
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Code\squirrel3\include;$(SolutionDir)VEngineNative;C:\Code\bullet3\src;C:\Code\glfw-3.2.1\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Code\squirrel3\include;$(SolutionDir)VEngineNative;C:\Code\bullet3\src;C:\Code\glfw-3.2.1\include;C:\Code\bullet3\src</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -201,7 +201,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)libs\glfw3.lib;C:/Code/squirrel3/lib/squirrel.lib;C:/Code/squirrel3/lib/sqstdlib.lib;C:/Code/bullet3/bin/Bullet2FileLoader_vs2010_x64_release.lib;C:/Code/bullet3/bin/Bullet3Collision_vs2010_x64_release.lib;C:/Code/bullet3/bin/Bullet3Common_vs2010_x64_release.lib;C:/Code/bullet3/bin/Bullet3Dynamics_vs2010_x64_release.lib;C:/Code/bullet3/bin/Bullet3Geometry_vs2010_x64_release.lib;C:/Code/bullet3/bin/BulletCollision_vs2010_x64_release.lib;C:/Code/bullet3/bin/BulletDynamics_vs2010_x64_release.lib;C:/Code/bullet3/bin/BulletExampleBrowserLib_vs2010_x64_release.lib;C:/Code/bullet3/bin/BulletFileLoader_vs2010_x64_release.lib;C:/Code/bullet3/bin/BulletInverseDynamicsUtils_vs2010_x64_release.lib;C:/Code/bullet3/bin/BulletInverseDynamics_vs2010_x64_release.lib;C:/Code/bullet3/bin/BulletSoftBody_vs2010_x64_release.lib;C:/Code/bullet3/bin/BulletWorldImporter_vs2010_x64_release.lib;C:/Code/bullet3/bin/ConvexDecomposition_vs2010_x64_release.lib;C:/Code/bullet3/bin/HACD_vs2010_x64_release.lib;C:/Code/bullet3/bin/LinearMath_vs2010_x64_release.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)libs\glfw3.lib;C:/Code/squirrel3/lib/squirrel.lib;C:/Code/squirrel3/lib/sqstdlib.lib;C:\Code\bullet3\bin\Bullet2FileLoader_vs2010_x64_release.lib;C:\Code\bullet3\bin\Bullet3Collision_vs2010_x64_release.lib;C:\Code\bullet3\bin\Bullet3Common_vs2010_x64_release.lib;C:\Code\bullet3\bin\Bullet3Dynamics_vs2010_x64_release.lib;C:\Code\bullet3\bin\Bullet3Geometry_vs2010_x64_release.lib;C:\Code\bullet3\bin\BulletCollision_vs2010_x64_release.lib;C:\Code\bullet3\bin\BulletDynamics_vs2010_x64_release.lib;C:\Code\bullet3\bin\BulletFileLoader_vs2010_x64_release.lib;C:\Code\bullet3\bin\BulletInverseDynamicsUtils_vs2010_x64_release.lib;C:\Code\bullet3\bin\BulletInverseDynamics_vs2010_x64_release.lib;C:\Code\bullet3\bin\BulletSoftBody_vs2010_x64_release.lib;C:\Code\bullet3\bin\BulletWorldImporter_vs2010_x64_release.lib;C:\Code\bullet3\bin\ConvexDecomposition_vs2010_x64_release.lib;C:\Code\bullet3\bin\HACD_vs2010_x64_release.lib;C:\Code\bullet3\bin\LinearMath_vs2010_x64_release.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='NotOptimization|x64'">

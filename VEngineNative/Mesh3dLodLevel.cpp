@@ -108,7 +108,7 @@ void Mesh3dLodLevel::draw()
     drawInfoBuffer->use(1);
 
     for (int i = 0; i < textureBinds.size(); i++) {
-        textureBinds[i]->use(i);
+        textureBinds[i]->use(i+10);
     }
     if (material->disableFaceCull)glDisable(GL_CULL_FACE);
     info3d->drawInstanced(instancesFiltered);

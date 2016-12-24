@@ -36,9 +36,6 @@
     <ClInclude Include="Object3dInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Object3dManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Media.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -168,6 +165,12 @@
     <ClInclude Include="INIReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Physics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicalBody.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -180,9 +183,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Object3dInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Object3dManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Media.cpp">
@@ -285,6 +285,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="INIReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicalBody.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

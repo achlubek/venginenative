@@ -15,6 +15,7 @@
 #include <string.h>
 #include <string>
 #include <vector>
+#include <set>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -57,3 +58,5 @@ using namespace std;
 
 //#include "btBulletCollisionCommon.h"
 //#include "btBulletDynamicsCommon.h"
+#include "btBulletCollisionCommon.h"
+#include "btBulletDynamicsCommon.h"

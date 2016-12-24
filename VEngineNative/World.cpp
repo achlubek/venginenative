@@ -6,6 +6,7 @@ World::World()
 {
     mainDisplayCamera = nullptr;
     scene = new Scene();
+    physics = new Physics();
 }
 
 World::~World()

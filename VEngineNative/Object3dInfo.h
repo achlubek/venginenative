@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Object3dManager.h"
-
 class Object3dInfo
 {
 public:
@@ -9,7 +7,6 @@ public:
     ~Object3dInfo();
 
     GLenum drawMode;
-    Object3dManager *manager;
 
     void draw();
     void drawInstanced(size_t instances);
