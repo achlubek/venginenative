@@ -7,6 +7,7 @@ PhysicalBody::PhysicalBody(btRigidBody * rigidBody, btCollisionShape * ishape, T
     body = rigidBody;
     shape = ishape;
     transformation = manager;
+    constraints = std::set<PhysicalConstraint*>();
 }
 
 PhysicalBody::~PhysicalBody()
@@ -33,6 +34,16 @@ void PhysicalBody::enable()
     if (enabled) return;
     enabled = true;
     Game::instance->world->physics->addBody(this);
+}
+
+void PhysicalBody::addConstraint(PhysicalConstraint * c)
+{
+    constraints.emplace(c);
+}
+
+void PhysicalBody::removeConstraint(PhysicalConstraint * c)
+{
+    constraints.erase(c);
 }
 
 bool PhysicalBody::isEnabled()

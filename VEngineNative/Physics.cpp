@@ -7,6 +7,8 @@ Physics::Physics()
     activeBodies = std::set<PhysicalBody*>();
     addBodyQueue = std::vector<PhysicalBody*>();
     removeBodyQueue = std::vector<PhysicalBody*>();
+    addBodyQueue = std::vector<PhysicalBody*>();
+    removeBodyQueue = std::vector<PhysicalBody*>();
 
     collisionConf = new btDefaultCollisionConfiguration();
     dispatcher = new btCollisionDispatcher(collisionConf);
@@ -28,27 +30,41 @@ void Physics::simulationStep(float elapsedTime)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         return;
     }
-    if (addBodyQueue.size() > 0)
-    {
-        auto lst = std::vector<PhysicalBody*>(addBodyQueue);
-        addBodyQueue.clear();
-        for(int i=0;i<lst.size();i++)
-            world->addRigidBody(lst[i]->body);
-    }
-    if (removeBodyQueue.size() > 0)
-    { 
-        auto lst = std::vector<PhysicalBody*>(removeBodyQueue);
-        removeBodyQueue.clear();
-        for (int i = 0; i<lst.size(); i++)
-            world->removeRigidBody(lst[i]->body);
-    }
-    world->stepSimulation(elapsedTime);
+    world->stepSimulation(elapsedTime, 1);
     for (auto b : activeBodies)
     {
         if (b != nullptr && b->body != nullptr && b->body->getActivationState() != ISLAND_SLEEPING)
         {
             b->applyChanges();
         }
+    }
+    if (addBodyQueue.size() > 0)
+    {
+        auto lst = std::vector<PhysicalBody*>(addBodyQueue);
+        addBodyQueue.clear();
+        for (int i = 0; i<lst.size(); i++)
+            world->addRigidBody(lst[i]->body);
+    }
+    if (removeBodyQueue.size() > 0)
+    {
+        auto lst = std::vector<PhysicalBody*>(removeBodyQueue);
+        removeBodyQueue.clear();
+        for (int i = 0; i<lst.size(); i++)
+            world->removeRigidBody(lst[i]->body);
+    }
+    if (addConstraintQueue.size() > 0)
+    {
+        auto lst = std::vector<PhysicalConstraint*>(addConstraintQueue);
+        addConstraintQueue.clear();
+        for (int i = 0; i<lst.size(); i++)
+            world->addConstraint(lst[i]->constraint);
+    }
+    if (removeConstraintQueue.size() > 0)
+    {
+        auto lst = std::vector<PhysicalConstraint*>(removeConstraintQueue);
+        removeConstraintQueue.clear();
+        for (int i = 0; i<lst.size(); i++)
+            world->removeConstraint(lst[i]->constraint);
     }
 }
 
@@ -62,6 +78,16 @@ void Physics::addBody(PhysicalBody * body)
 {
     addBodyQueue.push_back(body);
     activeBodies.emplace(body);
+}
+
+void Physics::removeConstraint(PhysicalConstraint * c)
+{
+    removeConstraintQueue.push_back(c);
+}
+
+void Physics::addConstraint(PhysicalConstraint * c)
+{
+    addConstraintQueue.push_back(c);
 }
 
 PhysicalBody * Physics::createBody(float mass, TransformationManager * startTransform, btCollisionShape * shape)

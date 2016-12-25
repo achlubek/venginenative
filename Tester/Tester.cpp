@@ -69,13 +69,29 @@ int main()
     auto t = game->asset->loadMeshFile("testcube.mesh3d");
     game->world->scene->addMesh(t);
 
-    auto phys = Game::instance->world->physics;
-    auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btStaticPlaneShape(btVector3(0.0, 1.0, 0.0), 0.0));
-    groundpb->enable();
-    for (int i = 0; i < t->getInstances().size(); i++) {
-        auto cube = phys->createBody(1.0f, t->getInstance(i)->transformation, new btBoxShape(btVector3(1.0, 1.0, 1.0)));
-        cube->enable();
+    for (int x = 0; x < 1; x++) {
+        for (int y = 0; y < 50; y++) {
+            t->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(x, y + 20.0, 0.0))));
+        }
     }
+
+    game->invoke([&]() {
+        auto phys = Game::instance->world->physics;
+        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btStaticPlaneShape(btVector3(0.0, 1.0, 0.0), 0.0));
+        groundpb->enable();
+        PhysicalBody* last = nullptr;
+        for (int i = 0; i < t->getInstances().size(); i++) {
+            auto cube = phys->createBody(1.0f, t->getInstance(i)->transformation, new btBoxShape(btVector3(1.0, 1.0, 1.0)));
+            cube->enable();
+            if (last != nullptr) {
+                auto rawconstraint = new btConeTwistConstraint(*(last->body), *(cube->body), btTransform(btQuaternion(), btVector3(0.0, 1.0, 0.0)), btTransform(btQuaternion(), btVector3(0.0, -1.0, 0.0)));
+                rawconstraint->setBreakingImpulseThreshold(9999999.0);
+                auto con = new PhysicalConstraint(rawconstraint, last, cube);
+                con->enable();
+            }
+            last = cube;
+        }
+    });
 
     bool isOpened = true;
     bool isOpened2 = true;
@@ -86,7 +102,6 @@ int main()
     bool imugiinit = false;
     bool displayimgui = true;
     game->onRenderUIFrame->add([&](int zero) {
-        t->needBufferUpdate = true;
         if (displayimgui) {
             if (!imugiinit) {
                 ImGuiIO& io = ImGui::GetIO();
@@ -277,6 +292,7 @@ int main()
     float speed = 0.0f;
     glm::vec3 dir = glm::vec3(0);
     game->onRenderFrame->add([&](int i) {
+        t->needBufferUpdate = true;
         if (!cursorFree) {
             float maxspeed = 0.1;
             if (game->getKeyStatus(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {

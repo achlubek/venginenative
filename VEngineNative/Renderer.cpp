@@ -357,6 +357,8 @@ void Renderer::draw(Camera *camera)
         exposureBuffer->mapData(4 * 4, &ones);
        // starsTexture->generateMipMaps();
     }
+    Game::instance->bindTexture(GL_TEXTURE_2D, 0, 0);
+    Game::instance->bindTexture(GL_TEXTURE_2D, 1, 0);
     // csm->map(-sunDirection, camera->transformation->position);
     mrtFbo->use(true);
     //Game::instance->world->setUniforms(Game::instance->shaders->materialGeometryShader, camera);

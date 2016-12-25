@@ -271,6 +271,7 @@
     <ClInclude Include="Mesh3dLodLevel.h" />
     <ClInclude Include="Object3dInfo.h" />
     <ClInclude Include="PhysicalBody.h" />
+    <ClInclude Include="PhysicalConstraint.h" />
     <ClInclude Include="Physics.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
@@ -325,6 +326,7 @@
     <ClCompile Include="Mesh3dLodLevel.cpp" />
     <ClCompile Include="Object3dInfo.cpp" />
     <ClCompile Include="PhysicalBody.cpp" />
+    <ClCompile Include="PhysicalConstraint.cpp" />
     <ClCompile Include="Physics.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
