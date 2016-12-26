@@ -104,6 +104,28 @@ PhysicalBody * Physics::createBody(float mass, Mesh3dInstance * mesh, btCollisio
     return createBody(mass, mesh->transformation, shape);
 }
 
+PhysicalBody * Physics::rayCast(glm::vec3 origin, glm::vec3 direction, glm::vec3 &hitpos, glm::vec3 &hitnorm)
+{
+    auto start = vbulletify3(origin);
+    auto end = vbulletify3(origin + direction * 10000.0f);
+    btCollisionWorld::ClosestRayResultCallback rayCallback(start, end);
+
+    world->rayTest(start, end, rayCallback);
+
+    if (rayCallback.hasHit()) {
+        hitpos = vglmify3(rayCallback.m_hitPointWorld);
+        hitnorm = vglmify3(rayCallback.m_hitNormalWorld);
+        auto rigid = (btRigidBody*)rayCallback.m_collisionObject; // risky
+
+        for (auto b : activeBodies)
+        {
+            if (b->body == rigid) return b;
+        }
+
+    }
+    return nullptr;
+}
+
 btRigidBody * Physics::createRigidBody(float mass,  btCollisionShape * shape)
 {
     bool isDynamic = (mass != 0.0f);

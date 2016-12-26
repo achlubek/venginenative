@@ -18,6 +18,7 @@ public:
     void addConstraint(PhysicalConstraint* body);
     PhysicalBody* createBody(float mass, TransformationManager* startTransform, btCollisionShape* shape);
     PhysicalBody* createBody(float mass, Mesh3dInstance* mesh, btCollisionShape* shape);
+    PhysicalBody* rayCast(glm::vec3 origin, glm::vec3 direction, glm::vec3 &hitpos, glm::vec3 &hitnorm);
 private:
     btDbvtBroadphase* broadphase;
     btCollisionConfiguration* collisionConf;
