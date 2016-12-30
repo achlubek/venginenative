@@ -17,9 +17,18 @@ PhysicalBody::~PhysicalBody()
 void PhysicalBody::applyChanges()
 {
     auto xyz = body->getCenterOfMassPosition();
-    auto quat = body->getOrientation();
+    auto quat = body->getOrientation().inverse();
     transformation->setPosition(glm::vec3(xyz.x(), xyz.y(), xyz.z()));
-    transformation->setOrientation(glm::quat(quat.x(), quat.y(), quat.z(), quat.w()));
+    float X = quat.getX();
+    float Y = quat.getY();
+    float Z = quat.getZ();
+    float W = quat.getW();
+    glm::quat qt = glm::quat(X, Y, Z, W);
+    qt.x = X;
+    qt.y = Y;
+    qt.z = Z;
+    qt.w = W; // fuck you glm::quat
+    transformation->setOrientation(qt);
 }
 
 void PhysicalBody::disable()
@@ -53,8 +62,13 @@ bool PhysicalBody::isEnabled()
 
 void PhysicalBody::readChanges()
 {
-    body->setWorldTransform(btTransform(btQuaternion(transformation->orientation.x, transformation->orientation.y,
-        transformation->orientation.z, transformation->orientation.w), 
-        btVector3(transformation->position.x, transformation->position.y, transformation->position.z)));
+    auto q = btQuaternion(transformation->orientation.x, transformation->orientation.y,
+        transformation->orientation.z, transformation->orientation.w).inverse();
+    auto v = btVector3(transformation->position.x, transformation->position.y, transformation->position.z);
+
+    auto bt = btTransform();
+    bt.setOrigin(v);
+    bt.setRotation(q);
+    body->setWorldTransform(bt);
     shape->setLocalScaling(btVector3(transformation->size.x, transformation->size.y, transformation->size.z));
 }

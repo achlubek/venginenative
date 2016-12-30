@@ -31,7 +31,7 @@ private:
     std::vector<PhysicalConstraint*> addConstraintQueue;
     std::vector<PhysicalConstraint*> removeConstraintQueue;
     glm::vec3 gravity = glm::vec3(0.0f, -9.87f, 0.0f);
-    btRigidBody* createRigidBody(float mass, btCollisionShape* shape);
+    btRigidBody* createRigidBody(float mass, TransformationManager* transform, btCollisionShape* shape);
     void exitPhysics();
 };
 

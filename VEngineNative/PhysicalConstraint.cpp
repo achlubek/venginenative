@@ -9,6 +9,7 @@ PhysicalConstraint::PhysicalConstraint(btTypedConstraint * iconstraint, Physical
     bodyB = B;
     bodyA->addConstraint(this);
     bodyB->addConstraint(this);
+    enabled = false;
 }
 
 PhysicalConstraint::~PhysicalConstraint()

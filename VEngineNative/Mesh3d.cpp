@@ -6,6 +6,7 @@ Mesh3d::Mesh3d()
     instances = {};
     lodLevels = {};
     needBufferUpdate = true;
+    alwaysUpdateBuffer = false;
 }
 
 Mesh3d::~Mesh3d()
@@ -103,7 +104,7 @@ void Mesh3d::draw()
 
 void Mesh3d::setUniforms()
 {
-    if (needBufferUpdate) {
+    if (needBufferUpdate || alwaysUpdateBuffer) {
         updateBuffers();
     }
     for (int i = 0; i < lodLevels.size(); i++) {

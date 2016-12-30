@@ -13,7 +13,7 @@ Physics::Physics()
     collisionConf = new btDefaultCollisionConfiguration();
     dispatcher = new btCollisionDispatcher(collisionConf);
     broadphase = new btDbvtBroadphase();
-    auto w = new btDiscreteDynamicsWorld(dispatcher, broadphase, new btSequentialImpulseConstraintSolver(), collisionConf);
+    auto w = new btDiscreteDynamicsWorld(dispatcher, broadphase, new btNNCGConstraintSolver(), collisionConf);
     w->setGravity(btVector3(gravity.x, gravity.y, gravity.z));
     world = w;
 }
@@ -93,15 +93,30 @@ void Physics::addConstraint(PhysicalConstraint * c)
 PhysicalBody * Physics::createBody(float mass, TransformationManager * startTransform, btCollisionShape * shape)
 {
     shape->setLocalScaling(btVector3(startTransform->size.x, startTransform->size.y, startTransform->size.z));
-    auto rb = createRigidBody(mass, shape);
+    auto rb = createRigidBody(mass, startTransform, shape);
     auto pb = new PhysicalBody(rb, shape, startTransform);
-    pb->readChanges();
     return pb;
 }
 
 PhysicalBody * Physics::createBody(float mass, Mesh3dInstance * mesh, btCollisionShape * shape)
 {
     return createBody(mass, mesh->transformation, shape);
+}
+
+btVector3 vbulletify3(glm::vec3 v) {
+    return btVector3(v.x, v.y, v.z);
+}
+
+glm::vec3 vglmify3(btVector3 v) {
+    return glm::vec3(v.x(), v.y(), v.z());
+}
+
+btQuaternion vbulletifyq(glm::quat v) {
+    return btQuaternion(v.x, v.y, v.z, v.w);
+}
+
+glm::quat vglmifyq(btQuaternion v) {
+    return glm::quat(v.x(), v.y(), v.z(), v.w());
 }
 
 PhysicalBody * Physics::rayCast(glm::vec3 origin, glm::vec3 direction, glm::vec3 &hitpos, glm::vec3 &hitnorm)
@@ -126,7 +141,7 @@ PhysicalBody * Physics::rayCast(glm::vec3 origin, glm::vec3 direction, glm::vec3
     return nullptr;
 }
 
-btRigidBody * Physics::createRigidBody(float mass,  btCollisionShape * shape)
+btRigidBody * Physics::createRigidBody(float mass, TransformationManager* transform, btCollisionShape * shape)
 {
     bool isDynamic = (mass != 0.0f);
 
@@ -134,7 +149,15 @@ btRigidBody * Physics::createRigidBody(float mass,  btCollisionShape * shape)
     if (isDynamic)
         shape->calculateLocalInertia(mass, localInertia);
 
-    btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform());
+    auto q = btQuaternion(transform->orientation.x, transform->orientation.y,
+        transform->orientation.z, transform->orientation.w);
+    auto v = btVector3(transform->position.x, transform->position.y, transform->position.z);
+
+    auto bt = btTransform();
+    bt.setOrigin(v);
+    bt.setRotation(q);
+
+    btDefaultMotionState* myMotionState = new btDefaultMotionState(bt);
 
     btRigidBody::btRigidBodyConstructionInfo* rbInfo = new btRigidBody::btRigidBodyConstructionInfo(mass, myMotionState, shape, localInertia);
     btRigidBody* body = new btRigidBody(*rbInfo);

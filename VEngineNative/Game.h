@@ -28,7 +28,9 @@ public:
     ~Game();
     void start();
     void invoke(const function<void(void)> &func);
+    void physicsInvoke(const function<void(void)> &func);
     bool shouldClose;
+    bool hasExited;
     bool firstFullDrawFinished;
     float time;
 
@@ -49,6 +51,7 @@ public:
 private:
 
     queue<function<void(void)>> invokeQueue;
+    queue<function<void(void)>> physicsInvokeQueue;
     map<int, GLint> textureMap;
     void renderThread();
     void onRenderFrameFunc();

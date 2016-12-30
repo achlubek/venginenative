@@ -9,7 +9,8 @@ Game::Game(int windowwidth, int windowheight)
     instance = this;
     width = windowwidth;
     height = windowheight;
-    invokeQueue = {};
+    invokeQueue = queue<function<void(void)>>();
+    physicsInvokeQueue = queue<function<void(void)>>();
     textureMap = {};
     onRenderFrame = {};
     asset = new AssetLoader();
@@ -23,6 +24,8 @@ Game::Game(int windowwidth, int windowheight)
     onKeyPress = new EventHandler<int>();
     onKeyRelease = new EventHandler<int>();
     onKeyRepeat = new EventHandler<int>();
+
+    hasExited = false;
 }
 
 Game::~Game()
@@ -58,6 +61,11 @@ void Game::bindTexture(GLenum type, GLuint handle, int bindpoint)
 void Game::invoke(const function<void(void)> &func)
 {
     invokeQueue.push(func);
+}
+
+void Game::physicsInvoke(const function<void(void)>& func)
+{
+    physicsInvokeQueue.push(func);
 }
 
 int Game::getKeyStatus(int key)
@@ -135,10 +143,15 @@ void Game::physicsThread()
     double time = glfwGetTime();
     while (true)
     {
+        while (Game::instance->physicsInvokeQueue.size() > 0) {
+            Game::instance->physicsInvokeQueue.front()();
+            Game::instance->physicsInvokeQueue.pop();
+        }
         if (!Game::instance->physicsNeedsUpdate)
             continue;
+
         double now = glfwGetTime();
-        Game::instance->world->physics->simulationStep((float)(now - time));
+        Game::instance->world->physics->simulationStep((float)((now - time)));
         time = now;
         Game::instance->physicsNeedsUpdate = false;
     }
@@ -151,7 +164,7 @@ void Game::renderThread()
         return;
     }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     //#ifdef _DEBUG
        // glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     //#endif
@@ -221,11 +234,14 @@ void Game::renderThread()
             nbFrames = 0;
             lastTime = currentTime;
         }
+        if (shouldClose) break;
         onRenderFrameFunc();
 
         glfwSwapBuffers(window);
     }
+    ImGui_ImplGlfwGL3_Shutdown();
     shouldClose = true;
+    hasExited = true;
 }
 
 

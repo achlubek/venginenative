@@ -14,6 +14,8 @@
 #include "../VEngineNative/SquirrelVM.h";
 #include "../VEngineNative/imgui/imgui.h";
 
+#include "Car.h";
+
 Mesh3d * loadRawMesh(string file) {
     Material *mat = new Material();
 
@@ -66,6 +68,9 @@ int main()
    //  }
     //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->rotate(glm::angleAxis(deg2rad(73.75f), glm::vec3(-0.006f, -0.005f, 1.0f)));
   //  game->world->scene->addMesh(game->asset->loadMeshFile("treeground.mesh3d"));
+
+    new Car();
+    /*
     auto t = game->asset->loadMeshFile("testcube.mesh3d");
     game->world->scene->addMesh(t);
 
@@ -75,10 +80,12 @@ int main()
         }
     }
 
+    */
     game->invoke([&]() {
         auto phys = Game::instance->world->physics;
         auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btStaticPlaneShape(btVector3(0.0, 1.0, 0.0), 0.0));
         groundpb->enable();
+        /*
         PhysicalBody* last = nullptr;
         for (int i = 0; i < t->getInstances().size(); i++) {
             auto cube = phys->createBody(1.0f, t->getInstance(i)->transformation, new btBoxShape(btVector3(1.0, 1.0, 1.0)));
@@ -90,9 +97,8 @@ int main()
                 con->enable();
             }
             last = cube;
-        }
+        }*/
     });
-
     bool isOpened = true;
     bool isOpened2 = true;
 
@@ -104,7 +110,7 @@ int main()
     game->onRenderUIFrame->add([&](int zero) {
         if (displayimgui) {
             if (!imugiinit) {
-                ImGuiIO& io = ImGui::GetIO();
+            //    ImGuiIO& io = ImGui::GetIO();
                 // io.Fonts->ClearFonts();
                 // io.Fonts->AddFontFromFileTTF(Media::getPath("segoeui.ttf").c_str(), 10);
                 imugiinit = true;
@@ -292,7 +298,7 @@ int main()
     float speed = 0.0f;
     glm::vec3 dir = glm::vec3(0);
     game->onRenderFrame->add([&](int i) {
-        t->needBufferUpdate = true;
+       // t->needBufferUpdate = true;
         if (!cursorFree) {
             float maxspeed = 0.1;
             if (game->getKeyStatus(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
@@ -368,7 +374,7 @@ int main()
         }
     });
 
-    while (!game->shouldClose) {
+    while (!game->hasExited) {
     }
     return 0;
 }

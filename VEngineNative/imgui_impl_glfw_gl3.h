@@ -1,4 +1,6 @@
-#pragma once
+
+#include "stdafx.h"
+#include "imgui/imgui.h"
 // ImGui GLFW binding with OpenGL3 + shaders
 // In this binding, ImTextureID is used to store an OpenGL 'GLuint' texture identifier. Read the FAQ about ImTextureID in imgui.cpp.
 
@@ -9,7 +11,6 @@
 
 struct GLFWwindow;
 
-#include "imgui/imgui.h"
 IMGUI_API bool        ImGui_ImplGlfwGL3_Init(GLFWwindow* window, bool install_callbacks);
 IMGUI_API void        ImGui_ImplGlfwGL3_Shutdown();
 IMGUI_API void        ImGui_ImplGlfwGL3_NewFrame();

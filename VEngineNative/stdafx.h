@@ -60,24 +60,8 @@ using namespace std;
 //#include "btBulletDynamicsCommon.h"
 #include "btBulletCollisionCommon.h"
 #include "btBulletDynamicsCommon.h"
-
-#ifndef bullettools2
-#define bullettools2
-
-btVector3 vbulletify3(glm::vec3 v) {
-    return btVector3(v.x, v.y, v.z);
-}
-
-glm::vec3 vglmify3(btVector3 v) {
-    return glm::vec3(v.x(), v.y(), v.z());
-}
-
-btQuaternion vbulletifyq(glm::quat v) {
-    return btQuaternion(v.x, v.y, v.z, v.w);
-}
-
-glm::quat vglmifyq(btQuaternion v) {
-    return glm::quat(v.x(), v.y(), v.z(), v.w());
-}
-
-#endif
+#include "BulletDynamics/ConstraintSolver/btNNCGConstraintSolver.h"
+btVector3 bulletify3(glm::vec3 v);
+glm::vec3 glmify3(btVector3 v);
+btQuaternion bulletifyq(glm::quat v);
+glm::quat glmifyq(btQuaternion v);
