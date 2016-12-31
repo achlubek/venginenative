@@ -196,7 +196,7 @@ vec3 getDiffuseAtmosphereColor(){
 }
 
 vec3 getSunColorDirectly(float roughness){
-    vec3 sunBase = vec3(6.0);
+    vec3 sunBase = vec3(5.0);
     float dt = max(0.0, (dot(dayData.sunDir, VECTOR_UP)));
     float dt2 = 0.9 + 0.1 * (1.0 - max(0.0, (dot(dayData.sunDir, VECTOR_UP))));
     vec3 supersundir = textureLod(atmScattTex, vec3(dayData.sunDir.x, 0.0, dayData.sunDir.z), 0.0).rgb ;
@@ -332,7 +332,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float dimmer = max(0, 0.06 + 0.94 * dot(normalize(dayData.sunDir), vec3(0,1,0)));
     vec3 scattering = getAtmosphereScattering(dir, roughness);
     vec3 moon = textureMoon(dir);
-    scattering += (1.0 - step(0.1, length(currentData.normal))) * lenssun(dir) * getSunColorDirectly(0.0) * 13.0;
+    scattering += (1.0 - step(0.1, length(currentData.normal))) * lenssun(dir) * getSunColorDirectly(0.0) * 1.0;
     float monsoonconverage = (1.0 - smoothstep(0.995, 1.0, dot(dayData.sunDir, dayData.moonDir))) * 0.7 + 0.3;
     vec4 cloudsData = smartblur(dir, roughness);
     float coverage = cloudsData.r;
@@ -347,10 +347,10 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     vec3 AtmDiffuse = getDiffuseAtmosphereColor();
     float Shadow = shadow;
     //return coverage * vec3(SunC * Shadow);
-    vec3 GroundC = vec3(0.2, 0.2, 0.2);
+    vec3 GroundC = vec3(0.5, 0.5, 0.5) * max(0.0, dot(dayData.sunDir, VECTOR_UP));
     float Coverage = 1.0 - smoothstep(0.4, 0.55, CloudsThresholdLow);//texture(coverageDistTex, VECTOR_UP, textureQueryLevels(coverageDistTex)).r;
     //vec2 aabbdd = blurshadowsAO(dir, roughness);
-    float AOGround = 0.15;//aabbdd.r;
+    float AOGround = 1.0;//aabbdd.r;
     float AOSky = 0.15;//aabbdd.g;
     
     float SunDT = max(0.0, dot(dayData.sunDir, VECTOR_UP));
@@ -368,7 +368,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     
     SunC * GroundC * 1.0 * AOGround + AtmDiffuse * AOSky, 
     
-    Coverage));
+    0.0));
     
     return mix(scattering * monsoonconverage + moon, monsoonconverage * CC, coverage) + raycolor * rays;
     

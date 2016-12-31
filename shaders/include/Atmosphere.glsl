@@ -245,7 +245,7 @@ vec3 getCloudsAL(vec3 dir){
         //rd *= 1.234211;
         uv.x += 1.567567;
         vec3 px = normalize(vec3(x, y, z)); 
-        vec3 p = point + px * 10010.0;
+        vec3 p = point + px * 7010.0;
         vec3 newdir = normalize(p - c);
         float v = visibility(dir, newdir, center, textureLod(mainPassTex, newdir, 0.0).g + hitfloorX);
         sum += textureLod(atmScattTex, px, 1.0).rgb * v * mult * pow(vdt2, 4.0); 
@@ -254,16 +254,16 @@ vec3 getCloudsAL(vec3 dir){
     float dao = (1.0 -  getCloudsAO(dir, 1.0 - vdt)) * pow(vdt, 2.0) * 3.0;
     float daox = max(0.0,  getCloudsAO(dir, 1.0  ) * 2.0 - 1.0)   * pow(vdt * 0.8 + 0.2, 2.0) ;
     float caa = getCloudsAO(dir, 0.0);
-    float sao1 = 1.0 / ((1.0 + CloudsDensityScale) * (1.0 + CloudsDensityScale)) * 0.5 + 0.5 * caa;
-    float sao2 = pow(caa, (1.0 + CloudsDensityScale));
+    float sao1 = mix(1.0, 1.0 / (max(1.0 , CloudsDensityScale) * max(1.0 , CloudsDensityScale)) * 0.5 + 0.5 * caa, min(1.0, CloudsDensityScale));
+    float sao2 = mix(1.0, pow(caa, max(1.0 , CloudsDensityScale)), min(1.0, CloudsDensityScale));
     float mx = 1.0 - pow(1.0 - max(0.0, dot(dir, VECTOR_UP)), 3.0);
     float sao =  (mix(sao1, sao2, mx) * (1.0 - pow(1.0 - vdt, 8.0)) * pow(vdt * 0.97 + 0.03, 1.0) * 14.0) / ((CloudsCeil - CloudsFloor) * 0.0005 + 1.0);
-    sao *= 1.0 + pow(caa, 2.0) * 16.0 * pow(max(0.0, dot(dir, dayData.sunDir)) * max(0.0, dot(dir, VECTOR_UP)), 5.0);
+    sao *= 1.0 + pow(caa, 2.0) * 1.0 * pow(max(0.0, dot(dir, dayData.sunDir)) * max(0.0, dot(dir, VECTOR_UP)), 5.0);
     //float dshadow = getAODIR(point, px, 113.0);
-            
+    
     float coverage =  smoothstep(0.464, 0.6, CloudsThresholdLow);
 //  return vec3(sao) ;
-    return clamp(sum / 11.0 , 0.0, 111.0) * coverage + sao * 3.0 + daox * 0.1 ;
+    return clamp(sum / 11.0 , 0.0, 111.0) + sao * 3.0 + daox * 0.1 ;
 }
 
 Sphere sphere1;

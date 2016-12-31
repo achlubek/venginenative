@@ -71,10 +71,19 @@ float rand2sTime(vec2 co){
 uniform float Exposure;
 uniform float Contrast;
 
+vec3 testmap(vec3 c){
+    return vec3(
+         1.879574*c.r  -  1.03263*c.g  + 0.153055*c.b,
+         -0.21962*c.r  + 1.715146*c.g -  0.49553* c.b,
+         0.006956*c.r  -  0.51487*c.g  + 1.507914*c.b
+    );
+}
+
 vec3 tonemap(vec3 xa){
     
     vec3 a = xa / max(0.1, Luminence);
     a *= Exposure;
+    return testmap(rgb_to_srgb(a));
 	a = ((a - 0.5) * mix(Contrast, 1.0, 0.9)) + 0.5;
     vec3 x = max(vec3(0.0),a-0.004);
     vec3 retColor = (x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06);

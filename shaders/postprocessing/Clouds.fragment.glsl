@@ -23,7 +23,7 @@ vec3 blurshadowsAOXA(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
-	//return textureLod(cloudsCloudsTex, dir, mlvel).gba;
+	return textureLod(cloudsCloudsTex, dir, mlvel).gba;
    // float dst = textureLod(coverageDistTex, dir, mlvel).g;
     float aoc = 1.0;
     

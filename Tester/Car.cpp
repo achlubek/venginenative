@@ -66,20 +66,26 @@ void Car::initialize()
             frameInA = btTransform::getIdentity();
 
             frameInA.setOrigin(bulletify3(frontaxis + wheelspacing));
-            auto ct1 = new btGeneric6DofSpring2Constraint(*(body->body), *(tyreLF->body), frameInA, btTransform::getIdentity());
+            auto ct1 = new btGeneric6DofConstraint(*(body->body), *(tyreLF->body), frameInA, btTransform::getIdentity(), true);
+            ct1->setAngularLowerLimit(btVector3(0.0, 10.0, 0.0));
             tyreLFCon = new PhysicalConstraint(ct1, body, tyreLF);
 
             frameInA.setOrigin(bulletify3(frontaxis - wheelspacing));
-            auto ct2 = new btGeneric6DofSpring2Constraint(*(body->body), *(tyreRF->body), frameInA, btTransform::getIdentity());
+            auto ct2 = new btGeneric6DofConstraint(*(body->body), *(tyreRF->body), frameInA, btTransform::getIdentity(), true);
             tyreRFCon = new PhysicalConstraint(ct2, body, tyreRF);
 
             frameInA.setOrigin(bulletify3(rearaxis + wheelspacing));
-            auto ct3 = new btGeneric6DofSpring2Constraint(*(body->body), *(tyreLR->body), frameInA, btTransform::getIdentity());
+            auto ct3 = new btGeneric6DofConstraint(*(body->body), *(tyreLR->body), frameInA, btTransform::getIdentity(), true);
             tyreLRCon = new PhysicalConstraint(ct3, body, tyreLR);
 
             frameInA.setOrigin(bulletify3(rearaxis - wheelspacing));
-            auto ct4 = new btGeneric6DofSpring2Constraint(*(body->body), *(tyreRR->body), frameInA, btTransform::getIdentity());
+            auto ct4 = new btGeneric6DofConstraint(*(body->body), *(tyreRR->body), frameInA, btTransform::getIdentity(), true);
             tyreRRCon = new PhysicalConstraint(ct4, body, tyreRR);
+
+            auto x = std::vector<btGeneric6DofConstraint*>{ ct1, ct2, ct3, ct4 };
+            for (int i = 0; i < x.size(); i++) {
+                x[i]->setAngularLowerLimit(btVector3(0.0, 0.0, 1.0));
+            }
 
             tyreLFCon->constraint->setBreakingImpulseThreshold(99990.0f);
             tyreRFCon->constraint->setBreakingImpulseThreshold(99990.0f);
