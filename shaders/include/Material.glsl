@@ -179,4 +179,3 @@ vec3 examineBumpMap(sampler2D bumpTex, vec2 iuv){
 
     return normalize(vec3( bdx * 3.1415 * 1.0, bdy * 3.1415 * 1.0,max(0, 1.0 - bdx - bdy)));
 }
-

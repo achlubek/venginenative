@@ -69,11 +69,11 @@ int main()
     //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->rotate(glm::angleAxis(deg2rad(73.75f), glm::vec3(-0.006f, -0.005f, 1.0f)));
   //  game->world->scene->addMesh(game->asset->loadMeshFile("treeground.mesh3d"));
 
-    new Car();
+    auto car = new Car();
+    
+   // auto t = game->asset->loadMeshFile("terrain.mesh3d");
+   // game->world->scene->addMesh(t);
     /*
-    auto t = game->asset->loadMeshFile("testcube.mesh3d");
-    game->world->scene->addMesh(t);
-
     for (int x = 0; x < 1; x++) {
         for (int y = 0; y < 50; y++) {
             t->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(x, y + 20.0, 0.0))));
@@ -83,7 +83,9 @@ int main()
     */
     game->invoke([&]() {
         auto phys = Game::instance->world->physics;
-        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btStaticPlaneShape(btVector3(0.0, 1.0, 0.0), 0.0));
+        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, -1.0, 0.0)), new btBoxShape(btVector3(1111.0, 1.0,1110.0)));
+        //groundpb->body->applyTorque(btVector3(1000, 1000, 1000));
+        groundpb->body->setFriction(100);
         groundpb->enable();
         /*
         PhysicalBody* last = nullptr;
@@ -371,6 +373,17 @@ int main()
             glm::quat newrot = glm::angleAxis(deg2rad(pitch), glm::vec3(0, 1, 0)) * glm::angleAxis(deg2rad(yaw), glm::vec3(1, 0, 0));
             cam->transformation->setOrientation(newrot);
             cam->transformation->setPosition(newpos);
+
+            int acnt = 0;
+            const float * axes = glfwGetJoystickAxes(0, &acnt);
+            if (acnt >= 1) {
+                car->setWheelsAngle(axes[0] * 0.5);
+            }if (acnt >= 6) {
+                float acc = (axes[5] * 0.5 + 0.5);
+                float brk = (axes[4] * 0.5 + 0.5);
+                car->setAcceleration(acc - brk);
+            }
+
         }
     });
 
