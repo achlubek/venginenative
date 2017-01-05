@@ -12,6 +12,7 @@ Object3dInfo::Object3dInfo(vector<GLfloat> &vboin)
     vbo = move(vboin);
     generated = false;
     vertexCount = (GLsizei)(vbo.size() / 12);
+    updateAABB();
     drawMode = GL_TRIANGLES;
 }
 
@@ -38,6 +39,21 @@ void Object3dInfo::drawInstanced(size_t instances)
         generate();
     glBindVertexArray(vaoHandle);
     glDrawArraysInstanced(drawMode, 0, vertexCount, (GLsizei)instances);
+}
+
+void Object3dInfo::updateAABB()
+{
+    // px py pz ux uy nx ny nz tx ty tz tw | px
+    // 0  1  2  3  4  5  6  7  8  9  10 11 | 12
+    int size = vbo.size();
+    if (vbo.size() < 2) return;
+    aabbmin = glm::vec3(vbo[0], vbo[1], vbo[2]);
+    aabbmax = glm::vec3(vbo[0], vbo[1], vbo[2]);
+    for (int i = 0; i < size; i += 12) {
+        glm::vec3 p = glm::vec3(vbo[i], vbo[i + 1], vbo[i + 2]);
+        aabbmin = glm::min(p, aabbmin);
+        aabbmax = glm::max(p, aabbmax);
+    }
 }
 
 void Object3dInfo::generate()

@@ -12,7 +12,6 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial, float di
     distanceEnd = distanceend;
     instancesFiltered = 0;
     modelInfosBuffer = new ShaderStorageBuffer();
-    drawInfoBuffer = new ShaderStorageBuffer();
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -34,7 +33,6 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial)
     distanceEnd = 99999.0;
     instancesFiltered = 0;
     modelInfosBuffer = new ShaderStorageBuffer();
-    drawInfoBuffer = new ShaderStorageBuffer();
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -56,7 +54,6 @@ Mesh3dLodLevel::Mesh3dLodLevel()
     distanceEnd = 99999.0;
     instancesFiltered = 0;
     modelInfosBuffer = new ShaderStorageBuffer();
-    drawInfoBuffer = new ShaderStorageBuffer();
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -105,7 +102,6 @@ void Mesh3dLodLevel::draw()
     shader->setUniformVector("WrapModesArray", wrapModes);
 
     modelInfosBuffer->use(0);
-    drawInfoBuffer->use(1);
 
     for (int i = 0; i < textureBinds.size(); i++) {
         textureBinds[i]->use(i+10);
@@ -156,12 +152,13 @@ void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
     vector<Mesh3dInstance*> filtered;
     for (int i = 0; i < instances.size(); i++) {
         float dst = distance(cameraPos, instances[i]->transformation->position);
-        if (dst >= distanceStart && dst < distanceEnd) {
+        if (dst >= distanceStart && dst < distanceEnd && checkIntersection(instances[i])) {
             filtered.push_back(instances[i]);
         }
     }
     instancesFiltered = filtered.size();
     /*layout rotation f4 translation f3+1 scale f3+1 =>> 12 floats*/
+    // Urgently transfrom it into permament mapped buffer
     vector<float> floats;
     floats.reserve(12 * instancesFiltered);
     for (unsigned int i = 0; i < instancesFiltered; i++) {
@@ -182,4 +179,29 @@ void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
         floats.push_back(1);
     }
     modelInfosBuffer->mapData(4 * floats.size(), floats.data());
+}
+
+bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
+{
+    return true;
+    float radius = glm::max(info3d->aabbmax.length(), info3d->aabbmin.length());
+
+    float dst = distance(Game::instance->world->mainDisplayCamera->transformation->position, instance->transformation->position);
+    if (radius > dst) {
+        return true;
+    }
+
+    glm::vec3 ro = Game::instance->world->mainDisplayCamera->transformation->position;
+
+    // i cannot find it on net so i craft my own cone/sphere test
+
+    vec3 rdirC = Game::instance->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.5));
+    vec3 rdir0 = Game::instance->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.0));
+    float maxdt = dot(rdirC, rdir0);
+    vec3 helper = ro + rdirC * dst;
+    vec3 helpdir = normalize(helper - instance->transformation->position);
+    vec3 newpos = instance->transformation->position + helpdir * radius;
+    vec3 newdir = normalize(newpos - ro);
+    float decidingdot = dot(newdir, rdirC);
+    return decidingdot > maxdt;
 }

@@ -19,6 +19,12 @@ void FrustumCone::update(mat4 rotprojmatrix)
     rightTop = getDir(vec2(1, 1), rotprojmatrix);
 }
 
+glm::vec3 FrustumCone::reconstructDirection(glm::vec2 uv)
+{
+    return glm::normalize((leftBottom + (rightBottom - leftBottom) * uv.x + (leftTop - leftBottom) * uv.y));
+
+}
+
 vec3 FrustumCone::getDir(vec2 uv, mat4 inv)
 {
     vec4 clip = inv * vec4(uv.x, uv.y, 0.1, 1.0);

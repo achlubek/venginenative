@@ -77,16 +77,16 @@ void Car::initialize()
             glm::vec3 rearaxis = glm::vec3(0.0f, -0.538f, -1.2333f);
             glm::vec3 wheelspacing = glm::vec3(0.70968f, 0.0f, 0.0f);
 
-            body = Game::instance->world->physics->createBody(800.0, bodyMesh->getInstance(0), new btBoxShape(btVector3(0.5f, 0.5f, 0.5f)));
+            body = Game::instance->world->physics->createBody(800.0, bodyMesh->getInstance(0), new btBoxShape(btVector3(1.0f, 0.05f, 2.2f)));
             tyreLF = Game::instance->world->physics->createBody(2.0f, tiresMesh->getInstance(0), new btSphereShape(0.275f));
             tyreRF = Game::instance->world->physics->createBody(2.0f, tiresMesh->getInstance(1), new btSphereShape(0.275f));
             tyreLR = Game::instance->world->physics->createBody(2.0f, tiresMesh->getInstance(2), new btSphereShape(0.275f));
             tyreRR = Game::instance->world->physics->createBody(2.0f, tiresMesh->getInstance(3), new btSphereShape(0.275f));
 
-            tyreLF->body->setFriction(100.0);
-            tyreRF->body->setFriction(100.0);
-            tyreLR->body->setFriction(100.0);
-            tyreRR->body->setFriction(100.0);
+            tyreLF->body->setFriction(40.0);
+            tyreRF->body->setFriction(40.0);
+            tyreLR->body->setFriction(40.0);
+            tyreRR->body->setFriction(40.0);
        //     body->body->setIgnoreCollisionCheck(tyreLF->body, true);
       //      body->body->setIgnoreCollisionCheck(tyreRF->body, true);
       //      body->body->setIgnoreCollisionCheck(tyreLR->body, true);
@@ -99,30 +99,31 @@ void Car::initialize()
 
             frameInA.setOrigin(bulletify3(frontaxis + wheelspacing));
             frameInB.setRotation(bulletifyq(glm::angleAxis(deg2rad(0.0f), glm::vec3(0.0, 1.0, 0.0))));
-            auto ct1 = new btGeneric6DofConstraint(*(body->body), *(tyreLF->body), frameInA, frameInB, true);
+            auto ct1 = new btGeneric6DofSpringConstraint(*(body->body), *(tyreLF->body), frameInA, frameInB, true);
             ct1->setAngularLowerLimit(btVector3(0.0, 10.0, 0.0));
             tyreLFCon = new PhysicalConstraint(ct1, body, tyreLF);
 
             frameInA.setOrigin(bulletify3(frontaxis - wheelspacing));
             frameInB.setRotation(bulletifyq(glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0))));
-            auto ct2 = new btGeneric6DofConstraint(*(body->body), *(tyreRF->body), frameInA, frameInB, true);
+            auto ct2 = new btGeneric6DofSpringConstraint(*(body->body), *(tyreRF->body), frameInA, frameInB, true);
             tyreRFCon = new PhysicalConstraint(ct2, body, tyreRF);
 
             frameInA.setOrigin(bulletify3(rearaxis + wheelspacing));
             frameInB.setRotation(bulletifyq(glm::angleAxis(deg2rad(0.0f), glm::vec3(0.0, 1.0, 0.0))));
-            auto ct3 = new btGeneric6DofConstraint(*(body->body), *(tyreLR->body), frameInA, frameInB, true);
+            auto ct3 = new btGeneric6DofSpringConstraint(*(body->body), *(tyreLR->body), frameInA, frameInB, true);
             tyreLRCon = new PhysicalConstraint(ct3, body, tyreLR);
 
             frameInA.setOrigin(bulletify3(rearaxis - wheelspacing));
             frameInB.setRotation(bulletifyq(glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0))));
-            auto ct4 = new btGeneric6DofConstraint(*(body->body), *(tyreRR->body), frameInA, frameInB, true);
+            auto ct4 = new btGeneric6DofSpringConstraint(*(body->body), *(tyreRR->body), frameInA, frameInB, true);
             tyreRRCon = new PhysicalConstraint(ct4, body, tyreRR);
 
-            auto x = std::vector<btGeneric6DofConstraint*>{ ct1, ct2, ct3, ct4 };
+            auto x = std::vector<btGeneric6DofSpringConstraint*>{ ct1, ct2, ct3, ct4 };
             for (int i = 0; i < x.size(); i++) {
                 float y = (i == 0 || i == 1) ? -0.0f : 0.0f;
                 x[i]->setAngularLowerLimit(btVector3(-1.0, y, 0.0));
                 x[i]->setAngularUpperLimit(btVector3(-1.0, y, 0.0));
+                x[i]->enableSpring(1, true);
             }
 
             tyreLFCon->constraint->setBreakingImpulseThreshold(99990.0f);
@@ -141,7 +142,7 @@ void Car::initialize()
             tyreLRCon->enable();
             tyreRRCon->enable();
            // body->body->setLinearVelocity(btVector3(3.0, 15.0, 0.0));
-            body->body->setAngularVelocity(btVector3(0.0, 0.0, 13.0));
+            body->body->setAngularVelocity(btVector3(0.0, 0.0, 1));
             auto m = ct1->getRotationalLimitMotor(0);
             m->m_targetVelocity = -0;
             m->m_maxLimitForce = 50.0f;

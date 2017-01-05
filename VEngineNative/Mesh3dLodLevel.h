@@ -19,9 +19,9 @@ public:
     void draw();
     void setUniforms();
     void updateBuffer(const vector<Mesh3dInstance*> &instances);
-private:
     ShaderStorageBuffer *modelInfosBuffer;
-    ShaderStorageBuffer *drawInfoBuffer;
+private:
+    bool checkIntersection(Mesh3dInstance* instance);
     vector<int> samplerIndices;
     vector<int> modes;
     vector<int> targets;

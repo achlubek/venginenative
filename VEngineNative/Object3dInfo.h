@@ -10,6 +10,8 @@ public:
 
     void draw();
     void drawInstanced(size_t instances);
+    void updateAABB();
+    glm::vec3 aabbmin, aabbmax;
 
 private:
 

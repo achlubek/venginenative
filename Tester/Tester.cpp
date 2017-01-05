@@ -71,8 +71,8 @@ int main()
 
     auto car = new Car();
     
-   // auto t = game->asset->loadMeshFile("terrain.mesh3d");
-   // game->world->scene->addMesh(t);
+    auto t = game->asset->loadMeshFile("terrain.mesh3d");
+    game->world->scene->addMesh(t);
     /*
     for (int x = 0; x < 1; x++) {
         for (int y = 0; y < 50; y++) {
@@ -85,7 +85,7 @@ int main()
         auto phys = Game::instance->world->physics;
         auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, -1.0, 0.0)), new btBoxShape(btVector3(1111.0, 1.0,1110.0)));
         //groundpb->body->applyTorque(btVector3(1000, 1000, 1000));
-        groundpb->body->setFriction(100);
+        groundpb->body->setFriction(10);
         groundpb->enable();
         /*
         PhysicalBody* last = nullptr;
@@ -381,7 +381,7 @@ int main()
             }if (acnt >= 6) {
                 float acc = (axes[5] * 0.5 + 0.5);
                 float brk = (axes[4] * 0.5 + 0.5);
-                car->setAcceleration(acc - brk);
+                car->setAcceleration((acc - brk) * 0.5);
             }
 
         }

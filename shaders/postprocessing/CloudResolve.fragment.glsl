@@ -32,18 +32,18 @@ uniform int CombineStep;
 #include FXAA.glsl
 #include ResolveAtmosphere.glsl
 
-vec3 integrateStepsAndSun(vec3 dir){        
+vec3 integrateStepsAndSun(vec3 dir){
 	return sampleAtmosphere(dir, 0.0, 1.0, 111);
 }
 
-vec4 shade(){    
+vec4 shade(){
     vec3 color = vec3(0);
 	vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
 	//if(dir.y < 0.0){
 	//	return textureLod(atmScattTex, vec3(dir.x, -dir.y, dir.z), textureQueryLevels(atmScattTex)).rgba  ;
 	//}
-    if(dir.y < -0.01) return vec4(0.0);
-	//dir.y = abs(dir.y);
+    //if(dir.y < -0.01) return vec4(0.0);
+	dir.y = abs(dir.y);
 	color = integrateStepsAndSun(dir);
     return vec4( clamp(color, 0.0, 1110.0), 1.0);
 }
