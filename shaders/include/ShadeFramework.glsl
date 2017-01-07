@@ -1,3 +1,5 @@
+#ifndef SHADEFRAMEWORK_H
+#define SHADEFRAMEWORK_H
 #include Constants.glsl
 
 layout(binding = 14) uniform sampler2D fresnelTex;
@@ -22,3 +24,4 @@ vec3 shade_ray_data(PostProcessingData data, vec3 lightdir, vec3 lightcolor){
 
     return shade_ray(data.diffuseColor, data.normal, normalize(data.cameraPos), data.roughness, data.metalness, lightdir, lightcolor);
 }
+#endif

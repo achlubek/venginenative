@@ -85,6 +85,11 @@ private:
     Texture2d *mrtDistanceTexture;
     Texture2d *depthTexture;
 
+    //Picking by color Buffers
+    Framebuffer *pickingFbo;
+    Texture2d *pickingDataTex;
+    Texture2d *pickingDepthTexture;
+
     // Effects part
     ShaderProgram *deferredShader;
     ShaderProgram *envProbesShader;

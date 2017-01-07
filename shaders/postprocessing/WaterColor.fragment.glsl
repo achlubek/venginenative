@@ -26,9 +26,9 @@ float fogatt(float dist){
 float MIP = 0.0;
 vec3 normalx(vec3 pos, float e, float roughness){
     vec2 ex = vec2(e, 0);
-    vec3 a = vec3(pos.x, heightwaterD(pos.xz, MIP) * waterdepth, pos.z);    
+    vec3 a = vec3(pos.x, heightwaterD(pos.xz, MIP) * waterdepth, pos.z);
     vec3 b = vec3(pos.x - e, heightwaterD(pos.xz - ex.xy, MIP) * waterdepth, pos.z);
-    vec3 c = vec3(pos.x, heightwaterD(pos.xz + ex.yx, MIP) * waterdepth, pos.z + e);      
+    vec3 c = vec3(pos.x, heightwaterD(pos.xz + ex.yx, MIP) * waterdepth, pos.z + e);
     vec3 normal = (cross(normalize(a-b), normalize(a-c)));
     //vec3 p2 = pos * 76.0 + Time;
     return normalize(normal);// + 0.3 * (vec3(noise3d(p2), noise3d(-p2), noise3d(p2.zxy)) * 2.0 - 1.0) * (1.0 - roughness) * (1.0 - roughness)).xyz;
@@ -43,7 +43,7 @@ vec3 normalx(vec3 pos, float e, float roughness){
 float hitwater(vec3 pos, inout vec3 dir){
     float planethit = intersectPlane(pos, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, -1.0, 0.0));
     float planethit2 = intersectPlane(pos, dir, vec3(0.0, WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
-    
+
     vec3 end = pos + dir * min(abs(planethit), abs(planethit2));
     int steps = 16;
     float stepsf = float(steps);
@@ -87,9 +87,9 @@ float hashX( float n ){
 
 float noise2X( in vec2 x ){
     vec2 p = floor(x);
-    vec2 f = fract(x); 
+    vec2 f = fract(x);
     float n = p.x + p.y*57.0;
-    float res = 
+    float res =
         mix (
             mix (
                 hashX (
@@ -123,12 +123,12 @@ vec4 getLighting(){
     //return  textureLod(inputTex, UV, 0.0);
     if(hitdist < 0.0) return  textureLod(inputTex, UV, 0.0);
     vec3 hitpos = CameraPosition + reconstructCameraSpaceDistance(UV, hitdist);
-    
+
     float planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
     float planethit2 = intersectPlane(CameraPosition, dir, vec3(0.0, WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
-    
+
     vec3 nearsurface = CameraPosition + reconstructCameraSpaceDistance(UV, planethit > 0.0 && planethit2 > 0.0 ? planethit : hitdist);
-    vec2 px = 1.0 / Resolution; 
+    vec2 px = 1.0 / Resolution;
     mipmap1 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1).x;
     float mipmap2 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 11.2467).x;
     float mipmap3 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 151.2467).x ;
@@ -139,14 +139,14 @@ vec4 getLighting(){
     float height1  = heightwater(hitpos.xz);
    // float foam  = foamwater(hitpos.xz, 0);
     float height2  = heightwaterD(hitpos.xz, 0.5);
-    
+
     vec3 origdir = dir;
-    
+
     vec3 normal = normalx(hitpos, 0.0098 + roughness * 0.01, roughness * 0.3);
-   // normal = mix(normal, VECTOR_UP, roughness);
+    normal = mix(normal, VECTOR_UP, roughness);
    // return pow(max(0.0, dot(normal, dayData.sunDir)), 10.0) * vec4(1);
   //  return vec4(normal.xyzz * vec4(1,0.2,1,0));
-    
+
   //  normal = normalize(normal + 	normalx(hitpos * 11.2467, 3.0953, roughness) * 0.3);
    // normal = normalize(normal + normalx(hitpos * 51.2467, 3.0953, roughness) * 0.2);
     mipmap1 = mipmap2;
@@ -155,12 +155,12 @@ vec4 getLighting(){
     //normal = normalize(normal + normalx(hitpos * 151.2467, 3.0953, roughness) * 0.1 * (1.0 - mipmap3/ textureQueryLevels(waterTileTex)));
     dir = reflect(origdir, normal);
      dir.y = abs(dir.y);
-  //  dir.y = max(0.05, dir.y);  
-    float fresnel  = fresneleffect(0.04               , roughness, dir, normal);
+  //  dir.y = max(0.05, dir.y);
+    float fresnel  = fresneleffect(0.04, roughness, dir, normal);
   //  return fresnel * vec4(1);
     //float x =  textureQueryLod(waterTileTex, hitpos.xz * WaterScale *  octavescale1).x / textureQueryLevels(waterTileTex);
     // float h = hitwater2(hitpos, dir) * (1.0 - x) + x;
-     
+
       //  dir = mix(normalize(VECTOR_UP * 2.0 - dir), dir, h);
     /////    fresnel *= mix(0.9, 1.0, h);
    vec3 result = vec3(0.0);
@@ -173,12 +173,12 @@ vec4 getLighting(){
     //float whites = max(0.0, noise2d(hitpos.xz*0.1 + Time * 0.1) * 2.0 - 1.0) * noise2d(hitpos.xz*33.0  + Time * 0.3 + noise2d(hitpos.xz*36.0)) * pow(max(0.0, dot(Wind, normal)) * 2.0, 7.0);
   //  whites *= 45.0;
    // return vec4(whites );
-            
+
     PostProcessingData dataReflection = PostProcessingData(
         vec3(1.0),
         normal,
         normalize(cross(
-            dir, 
+            dir,
             hitpos
         )).xyz,
         hitpos,
@@ -187,20 +187,20 @@ vec4 getLighting(){
         roughness * 0.3  ,
         1.0
     );
-                    
+
     //result += mix(shadingWater(dataReflection, -dayData.sunDir, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0)) * fresnel * 1.0, getSunColor(0.5) * 0.33 * whites, min(1.0, whites));// + sampleAtmosphere(normal, 0.0) * fresnel;
     vec3 atm =  textureLod(resolvedAtmosphereTex, dir, roughnessToMipmapX(roughness * (0.02 * WaterWavesScale), resolvedAtmosphereTex)).rgb;// * (1.0 - roughness * 0.5) * (1.0 - roughness * 0.5);
-   // return vec4(atm, 1.0); 
+   // return vec4(atm, 1.0);
   // vec2 ssr = traceReflection(hitpos, dir);
    //ssr.x = 1.0 - step(0.0, ssr.x);
 	//float dst = traceReflection(hitpos, dir);
 	//return vec4(dst);
     result +=   shadingWater(dataReflection, normal, -dayData.sunDir, getSunColor(0.0), atm)  * 1.0 * mix(1.0, 1.0, roughness);
     vec3 refr = normalize(refract(origdir, normal, 0.66));
-    if(length(currentData.normal) < 0.01) currentData.cameraDistance = 299999.0;        
+    if(length(currentData.normal) < 0.01) currentData.cameraDistance = 299999.0;
     float hitdepth = currentData.cameraDistance - hitdist;
     vec3 newposrefracted = hitpos + refr * min(25.0, hitdepth);
-    
+
     PostProcessingData dataRefracted = currentData;
     dataRefracted.roughness = 1.0;
     if(length(dataRefracted.normal) > 0.01) {
@@ -211,14 +211,14 @@ vec4 getLighting(){
         );
         if(dataReflection.cameraDistance < hitdist) mixing = vec3(1.0);
         vec2 uvX =  abs(projectvdao(newposrefracted));
-        
+
         result += mixing * textureLod(inputTex, uvX, roughnessToMipmap(roughness, inputTex)).rgb * max(0.0, 1.0 - fresnel);
     }
-    
+
 
     vec3 newpos = CameraPosition + dir * planethit;
     vec3 newpos2 = CameraPosition + dir * planethit2;
-    
+
     float ssscoeff = pow(max(0, height1 - height2) * WaterWavesScale * 0.05 * length(WaterScale) , 2.0) ;
     vec3 waterSSScolor = vec3(0.01, 0.44, 0.22) * 0.02 + vec3(0.01, 0.33, 0.22)*  4.71  * ssscoeff  ;
    // result += waterSSScolor * (1.0 - fresnel) * getSunColor(0) ;
@@ -226,12 +226,12 @@ vec4 getLighting(){
     result += (vec3(0.0,0.06,0.11) + pow(dot(normal,dayData.sunDir) * 0.4 + 0.6,80.0) * vec3(0.8,0.9,0.6) * 0.12) * getSunColor(0) * (1.0 - fresnel)  * 0.069;
     float superscat = pow(max(0.0, dot(refr, dayData.sunDir)), 4.0) * (1.0 - fresnel);
     result += vec3(0.5,0.9,0.8) * pow(max(0.0, height1 - 0.3), 2.0) * octavescale1 * waterdepth * length(WaterScale) * getSunColor(0) * (superscat * 12.0 + 0.2) ;
-         
+
      return  vec4(result, 1.0);
 }
 
 
-vec4 shade(){    
+vec4 shade(){
     vec4 color = getLighting();
     return vec4( clamp(color, 0.0, 110.0));
 }

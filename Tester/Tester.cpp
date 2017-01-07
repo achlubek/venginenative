@@ -250,8 +250,9 @@ int main()
      //light->cutOffDistance = 90;
     // game->world->scene->addLight(light);
 
+    bool cameraFollowCar = false;
     bool cursorFree = false;
-    game->onKeyPress->add([&game, &cursorFree, &cam, &displayimgui](int key) {
+    game->onKeyPress->add([&game, &cursorFree, &cam, &displayimgui, &cameraFollowCar](int key) {
         if (key == GLFW_KEY_PAUSE) {
             game->shaders->materialShader->recompile();
             game->shaders->depthOnlyShader->recompile();
@@ -260,7 +261,10 @@ int main()
             game->renderer->recompileShaders();
         }
         if (key == GLFW_KEY_O) {
-           // displayimgui = !displayimgui;
+            // displayimgui = !displayimgui;
+        }
+        if (key == GLFW_KEY_C) {
+            cameraFollowCar = !cameraFollowCar;
         }
         if (key == GLFW_KEY_0) {
             game->renderer->useAmbientOcclusion = !game->renderer->useAmbientOcclusion;
@@ -299,6 +303,7 @@ int main()
 
     float speed = 0.0f;
     glm::vec3 dir = glm::vec3(0);
+    glm::vec3 backvectorlast = glm::vec3(0);
     game->onRenderFrame->add([&](int i) {
        // t->needBufferUpdate = true;
         if (!cursorFree) {
@@ -360,19 +365,32 @@ int main()
                 lastcy = cursor.y;
                 intializedCameraSystem = true;
             }
-            float dx = (float)(lastcx - cursor.x);
-            float dy = (float)(lastcy - cursor.y);
-            lastcx = cursor.x;
-            lastcy = cursor.y;
-            yaw += dy * 0.2f;
-            pitch += dx * 0.2f;
-            if (yaw < -90.0) yaw = -90;
-            if (yaw > 90.0) yaw = 90;
-            if (pitch < -360.0f) pitch += 360.0f;
-            if (pitch > 360.0f) pitch -= 360.0f;
-            glm::quat newrot = glm::angleAxis(deg2rad(pitch), glm::vec3(0, 1, 0)) * glm::angleAxis(deg2rad(yaw), glm::vec3(1, 0, 0));
-            cam->transformation->setOrientation(newrot);
-            cam->transformation->setPosition(newpos);
+            if (cameraFollowCar) {
+                auto cartrans = car->getTransformation();
+                if (cartrans != nullptr) {
+                    glm::vec3 backvector = glm::mat3_cast(glm::angleAxis(deg2rad(180.0f), glm::vec3(0, 1, 0)) * glm::inverse(cartrans->orientation)) * glm::vec3(0.0, 1.0, 4.0);
+                    backvector = backvectorlast * 0.97f + backvector * 0.03f;
+                    backvectorlast = backvector;
+                    cam->transformation->setPosition(cartrans->position + backvector);
+                    cam->transformation->setOrientation(glm::angleAxis(deg2rad(180.0f), glm::vec3(0, 1, 0)) * glm::inverse(cartrans->orientation));
+                }
+
+            }
+            else {
+                float dx = (float)(lastcx - cursor.x);
+                float dy = (float)(lastcy - cursor.y);
+                lastcx = cursor.x;
+                lastcy = cursor.y;
+                yaw += dy * 0.2f;
+                pitch += dx * 0.2f;
+                if (yaw < -90.0) yaw = -90;
+                if (yaw > 90.0) yaw = 90;
+                if (pitch < -360.0f) pitch += 360.0f;
+                if (pitch > 360.0f) pitch -= 360.0f;
+                glm::quat newrot = glm::angleAxis(deg2rad(pitch), glm::vec3(0, 1, 0)) * glm::angleAxis(deg2rad(yaw), glm::vec3(1, 0, 0));
+                cam->transformation->setOrientation(newrot);
+                cam->transformation->setPosition(newpos);
+            }
 
             int acnt = 0;
             const float * axes = glfwGetJoystickAxes(0, &acnt);
@@ -383,7 +401,6 @@ int main()
                 float brk = (axes[4] * 0.5 + 0.5);
                 car->setAcceleration((acc - brk) * 0.5);
             }
-
         }
     });
 

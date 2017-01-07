@@ -17,7 +17,9 @@ float roughnessToMipmap(float roughness, sampler2D txt){
 
 //layout(binding = 14) uniform sampler2D fresnelTex;
 float fresneleffect(float base, float roughness, vec3 cameradir, vec3 normal){
-    return base + (1.0 - base) * textureLod(fresnelTex, vec2(clamp(  roughness, 0.01, 0.98), 1.0 - max(0.0, dot(-cameradir, normal))), 0.0).r;
+    //return base + (1.0 - base) * textureLod(fresnelTex, vec2(clamp(  roughness, 0.01, 0.98), 1.0 - max(0.01, dot(-cameradir, normal))), 0.0).r;
+    float dt = dot(-cameradir, normal);
+    return base + (1.0 - base) * textureLod(fresnelTex, vec2(clamp(roughness, 0.01, 0.98), clamp(1.0 - dt, 0.01, 0.98)), 0.0).r * (1.0 - roughness);
 }
 
 float rdhash = 0.453451 + Time;
@@ -171,8 +173,8 @@ float sun(vec3 dir, vec3 sundir, float gloss, float ansiox){
 }
 float sshadow = 1.0;
 vec3 shadingWater(PostProcessingData data, vec3 n, vec3 lightDir, vec3 colorA, vec3 colorB){
-    float fresnel  = fresneleffect(0.04               , 0.0, normalize(data.cameraPos), n);
-    fresnel = mix(fresnel, 0.0, data.roughness);
+    float fresnel  = fresneleffect(0.04, 0.0, normalize(data.cameraPos), n);
+    fresnel = mix(fresnel, 0.5, data.roughness);
     return colorB * ( fresnel);
    // return  colorB * (  fresnel);
 }

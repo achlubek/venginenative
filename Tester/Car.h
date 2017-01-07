@@ -8,6 +8,7 @@ public:
     void draw();
     void setAcceleration(float acc);
     void setWheelsAngle(float angleInRadians);
+    TransformationManager* getTransformation();
 
 private:
     float acceleration;

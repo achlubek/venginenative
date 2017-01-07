@@ -5,8 +5,8 @@ layout(binding = 16) uniform sampler2D inputTex;
 
 layout (std430, binding = 0) buffer R1
 {
-  float Luminence; 
-}; 
+  float Luminence;
+};
 
 
 void main(){

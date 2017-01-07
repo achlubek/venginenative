@@ -19,13 +19,13 @@ void Car::draw()
 void Car::setAcceleration(float acc)
 {
     if (tyreLFCon != nullptr) {
-        float maxspeed = 50.0f;
+        float maxspeed = 150.0f;
         auto m = ((btGeneric6DofConstraint*)tyreLFCon->constraint)->getRotationalLimitMotor(0);
         m->m_targetVelocity = -acc * maxspeed;
         m->m_maxLimitForce = 50.0f;
         m->m_currentLimit = 50.0f;
         m->m_maxMotorForce = 50.0f;
-        m->m_enableMotor = true;
+        m->m_enableMotor = acc != 0.0f;
         m->m_loLimit = -5.0f;
         m->m_hiLimit = 5.0f;
         m = ((btGeneric6DofConstraint*)tyreRFCon->constraint)->getRotationalLimitMotor(0);
@@ -33,7 +33,7 @@ void Car::setAcceleration(float acc)
         m->m_maxLimitForce = 50.0f;
         m->m_currentLimit = 50.0f;
         m->m_maxMotorForce = 50.0f;
-        m->m_enableMotor = true;
+        m->m_enableMotor = acc != 0.0f;
         m->m_loLimit = -5.0f;
         m->m_hiLimit = 5.0f;
     }
@@ -48,6 +48,11 @@ void Car::setWheelsAngle(float angleInRadians)
         ((btGeneric6DofConstraint*)tyreRFCon->constraint)->setAngularLowerLimit(btVector3(-1.0, angleInRadians, 0.0));
         ((btGeneric6DofConstraint*)tyreRFCon->constraint)->setAngularUpperLimit(btVector3(-1.0, angleInRadians, 0.0));
     }
+}
+
+TransformationManager * Car::getTransformation()
+{
+    return body->transformation;
 }
 
 void Car::initialize()
@@ -82,6 +87,8 @@ void Car::initialize()
             tyreRF = Game::instance->world->physics->createBody(2.0f, tiresMesh->getInstance(1), new btSphereShape(0.275f));
             tyreLR = Game::instance->world->physics->createBody(2.0f, tiresMesh->getInstance(2), new btSphereShape(0.275f));
             tyreRR = Game::instance->world->physics->createBody(2.0f, tiresMesh->getInstance(3), new btSphereShape(0.275f));
+
+            body->body->setDamping(0.17, 0.06);
 
             tyreLF->body->setFriction(40.0);
             tyreRF->body->setFriction(40.0);
@@ -123,7 +130,14 @@ void Car::initialize()
                 float y = (i == 0 || i == 1) ? -0.0f : 0.0f;
                 x[i]->setAngularLowerLimit(btVector3(-1.0, y, 0.0));
                 x[i]->setAngularUpperLimit(btVector3(-1.0, y, 0.0));
+                x[i]->enableSpring(0, true);
                 x[i]->enableSpring(1, true);
+                x[i]->enableSpring(2, true);
+                x[i]->setDamping(0, 10.02f);
+                x[i]->setDamping(1, 10.02f);
+                x[i]->setDamping(2, 10.02f);
+                x[i]->setLinearLowerLimit(btVector3(0.0, -0.1, 0.0));
+                x[i]->setLinearUpperLimit(btVector3(0.0, 0.0, 0.0));
             }
 
             tyreLFCon->constraint->setBreakingImpulseThreshold(99990.0f);

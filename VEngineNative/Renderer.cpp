@@ -120,6 +120,12 @@ void Renderer::initializeFbos()
     mrtFbo->attachTexture(mrtDistanceTexture, GL_COLOR_ATTACHMENT2);
     mrtFbo->attachTexture(depthTexture, GL_DEPTH_ATTACHMENT);
 
+    pickingDataTex = new Texture2d(width / 4, height / 4, GL_RGBA32UI, GL_RGBA, GL_UNSIGNED_INT);
+    pickingDepthTexture = new Texture2d(width / 4, height / 4, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
+    pickingFbo = new Framebuffer();
+    pickingFbo->attachTexture(pickingDataTex, GL_COLOR_ATTACHMENT0);
+    pickingFbo->attachTexture(pickingDepthTexture, GL_DEPTH_ATTACHMENT);
+
     deferredTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     deferredFbo = new Framebuffer();
     deferredFbo->attachTexture(deferredTexture, GL_COLOR_ATTACHMENT0);
@@ -135,7 +141,7 @@ void Renderer::initializeFbos()
     waterTileTexture2 = new Texture2d(config->geti("water_tile_resolution"), config->geti("water_tile_resolution"), GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     waterTileFbo2 = new Framebuffer();
     waterTileFbo2->attachTexture(waterTileTexture2, GL_COLOR_ATTACHMENT0);
-    
+
     ambientOcclusionTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     ambientOcclusionFbo = new Framebuffer();
     ambientOcclusionFbo->attachTexture(ambientOcclusionTexture, GL_COLOR_ATTACHMENT0);
@@ -355,7 +361,7 @@ void Renderer::draw(Camera *camera)
     if (!gpuInitialized) {
         float* ones = new float[4]{ 1.0f, 1.0f, 1.0f, 1.0f };
         exposureBuffer->mapData(4 * 4, &ones);
-       // starsTexture->generateMipMaps();
+        // starsTexture->generateMipMaps();
     }
     Game::instance->bindTexture(GL_TEXTURE_2D, 0, 0);
     Game::instance->bindTexture(GL_TEXTURE_2D, 1, 0);
@@ -439,8 +445,11 @@ void Renderer::cloudsResolve()
 
 void Renderer::combine(int step)
 {
+    waterColorTexture->use(16);
+    exposureComputeShader->dispatch(1, 1, 1);
     combineFbo->use(false);
     combineShader->use();
+    exposureBuffer->use(0);
     deferredTexture->use(5);
     ambientLightTexture->use(6);
     ambientOcclusionTexture->use(16);
@@ -459,10 +468,7 @@ void Renderer::combine(int step)
 }
 void Renderer::fxaaTonemap()
 {
-    combineTexture->use(16);
-    exposureComputeShader->dispatch(1, 1, 1);
     fxaaTonemapShader->use();
-    exposureBuffer->use(0);
     //lensBlurTextureVertical->use(16);
     combineTexture->use(16);
     setCommonUniforms(fxaaTonemapShader);
@@ -481,7 +487,7 @@ void Renderer::lensBlur()
     setCommonUniforms(lensBlurShader);
 
     quad3dInfo->draw();
-   // lensBlurTextureVertical->generateMipMaps();
+    // lensBlurTextureVertical->generateMipMaps();
 }
 
 void Renderer::output()
@@ -563,7 +569,7 @@ void Renderer::ambientLight()
     setCommonUniforms(ambientLightShader);
     quad3dInfo->draw();
 }
- 
+
 
 void Renderer::waterTile()
 {
@@ -577,8 +583,8 @@ void Renderer::waterTile()
     waterTileShader->setUniform("Resolution", glm::vec2(width, height));
     waterTileShader->setUniform("Time", Game::instance->time);
     quad3dInfo->draw();
-    tex->generateMipMaps();
     tex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
+    tex->generateMipMaps();
     waterTileUseFBO1 = !waterTileUseFBO1;
     tex->use(23);
 }

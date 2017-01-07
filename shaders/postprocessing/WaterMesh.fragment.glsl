@@ -12,7 +12,7 @@ uniform float WaterSpeed;
 
 uniform float WaterWavesScale;
 
- 
+
 
 float intersectPlane(vec3 origin, vec3 direction, vec3 point, vec3 normal)
 { return dot(point - origin, normal) / dot(direction, normal); }
@@ -74,35 +74,35 @@ float raymarchwater(vec3 start, vec3 end, int stepsI){
 
 float getWaterDistance(){
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
-    
+
     float planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
-    
+
     float planethit2 = intersectPlane(CameraPosition, dir, vec3(0.0, WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
     bool hitwater = (intersects(planethit) || intersects(planethit2)) && (length(currentData.normal) < 0.01 || currentData.cameraDistance > planethit);
     float dist = -1.0;
-    
-    if(hitwater){ 
+
+    if(hitwater){
         vec3 newpos = CameraPosition + dir * planethit;
         if(WaterWavesScale > 0.01){
             if(WaterWavesScale < 0.4){
-            
+
                 dist = planethit;
-            
+
             } else {
-            
+
                 vec3 newpos2 = CameraPosition + dir * planethit2;
                 float mult2 = 1.0 - max(0.0, dot(newpos2, -VECTOR_UP));
                 float wvw = WaterWavesScale / 10.0;
-                int steps = 1 + int((6.0 + mult2 * 24.0) * wvw);
+                int steps = 1 + int((6.0 + mult2 * 224.0) * wvw);
                //
-                
+
               //  if(planethit < 14.0 && planethit > 0.0) steps *= 10;
             //    if(planethit2 < 14.0 && planethit2 > 0.0) steps *= 10;
 				mipmapx = textureQueryLod(waterTileTex, newpos.xz * WaterScale *  octavescale1).x;
                 if(intersects(planethit) && intersects(planethit2)){
-          
+
                         dist = raymarchwater(newpos, newpos2, steps);
-                    
+
                 } else if(intersects(planethit)){
                  //   planethit = min(14999, planethit);
                     dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit, steps);
@@ -118,13 +118,13 @@ float getWaterDistance(){
             hitwater = currentData.cameraDistance > dist;
         }
     }
-    if(hitwater){ 
+    if(hitwater){
         return dist;
     }
     return -1.0;
 }
 
 
-vec4 shade(){    
+vec4 shade(){
     return vec4(getWaterDistance(), 0.0, 0.0, 0.0);
 }

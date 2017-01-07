@@ -21,7 +21,7 @@ float fbmHI(vec3 p){
     float wc = 1.0;
 	for(int i=0;i<4;i++){
         //p += noise(vec3(a));
-		a += (snoise(p) * 0.5 + 0.5) * w;	
+		a += (snoise(p) * 0.5 + 0.5) * w;
 		wc += w;
         w *= 0.5;
 		p = p * 3.0;
@@ -69,7 +69,7 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
         totalRlh += odStepRlh * attn;
         totalMie += odStepMie * attn;
         iTime += iStepSize;
-    }   
+    }
     return max(vec3(0.0), iSun * (pRlh * kRlh * totalRlh + pMie * kMie * totalMie));
 }
 vec3 mydumbassscatteringfunction(vec3 dir, vec3 sun){
@@ -79,27 +79,27 @@ vec3 mydumbassscatteringfunction(vec3 dir, vec3 sun){
     float upsky = max(0.0, dot(dir, vec3(0.0, 1.0, 0.0)));
     float wholeskysun = dot(dir, sun) * 0.5 + 0.5;
     float halfskysun = max(0.0, dot(dir, sun));
-     
+
     vec3 blue = vec3(0) * 2.0;
     vec3 orange = vec3(0.9, 0.18, 0.03) * 3.0;
     vec3 dust = vec3(3.2) + blue * 3.0;
     vec3 farScatter = mix(orange, dust, 1.0 - pow(1.0 - daynight2, 4.0));
-    
-    
+
+
     vec3 suncolor = mix(orange, vec3(1.0), daynight2) * 10.0;
     farScatter = mix(farScatter, suncolor, pow(wholeskysun, 14.0) / (0.5 + dir.y) / (0.5 + sun.y));
-    vec3 skycolor = 
+    vec3 skycolor =
     //  mix(farScatter, blue, 1.0 - (pow(1.0 - max(0.0, dir.y), 1.0) * wholeskysun)) * daynight * 0.2
     mix(farScatter, blue, 1.0 - (pow(1.0 - max(0.0, dir.y), 4.0) * wholeskysun)) * daynight * 0.2
     + mix(farScatter, blue, 1.0 - (pow(1.0 - max(0.0, dir.y), 8.0) * wholeskysun)) * daynight * 0.2
     + mix(farScatter, blue, 1.0 - (pow(1.0 - max(0.0, dir.y), 16.0) * wholeskysun)) * daynight * 0.2;
-    
+
     return skycolor * ( pow(1.0 - daynight, 4.0)) * 3.0;
 }
 vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
 	float mult = 0.0 + 0.9 * step(0.0, dir.y);
-    if(dir.y < -0.01) return vec3(0.0);
-   // dir.y = abs(dir.y);
+    //if(dir.y < -0.01) return vec3(0.0);
+    dir.y = abs(dir.y);
     return// mult * 3.3 * mydumbassscatteringfunction(dir, sunpos) +
      12.0 * atmosphere(
         dir,           // normalized ray direction
