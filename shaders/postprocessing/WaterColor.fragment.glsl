@@ -136,7 +136,7 @@ vec4 getLighting(){
     //return vec4(1) * roughness;
     MIP = mipmap1 *0.6 ;
     //mipmap1 *= 0.0;
-    float height1  = heightwater(hitpos.xz);
+    float height1  = heightwater(hitpos.xz) * waterdepth;
    // float foam  = foamwater(hitpos.xz, 0);
     float height2  = heightwaterD(hitpos.xz, 0.5);
 
@@ -156,7 +156,7 @@ vec4 getLighting(){
     dir = reflect(origdir, normal);
      dir.y = abs(dir.y);
   //  dir.y = max(0.05, dir.y);
-    float fresnel  = fresneleffect(0.04, roughness, dir, normal);
+    float fresnel  = fresneleffect(0.00, roughness, dir, normal);
   //  return fresnel * vec4(1);
     //float x =  textureQueryLod(waterTileTex, hitpos.xz * WaterScale *  octavescale1).x / textureQueryLevels(waterTileTex);
     // float h = hitwater2(hitpos, dir) * (1.0 - x) + x;
@@ -219,13 +219,14 @@ vec4 getLighting(){
     vec3 newpos = CameraPosition + dir * planethit;
     vec3 newpos2 = CameraPosition + dir * planethit2;
 
-    float ssscoeff = pow(max(0, height1 - height2) * WaterWavesScale * 0.05 * length(WaterScale) , 2.0) ;
-    vec3 waterSSScolor = vec3(0.01, 0.44, 0.22) * 0.02 + vec3(0.01, 0.33, 0.22)*  4.71  * ssscoeff  ;
-   // result += waterSSScolor * (1.0 - fresnel) * getSunColor(0) ;
+    float ssscoeff = pow(max(0, height1 - 0.5) * WaterWavesScale * 0.05 * length(WaterScale) , 2.0)  * 0.5 + 0.5;
+    vec3 waterSSScolor =  vec3(0.01, 0.33, 0.55)*  0.071  * ssscoeff  ;
+    result += waterSSScolor * (1.0 - fresnel) * getSunColor(0) *10.0;
    // result += 1.0 - smoothstep(0.002, 0.003, ssscoeff2);
-    result += (vec3(0.0,0.06,0.11) + pow(dot(normal,dayData.sunDir) * 0.4 + 0.6,80.0) * vec3(0.8,0.9,0.6) * 0.12) * getSunColor(0) * (1.0 - fresnel)  * 0.069;
-    float superscat = pow(max(0.0, dot(refr, dayData.sunDir)), 4.0) * (1.0 - fresnel);
-    result += vec3(0.5,0.9,0.8) * pow(max(0.0, height1 - 0.3), 2.0) * octavescale1 * waterdepth * length(WaterScale) * getSunColor(0) * (superscat * 12.0 + 0.2) ;
+    //result += (pow(dot(normal,dayData.sunDir) * 0.4 + 0.6,80.0) * vec3(0.8,0.9,0.6) * 0.12) * getSunColor(0) * (1.0 - fresnel)  * 0.8069;
+    vec3 refr2 = normalize(refr + vec3(0.0, 0.3, 0.0));
+    float superscat = pow(max(0.0, dot(refr, dayData.sunDir)), 8.0) ;//* (1.0 - fresnel);
+    result += vec3(0.5,0.9,0.8) * superscat * getSunColor(0) * 40.0;
 
      return  vec4(result, 1.0);
 }

@@ -112,7 +112,7 @@ float heightwaterHI2(vec2 pos){
         w += wz * 2.0;
         wz *= 0.6;
         pos *= vec2(1.9, 1.7);
-        tmod *= 0.3;
+        tmod *= 0.8;
     }
     return res / w;
 }

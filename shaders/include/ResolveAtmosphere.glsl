@@ -1,4 +1,5 @@
-
+#ifndef RESOLVEATMOSPHERE_H
+#define RESOLVEATMOSPHERE_H
 float roughnessToMipmap(float roughness, samplerCube txt){
     //roughness = roughness * roughness;
     float levels = max(0, float(textureQueryLevels(txt)));
@@ -174,7 +175,7 @@ float sun(vec3 dir, vec3 sundir, float gloss, float ansiox){
 float sshadow = 1.0;
 vec3 shadingWater(PostProcessingData data, vec3 n, vec3 lightDir, vec3 colorA, vec3 colorB){
     float fresnel  = fresneleffect(0.04, 0.0, normalize(data.cameraPos), n);
-    fresnel = mix(fresnel, 0.5, data.roughness);
+    fresnel = mix(fresnel, 0.05, data.roughness);
     return colorB * ( fresnel);
    // return  colorB * (  fresnel);
 }
@@ -238,8 +239,13 @@ float godrays(vec3 dir, int steps){
 
     float iter = 0.0;
     float result = 1.0;
+    vec3 sdir = dayData.sunDir;
+    float x = sdir.y * 0.5 + 0.5;
+    x *= 0.94;
+    x = x * 2.0 - 1.0;
+    sdir.y = mix(x, sdir.y, sdir.y);
     for(int i=0;i<steps;i++){
-        result -= textureLod(coverageDistTex, normalize(mix(dir, dayData.sunDir, iter + rd)), 1.0).r * stepsize;
+        result -= textureLod(coverageDistTex, normalize(mix(dir, sdir, iter + rd)), 0.0).r * stepsize;
         iter += stepsize;
     }
     return result;
@@ -356,23 +362,25 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float AOSky = 0.15;//aabbdd.g;
 
     float SunDT = max(0.0, dot(dayData.sunDir, VECTOR_UP));
+    float DirDT = max(0.0, dot(dir, VECTOR_UP));
 
-    vec3 raycolor = getSunColor(0.0) * NoiseOctave1 * 0.1;
+    #define xA 0.5
+    #define xB 0.5
+    float mult = mix(sqrt(dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, SunDT) + 0.02;
+    vec3 raycolor = mult * getSunColor(0.0) * NoiseOctave1 * 0.3;
+    //raycolor *= xA + xB * (pow(1.0 - DirDT, 8.0));
+    float raysCoverage = min(1.0, (0.2 + 0.8 * (1.0 - (asin(DirDT) / (3.1415 * 0.5)) )) * NoiseOctave1 * 0.1);
     vec3 vdao = blurshadowsAO(dir, roughness);
 
-    vec3 CC = vdao + (SunC * Shadow) + (
-    mix(
+    vec3 CC = vdao + (SunC * Shadow) + (GroundC);
 
-    SunC * GroundC * SunDT * AOGround +
-    AtmDiffuse * GroundC * AOGround +
-    vec3(0.001) * GroundC * AOGround,// +
-    //AtmDiffuse * 1.0 * AOSky,
+    scattering *= xA + xB * (1.0 - pow(1.0 - DirDT, 14.0));
+    CC = mix(scattering, CC, xA + xB * (1.0 - pow(1.0 - DirDT, 14.0)));
+    CC *= xA + xB * (1.0 - pow(1.0 - DirDT, 14.0));
 
-    SunC * GroundC * 1.0 * AOGround + AtmDiffuse * AOSky,
 
-    0.0));
 
-    return mix(scattering * monsoonconverage + moon, monsoonconverage * CC, coverage) + raycolor * rays;
+    return mix(mix(scattering * monsoonconverage + moon, monsoonconverage * CC, coverage), raycolor * rays, raysCoverage);
 
     /*
     direct += (1.0 - smoothstep(0.0, 0.3, shadow)) * 0.1 * thatsunglowIdontknownamefor(dir, 6.0, 8.0);
@@ -478,3 +486,4 @@ vec3 getNormalLighting(vec2 uv, PostProcessingData data){
         return shadeFragment(data);
     }
 }
+#endif

@@ -72,7 +72,7 @@ int main()
     auto car = new Car();
     
     auto t = game->asset->loadMeshFile("terrain.mesh3d");
-    game->world->scene->addMesh(t);
+   // game->world->scene->addMesh(t);
     /*
     for (int x = 0; x < 1; x++) {
         for (int y = 0; y < 50; y++) {

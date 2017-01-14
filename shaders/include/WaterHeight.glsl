@@ -41,14 +41,18 @@ float heightwaterHI(vec2 posx){
 
 
 vec2 heightwaterXO(vec2 uv, vec2 offset, float mipmap){
-    #define xns(a) pow(supernoise3dX(a) * 0.5 + 0.5, 3.0)
-    float sn1 = xns(vec3(uv * WaterScale * octavescale1 * vec2(0.99, 0.5) * 3.0 + vec2(0.0 + Time * 0.2 * WaterSpeed, 0.0), Time * 0.24 * WaterSpeed)) * WaterHeight;
+    #define xns(a) pow(supernoise3d(a * (0.95 + 0.05 * supernoise3d(vec3(a.x * 0.03, a.y * 0.03, Time * 0.01 * WaterSpeed)))) * 0.5 + 0.5, 1.0)
+    #define xns2(a) pow(xns(a) * 1.0, 2.0)
+    float mixer = smoothstep(0.0, 0.7, mipmap / maxmip);
+    float sn1 = mixer < 0.01 ? 0.5 : xns2(vec3(uv * WaterScale * octavescale1 * vec2(0.99, 0.5) * 3.0 + vec2(0.0 + Time * 0.62, 0.0), Time * 1.15524 * WaterSpeed));
     //float sn2 = xns(vec3(uv * WaterScale * octavescale1 * vec2(0.99, 0.5) * 3.0 + vec2(0.01 + Time * 0.2 * WaterSpeed, 0.0), Time * 0.24 * WaterSpeed)) * WaterHeight;
     //float sn3 = xns(vec3(uv * WaterScale * octavescale1 * vec2(0.99, 0.5) * 3.0 + vec2(0.0 + Time * 0.2 * WaterSpeed, 0.01), Time * 0.24 * WaterSpeed)) * WaterHeight;
     //vec2 dfx =  (vec2(sn2 - sn1, sn3 - sn1));
     //if(UV.x < 0.5)uv += 50.0 * mix(dfx, vec2(1.0), smoothstep(0.0, 0.3, mipmap / maxmip));
-    //sn1 = mix(sn1, 0.5, smoothstep(0.0, 0.7, mipmap / maxmip));
+    sn1 = mix(sn1, 0.5, mixer);
+    //sn1 = 0.0;
 	return textureLod(waterTileTex, uv * 0.5 * WaterScale * octavescale1 + offset, mipmap).rg * 0.017 + vec2(sn1, sn1) * 1.0;
+    //return textureLod(waterTileTex, uv * 0.5 * WaterScale * octavescale1 + offset, mipmap).rg;
     /*
 	vec2 zuv1 = (uv * WaterScale * octavescale1) + vec2(Time * 0.001 * WaterSpeed);
 	vec2 zuv2 = zuv1 - vec2(Time * 0.0014 * WaterSpeed);
