@@ -98,8 +98,8 @@ float supernoise(vec2 x){
 
 float heightwaterHI2(vec2 pos){
     float res = 0.0;
-    pos *= 16.0;
-    float w = 1.0;
+    pos *= 2.0;
+    float w = 0.0;
     float wz = 1.0;
     float chop = 4.0;
     float tmod = 811.1 * WaterSpeed;
@@ -125,18 +125,18 @@ float heightwaterHI3(vec2 pos){
     float tmod = 121.1 * WaterSpeed;
 
     vec2 t = vec2(tmod * Time*0.0001);
-    float sn1 = supernoise3dX(vec3(pos * vec2(0.99, 0.5), Time * 0.4));
-    float sn2 = supernoise3dX(vec3(pos * vec2(0.99, 0.5) + vec2(1.0, 0.0), Time * 0.4));
-    float sn3 = supernoise3dX(vec3(pos * vec2(0.99, 0.5) + vec2(0.0, 1.0), Time * 0.4));
-    vec2 dfx = abs(0.5 - vec2(sn2 - sn1, sn3 - sn1)) * 0.1 + 1.0;
+    float sn1 = supernoise3dX(vec3(pos * vec2(0.499, 0.25), Time * 0.4));
+    float sn2 = supernoise3dX(vec3(pos * vec2(0.399, 0.25) + vec2(1.0, 0.0), Time * 0.4));
+    float sn3 = supernoise3dX(vec3(pos * vec2(0.4499, 0.25) + vec2(0.0, 1.0), Time * 0.4));
+    //vec2 dfx = abs(0.5 - vec2(sn2 - sn1, sn3 - sn1)) * 0.1 + 1.0;
     res += wz * pow(sn1, chop);
     wz *= 0.1;
-    pos *=  dfx;
+    //pos *=  dfx;
 
-    chop = 1.0;
     res += wz * heightwaterHI2(pos);
     w += wz;
-    return res / w;
+//    return res / w;
+    return heightwaterHI2(pos);
 }
 float heightwaterHI(vec2 posx){
     float res = 0.0;
@@ -171,7 +171,7 @@ float heightwaterHI(vec2 posx){
 
 vec4 shade(){
     vec2 uv = UV;
-    float c1 = heightwaterHI2(uv);
+    float c1 = heightwaterHI3(uv);
     float color = c1;
     return vec4(color, 0.0, 0.0, 0.0);
 }

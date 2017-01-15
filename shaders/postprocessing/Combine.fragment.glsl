@@ -78,9 +78,9 @@ vec3 testmap(vec3 c){
 
 vec3 tonemap(vec3 xa){
 
-    vec3 a = xa / max(0.1, Luminence);
+    vec3 a = xa / max(0.1, Luminence * 0.07);
     a *= Exposure;
-    a /= 1.0 + length(a) * 0.2;
+    a /= 1.0 + length(a) * 0.4;
     return testmap(rgb_to_srgb(a));
 
 }

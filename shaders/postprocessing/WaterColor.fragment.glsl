@@ -156,7 +156,7 @@ vec4 getLighting(){
     dir = reflect(origdir, normal);
      dir.y = abs(dir.y);
   //  dir.y = max(0.05, dir.y);
-    float fresnel  = fresneleffect(0.00, roughness, dir, normal);
+    float fresnel  = fresnel_effect(vec3(0.04), roughness, max(0.0, dot(dir, normal))).x;
   //  return fresnel * vec4(1);
     //float x =  textureQueryLod(waterTileTex, hitpos.xz * WaterScale *  octavescale1).x / textureQueryLevels(waterTileTex);
     // float h = hitwater2(hitpos, dir) * (1.0 - x) + x;
@@ -215,13 +215,12 @@ vec4 getLighting(){
         result += mixing * textureLod(inputTex, uvX, roughnessToMipmap(roughness, inputTex)).rgb * max(0.0, 1.0 - fresnel);
     }
 
-
     vec3 newpos = CameraPosition + dir * planethit;
     vec3 newpos2 = CameraPosition + dir * planethit2;
 
-    float ssscoeff = pow(max(0, height1 - 0.5) * WaterWavesScale * 0.05 * length(WaterScale) , 2.0)  * 0.5 + 0.5;
-    vec3 waterSSScolor =  vec3(0.01, 0.33, 0.55)*  0.071  * ssscoeff  ;
-    result += waterSSScolor * (1.0 - fresnel) * getSunColor(0) *10.0;
+    float ssscoeff = pow(max(0, height1 - (waterdepth*0.5)) * WaterWavesScale * 0.05 * length(WaterScale) , 2.0)  * 0.5 + 0.5;
+    vec3 waterSSScolor =  vec3(0.01, 0.33, 0.55)*  0.071 ;
+    result += waterSSScolor * getSunColor(0) *4.0;
    // result += 1.0 - smoothstep(0.002, 0.003, ssscoeff2);
     //result += (pow(dot(normal,dayData.sunDir) * 0.4 + 0.6,80.0) * vec3(0.8,0.9,0.6) * 0.12) * getSunColor(0) * (1.0 - fresnel)  * 0.8069;
     vec3 refr2 = normalize(refr + vec3(0.0, 0.3, 0.0));

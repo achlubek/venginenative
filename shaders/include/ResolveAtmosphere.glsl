@@ -363,13 +363,14 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
 
     float SunDT = max(0.0, dot(dayData.sunDir, VECTOR_UP));
     float DirDT = max(0.0, dot(dir, VECTOR_UP));
+    float invDirDT = 1.0 / DirDT;
 
     #define xA 0.5
     #define xB 0.5
     float mult = mix(sqrt(dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, SunDT) + 0.02;
-    vec3 raycolor = mult * getSunColor(0.0) * NoiseOctave1 * 0.3;
+    vec3 raycolor = mult * getSunColor(0.0) * NoiseOctave1 * 0.9;
     //raycolor *= xA + xB * (pow(1.0 - DirDT, 8.0));
-    float raysCoverage = min(1.0, (0.2 + 0.8 * (1.0 - (asin(DirDT) / (3.1415 * 0.5)) )) * NoiseOctave1 * 0.1);
+    float raysCoverage = min(1.0, (0.05 + 0.95 * pow((1.0 - (asin(DirDT) / (3.1415 * 0.5)) ), 13.0) * NoiseOctave1 * 0.1));
     vec3 vdao = blurshadowsAO(dir, roughness);
 
     vec3 CC = vdao + (SunC * Shadow) + (GroundC);

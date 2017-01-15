@@ -445,6 +445,7 @@ void Renderer::cloudsResolve()
 
 void Renderer::combine(int step)
 {
+    waterColorTexture->generateMipMaps();
     waterColorTexture->use(16);
     exposureComputeShader->dispatch(1, 1, 1);
     combineFbo->use(false);
