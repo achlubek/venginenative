@@ -230,7 +230,7 @@ vec3 getCloudsAL(vec3 dir){
     vec2 uv = UV + vec2(Rand1, Rand2);
     float rd = rand2s(uv) * 12.1232343456;
     float mult = mix(sqrt(dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, vdt) + 0.02;
-    for(int i=0;i<11;i++){
+    for(int i=0;i<14;i++){
         float x = rand2s(uv) * 2.0 - 1.0;
         //rd *= 2.7897;
         uv.x += 1.46456;
@@ -255,11 +255,13 @@ vec3 getCloudsAL(vec3 dir){
     float mx = 1.0 - pow(1.0 - max(0.0, dot(dir, VECTOR_UP)), 3.0);
     float sao =  (mix(sao1, sao2, mx) * (1.0 - pow(1.0 - vdt, 8.0)) * pow(vdt * 0.97 + 0.03, 1.0) * 14.0) / ((CloudsCeil - CloudsFloor) * 0.0005 + 1.0);
     sao *= 1.0 + pow(caa, 2.0) * 1.0 * pow(max(0.0, dot(dir, dayData.sunDir)) * max(0.0, dot(dir, VECTOR_UP)), 5.0);
+    sao *= pow(max(0.0, dot(dayData.sunDir, VECTOR_UP)), 2.0);
     //float dshadow = getAODIR(point, px, 113.0);
 
     float coverage =  smoothstep(0.464, 0.6, CloudsThresholdLow);
 //  return vec3(sao) ;
-    return clamp(sum / 11.0 , 0.0, 111.0) + sao * 3.0 + daox * 0.1 ;
+    return clamp(sum / 14.0 , 0.0, 111.0) + sao * 3.0 + daox * 0.1 ;
+    //return vec3(0.0) +  sao * 3.0;// + daox * 0.1 ;
 }
 
 Sphere sphere1;

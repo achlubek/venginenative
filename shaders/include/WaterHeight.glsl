@@ -55,9 +55,9 @@ vec2 heightwaterXO(vec2 uv, vec2 offset, float mipmap){
     //return textureLod(waterTileTex, uv * 0.5 * WaterScale * octavescale1 + offset, mipmap).rg;
 
 	vec2 zuv1 = (uv * WaterScale * octavescale1) + vec2(Time * 0.001 * WaterSpeed);
-	vec2 zuv2 = zuv1 - vec2(Time * 0.0014 * WaterSpeed);
-	vec2 zuv3 = zuv1 + vec2(Time * 0.0017 * WaterSpeed);
-	vec2 zuv4 = zuv1 - vec2(Time * 0.0018 * WaterSpeed);
+	vec2 zuv2 = zuv1 - vec2(Time * 0.0024 * WaterSpeed);
+	vec2 zuv3 = zuv1 + vec2(Time * 0.0027 * WaterSpeed);
+	vec2 zuv4 = zuv1 - vec2(Time * 0.0028 * WaterSpeed);
     vec2 a = textureLod(waterTileTex, zuv1, mipmap).rg;
     vec2 b = textureLod(waterTileTex, zuv2, mipmap).rg;
     vec2 c = textureLod(waterTileTex, zuv3, mipmap).rg;

@@ -23,31 +23,32 @@ layout(binding = 29) uniform samplerCube resolvedAtmosphereTex;
 
 uniform int RenderPass;
 
-vec3 blurshadowsAOXA(vec3 dir, float roughness){
+vec4 blurshadowsAOXA(vec3 dir, float roughness){
     //if(CloudsDensityScale <= 0.010) return 0.0;
     float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
-	return textureLod(cloudsCloudsTex, dir, mlvel).gba;
+	//return textureLod(cloudsCloudsTex, dir, mlvel).gba;
    // float dst = textureLod(coverageDistTex, dir, mlvel).g;
     float aoc = 1.0;
 
-    vec3 centerval = textureLod(cloudsCloudsTex, dir, mlvel).gba;
+    vec4 centerval = textureLod(cloudsCloudsTex, dir, mlvel).rgba;
 	float cluma = length(centerval);
-    float blurrange = 0.00010;
-    for(int i=0;i<7;i++){
+    float blurrange = 0.002 * dir.y;
+    for(int i=0;i<17;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
         //float there = textureLod(coverageDistTex, rdp, mlvel).g;
         //float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
-        vec3 th = textureLod(cloudsCloudsTex, rdp, mlvel).gba;
+        vec4 th = textureLod(cloudsCloudsTex, rdp, mlvel).rgba;
 
-        cluma += length(textureLod(cloudsCloudsTex, rdp, mlvel).gba);
+        cluma += length(textureLod(cloudsCloudsTex, rdp, mlvel).rgba);
         aoc += 1.0;
     }
     cluma /= aoc;
     //return centerval;
     return normalize(centerval) * cluma;
 }
+
 vec4 shade(){
    // return vec4(0);
     vec3 dir = normalize(reconstructCameraSpaceDistance(UV, 1.0));
@@ -69,8 +70,6 @@ vec4 shade(){
 		vec3 AOGround = getCloudsAL(dir);
 		//float AOSky = 1.0 - AOGround;//getCloudsAO(dir, 1.0);
 
-        retedg.r = min(val, lastData.r);
-        retavg.r = mix(val, lastData.r, CloudsIntegrate);
 		/*
         retedg.g = min(AOGround, lastData.g);
         retavg.g = mix(AOGround, lastData.g, CloudsIntegrate);
@@ -80,10 +79,13 @@ vec4 shade(){
 		retavg.g = mix(retavg.g, retedg.g, 0.5);
 		retavg.b = mix(retavg.b, retedg.b, 0.5);
 		retavg.r = mix(retavg.r, retedg.r, 0.1);*/
-		retavg.r = mix(retavg.r, retedg.r, 0.2);
+        vec4 brl = blurshadowsAOXA(dir, 0.0);
+        retedg.r = min(val, brl.r);
+        retavg.r = mix(val, brl.r, CloudsIntegrate);
+		//retavg.r = mix(retavg.r, retedg.r, 0.5);
 
         //vec3 blr = blurshadowsAOXA(dir, 0.0);
-        retavg.gba = mix(AOGround, blurshadowsAOXA(dir, 0.0), CloudsIntegrate);
+        retavg.gba = mix(AOGround, brl.gba, CloudsIntegrate);
     }
 
     return retavg;

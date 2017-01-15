@@ -217,6 +217,12 @@ Mesh3d * AssetLoader::loadMeshString(string source)
                         int floatsCount = bytescount / 4;
                         vector<GLfloat> flo(floats, floats + floatsCount);
 
+                      /*  cout << ss.str() << endl;
+                        for (int i = 0; i < floatsCount; i++) {
+                            if (i % 12 == 0) cout << endl;
+                            cout << flo[i] << " " ;
+                        }*/
+
                         lodlevel->info3d = new Object3dInfo(flo);
                         Media::saveCache(ss.str(), lodlevel->info3d);
                     }

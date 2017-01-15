@@ -15,7 +15,7 @@ public:
     Object3dInfo *info3d;
     float distanceStart;
     float distanceEnd;
-    float needBufferUpdate;
+    float needBufferUpdate = true;
     void draw();
     void setUniforms();
     void updateBuffer(const vector<Mesh3dInstance*> &instances);

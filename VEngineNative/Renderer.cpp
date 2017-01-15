@@ -156,7 +156,7 @@ void Renderer::initializeFbos()
     waterMeshFbo = new Framebuffer();
     waterMeshFbo->attachTexture(waterMeshTexture, GL_COLOR_ATTACHMENT0);
 
-    waterColorTexture = new Texture2d(width * config->getf("water_color_resolution_multiplier"), height * config->getf("water_color_resolution_multiplier"), GL_RGB16F, GL_RGB, GL_HALF_FLOAT);
+    waterColorTexture = new Texture2d(width * config->getf("water_color_resolution_multiplier"), height * config->getf("water_color_resolution_multiplier"), GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     waterColorFbo = new Framebuffer();
     waterColorFbo->attachTexture(waterColorTexture, GL_COLOR_ATTACHMENT0);
 
@@ -317,6 +317,9 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     sp->setUniform("Rand1", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
     sp->setUniform("Rand2", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
     sp->setUniform("CloudsIntegrate", cloudsIntegrate);
+    mrtAlbedoRoughnessTex->use(0);
+    mrtNormalMetalnessTex->use(1);
+    mrtDistanceTexture->use(2);
 }
 
 Renderer::~Renderer()
@@ -520,8 +523,6 @@ void Renderer::deferred()
     vector<Light*> lights = Game::instance->world->scene->getLights();
 
     deferredFbo->use(false);
-    FrustumCone *cone = currentCamera->cone;
-    glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
     deferredShader->use();
     setCommonUniforms(deferredShader);
     moonTexture->use(28);
@@ -604,9 +605,6 @@ void Renderer::fog()
     return;
     fogFbo->use(false);
     fogShader->use();
-    FrustumCone *cone = currentCamera->cone;
-    //   outputShader->setUniform("VPMatrix", vpmatrix);
-    glm::mat4 vpmatrix = currentCamera->projectionMatrix * currentCamera->transformation->getInverseWorldTransform();
     setCommonUniforms(fogShader);
     // csm->setUniformsAndBindSampler(fogShader, 24);
     quad3dInfo->draw();

@@ -139,11 +139,25 @@ void main(){
         normalize(cross(normal, tangent)) * tangentSign,
         normalize(normal)
     );
+
+    vec4 nodesdata[] = vec4[MAX_NODES](
+        texture(texBind0 , UV * getModifier(0).uvScale).rgba,
+        texture(texBind1 , UV * getModifier(1).uvScale).rgba,
+        texture(texBind2 , UV * getModifier(2).uvScale).rgba,
+        texture(texBind3 , UV * getModifier(3).uvScale).rgba,
+        texture(texBind4 , UV * getModifier(4).uvScale).rgba,
+        texture(texBind5 , UV * getModifier(5).uvScale).rgba,
+        texture(texBind6 , UV * getModifier(6).uvScale).rgba,
+        texture(texBind7 , UV * getModifier(7).uvScale).rgba,
+        texture(texBind8 , UV * getModifier(8).uvScale).rgba,
+        texture(texBind9 , UV * getModifier(9).uvScale).rgba
+    );
+
     bool modifiedNormal = false;
     for(int i=0;i<NodesCount;i++){
         NodeImageModifier node = getModifier(i);
         vec4 data = node.soureColor;
-        if(node.source == MODSOURCE_TEXTURE) data = sampleNode(node.samplerIndex, UV * node.uvScale);
+        if(node.source == MODSOURCE_TEXTURE) data = nodesdata[i];
 
         if(bitcheck(node.modifier, MODMODIFIER_NEGATIVE) && node.target == MODTARGET_NORMAL)data.rgb = vec3(1.0 - data.r, 1.0 - data.g, data.b);
         if(bitcheck(node.modifier, MODMODIFIER_NEGATIVE) && node.target != MODTARGET_NORMAL)data = 1.0-data;
@@ -188,6 +202,8 @@ void main(){
         }
     }
     if(modifiedNormal){
+        float df = min(1.0, abs(length(vec3(1.0)) - length(normalmap)));
+        roughness = mix(roughness, 1.0, df/length(vec3(1.0)));
         normalmap = normalize(normalmap);
         normalmap.r = - normalmap.r;
         normalmap.g = - normalmap.g;

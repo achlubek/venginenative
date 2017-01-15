@@ -72,7 +72,7 @@ float raymarchwater(vec3 start, vec3 end, int stepsI){
         pos = mix(start, end, iter + rd);
         h = hlower + heightwaterD(pos.xz, mipmapx) * waterdepth;
         if(h > pos.y) {
-            return raymarchwater3(mix(start, end, iter - stepsize + rd), mix(start, end, iter + stepsize + rd), 5);
+            return raymarchwater3(mix(start, end, iter - stepsize + rd), mix(start, end, iter + stepsize + rd),22);
            // return distance(pos, CameraPosition);
         }
         iter += stepsize;

@@ -116,8 +116,60 @@ vec3 integrateStepsAndSun(){
     return getNormalLighting(UV, currentData);
 }
 
+
+uniform float FocalLength;
+uniform float LensBlurSize;
+float getAmountForDistance(float focus, float dist){
+
+	float f = FocalLength * 0.1;
+	float d = focus*1000.0; //focal plane in mm
+	float o = dist*1000.0; //depth in mm
+
+	float fstop = 64.0;
+	float CoC = 1.0;
+	float a = (o*f)/(o-f);
+	float b = (d*f)/(d-f);
+	float c = (d-f)/(d*fstop*CoC);
+
+	float blur = abs(a-b)*c;
+	return blur;
+}
+
+vec3 BoKeH(vec2 uv){
+    float focus = textureLod(waterColorTex, vec2(0.5, 0.5), 0.0).a;
+    float dist = textureLod(waterColorTex, uv, 0.0).a;
+//    return dist * vec3(0.1);
+   // if(dist < focus) dist = focus + abs(dist - focus);
+    float amountoriginal = getAmountForDistance(focus, dist) * LensBlurSize * 11.019;
+
+    float amount = clamp(amountoriginal, 0.00, 0.021);
+    if(amount < 0.0005) return fxaa(waterColorTex, UV).rgb;
+    //float amount = getAmountForDistance(focus, dist);
+    //return vec3(amount / 0.005);
+    float stepsize = 6.283185 / 8.0;
+    float ringsize = 1.0 / 4.0;
+    vec3 sum = vec3(0);
+    float weight = 0.001;
+    vec2 ratio = vec2(Resolution.y / Resolution.x, 1.0);
+    for(float x=rand2s(UV * Time) * stepsize;x<6.283185;x+=stepsize){
+        for(float y=rand2s(UV * Time) * ringsize;y<1.0;y+=ringsize){
+            vec2 displacement = vec2(sin(x + y * 2.1), cos(x + y * 2.1)) * ratio * (y) * amount;
+            float distx = textureLod(waterColorTex, uv + displacement, 4.0 * amountoriginal).a;
+            vec3 c = textureLod(waterColorTex, uv + displacement, 4.0 * amountoriginal).rgb;
+            float w = (length(c) + 0.3) *   mix(max(0.0, 1.0 - abs(dist - distx)), 1.0, amount * 7.0) * pow(1.0 - y, 2.0);
+            sum += w * c;
+            weight += w;
+        }
+    }
+    return sum / weight;
+
+}
+
+
 vec3 integrateCloudsWater(){
-    return tonemap(texture(waterColorTex, UV).rgb);
+    vec3 color = LensBlurSize > 0.11 ? BoKeH(UV) : fxaa(waterColorTex, UV).rgb;;
+    //vec3 c = applysimplebloom();
+    return tonemap(color);
 }
 
 vec4 shade(){

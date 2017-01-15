@@ -105,30 +105,30 @@ vec3 median(sampler2D tex, vec2 uv){
 
 }
 
-vec3 blurshadowsAO(vec3 dir, float roughness){
+vec4 blurshadowsAO(vec3 dir, float roughness){
     //if(CloudsDensityScale <= 0.010) return 0.0;
     float levels = max(0, float(textureQueryLevels(shadowsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
-    return textureLod(shadowsTex, dir, mlvel).gba;
+    //return textureLod(shadowsTex, dir, mlvel).gba;
     float dst = textureLod(coverageDistTex, dir, mlvel).g;
     float aoc = 1.0;
 
-    vec3 centerval = textureLod(shadowsTex, dir, mlvel).gba;
+    vec4 centerval = textureLod(shadowsTex, dir, mlvel).rgba;
     float cluma = length(centerval);
-    float blurrange = 0.003;
-    for(int i=0;i<7;i++){
+    float blurrange = 0.008 * dir.y;
+    for(int i=0;i<12;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
         //float there = textureLod(coverageDistTex, rdp, mlvel).g;
         //float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
-        vec3 th = textureLod(shadowsTex, rdp, mlvel).gba;
+        vec4 th = textureLod(shadowsTex, rdp, mlvel).rgba;
 
-        cluma += length(textureLod(shadowsTex, rdp, mlvel).gba);
+        centerval += textureLod(shadowsTex, rdp, mlvel).rgba;
         aoc += 1.0;
     }
-    cluma /= aoc;
+    centerval /= aoc;
     //return centerval;
-    return normalize(centerval) * cluma * 1.0;
+    return centerval;
 }
 vec4 smartblur(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));
@@ -199,11 +199,12 @@ vec3 getDiffuseAtmosphereColor(){
 }
 
 vec3 getSunColorDirectly(float roughness){
-    vec3 sunBase = vec3(5.0);
+    vec3 sunBase = vec3(15.0);
     float dt = max(0.0, (dot(dayData.sunDir, VECTOR_UP)));
     float dt2 = 0.9 + 0.1 * (1.0 - max(0.0, (dot(dayData.sunDir, VECTOR_UP))));
-    vec3 supersundir = textureLod(atmScattTex, vec3(dayData.sunDir.x, 0.0, dayData.sunDir.z), 0.0).rgb ;
-    return mix(supersundir, sunBase, dt * dt * dt* dt* dt);
+    vec3 supersundir = 25.0 * textureLod(atmScattTex, vec3(dayData.sunDir.x, max(0.0, dayData.sunDir.y * 0.1), dayData.sunDir.z), 1.0).rgb ;
+
+    return mix(supersundir, sunBase, 1.0 - pow(1.0 - dt, 4.0));
     //return  max(vec3(0.3, 0.3, 0.0), (  sunBase - vec3(5.5, 18.0, 20.4) *  pow(1.0 - dt, 8.0)));
 }
 
@@ -340,13 +341,14 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float dimmer = max(0, 0.06 + 0.94 * dot(normalize(dayData.sunDir), vec3(0,1,0)));
     vec3 scattering = getAtmosphereScattering(dir, roughness);
     vec3 moon = textureMoon(dir);
-    scattering += (1.0 - step(0.1, length(currentData.normal))) * lenssun(dir) * getSunColorDirectly(0.0) * 1.0;
+    scattering += lenssun(dir) * getSunColorDirectly(0.0) * 1.0;
     float monsoonconverage = (1.0 - smoothstep(0.995, 1.0, dot(dayData.sunDir, dayData.moonDir))) * 0.7 + 0.3;
     vec4 cloudsData = smartblur(dir, roughness);
     float coverage = cloudsData.r;
     sshadow = 1.0 - coverage;
     //float dist = cloudsData.g;
-    float shadow = cloudsData.b;
+    vec4 vdao = blurshadowsAO(dir, roughness);
+    float shadow = vdao.r;
     //return ;
     float rays = godrays(dir, raysteps);
 
@@ -371,9 +373,8 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     vec3 raycolor = mult * getSunColor(0.0) * NoiseOctave1 * 0.9;
     //raycolor *= xA + xB * (pow(1.0 - DirDT, 8.0));
     float raysCoverage = min(1.0, (0.05 + 0.95 * pow((1.0 - (asin(DirDT) / (3.1415 * 0.5)) ), 13.0) * NoiseOctave1 * 0.1));
-    vec3 vdao = blurshadowsAO(dir, roughness);
-
-    vec3 CC = vdao + (SunC * Shadow) + (GroundC);
+    //return vdao;
+    vec3 CC = vdao.gba + (SunC * Shadow) + (GroundC);
 
     scattering *= xA + xB * (1.0 - pow(1.0 - DirDT, 14.0));
     CC = mix(scattering, CC, xA + xB * (1.0 - pow(1.0 - DirDT, 14.0)));

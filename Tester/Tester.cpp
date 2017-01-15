@@ -61,7 +61,7 @@ int main()
   //  sq->compileFile(Media::getPath("squireeltest.txt"));
   //  sq->callProcedureVoid("testme");
 
-   //  game->world->scene = game->asset->loadSceneFile("sp.scene");
+     game->world->scene = game->asset->loadSceneFile("sp.scene");
      //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->translate(glm::vec3(0, -62.5f, 0));
     // for (int i = 0; i < game->world->scene->getMeshes().size(); i++) {
       //   game->world->scene->getMeshes()[i]->getInstance(0)->transformation->scale(glm::vec3(100.0f));
@@ -70,9 +70,9 @@ int main()
   //  game->world->scene->addMesh(game->asset->loadMeshFile("treeground.mesh3d"));
 
     auto car = new Car();
-    
-    auto t = game->asset->loadMeshFile("terrain.mesh3d");
-   // game->world->scene->addMesh(t);
+    auto t = game->asset->loadMeshFile("2dplane.mesh3d");
+    t->alwaysUpdateBuffer = true;
+    game->world->scene->addMesh(t);
     /*
     for (int x = 0; x < 1; x++) {
         for (int y = 0; y < 50; y++) {
@@ -83,7 +83,7 @@ int main()
     */
     game->invoke([&]() {
         auto phys = Game::instance->world->physics;
-        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, -1.0, 0.0)), new btBoxShape(btVector3(1111.0, 1.0,1110.0)));
+        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, -0.0, 0.0)), new btBoxShape(btVector3(1111.0, 5.0,1110.0)));
         //groundpb->body->applyTorque(btVector3(1000, 1000, 1000));
         groundpb->body->setFriction(10);
         groundpb->enable();
@@ -215,7 +215,8 @@ int main()
                   //  ImGui::SliderFloat("Noise6", &Game::instance->renderer->noiseOctave6, 0.01f, 10.0f);
                   //  ImGui::SliderFloat("Noise7", &Game::instance->renderer->noiseOctave7, 0.01f, 10.0f);
                   //  ImGui::SliderFloat("Noise8", &Game::instance->renderer->noiseOctave8, 0.01f, 10.0f);
-                  //  ImGui::SliderFloat("LensBlurAmout", &Game::instance->renderer->lensBlurSize, 0.01f, 10.0f);
+            ImGui::SliderFloat("LensBlurAmount", &Game::instance->renderer->lensBlurSize, 0.01f, 10.0f);
+            ImGui::SliderFloat("FocalLength", &cam->focalLength, 0.01f, 10.0f);
                     //ImGui::SliderFloat("Noise8", &Game::instance->renderer->noiseOctave8, 0.01f, 10.0f);
             //        ImGui::SliderFloat("RoughnessTerra", &game->world->scene->getMeshes()[0]->getLodLevel(0)->material->roughness, 0.01f, 10.0f);
             for (auto i = Game::instance->renderer->cloudsShader->shaderVariables.begin(); i != Game::instance->renderer->cloudsShader->shaderVariables.end(); i++) {
@@ -368,11 +369,11 @@ int main()
             if (cameraFollowCar) {
                 auto cartrans = car->getTransformation();
                 if (cartrans != nullptr) {
-                    glm::vec3 backvector = glm::mat3_cast(glm::angleAxis(deg2rad(180.0f), glm::vec3(0, 1, 0)) * glm::inverse(cartrans->orientation)) * glm::vec3(0.0, 1.0, 4.0);
+                    glm::vec3 backvector = glm::mat3_cast(glm::inverse(cartrans->orientation)) * glm::vec3(0.0, 1.0, -4.0);
                     backvector = backvectorlast * 0.97f + backvector * 0.03f;
                     backvectorlast = backvector;
                     cam->transformation->setPosition(cartrans->position + backvector);
-                    cam->transformation->setOrientation(glm::angleAxis(deg2rad(180.0f), glm::vec3(0, 1, 0)) * glm::inverse(cartrans->orientation));
+                    cam->transformation->setOrientation(glm::inverse(glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0)) * cartrans->orientation));
                 }
 
             }
@@ -395,7 +396,7 @@ int main()
             int acnt = 0;
             const float * axes = glfwGetJoystickAxes(0, &acnt);
             if (acnt >= 1) {
-                car->setWheelsAngle(axes[0] * 0.5);
+                car->setWheelsAngle(axes[0] * 0.9);
             }if (acnt >= 6) {
                 float acc = (axes[5] * 0.5 + 0.5);
                 float brk = (axes[4] * 0.5 + 0.5);

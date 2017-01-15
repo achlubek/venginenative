@@ -114,14 +114,26 @@ float roughnessToMipmapX(float roughness, samplerCube txt){
     float mx = log2(roughness*1024+1)/log2(1024);
     return mx * levels;
 }
+float rdhashx = 0.453451;
+vec3 randpoint3x(){
+    float x = hash(rdhashx);
+    rdhashx += 2.1231255;
+    float y = hash(rdhashx);
+    rdhashx += 1.6271255;
+    float z = hash(rdhashx);
+    rdhashx += 1.1231255;
+    return vec3(x, y, z) * 2.0 - 1.0;
+}
+float hitdst = 0.0;
 vec4 getLighting(){
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
 
     float hitdist = textureLod(waterDistanceTex, UV, 0.0).r;
    // return vec4(mod(hitdist, 11.0));
-
+    hitdst = length(currentData.normal) < 0.01 ? 99999.0 : currentData.cameraDistance;
     //return  textureLod(inputTex, UV, 0.0);
-    if(hitdist < 0.0) return  textureLod(inputTex, UV, 0.0);
+    if(hitdist <= 0.01) return  textureLod(inputTex, UV, 0.0);
+    hitdst = min(hitdist, hitdst);
     vec3 hitpos = CameraPosition + reconstructCameraSpaceDistance(UV, hitdist);
 
     float planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
@@ -132,7 +144,8 @@ vec4 getLighting(){
     mipmap1 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1).x;
     float mipmap2 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 11.2467).x;
     float mipmap3 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 151.2467).x ;
-    float roughness = clamp((pow(mipmap1/ textureQueryLevels(waterTileTex), 1.0)) , 0.0, 1.0);
+    float roughness2 = clamp((pow(mipmap1/ textureQueryLevels(waterTileTex), 1.0)) , 0.0, 13.0);
+    float roughness = clamp(roughness2 , 0.0, 1.0);
     //return vec4(1) * roughness;
     MIP = mipmap1 *0.6 ;
     //mipmap1 *= 0.0;
@@ -189,7 +202,12 @@ vec4 getLighting(){
     );
 
     //result += mix(shadingWater(dataReflection, -dayData.sunDir, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0)) * fresnel * 1.0, getSunColor(0.5) * 0.33 * whites, min(1.0, whites));// + sampleAtmosphere(normal, 0.0) * fresnel;
-    vec3 atm =  textureLod(resolvedAtmosphereTex, dir, roughnessToMipmapX(roughness * (0.02 * WaterWavesScale), resolvedAtmosphereTex)).rgb;// * (1.0 - roughness * 0.5) * (1.0 - roughness * 0.5);
+    vec3 atm = vec3(0.0);
+    for(int i=0;i<10;i++){
+        atm += textureLod(resolvedAtmosphereTex, dir + randpoint3x() * 0.137 * roughness, roughnessToMipmapX(roughness * (0.02 * WaterWavesScale), resolvedAtmosphereTex)).rgb;
+    }
+    //vec3 atm =  textureLod(resolvedAtmosphereTex, dir, roughnessToMipmapX(roughness * (0.02 * WaterWavesScale), resolvedAtmosphereTex)).rgb;// * (1.0 - roughness * 0.5) * (1.0 - roughness * 0.5);
+    atm *= 0.1;
    // return vec4(atm, 1.0);
   // vec2 ssr = traceReflection(hitpos, dir);
    //ssr.x = 1.0 - step(0.0, ssr.x);
@@ -218,14 +236,16 @@ vec4 getLighting(){
     vec3 newpos = CameraPosition + dir * planethit;
     vec3 newpos2 = CameraPosition + dir * planethit2;
 
+    float covercloud = smoothstep(0.198, 0.300, (CloudsThresholdLow + CloudsThresholdHigh) * 0.5);
+
     float ssscoeff = pow(max(0, height1 - (waterdepth*0.5)) * WaterWavesScale * 0.05 * length(WaterScale) , 2.0)  * 0.5 + 0.5;
     vec3 waterSSScolor =  vec3(0.01, 0.33, 0.55)*  0.071 ;
-    result += waterSSScolor * getSunColor(0) *4.0;
+    result += waterSSScolor * getSunColor(0) *4.0 * covercloud * max(0.0, dot(dayData.sunDir, VECTOR_UP));
    // result += 1.0 - smoothstep(0.002, 0.003, ssscoeff2);
     //result += (pow(dot(normal,dayData.sunDir) * 0.4 + 0.6,80.0) * vec3(0.8,0.9,0.6) * 0.12) * getSunColor(0) * (1.0 - fresnel)  * 0.8069;
     vec3 refr2 = normalize(refr + vec3(0.0, 0.3, 0.0));
     float superscat = pow(max(0.0, dot(refr, dayData.sunDir)), 8.0) ;//* (1.0 - fresnel);
-    result += vec3(0.5,0.9,0.8) * superscat * getSunColor(0) * 40.0;
+    result += vec3(0.5,0.9,0.8) * superscat * getSunColor(0) * 8.0 * covercloud;
 
      return  vec4(result, 1.0);
 }
@@ -233,5 +253,6 @@ vec4 getLighting(){
 
 vec4 shade(){
     vec4 color = getLighting();
-    return vec4( clamp(color, 0.0, 110.0));
+    color.a = hitdst;
+    return vec4(color);
 }

@@ -22,8 +22,8 @@ public:
     void updateBuffers();
     void draw();
     void setUniforms();
-    bool needBufferUpdate;
-    bool alwaysUpdateBuffer;
+    bool needBufferUpdate = true;
+    bool alwaysUpdateBuffer = false;
 private:
     vector<Mesh3dInstance*> instances;
     vector<Mesh3dLodLevel*> lodLevels;

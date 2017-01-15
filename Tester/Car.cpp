@@ -18,21 +18,22 @@ void Car::draw()
 
 void Car::setAcceleration(float acc)
 {
+    if (acc < 0.0) acc *= 0.1;
     if (tyreLFCon != nullptr) {
-        float maxspeed = 150.0f;
+        float maxspeed = 200.0f;
         auto m = ((btGeneric6DofConstraint*)tyreLFCon->constraint)->getRotationalLimitMotor(0);
         m->m_targetVelocity = -acc * maxspeed;
-        m->m_maxLimitForce = 50.0f;
-        m->m_currentLimit = 50.0f;
-        m->m_maxMotorForce = 50.0f;
+        m->m_maxLimitForce = 5.0f;
+        m->m_currentLimit = 5.0f;
+        m->m_maxMotorForce = 5.0f;
         m->m_enableMotor = acc != 0.0f;
         m->m_loLimit = -5.0f;
         m->m_hiLimit = 5.0f;
         m = ((btGeneric6DofConstraint*)tyreRFCon->constraint)->getRotationalLimitMotor(0);
         m->m_targetVelocity = -acc * maxspeed;
-        m->m_maxLimitForce = 50.0f;
-        m->m_currentLimit = 50.0f;
-        m->m_maxMotorForce = 50.0f;
+        m->m_maxLimitForce = 5.0f;
+        m->m_currentLimit = 5.0f;
+        m->m_maxMotorForce = 5.0f;
         m->m_enableMotor = acc != 0.0f;
         m->m_loLimit = -5.0f;
         m->m_hiLimit = 5.0f;
@@ -41,6 +42,8 @@ void Car::setAcceleration(float acc)
 
 void Car::setWheelsAngle(float angleInRadians)
 {
+    if (body == nullptr || body->body == nullptr) return;
+    angleInRadians /= 1.0f + body->body->getLinearVelocity().length2() * 0.1f;
     if (tyreLFCon != nullptr) {
         ((btGeneric6DofConstraint*)tyreLFCon->constraint)->setAngularLowerLimit(btVector3(-1.0, angleInRadians, 0.0));
         ((btGeneric6DofConstraint*)tyreLFCon->constraint)->setAngularUpperLimit(btVector3(-1.0, angleInRadians, 0.0));
