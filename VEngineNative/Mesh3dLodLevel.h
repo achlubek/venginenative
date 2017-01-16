@@ -33,5 +33,4 @@ private:
     vector<glm::vec4> nodesColors;
     vector<Texture2d*> textureBinds;
     size_t instancesFiltered;
-    bool useGeometryShader = false;
 };

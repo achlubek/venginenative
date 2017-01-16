@@ -12,6 +12,7 @@
 #include "../VEngineNative/Mesh3d.h";
 #include "../VEngineNative/Light.h";
 #include "../VEngineNative/SquirrelVM.h";
+#include "../VEngineNative/SimpleParser.h";
 #include "../VEngineNative/imgui/imgui.h";
 
 #include "Car.h";
@@ -42,6 +43,32 @@ int main()
         ready = true;
     });
     while (!ready);
+
+    SimpleParser* par = new SimpleParser();
+    auto axs = par->tokenize("diffuseColor = gradient("
+    "    0.0, texture0,"
+    "    0.4, texture1,"
+    "    0.8, \"loader\" + texture2,"
+    "    pow(texture3, 2.0);"
+    ");"
+    );
+
+    for (int i = 0; i < axs.size(); i++) {
+        if (axs[i].type == TOKEN_NAME) printf("TOKEN_NAME %s\n", axs[i].strdata);
+        if (axs[i].type == TOKEN_ASSIGNMENT) printf("TOKEN_ASSIGNMENT %s\n", axs[i].strdata);
+        if (axs[i].type == TOKEN_OPERATOR_ADD) printf("TOKEN_OPERATOR_ADD %s\n", axs[i].strdata);
+        if (axs[i].type == TOKEN_OPERATOR_SUB) printf("TOKEN_OPERATOR_SUB %s\n", axs[i].strdata);
+        if (axs[i].type == TOKEN_OPERATOR_MUL) printf("TOKEN_OPERATOR_MUL %s\n", axs[i].strdata);
+        if (axs[i].type == TOKEN_OPERATOR_DIV) printf("TOKEN_OPERATOR_DIV %s\n", axs[i].strdata);
+        if (axs[i].type == TOKEN_OPERATOR_POW) printf("TOKEN_OPERATOR_POW %s\n", axs[i].strdata);
+        if (axs[i].type == TOKEN_STRING) printf("TOKEN_STRING %s\n", axs[i].strdata);
+        if (axs[i].type == TOKEN_SEMICOLON) printf("TOKEN_SEMICOLON %s\n", axs[i].strdata);
+        if (axs[i].type == TOKEN_BRACE_OPEN) printf("TOKEN_BRACE_OPEN %s\n", axs[i].strdata);
+        if (axs[i].type == TOKEN_BRACE_CLOSE) printf("TOKEN_BRACE_CLOSE %s\n", axs[i].strdata);
+        if (axs[i].type == TOKEN_CURLY_OPEN) printf("TOKEN_CURLY_OPEN %s\n", axs[i].strdata);
+        if (axs[i].type == TOKEN_CURLY_CLOSE) printf("TOKEN_CURLY_CLOSE %s\n", axs[i].strdata);
+        if (axs[i].type == TOKEN_COMMA) printf("TOKEN_COMMA %s\n", axs[i].strdata);
+    }
 
     Camera *cam = new Camera();
     float fov = 95.0f;
@@ -257,8 +284,6 @@ int main()
         if (key == GLFW_KEY_PAUSE) {
             game->shaders->materialShader->recompile();
             game->shaders->depthOnlyShader->recompile();
-            game->shaders->depthOnlyGeometryShader->recompile();
-            game->shaders->materialGeometryShader->recompile();
             game->renderer->recompileShaders();
         }
         if (key == GLFW_KEY_O) {
@@ -305,6 +330,7 @@ int main()
     float speed = 0.0f;
     glm::vec3 dir = glm::vec3(0);
     glm::vec3 backvectorlast = glm::vec3(0);
+    glm::quat backquat = glm::quat();
     game->onRenderFrame->add([&](int i) {
        // t->needBufferUpdate = true;
         if (!cursorFree) {
@@ -367,13 +393,33 @@ int main()
                 intializedCameraSystem = true;
             }
             if (cameraFollowCar) {
+                int acnt = 0;
+                const float * axes = glfwGetJoystickAxes(0, &acnt);
+                if (acnt >= 1) {
+                    car->setWheelsAngle(axes[0] * 0.9);
+                }
+                if (acnt >= 6) {
+                    float acc = (axes[5] * 0.5 + 0.5);
+                    float brk = (axes[4] * 0.5 + 0.5);
+                    car->setAcceleration((acc - brk) * 0.5);
+                }
                 auto cartrans = car->getTransformation();
                 if (cartrans != nullptr) {
-                    glm::vec3 backvector = glm::mat3_cast(glm::inverse(cartrans->orientation)) * glm::vec3(0.0, 1.0, -4.0);
+                    glm::vec3 backvector = glm::vec3(0.0, 1.0, -4.0);
+                    auto trsf = glm::quat();
+                    if (acnt >= 4) {
+                        trsf = glm::angleAxis(deg2rad(axes[3] * 80.0f), glm::vec3(-1.0, 0.0, 0.0)) * glm::angleAxis(deg2rad(axes[2] * 80.0f), glm::vec3(0.0, -1.0, 0.0));
+                        auto trsf2 = glm::angleAxis(deg2rad(axes[3] * 80.0f), glm::vec3(1.0, 0.0, 0.0)) *  glm::angleAxis(deg2rad(axes[2] * 80.0f), glm::vec3(0.0, 1.0, 0.0));
+                        backvector = trsf2 *  ( backvector);
+                    }
+                    backvector = glm::mat3_cast(glm::inverse(cartrans->orientation)) * backvector;
+                    backquat = glm::slerp(backquat, trsf, 0.03f);
+                    trsf = backquat;
+
                     backvector = backvectorlast * 0.97f + backvector * 0.03f;
                     backvectorlast = backvector;
                     cam->transformation->setPosition(cartrans->position + backvector);
-                    cam->transformation->setOrientation(glm::inverse(glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0)) * cartrans->orientation));
+                    cam->transformation->setOrientation(glm::inverse( glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0)) * backquat * cartrans->orientation));
                 }
 
             }
@@ -393,15 +439,6 @@ int main()
                 cam->transformation->setPosition(newpos);
             }
 
-            int acnt = 0;
-            const float * axes = glfwGetJoystickAxes(0, &acnt);
-            if (acnt >= 1) {
-                car->setWheelsAngle(axes[0] * 0.9);
-            }if (acnt >= 6) {
-                float acc = (axes[5] * 0.5 + 0.5);
-                float brk = (axes[4] * 0.5 + 0.5);
-                car->setAcceleration((acc - brk) * 0.5);
-            }
         }
     });
 

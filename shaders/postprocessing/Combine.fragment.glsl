@@ -142,21 +142,22 @@ vec3 BoKeH(vec2 uv){
    // if(dist < focus) dist = focus + abs(dist - focus);
     float amountoriginal = getAmountForDistance(focus, dist) * LensBlurSize * 11.019;
 
-    float amount = clamp(amountoriginal, 0.00, 0.021);
+    float amount = clamp(amountoriginal, 0.00, 0.017);
+    float xda = amount / 0.017;
     if(amount < 0.0005) return fxaa(waterColorTex, UV).rgb;
     //float amount = getAmountForDistance(focus, dist);
     //return vec3(amount / 0.005);
-    float stepsize = 6.283185 / 8.0;
+    float stepsize = 6.283185 / 16.0;
     float ringsize = 1.0 / 4.0;
     vec3 sum = vec3(0);
     float weight = 0.001;
     vec2 ratio = vec2(Resolution.y / Resolution.x, 1.0);
-    for(float x=rand2s(UV * Time) * stepsize;x<6.283185;x+=stepsize){
-        for(float y=rand2s(UV * Time) * ringsize;y<1.0;y+=ringsize){
-            vec2 displacement = vec2(sin(x + y * 2.1), cos(x + y * 2.1)) * ratio * (y) * amount;
-            float distx = textureLod(waterColorTex, uv + displacement, 4.0 * amountoriginal).a;
-            vec3 c = textureLod(waterColorTex, uv + displacement, 4.0 * amountoriginal).rgb;
-            float w = (length(c) + 0.3) *   mix(max(0.0, 1.0 - abs(dist - distx)), 1.0, amount * 7.0) * pow(1.0 - y, 2.0);
+    for(float x=0.0;x<6.283185;x+=stepsize){
+        for(float y=ringsize;y<1.0;y+=ringsize){
+            vec2 displacement = vec2(sin(x + y * 2.54), cos(x + y * 2.54)) * ratio * (y) * amount;
+            float distx = textureLod(waterColorTex, uv + displacement, 2.0 * xda).a;
+            vec3 c = textureLod(waterColorTex, uv + displacement, 2.0 * xda).rgb;
+            float w = (length(c) + 0.3) ;//*   mix(max(0.0, 1.0 - abs(dist - distx)), 1.0, amount * 7.0);// * pow(1.0 - y, 2.0);
             sum += w * c;
             weight += w;
         }

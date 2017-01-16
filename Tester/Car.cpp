@@ -19,6 +19,8 @@ void Car::draw()
 void Car::setAcceleration(float acc)
 {
     if (acc < 0.0) acc *= 0.1;
+    if (!initialized) return;
+    acceleration = acc;
     if (tyreLFCon != nullptr) {
         float maxspeed = 200.0f;
         auto m = ((btGeneric6DofConstraint*)tyreLFCon->constraint)->getRotationalLimitMotor(0);
@@ -26,7 +28,7 @@ void Car::setAcceleration(float acc)
         m->m_maxLimitForce = 5.0f;
         m->m_currentLimit = 5.0f;
         m->m_maxMotorForce = 5.0f;
-        m->m_enableMotor = acc != 0.0f;
+        m->m_enableMotor = acc > 0.01f || acc < 0.01f;
         m->m_loLimit = -5.0f;
         m->m_hiLimit = 5.0f;
         m = ((btGeneric6DofConstraint*)tyreRFCon->constraint)->getRotationalLimitMotor(0);
@@ -34,7 +36,7 @@ void Car::setAcceleration(float acc)
         m->m_maxLimitForce = 5.0f;
         m->m_currentLimit = 5.0f;
         m->m_maxMotorForce = 5.0f;
-        m->m_enableMotor = acc != 0.0f;
+        m->m_enableMotor = acc > 0.01f || acc < 0.01f;
         m->m_loLimit = -5.0f;
         m->m_hiLimit = 5.0f;
     }
@@ -42,6 +44,8 @@ void Car::setAcceleration(float acc)
 
 void Car::setWheelsAngle(float angleInRadians)
 {
+
+    if (!initialized) return;
     if (body == nullptr || body->body == nullptr) return;
     angleInRadians /= 1.0f + body->body->getLinearVelocity().length2() * 0.1f;
     if (tyreLFCon != nullptr) {
@@ -85,22 +89,22 @@ void Car::initialize()
             glm::vec3 rearaxis = glm::vec3(0.0f, -0.538f, -1.2333f);
             glm::vec3 wheelspacing = glm::vec3(0.70968f, 0.0f, 0.0f);
 
-            body = Game::instance->world->physics->createBody(800.0, bodyMesh->getInstance(0), new btBoxShape(btVector3(1.0f, 0.05f, 2.2f)));
-            tyreLF = Game::instance->world->physics->createBody(2.0f, tiresMesh->getInstance(0), new btSphereShape(0.275f));
-            tyreRF = Game::instance->world->physics->createBody(2.0f, tiresMesh->getInstance(1), new btSphereShape(0.275f));
-            tyreLR = Game::instance->world->physics->createBody(2.0f, tiresMesh->getInstance(2), new btSphereShape(0.275f));
-            tyreRR = Game::instance->world->physics->createBody(2.0f, tiresMesh->getInstance(3), new btSphereShape(0.275f));
+            body = Game::instance->world->physics->createBody(1200.0, bodyMesh->getInstance(0), new btBoxShape(btVector3(2.0f, 0.45f, 3.2f)));
+            tyreLF = Game::instance->world->physics->createBody(8.0f, tiresMesh->getInstance(0), new btSphereShape(0.275f));
+            tyreRF = Game::instance->world->physics->createBody(8.0f, tiresMesh->getInstance(1), new btSphereShape(0.275f));
+            tyreLR = Game::instance->world->physics->createBody(8.0f, tiresMesh->getInstance(2), new btSphereShape(0.275f));
+            tyreRR = Game::instance->world->physics->createBody(8.0f, tiresMesh->getInstance(3), new btSphereShape(0.275f));
 
             body->body->setDamping(0.17, 0.06);
 
-            tyreLF->body->setFriction(40.0);
-            tyreRF->body->setFriction(40.0);
-            tyreLR->body->setFriction(40.0);
-            tyreRR->body->setFriction(40.0);
-       //     body->body->setIgnoreCollisionCheck(tyreLF->body, true);
-      //      body->body->setIgnoreCollisionCheck(tyreRF->body, true);
-      //      body->body->setIgnoreCollisionCheck(tyreLR->body, true);
-      //      body->body->setIgnoreCollisionCheck(tyreRR->body, true);
+            tyreLF->body->setFriction(140.0);
+            tyreRF->body->setFriction(140.0);
+            tyreLR->body->setFriction(140.0);
+            tyreRR->body->setFriction(140.0);
+            body->body->setIgnoreCollisionCheck(tyreLF->body, true);
+            body->body->setIgnoreCollisionCheck(tyreRF->body, true);
+            body->body->setIgnoreCollisionCheck(tyreLR->body, true);
+            body->body->setIgnoreCollisionCheck(tyreRR->body, true);
 
             auto v4 = frontaxis + wheelspacing;
             btTransform frameInA, frameInB;
@@ -195,7 +199,9 @@ void Car::initialize()
             m->m_hiLimit = 50.0f;
             
 
-
+            Game::instance->invoke([&]() {
+                initialized = true;
+            });
         });
     });
 }

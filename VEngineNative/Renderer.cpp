@@ -359,6 +359,10 @@ void Renderer::renderToFramebuffer(Camera *camera, Framebuffer * fboout)
     fxaaTonemap();
 }
 
+void Renderer::pick(glm::vec2 uv)
+{
+}
+
 void Renderer::draw(Camera *camera)
 {
     if (!gpuInitialized) {

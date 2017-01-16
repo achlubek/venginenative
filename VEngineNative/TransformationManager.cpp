@@ -7,7 +7,7 @@ TransformationManager::TransformationManager()
 {
     position = vec3(0);
     size = vec3(1);
-    orientation = glm::inverse(quat());
+    orientation = quat();
 }
 
 TransformationManager::TransformationManager(glm::vec3 iposition)

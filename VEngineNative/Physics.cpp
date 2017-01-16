@@ -13,7 +13,7 @@ Physics::Physics()
     collisionConf = new btDefaultCollisionConfiguration();
     dispatcher = new btCollisionDispatcher(collisionConf);
     broadphase = new btDbvtBroadphase();
-    auto w = new btDiscreteDynamicsWorld(dispatcher, broadphase, new btNNCGConstraintSolver(), collisionConf);
+    auto w = new btDiscreteDynamicsWorld(dispatcher, broadphase, new btSequentialImpulseConstraintSolver(), collisionConf);
     w->setGravity(btVector3(gravity.x, gravity.y, gravity.z));
     world = w;
 }

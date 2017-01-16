@@ -18,6 +18,7 @@ private:
     Mesh3d* tiresMesh; //4x instanced
 
     void initialize();
+    volatile bool initialized = false;
     float getAirTorque();
 };
 

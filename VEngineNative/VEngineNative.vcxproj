@@ -278,6 +278,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="ShaderStorageBuffer.h" />
+    <ClInclude Include="SimpleParser.h" />
     <ClInclude Include="SquirrelVM.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="stdafx.h" />
@@ -330,6 +331,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="ShaderStorageBuffer.cpp" />
+    <ClCompile Include="SimpleParser.cpp" />
     <ClCompile Include="SquirrelVM.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

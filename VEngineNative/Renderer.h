@@ -57,6 +57,9 @@ public:
     float waterSpeed;
     int width;
     int height;
+    unsigned int pickingResult = 0;
+    volatile bool pickingReady = true;
+    void pick(glm::vec2 uv);
 private:
     void draw(Camera *camera);
     void initializeFbos();
@@ -89,6 +92,8 @@ private:
     Framebuffer *pickingFbo;
     Texture2d *pickingDataTex;
     Texture2d *pickingDepthTexture;
+    ShaderProgram *pickingDrawingShader;
+    ShaderProgram *pickingReadShader;
 
     // Effects part
     ShaderProgram *deferredShader;

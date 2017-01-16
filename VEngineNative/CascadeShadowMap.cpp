@@ -41,8 +41,6 @@ void CascadeShadowMap::map(glm::vec3 ddirection, glm::vec3 iposition)
         camera->transformation->setOrientation(glm::inverse(glm::lookAt(vec3(0), direction, (direction == vec3(0, -1, 0) ? vec3(0, 0, 1) : vec3(0, 1, 0)))));
         camera->transformation->setSize(glm::vec3(radiuses[i]));
         //camera->cone->update(pmat);
-        Game::instance->world->setUniforms(Game::instance->shaders->depthOnlyGeometryShader, camera);
-        Game::instance->shaders->depthOnlyGeometryShader->setUniform("CSMRadius", radiuses[i]);
         Game::instance->world->setUniforms(Game::instance->shaders->depthOnlyShader, camera);
         Game::instance->shaders->depthOnlyShader->setUniform("CSMRadius", radiuses[i]);
         Game::instance->shaders->depthOnlyShader->setUniform("CSMFarPlane", farplanes[i]);

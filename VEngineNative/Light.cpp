@@ -70,11 +70,6 @@ void Light::refreshShadowMap()
                 shader->use();
                 shader->setUniform("CutOffDistance", cutOffDistance);
                 Game::instance->world->setUniforms(shader, lightCamera);
-
-                shader = Game::instance->shaders->depthOnlyGeometryShader;
-                shader->use();
-                shader->setUniform("CutOffDistance", cutOffDistance);
-                Game::instance->world->setUniforms(shader, lightCamera);
                 Game::instance->world->draw(shader, lightCamera);
             }
         }
@@ -86,11 +81,6 @@ void Light::refreshShadowMap()
                     cam->transformation->setPosition(transformation->position);
 
                     ShaderProgram *shader = Game::instance->shaders->depthOnlyShader;
-                    shader->use();
-                    shader->setUniform("CutOffDistance", cutOffDistance);
-                    Game::instance->world->setUniforms(shader, cam);
-
-                    shader = Game::instance->shaders->depthOnlyGeometryShader;
                     shader->use();
                     shader->setUniform("CutOffDistance", cutOffDistance);
                     Game::instance->world->setUniforms(shader, cam);
