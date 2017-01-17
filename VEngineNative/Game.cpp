@@ -58,6 +58,10 @@ void Game::bindTexture(GLenum type, GLuint handle, int bindpoint)
         }
     }
 }
+unsigned int Game::getNextId()
+{
+    return lastId++;
+}
 void Game::invoke(const function<void(void)> &func)
 {
     invokeQueue.push(func);
@@ -147,8 +151,8 @@ void Game::physicsThread()
             Game::instance->physicsInvokeQueue.front()();
             Game::instance->physicsInvokeQueue.pop();
         }
-        if (!Game::instance->physicsNeedsUpdate)
-            continue;
+       // if (!Game::instance->physicsNeedsUpdate)
+       //     continue;
 
         double now = glfwGetTime();
         Game::instance->world->physics->simulationStep((float)((now - time)));

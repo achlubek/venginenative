@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "Game.h"
 #include "Mesh3dInstance.h"
 
 Mesh3dInstance::Mesh3dInstance()

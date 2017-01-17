@@ -1,5 +1,8 @@
 #pragma once
-class Texture3d
+
+#include "AbsTexture.h"
+
+class Texture3d : public AbsTexture
 {
 public:
     Texture3d(GLuint ihandle);
@@ -7,15 +10,7 @@ public:
     ~Texture3d();
 
     GLuint handle;
-    int width, height, depth;
-    void use(int unit);
-    void bind(int unit);
-    void pregenerate();
-    void generateMipMaps();
+    int depth;
 private:
-    bool generated;
     void generate();
-    GLint internalFormatRequested;
-    GLenum formatRequested;
-    GLenum typeRequested;
 };

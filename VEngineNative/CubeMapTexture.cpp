@@ -4,7 +4,7 @@
 #include "Game.h"
 
 CubeMapTexture::CubeMapTexture(GLuint ihandle)
-{
+    : AbsTexture(GL_TEXTURE_CUBE_MAP) {
     handle = ihandle;
     generated = true;
     width = 1;
@@ -19,7 +19,7 @@ CubeMapTexture::CubeMapTexture(GLuint ihandle)
 }
 
 CubeMapTexture::CubeMapTexture(string px, string py, string pz, string nx, string ny, string nz)
-{
+    : AbsTexture(GL_TEXTURE_CUBE_MAP) {
     int x, y, n;
     dataPX = stbi_load(Media::getPath(px).c_str(), &x, &y, &n, 0);
     dataPY = stbi_load(Media::getPath(py).c_str(), &x, &y, &n, 0);
@@ -35,41 +35,13 @@ CubeMapTexture::CubeMapTexture(string px, string py, string pz, string nx, strin
 }
 
 CubeMapTexture::CubeMapTexture(int iwidth, int iheight, GLint internalFormat, GLenum format, GLenum type)
-{
-    width = iwidth;
-    height = iheight;
-    internalFormatRequested = internalFormat;
-    formatRequested = format;
-    typeRequested = type;
-    generated = false;
+    : AbsTexture(GL_TEXTURE_CUBE_MAP, iwidth, iheight, internalFormat, format, type) {
     genMode = genModeEmptyFromDesc;
 }
 
 CubeMapTexture::~CubeMapTexture()
 {
 }
-void CubeMapTexture::pregenerate()
-{
-    if (!generated) {
-        generate();
-    }
-}
-
-void CubeMapTexture::generateMipMaps()
-{
-    glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-}
-
-void CubeMapTexture::use(int unit)
-{
-    if (!generated) {
-        generate();
-    }
-    Game::instance->bindTexture(GL_TEXTURE_CUBE_MAP, handle, unit);
-}
-
 void CubeMapTexture::generate()
 {
     glGenTextures(1, &handle);

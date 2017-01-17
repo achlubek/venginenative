@@ -112,7 +112,7 @@ int main()
         auto phys = Game::instance->world->physics;
         auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, -0.0, 0.0)), new btBoxShape(btVector3(1111.0, 5.0,1110.0)));
         //groundpb->body->applyTorque(btVector3(1000, 1000, 1000));
-        groundpb->body->setFriction(10);
+        groundpb->body->setFriction(1010);
         groundpb->enable();
         /*
         PhysicalBody* last = nullptr;
@@ -332,6 +332,8 @@ int main()
     glm::vec3 backvectorlast = glm::vec3(0);
     glm::quat backquat = glm::quat();
     game->onRenderFrame->add([&](int i) {
+      //  printf("%d\n", game->renderer->pickingResult);
+       // game->renderer->pick(cam, glm::vec2(0.5));
        // t->needBufferUpdate = true;
         if (!cursorFree) {
             float maxspeed = 0.1;

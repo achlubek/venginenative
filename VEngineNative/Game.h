@@ -48,7 +48,10 @@ public:
     void display(string str);
     void bindTexture(GLenum type, GLuint handle, int bindpoint);
     volatile bool physicsNeedsUpdate = false;
+    unsigned int getNextId();
 private:
+
+    unsigned int lastId = 0;
 
     queue<function<void(void)>> invokeQueue;
     queue<function<void(void)>> physicsInvokeQueue;

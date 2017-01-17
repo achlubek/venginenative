@@ -20,22 +20,22 @@ void Car::setAcceleration(float acc)
 {
     if (acc < 0.0) acc *= 0.1;
     if (!initialized) return;
-    acceleration = acc;
+    acceleration = acceleration * 0.999f + 0.001f * acc;
     if (tyreLFCon != nullptr) {
-        float maxspeed = 200.0f;
+        float maxspeed = 400.0f;
         auto m = ((btGeneric6DofConstraint*)tyreLFCon->constraint)->getRotationalLimitMotor(0);
-        m->m_targetVelocity = -acc * maxspeed;
-        m->m_maxLimitForce = 5.0f;
+        m->m_targetVelocity = -acceleration * maxspeed;
+        m->m_maxLimitForce = 35.0f;
         m->m_currentLimit = 5.0f;
-        m->m_maxMotorForce = 5.0f;
+        m->m_maxMotorForce = 35.0f;
         m->m_enableMotor = acc > 0.01f || acc < 0.01f;
         m->m_loLimit = -5.0f;
         m->m_hiLimit = 5.0f;
         m = ((btGeneric6DofConstraint*)tyreRFCon->constraint)->getRotationalLimitMotor(0);
-        m->m_targetVelocity = -acc * maxspeed;
-        m->m_maxLimitForce = 5.0f;
+        m->m_targetVelocity = -acceleration * maxspeed;
+        m->m_maxLimitForce = 35.0f;
         m->m_currentLimit = 5.0f;
-        m->m_maxMotorForce = 5.0f;
+        m->m_maxMotorForce = 35.0f;
         m->m_enableMotor = acc > 0.01f || acc < 0.01f;
         m->m_loLimit = -5.0f;
         m->m_hiLimit = 5.0f;
@@ -47,7 +47,7 @@ void Car::setWheelsAngle(float angleInRadians)
 
     if (!initialized) return;
     if (body == nullptr || body->body == nullptr) return;
-    angleInRadians /= 1.0f + body->body->getLinearVelocity().length2() * 0.1f;
+    angleInRadians /= 1.0f + body->body->getLinearVelocity().length2() * 0.02f;
     if (tyreLFCon != nullptr) {
         ((btGeneric6DofConstraint*)tyreLFCon->constraint)->setAngularLowerLimit(btVector3(-1.0, angleInRadians, 0.0));
         ((btGeneric6DofConstraint*)tyreLFCon->constraint)->setAngularUpperLimit(btVector3(-1.0, angleInRadians, 0.0));
@@ -55,6 +55,10 @@ void Car::setWheelsAngle(float angleInRadians)
         ((btGeneric6DofConstraint*)tyreRFCon->constraint)->setAngularLowerLimit(btVector3(-1.0, angleInRadians, 0.0));
         ((btGeneric6DofConstraint*)tyreRFCon->constraint)->setAngularUpperLimit(btVector3(-1.0, angleInRadians, 0.0));
     }
+
+    auto v1 = glm::normalize(glmify3(body->body->getLinearVelocity()));
+    auto v2 = glm::normalize(glmifyq(body->body->getOrientation()) * glm::vec3(0.0, 0.0, -1.0));
+    body->body->applyCentralForce(bulletify3((v2 - v1) * 9120.0f));
 }
 
 TransformationManager * Car::getTransformation()
@@ -97,10 +101,10 @@ void Car::initialize()
 
             body->body->setDamping(0.17, 0.06);
 
-            tyreLF->body->setFriction(140.0);
-            tyreRF->body->setFriction(140.0);
-            tyreLR->body->setFriction(140.0);
-            tyreRR->body->setFriction(140.0);
+            tyreLF->body->setFriction(1410.0);
+            tyreRF->body->setFriction(1410.0);
+            tyreLR->body->setFriction(1410.0);
+            tyreRR->body->setFriction(1410.0);
             body->body->setIgnoreCollisionCheck(tyreLF->body, true);
             body->body->setIgnoreCollisionCheck(tyreRF->body, true);
             body->body->setIgnoreCollisionCheck(tyreLR->body, true);
@@ -137,14 +141,15 @@ void Car::initialize()
                 float y = (i == 0 || i == 1) ? -0.0f : 0.0f;
                 x[i]->setAngularLowerLimit(btVector3(-1.0, y, 0.0));
                 x[i]->setAngularUpperLimit(btVector3(-1.0, y, 0.0));
-                x[i]->enableSpring(0, true);
-                x[i]->enableSpring(1, true);
-                x[i]->enableSpring(2, true);
-                x[i]->setDamping(0, 10.02f);
-                x[i]->setDamping(1, 10.02f);
-                x[i]->setDamping(2, 10.02f);
+                x[i]->enableSpring(0, false);
+                x[i]->enableSpring(1, false);
+                x[i]->enableSpring(2, false);
+                x[i]->setDamping(0, 0.02f);
+                x[i]->setDamping(1, 0.02f);
+                x[i]->setDamping(2, 0.02f);
                 x[i]->setLinearLowerLimit(btVector3(0.0, -0.1, 0.0));
                 x[i]->setLinearUpperLimit(btVector3(0.0, 0.0, 0.0));
+                x[i]->setBreakingImpulseThreshold(0.01f);
             }
 
             tyreLFCon->constraint->setBreakingImpulseThreshold(99990.0f);

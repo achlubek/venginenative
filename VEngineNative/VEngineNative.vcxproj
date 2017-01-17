@@ -238,6 +238,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AbsFramebuffer.h" />
+    <ClInclude Include="AbsTexture.h" />
     <ClInclude Include="AbsTransformable.h" />
     <ClInclude Include="Array2dFramebuffer.h" />
     <ClInclude Include="AssetLoader.h" />
@@ -292,6 +293,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AbsFramebuffer.cpp" />
+    <ClCompile Include="AbsTexture.cpp" />
     <ClCompile Include="AbsTransformable.cpp" />
     <ClCompile Include="Array2dFramebuffer.cpp" />
     <ClCompile Include="AssetLoader.cpp" />

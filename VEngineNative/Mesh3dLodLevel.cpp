@@ -71,7 +71,7 @@ Mesh3dLodLevel::~Mesh3dLodLevel()
 {
 }
 
-void Mesh3dLodLevel::draw()
+void Mesh3dLodLevel::draw(const Mesh3d* mesh)
 {
 
     ShaderProgram *shader = ShaderProgram::current;
@@ -88,6 +88,7 @@ void Mesh3dLodLevel::draw()
     shader->setUniformVector("NodeDataArray", nodesDatas);
     shader->setUniformVector("SourceColorsArray", nodesColors);
     shader->setUniformVector("WrapModesArray", wrapModes);
+    shader->setUniform("Id", mesh->Id);
 
     modelInfosBuffer->use(0);
 

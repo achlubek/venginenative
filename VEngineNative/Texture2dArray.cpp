@@ -4,7 +4,7 @@
 #include "Game.h"
 
 Texture2dArray::Texture2dArray(GLuint ihandle)
-{
+    : AbsTexture(GL_TEXTURE_2D_ARRAY) {
     handle = ihandle;
     generated = true;
     width = 1;
@@ -13,44 +13,12 @@ Texture2dArray::Texture2dArray(GLuint ihandle)
 }
 
 Texture2dArray::Texture2dArray(int iwidth, int iheight, int ilevels, GLint internalFormat, GLenum format, GLenum type)
-{
-    width = iwidth;
-    height = iheight;
-    levels = ilevels;
-    internalFormatRequested = internalFormat;
-    formatRequested = format;
-    typeRequested = type;
-    generated = false;
+    : AbsTexture(GL_TEXTURE_2D_ARRAY, iwidth, iheight, internalFormat, format, type) {
 }
 
 Texture2dArray::~Texture2dArray()
 {
     glDeleteTextures(1, &handle);
-}
-void Texture2dArray::pregenerate()
-{
-    if (!generated) {
-        generate();
-    }
-}
-
-void Texture2dArray::generateMipMaps()
-{
-    glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
-}
-
-void Texture2dArray::use(int unit)
-{
-    if (!generated) {
-        generate();
-    }
-    Game::instance->bindTexture(GL_TEXTURE_2D_ARRAY, handle, unit);
-}
-
-void Texture2dArray::bind(int unit) {
-    glBindImageTexture(unit, handle, 0, true, 0, GL_WRITE_ONLY, GL_R16F);
 }
 
 void Texture2dArray::generate()

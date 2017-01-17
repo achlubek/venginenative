@@ -359,8 +359,24 @@ void Renderer::renderToFramebuffer(Camera *camera, Framebuffer * fboout)
     fxaaTonemap();
 }
 
-void Renderer::pick(glm::vec2 uv)
+void Renderer::pick(Camera* camera, glm::vec2 uv)
 {
+    if (!pickingReady) return;
+
+    pickingFbo->use(true);
+
+    ShaderProgram *shader = Game::instance->shaders->idWriteShader;
+    shader->use();
+    Game::instance->world->setUniforms(shader, camera);
+    Game::instance->world->setSceneUniforms();
+    Game::instance->world->draw(shader, camera);
+    Game::instance->invoke([&, uv]() {
+        int x = (int)(uv.x * (float)pickingDataTex->width);
+        int y = (int)(uv.y * (float)pickingDataTex->height);
+        unsigned int * data = (unsigned int *)pickingDataTex->read(4);
+        pickingResult = data[y * pickingDataTex->width + x];
+        pickingReady = true;
+    });
 }
 
 void Renderer::draw(Camera *camera)

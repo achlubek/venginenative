@@ -4,7 +4,7 @@
 #include "Game.h"
 
 Texture2d::Texture2d(GLuint ihandle)
-{
+    :AbsTexture(GL_TEXTURE_2D) {
     handle = ihandle;
     generated = true;
     width = 1;
@@ -15,7 +15,7 @@ Texture2d::Texture2d(GLuint ihandle)
 }
 
 Texture2d::Texture2d(string filekey)
-{
+    :AbsTexture(GL_TEXTURE_2D) {
     if (strstr(filekey.c_str(), ".dds") != nullptr) {
         ddsFile = filekey;
         usedds = true;
@@ -34,57 +34,12 @@ Texture2d::Texture2d(string filekey)
 }
 
 Texture2d::Texture2d(int iwidth, int iheight, GLint internalFormat, GLenum format, GLenum type)
-{
-    width = iwidth;
-    height = iheight;
-    internalFormatRequested = internalFormat;
-    formatRequested = format;
-    typeRequested = type;
-    generated = false;
-    genMode = genModeEmptyFromDesc;
+    : AbsTexture(GL_TEXTURE_2D, iwidth, iheight, internalFormat, format, type) {
 }
 
 Texture2d::~Texture2d()
 {
-    glDeleteTextures(1, &handle);
-}
-void Texture2d::pregenerate()
-{
-    if (!generated) {
-        generate();
-    }
-}
 
-void Texture2d::generateMipMaps()
-{
-    if (!generated) {
-        generate();
-    }
-    glBindTexture(GL_TEXTURE_2D, handle);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glGenerateMipmap(GL_TEXTURE_2D);
-}
-
-void Texture2d::setWrapModes(GLuint s, GLuint t)
-{
-    if (!generated) {
-        generate();
-    }
-    glBindTexture(GL_TEXTURE_2D, handle);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, s);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, t);
-}
-
-void Texture2d::use(int unit)
-{
-    if (!generated) {
-        generate();
-    }
-    Game::instance->bindTexture(GL_TEXTURE_2D, handle, unit);
-}
-
-void Texture2d::bind(int unit, int level) {
-    glBindImageTexture(unit, handle, 0, false, 0, GL_WRITE_ONLY, GL_R16F);
 }
 
 void Texture2d::generate()

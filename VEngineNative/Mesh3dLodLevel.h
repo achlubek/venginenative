@@ -1,4 +1,5 @@
 #pragma once
+class Mesh3d;
 #include "ShaderStorageBuffer.h"
 #include "Material.h"
 #include "Object3dInfo.h"
@@ -16,7 +17,7 @@ public:
     float distanceStart;
     float distanceEnd;
     float needBufferUpdate = true;
-    void draw();
+    void draw(const Mesh3d* mesh);
     void setUniforms();
     void updateBuffer(const vector<Mesh3dInstance*> &instances);
     ShaderStorageBuffer *modelInfosBuffer;

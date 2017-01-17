@@ -59,7 +59,7 @@ public:
     int height;
     unsigned int pickingResult = 0;
     volatile bool pickingReady = true;
-    void pick(glm::vec2 uv);
+    void pick(Camera* camera, glm::vec2 uv);
 private:
     void draw(Camera *camera);
     void initializeFbos();

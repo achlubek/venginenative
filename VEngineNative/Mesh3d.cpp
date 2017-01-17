@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Mesh3d.h"
+#include "Game.h"
 
 Mesh3d::Mesh3d()
 {
@@ -7,6 +8,7 @@ Mesh3d::Mesh3d()
     lodLevels = {};
     needBufferUpdate = true;
     alwaysUpdateBuffer = false;
+    Id = Game::instance->getNextId();
 }
 
 Mesh3d::~Mesh3d()
@@ -98,7 +100,7 @@ void Mesh3d::updateBuffers()
 void Mesh3d::draw()
 {
     for (int i = 0; i < lodLevels.size(); i++) {
-        lodLevels[i]->draw();
+        lodLevels[i]->draw(this);
     }
 }
 
