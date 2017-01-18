@@ -374,6 +374,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     //raycolor *= xA + xB * (pow(1.0 - DirDT, 8.0));
     float raysCoverage = min(1.0, (0.05 + 0.95 * pow((1.0 - (asin(DirDT) / (3.1415 * 0.5)) ), 13.0) * NoiseOctave1 * 0.1));
     //return vdao;
+    //return vdao.gba;
     vec3 CC = vdao.gba + (SunC * Shadow) + (GroundC);
 
     scattering *= xA + xB * (1.0 - pow(1.0 - DirDT, 14.0));

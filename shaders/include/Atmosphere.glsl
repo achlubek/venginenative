@@ -229,7 +229,7 @@ vec3 getCloudsAL(vec3 dir){
     float vdt2 = 1.0 - vdt;
     vec2 uv = UV + vec2(Rand1, Rand2);
     float rd = rand2s(uv) * 12.1232343456;
-    float mult = mix(sqrt(dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, vdt) + 0.02;
+    float mult = 1.0;//mix(sqrt(dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, vdt) + 0.02;
     for(int i=0;i<14;i++){
         float x = rand2s(uv) * 2.0 - 1.0;
         //rd *= 2.7897;
@@ -244,7 +244,7 @@ vec3 getCloudsAL(vec3 dir){
         vec3 p = point + px * 7010.0;
         vec3 newdir = normalize(p - c);
         float v = visibility(dir, newdir, center, textureLod(mainPassTex, newdir, 0.0).g + hitfloorX);
-        sum += (textureLod(atmScattTex, px, 1.0).rgb) * v * mult * pow(vdt2, 4.0);
+        sum += (textureLod(atmScattTex, px, 1.0).rgb) * v * mult;// * pow(vdt2, 4.0);
     }
 
     float dao = (1.0 -  getCloudsAO(dir, 1.0 - vdt)) * pow(vdt, 2.0) * 3.0;
@@ -254,13 +254,13 @@ vec3 getCloudsAL(vec3 dir){
     float sao2 = mix(1.0, pow(caa, max(1.0 , CloudsDensityScale)), min(1.0, CloudsDensityScale));
     float mx = 1.0 - pow(1.0 - max(0.0, dot(dir, VECTOR_UP)), 3.0);
     float sao =  (mix(sao1, sao2, mx) * (1.0 - pow(1.0 - vdt, 8.0)) * pow(vdt * 0.97 + 0.03, 1.0) * 14.0) / ((CloudsCeil - CloudsFloor) * 0.0005 + 1.0);
-    sao *= 1.0 + pow(caa, 2.0) * 1.0 * pow(max(0.0, dot(dir, dayData.sunDir)) * max(0.0, dot(dir, VECTOR_UP)), 5.0);
-    sao *= pow(max(0.0, dot(dayData.sunDir, VECTOR_UP)), 2.0);
+    //sao *= 1.0 + pow(caa, 2.0) * 1.0 * pow(max(0.0, dot(dir, dayData.sunDir)) * max(0.0, dot(dir, VECTOR_UP)), 5.0);
+    sao *= pow(max(0.0, dot(dayData.sunDir, VECTOR_UP)), 12.0);
     //float dshadow = getAODIR(point, px, 113.0);
 
     float coverage =  smoothstep(0.464, 0.6, CloudsThresholdLow);
 //  return vec3(sao) ;
-    return clamp(sum / 14.0 , 0.0, 111.0) + sao * 3.0 + daox * 0.1 ;
+    return clamp(sum / 14.0 , 0.0, 111.0);// + pow(sao1 * 2.0 / CloudsDensityScale, 2.0) * getSunColor(0.0) * 1.2;// + sao * 3.0 + daox * 0.1 ;
     //return vec3(0.0) +  sao * 3.0;// + daox * 0.1 ;
 }
 

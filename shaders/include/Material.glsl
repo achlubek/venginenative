@@ -179,3 +179,118 @@ vec3 examineBumpMap(sampler2D bumpTex, vec2 iuv){
 
     return normalize(vec3( bdx * 3.1415 * 1.0, bdy * 3.1415 * 1.0,max(0, 1.0 - bdx - bdy)));
 }
+
+//############################################################################//
+
+#define MASM_DIRECTIVE_STORE_FLOAT 1
+#define MASM_DIRECTIVE_STORE_VEC3 1
+#define MASM_DIRECTIVE_STORE_VEC4 1
+#define MASM_DIRECTIVE_CONSTMOV_INT 2
+#define MASM_DIRECTIVE_CONSTMOV_FLOAT 2
+#define MASM_DIRECTIVE_CONSTMOV_VEC2 2
+#define MASM_DIRECTIVE_CONSTMOV_VEC3 2
+#define MASM_DIRECTIVE_CONSTMOV_VEC4 2
+#define MASM_DIRECTIVE_REGMOV_FLOAT 2
+#define MASM_DIRECTIVE_REGMOV_VEC2 2
+#define MASM_DIRECTIVE_REGMOV_VEC3 2
+#define MASM_DIRECTIVE_REGMOV_VEC4 2
+
+#define MASM_DIRECTIVE_TEXTURE_R 3
+#define MASM_DIRECTIVE_TEXTURE_G 3
+#define MASM_DIRECTIVE_TEXTURE_B 3
+#define MASM_DIRECTIVE_TEXTURE_A 3
+
+#define MASM_DIRECTIVE_TEXTURE_RG 3
+#define MASM_DIRECTIVE_TEXTURE_GB 3
+#define MASM_DIRECTIVE_TEXTURE_BA 3
+
+#define MASM_DIRECTIVE_TEXTURE_RGB 3
+#define MASM_DIRECTIVE_TEXTURE_GBA 3
+
+#define MASM_DIRECTIVE_TEXTURE_RGBA 3
+
+#define MASM_DIRECTIVE_MIX_FLOAT_FLOAT 4
+#define MASM_DIRECTIVE_MIX_VEC2_FLOAT 4
+#define MASM_DIRECTIVE_MIX_VEC3_FLOAT 4
+#define MASM_DIRECTIVE_MIX_VEC4_FLOAT 4
+#define MASM_DIRECTIVE_POW_FLOAT_FLOAT 5
+#define MASM_DIRECTIVE_POW_VEC2_FLOAT 5
+#define MASM_DIRECTIVE_POW_VEC3_FLOAT 5
+#define MASM_DIRECTIVE_POW_VEC4_FLOAT 5
+#define MASM_DIRECTIVE_RESET 6
+#define MASM_TARGET_DIFFUSECOLOR 0
+#define MASM_TARGET_NORMAL 1
+
+#define MASM_REGISTER_CHUNK_SIZE 16
+#define MASM_REGISTER_FLOAT_OFFSET 0
+#define MASM_REGISTER_VEC2_OFFSET 16
+#define MASM_REGISTER_VEC3_OFFSET 32
+#define MASM_REGISTER_VEC4_OFFSET 48
+
+#define MAX_PROGRAM_UNIFORMS_FLOAT 32
+uniform float AsmUniformsFloat[MAX_PROGRAM_UNIFORMS_FLOAT];
+#define MAX_PROGRAM_UNIFORMS_INT 16
+uniform int AsmUniformsInt[MAX_PROGRAM_UNIFORMS_INT];
+#define MAX_PROGRAM_UNIFORMS_VEC2 16
+uniform vec2 AsmUniformsVec2[MAX_PROGRAM_UNIFORMS_VEC2];
+#define MAX_PROGRAM_UNIFORMS_VEC3 32
+uniform vec3 AsmUniformsVec3[MAX_PROGRAM_UNIFORMS_VEC3];
+#define MAX_PROGRAM_UNIFORMS_VEC4 32
+uniform vec4 AsmUniformsVec4[MAX_PROGRAM_UNIFORMS_VEC4];
+
+#define MAX_PROGRAM_LENGTH 1024
+uniform int AsmProgram[MAX_PROGRAM_LENGTH];
+uniform int AsmProgramLength;
+
+#define MASM_MAX_TEXTURES 10
+uniform vec2 TexturesScales[MASM_MAX_TEXTURES];
+uniform int TexturesCount;
+
+struct MaterialObject{
+    vec3 diffuseColor;
+    vec3 normal;
+};
+
+MaterialObject runVm(vec2 UV){
+    int i=0;
+    MaterialObject mo = MaterialObject(vec3(0.0), vec3(0.0));
+
+    vec4 texdata[] = vec4[MASM_MAX_TEXTURES](
+        texture(texBind0 , UV * TexturesScales[0]).rgba,
+        texture(texBind1 , UV * TexturesScales[1]).rgba,
+        texture(texBind2 , UV * TexturesScales[2]).rgba,
+        texture(texBind3 , UV * TexturesScales[3]).rgba,
+        texture(texBind4 , UV * TexturesScales[4]).rgba,
+        texture(texBind5 , UV * TexturesScales[5]).rgba,
+        texture(texBind6 , UV * TexturesScales[6]).rgba,
+        texture(texBind7 , UV * TexturesScales[7]).rgba,
+        texture(texBind8 , UV * TexturesScales[8]).rgba,
+        texture(texBind9 , UV * TexturesScales[9]).rgba
+    );
+
+    float memory_float[MASM_REGISTER_CHUNK_SIZE];
+    vec2 memory_vec2[MASM_REGISTER_CHUNK_SIZE];
+    vec3 memory_vec3[MASM_REGISTER_CHUNK_SIZE];
+    vec4 memory_vec4[MASM_REGISTER_CHUNK_SIZE];
+
+    while(i < AsmProgramLength){
+        int c = AsmProgram[i++];
+        switch(c){
+            case MASM_DIRECTIVE_STORE:
+                int target = AsmProgram[i++];
+                int source = AsmProgram[i++];
+            break;
+        }
+    }
+    return mo;
+}
+
+
+
+
+
+
+
+
+
+//
