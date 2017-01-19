@@ -183,49 +183,45 @@ vec3 examineBumpMap(sampler2D bumpTex, vec2 iuv){
 //############################################################################//
 
 #define MASM_DIRECTIVE_STORE_FLOAT 1
-#define MASM_DIRECTIVE_STORE_VEC3 1
-#define MASM_DIRECTIVE_STORE_VEC4 1
-#define MASM_DIRECTIVE_CONSTMOV_INT 2
-#define MASM_DIRECTIVE_CONSTMOV_FLOAT 2
-#define MASM_DIRECTIVE_CONSTMOV_VEC2 2
-#define MASM_DIRECTIVE_CONSTMOV_VEC3 2
-#define MASM_DIRECTIVE_CONSTMOV_VEC4 2
-#define MASM_DIRECTIVE_REGMOV_FLOAT 2
-#define MASM_DIRECTIVE_REGMOV_VEC2 2
-#define MASM_DIRECTIVE_REGMOV_VEC3 2
-#define MASM_DIRECTIVE_REGMOV_VEC4 2
+#define MASM_DIRECTIVE_STORE_VEC3 2
+#define MASM_DIRECTIVE_STORE_VEC4 3
+#define MASM_DIRECTIVE_CONSTMOV_INT 4
+#define MASM_DIRECTIVE_CONSTMOV_FLOAT 5
+#define MASM_DIRECTIVE_CONSTMOV_VEC2 6
+#define MASM_DIRECTIVE_CONSTMOV_VEC3 7
+#define MASM_DIRECTIVE_CONSTMOV_VEC4 8
+#define MASM_DIRECTIVE_REGMOV_FLOAT 9
+#define MASM_DIRECTIVE_REGMOV_VEC2 10
+#define MASM_DIRECTIVE_REGMOV_VEC3 11
+#define MASM_DIRECTIVE_REGMOV_VEC4 12
 
-#define MASM_DIRECTIVE_TEXTURE_R 3
-#define MASM_DIRECTIVE_TEXTURE_G 3
-#define MASM_DIRECTIVE_TEXTURE_B 3
-#define MASM_DIRECTIVE_TEXTURE_A 3
+#define MASM_DIRECTIVE_TEXTURE_R 13
+#define MASM_DIRECTIVE_TEXTURE_G 14
+#define MASM_DIRECTIVE_TEXTURE_B 15
+#define MASM_DIRECTIVE_TEXTURE_A 16
 
-#define MASM_DIRECTIVE_TEXTURE_RG 3
-#define MASM_DIRECTIVE_TEXTURE_GB 3
-#define MASM_DIRECTIVE_TEXTURE_BA 3
+#define MASM_DIRECTIVE_TEXTURE_RG 17
+#define MASM_DIRECTIVE_TEXTURE_GB 18
+#define MASM_DIRECTIVE_TEXTURE_BA 19
 
-#define MASM_DIRECTIVE_TEXTURE_RGB 3
-#define MASM_DIRECTIVE_TEXTURE_GBA 3
+#define MASM_DIRECTIVE_TEXTURE_RGB 20
+#define MASM_DIRECTIVE_TEXTURE_GBA 21
 
-#define MASM_DIRECTIVE_TEXTURE_RGBA 3
+#define MASM_DIRECTIVE_TEXTURE_RGBA 22
 
-#define MASM_DIRECTIVE_MIX_FLOAT_FLOAT 4
-#define MASM_DIRECTIVE_MIX_VEC2_FLOAT 4
-#define MASM_DIRECTIVE_MIX_VEC3_FLOAT 4
-#define MASM_DIRECTIVE_MIX_VEC4_FLOAT 4
-#define MASM_DIRECTIVE_POW_FLOAT_FLOAT 5
-#define MASM_DIRECTIVE_POW_VEC2_FLOAT 5
-#define MASM_DIRECTIVE_POW_VEC3_FLOAT 5
-#define MASM_DIRECTIVE_POW_VEC4_FLOAT 5
-#define MASM_DIRECTIVE_RESET 6
+#define MASM_DIRECTIVE_MIX_FLOAT_FLOAT 23
+#define MASM_DIRECTIVE_MIX_VEC2_FLOAT 24
+#define MASM_DIRECTIVE_MIX_VEC3_FLOAT 25
+#define MASM_DIRECTIVE_MIX_VEC4_FLOAT 26
+#define MASM_DIRECTIVE_POW_FLOAT_FLOAT 27
+#define MASM_DIRECTIVE_POW_VEC2_FLOAT 28
+#define MASM_DIRECTIVE_POW_VEC3_FLOAT 29
+#define MASM_DIRECTIVE_POW_VEC4_FLOAT 30
 #define MASM_TARGET_DIFFUSECOLOR 0
 #define MASM_TARGET_NORMAL 1
 
+#define MASM_OUTPUT_CHUNK_SIZE 4
 #define MASM_REGISTER_CHUNK_SIZE 16
-#define MASM_REGISTER_FLOAT_OFFSET 0
-#define MASM_REGISTER_VEC2_OFFSET 16
-#define MASM_REGISTER_VEC3_OFFSET 32
-#define MASM_REGISTER_VEC4_OFFSET 48
 
 #define MAX_PROGRAM_UNIFORMS_FLOAT 32
 uniform float AsmUniformsFloat[MAX_PROGRAM_UNIFORMS_FLOAT];
@@ -273,15 +269,191 @@ MaterialObject runVm(vec2 UV){
     vec3 memory_vec3[MASM_REGISTER_CHUNK_SIZE];
     vec4 memory_vec4[MASM_REGISTER_CHUNK_SIZE];
 
+    float output_float[MASM_OUTPUT_CHUNK_SIZE];
+    vec3 output_vec3[MASM_OUTPUT_CHUNK_SIZE];
+    vec4 output_vec4[MASM_OUTPUT_CHUNK_SIZE];
+
+    int target = 0;
+    int source = 0;
+    int temp1 = 0;
+    int temp2 = 0;
+    int temp3 = 0;
     while(i < AsmProgramLength){
         int c = AsmProgram[i++];
         switch(c){
-            case MASM_DIRECTIVE_STORE:
-                int target = AsmProgram[i++];
-                int source = AsmProgram[i++];
+            //################################################################//
+            case MASM_DIRECTIVE_STORE_FLOAT:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                output_float[target] = memory_float[source];
+            break;
+            case MASM_DIRECTIVE_STORE_VEC3:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                output_vec3[target] = memory_vec3[source];
+            break;
+            case MASM_DIRECTIVE_STORE_VEC4:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                output_vec4[target] = memory_vec4[source];
+            break;
+            //################################################################//
+            case MASM_DIRECTIVE_CONSTMOV_INT:
+                // NOT IMPLEMENTED
+            break;
+            case MASM_DIRECTIVE_CONSTMOV_FLOAT:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_float[target] = AsmUniformsFloat[source];
+            break;
+            case MASM_DIRECTIVE_CONSTMOV_VEC2:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_vec2[target] = AsmUniformsVec2[source];
+            break;
+            case MASM_DIRECTIVE_CONSTMOV_VEC3:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_vec3[target] = AsmUniformsVec3[source];
+            break;
+            case MASM_DIRECTIVE_CONSTMOV_VEC4:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_vec4[target] = AsmUniformsVec4[source];
+            break;
+            //################################################################//
+            case MASM_DIRECTIVE_REGMOV_FLOAT:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_float[target] = memory_float[source];
+            break;
+            case MASM_DIRECTIVE_REGMOV_VEC2:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_vec2[target] = memory_vec2[source];
+            break;
+            case MASM_DIRECTIVE_REGMOV_VEC3:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_vec3[target] = memory_vec3[source];
+            break;
+            case MASM_DIRECTIVE_REGMOV_VEC4:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_vec4[target] = memory_vec4[source];
+            break;
+            //################################################################//
+            case MASM_DIRECTIVE_TEXTURE_R:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_float[target] = texdata[source].r;
+            break;
+            case MASM_DIRECTIVE_TEXTURE_G:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_float[target] = texdata[source].g;
+            break;
+            case MASM_DIRECTIVE_TEXTURE_B:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_float[target] = texdata[source].b;
+            break;
+            case MASM_DIRECTIVE_TEXTURE_A:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_float[target] = texdata[source].a;
+            break;
+            ////////////
+            case MASM_DIRECTIVE_TEXTURE_RG:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_vec2[target] = texdata[source].rg;
+            break;
+            case MASM_DIRECTIVE_TEXTURE_GB:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_vec2[target] = texdata[source].gb;
+            break;
+            case MASM_DIRECTIVE_TEXTURE_BA:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_vec2[target] = texdata[source].ba;
+            break;
+            ////////////
+            case MASM_DIRECTIVE_TEXTURE_RGB:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_vec3[target] = texdata[source].rgb;
+            break;
+            case MASM_DIRECTIVE_TEXTURE_GBA:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_vec3[target] = texdata[source].gba;
+            break;
+            ////////////
+            case MASM_DIRECTIVE_TEXTURE_RGBA:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_vec4[target] = texdata[source].rgba;
+            break;
+            //################################################################//
+            case MASM_DIRECTIVE_MIX_FLOAT_FLOAT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                temp3 = AsmProgram[i++];
+                target = AsmProgram[i++];
+                memory_float[target] = mix(memory_float[temp1], memory_float[temp2], memory_float[temp3]);
+            break;
+            case MASM_DIRECTIVE_MIX_VEC2_FLOAT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                temp3 = AsmProgram[i++];
+                target = AsmProgram[i++];
+                memory_vec2[target] = mix(memory_vec2[temp1], memory_vec2[temp2], memory_float[temp3]);
+            break;
+            case MASM_DIRECTIVE_MIX_VEC3_FLOAT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                temp3 = AsmProgram[i++];
+                target = AsmProgram[i++];
+                memory_vec3[target] = mix(memory_vec3[temp1], memory_vec3[temp2], memory_float[temp3]);
+            break;
+            case MASM_DIRECTIVE_MIX_VEC4_FLOAT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                temp3 = AsmProgram[i++];
+                target = AsmProgram[i++];
+                memory_vec4[target] = mix(memory_vec4[temp1], memory_vec4[temp2], memory_float[temp3]);
+            break;
+            //################################################################//
+            case MASM_DIRECTIVE_POW_FLOAT_FLOAT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                target = AsmProgram[i++];
+                memory_float[target] = pow(memory_float[temp1], memory_float[temp2]);
+            break;
+            case MASM_DIRECTIVE_POW_VEC2_FLOAT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                target = AsmProgram[i++];
+                memory_vec2[target] = pow(memory_vec2[temp1], vec2(memory_float[temp2]));
+            break;
+            case MASM_DIRECTIVE_POW_VEC3_FLOAT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                target = AsmProgram[i++];
+                memory_vec3[target] = pow(memory_vec3[temp1], vec3(memory_float[temp2]));
+            break;
+            case MASM_DIRECTIVE_POW_VEC4_FLOAT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                target = AsmProgram[i++];
+                memory_vec4[target] = pow(memory_vec4[temp1], vec4(memory_float[temp2]));
             break;
         }
     }
+    mo.diffuseColor = output_vec3[MASM_TARGET_DIFFUSECOLOR];
+    mo.normal = output_vec3[MASM_TARGET_NORMAL];
     return mo;
 }
 
