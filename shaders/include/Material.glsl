@@ -299,7 +299,7 @@ vec3 examineBumpMap(sampler2D bumpTex, vec2 iuv){
 #define MAX_PROGRAM_UNIFORMS_VEC4 32
 #define MAX_PROGRAM_LENGTH 1024
 
-#define MASM_MAX_TEXTURES 10
+#define MASM_MAX_TEXTURES 5
 
 uniform float AsmUniformsFloat[MAX_PROGRAM_UNIFORMS_FLOAT];
 uniform int AsmUniformsInt[MAX_PROGRAM_UNIFORMS_INT];
@@ -327,12 +327,12 @@ MaterialObject runVm(vec2 UV){
         texture(texBind1 , UV * TexturesScales[1]).rgba,
         texture(texBind2 , UV * TexturesScales[2]).rgba,
         texture(texBind3 , UV * TexturesScales[3]).rgba,
-        texture(texBind4 , UV * TexturesScales[4]).rgba,
+        texture(texBind4 , UV * TexturesScales[4]).rgba/*,
         texture(texBind5 , UV * TexturesScales[5]).rgba,
         texture(texBind6 , UV * TexturesScales[6]).rgba,
         texture(texBind7 , UV * TexturesScales[7]).rgba,
         texture(texBind8 , UV * TexturesScales[8]).rgba,
-        texture(texBind9 , UV * TexturesScales[9]).rgba
+        texture(texBind9 , UV * TexturesScales[9]).rgba*/
     );
 
     int memory_int[MASM_REGISTER_CHUNK_SIZE];

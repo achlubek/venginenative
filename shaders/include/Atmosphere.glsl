@@ -99,26 +99,40 @@ float fbmLOW(vec3 p){
    // p *= 0.1;
     p *= 0.011 * FBMSCALE;
     float a = 0.0;
-    float w = 0.5;
+    float w = 0.66;
     for(int i=0;i<7;i++){
         //p += noise(vec3(a));
         a += xsupernoise3d(p) * w;
-        w *= 0.49;
-        p = p * 3.0 ;
+        w *= 0.66;
+        p = p * 2.0 ;
     }
     return a;// + noise(p * 100.0) * 11;
+}
+
+float fbmFronts(vec3 p){
+   // p *= 0.1;
+    p *= 0.011 * FBMSCALE;
+    float a = 0.0;
+    float w = 0.5;
+    for(int i=0;i<4;i++){
+        //p += noise(vec3(a));
+        a += xsupernoise3d(p) * w;
+        w *= 0.45;
+        p = p * 3.0 ;
+    }
+    return smoothstep(0.1, 0.5, a);// + noise(p * 100.0) * 11;
 }
 
 float fbmHI(vec3 p){
    // p *= 0.1;
     p *= 0.011 * FBMSCALE;
     float a = 0.0;
-    float w = 0.5;
-    for(int i=0;i<7;i++){
+    float w = 0.66;
+    for(int i=0;i<9;i++){
         //p += noise(vec3(a));
         a += xsupernoise3d(p) * w;
-        w *= 0.49;
-        p = p * 3.0  ;
+        w *= 0.66;
+        p = p * 2.0  ;
     }
     return a;// + noise(p * 100.0) * 11;
 }
@@ -134,11 +148,15 @@ float getHeightOverSea(vec3 p){
     return length(atmpos) - planetradius;
 }
 
+float getFronts(vec3 pos){
+    return fbmFronts(pos * 0.0005);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
+}
+
 float cloudsDensity3D(vec3 pos){
     vec3 ps = pos +CloudsOffset * 1111;// + wtim;
     ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
 
-    float density = fbmHI(ps * 0.005);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
+    float density = fbmHI(ps * 0.005) * getFronts(pos);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
     float measurement = (CloudsCeil - CloudsFloor) * 0.5;
     float mediana = (CloudsCeil + CloudsFloor) * 0.5;
     float mlt = sqrt(sqrt( 1.0 - (abs( getHeightOverSea(pos) - mediana ) / measurement )));
@@ -149,7 +167,7 @@ float cloudsDensity3DLOW(vec3 pos){
     vec3 ps = pos +CloudsOffset * 1111;// + wtim;
     ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
 
-    float density = fbmLOW(ps * 0.005);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
+    float density = fbmLOW(ps * 0.005) * getFronts(pos);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
     float measurement = (CloudsCeil - CloudsFloor) * 0.5;
     float mediana = (CloudsCeil + CloudsFloor) * 0.5;
     float mlt = sqrt(sqrt( 1.0 - (abs( getHeightOverSea(pos) - mediana ) / measurement )));
@@ -269,7 +287,7 @@ Sphere sphere2;
 
 float weightshadow = 1.1;
 float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2, float weight){
-    const int stepcount = 8;
+    const int stepcount = 38;
     const float stepsize = 1.0 / float(stepcount);
     float iter = 0.0;
     float rd = rand2sTime(UV) * stepsize;
@@ -289,7 +307,7 @@ float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2, float weight){
 vec3 CAMERA = vec3(0.0, 1.0, 0.0);
 
 vec2 internalmarchconservative(vec3 p1, vec3 p2){
-    int stepcount = 8;
+    int stepcount = 38;
     float stepsize = 1.0 / float(stepcount);
     float rd = fract(rand2sTime(UV)) * stepsize;
     float c = 0.0;

@@ -15,7 +15,7 @@ vec3 shade_ray(vec3 albedo, vec3 normal, vec3 viewdir, float roughness, float me
 
     vec3 spec_color_nonmetal = lightcolor * fresnel_effect(vec3(0.04), roughness, dotNV) * (1.0 - roughness);
     vec3 spec_color_metal = lightcolor * fresnel_effect(albedo, roughness, dotNV);
-    vec3 diffuse_color_nonmetal = lightcolor * albedo * dotNL;
+    vec3 diffuse_color_nonmetal = albedo * dotNL;
 
     return mix(spec_color_nonmetal + diffuse_color_nonmetal, spec_color_metal, metalness);
 }

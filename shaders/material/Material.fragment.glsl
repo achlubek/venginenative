@@ -210,8 +210,7 @@ void main(){
         normal = TBN * normalmap;
     }
     normal = quat_mul_vec(ModelInfos[Input.instanceId].Rotation, normal);
-    MaterialObject mo = runVm(UV);
-    diffuseColor = mo.diffuseColor;
+
   //  float LowFrequencyAO = 1.0 - newParallaxHeight*0.7;
     //diffuseColor *=  bump;
 

@@ -93,7 +93,7 @@ void Car::initialize()
             glm::vec3 rearaxis = glm::vec3(0.0f, -0.538f, -1.2333f);
             glm::vec3 wheelspacing = glm::vec3(0.70968f, 0.0f, 0.0f);
 
-            body = Game::instance->world->physics->createBody(1200.0, bodyMesh->getInstance(0), new btBoxShape(btVector3(2.0f, 0.45f, 3.2f)));
+            body = Game::instance->world->physics->createBody(1200.0, bodyMesh->getInstance(0), new btBoxShape(btVector3(1.0f, 0.45f, 3.2f)));
             tyreLF = Game::instance->world->physics->createBody(8.0f, tiresMesh->getInstance(0), new btSphereShape(0.275f));
             tyreRF = Game::instance->world->physics->createBody(8.0f, tiresMesh->getInstance(1), new btSphereShape(0.275f));
             tyreLR = Game::instance->world->physics->createBody(8.0f, tiresMesh->getInstance(2), new btSphereShape(0.275f));
