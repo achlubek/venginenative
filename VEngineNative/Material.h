@@ -1,6 +1,7 @@
 #pragma once
 #include "Texture2d.h";
 #include "MaterialNode.h";
+#include "MaterialAssembly.h";
 class Material
 {
 public:
@@ -13,6 +14,7 @@ public:
     bool disableFaceCull;
 
     vector<MaterialNode*> nodes;
+    MaterialAssembly* Masm;
 
     void addNode(MaterialNode *node);
 };

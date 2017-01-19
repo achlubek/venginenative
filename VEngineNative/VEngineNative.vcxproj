@@ -265,6 +265,7 @@
     <ClInclude Include="khrplatform.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="MaterialAssembly.h" />
     <ClInclude Include="MaterialNode.h" />
     <ClInclude Include="Media.h" />
     <ClInclude Include="Mesh3d.h" />
@@ -319,6 +320,7 @@
     <ClCompile Include="INIReader.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Material.cpp" />
+    <ClCompile Include="MaterialAssembly.cpp" />
     <ClCompile Include="MaterialNode.cpp" />
     <ClCompile Include="Media.cpp" />
     <ClCompile Include="Mesh3d.cpp" />

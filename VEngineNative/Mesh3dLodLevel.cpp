@@ -89,6 +89,34 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
     shader->setUniformVector("SourceColorsArray", nodesColors);
     shader->setUniformVector("WrapModesArray", wrapModes);
     shader->setUniform("Id", mesh->Id);
+    material->Masm->setUniforms();
+
+    material->Masm->uniformsVec3.clear();
+    material->Masm->uniformsFloat.clear();
+
+    material->Masm->uniformsVec3.push_back(glm::vec3(0.0, 1.0, 0.0));
+    material->Masm->uniformsVec3.push_back(glm::vec3(1.0, 0.0, 0.0));
+    material->Masm->uniformsFloat.push_back(glm::sin(Game::instance->time));
+
+    material->Masm->programAssembly = vector<int>{
+        MASM_DIRECTIVE_CONSTMOV_VEC3,
+        2, // target register vec3 slot 0
+        0, // source uniform vec3 slot 0
+        MASM_DIRECTIVE_CONSTMOV_VEC3,
+        3, // target register vec3 slot 0
+        1, // source uniform vec3 slot 0
+        MASM_DIRECTIVE_CONSTMOV_FLOAT,
+        3, // target register vec3 slot 0
+        0, // source uniform vec3 slot 0
+        MASM_DIRECTIVE_MIX_VEC3_FLOAT,
+        2,
+        3,
+        3,
+        1,
+        MASM_DIRECTIVE_STORE_VEC3,
+        0, // target register vec3 slot 0
+        1, // source uniform vec3 slot 0
+    };
 
     modelInfosBuffer->use(0);
 

@@ -293,21 +293,23 @@ vec3 examineBumpMap(sampler2D bumpTex, vec2 iuv){
 #define MASM_REGISTER_CHUNK_SIZE 16
 
 #define MAX_PROGRAM_UNIFORMS_FLOAT 32
-uniform float AsmUniformsFloat[MAX_PROGRAM_UNIFORMS_FLOAT];
 #define MAX_PROGRAM_UNIFORMS_INT 16
-uniform int AsmUniformsInt[MAX_PROGRAM_UNIFORMS_INT];
 #define MAX_PROGRAM_UNIFORMS_VEC2 16
-uniform vec2 AsmUniformsVec2[MAX_PROGRAM_UNIFORMS_VEC2];
 #define MAX_PROGRAM_UNIFORMS_VEC3 32
-uniform vec3 AsmUniformsVec3[MAX_PROGRAM_UNIFORMS_VEC3];
 #define MAX_PROGRAM_UNIFORMS_VEC4 32
+#define MAX_PROGRAM_LENGTH 1024
+
+#define MASM_MAX_TEXTURES 10
+
+uniform float AsmUniformsFloat[MAX_PROGRAM_UNIFORMS_FLOAT];
+uniform int AsmUniformsInt[MAX_PROGRAM_UNIFORMS_INT];
+uniform vec2 AsmUniformsVec2[MAX_PROGRAM_UNIFORMS_VEC2];
+uniform vec3 AsmUniformsVec3[MAX_PROGRAM_UNIFORMS_VEC3];
 uniform vec4 AsmUniformsVec4[MAX_PROGRAM_UNIFORMS_VEC4];
 
-#define MAX_PROGRAM_LENGTH 1024
 uniform int AsmProgram[MAX_PROGRAM_LENGTH];
 uniform int AsmProgramLength;
 
-#define MASM_MAX_TEXTURES 10
 uniform vec2 TexturesScales[MASM_MAX_TEXTURES];
 uniform int TexturesCount;
 
@@ -333,6 +335,7 @@ MaterialObject runVm(vec2 UV){
         texture(texBind9 , UV * TexturesScales[9]).rgba
     );
 
+    int memory_int[MASM_REGISTER_CHUNK_SIZE];
     float memory_float[MASM_REGISTER_CHUNK_SIZE];
     vec2 memory_vec2[MASM_REGISTER_CHUNK_SIZE];
     vec3 memory_vec3[MASM_REGISTER_CHUNK_SIZE];
@@ -371,7 +374,9 @@ MaterialObject runVm(vec2 UV){
             break;
             //################################################################//
             case MASM_DIRECTIVE_CONSTMOV_INT:
-                // NOT IMPLEMENTED
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_int[target] = AsmUniformsInt[source];
             break;
             case MASM_DIRECTIVE_CONSTMOV_FLOAT:
                 target = AsmProgram[i++];
@@ -536,6 +541,120 @@ MaterialObject runVm(vec2 UV){
             case MASM_DIRECTIVE_JUMP_BACK:
                 i = jump_stack[--jump_stack_pointer]; // beautiful!
             break;
+            //################################################################//
+            case MASM_DIRECTIVE_JUMP_IF_EQUAL_INT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(memory_int[temp1] == memory_int[temp2])) i++;// skips next instruction, jump for example
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_EQUAL_FLOAT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(memory_float[temp1] == memory_float[temp2])) i++;
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_EQUAL_VEC2:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(memory_vec2[temp1] == memory_vec2[temp2])) i++;
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_EQUAL_VEC3:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(memory_vec3[temp1] == memory_vec3[temp2])) i++;
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_EQUAL_VEC4:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(memory_vec4[temp1] == memory_vec4[temp2])) i++;
+            break;
+            /////////////
+            case MASM_DIRECTIVE_JUMP_IF_NOT_EQUAL_INT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(memory_int[temp1] != memory_int[temp2])) i++;
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_NOT_EQUAL_FLOAT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(memory_float[temp1] != memory_float[temp2])) i++;
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_NOT_EQUAL_VEC2:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(memory_vec2[temp1] != memory_vec2[temp2])) i++;
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_NOT_EQUAL_VEC3:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(memory_vec3[temp1] != memory_vec3[temp2])) i++;
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_NOT_EQUAL_VEC4:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(memory_vec4[temp1] != memory_vec4[temp2])) i++;
+            break;
+            /////////////
+            case MASM_DIRECTIVE_JUMP_IF_HIGHER_INT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(memory_int[temp1] > memory_int[temp2])) i++;
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_HIGHER_FLOAT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(memory_float[temp1] > memory_float[temp2])) i++;
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_HIGHER_VEC2:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(length(memory_vec2[temp1]) > length(memory_vec2[temp2]))) i++;
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_HIGHER_VEC3:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(length(memory_vec3[temp1]) > length(memory_vec3[temp2]))) i++;
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_HIGHER_VEC4:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(length(memory_vec4[temp1]) > length(memory_vec4[temp2]))) i++;
+            break;
+            /////////////
+            case MASM_DIRECTIVE_JUMP_IF_LOWER_INT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(memory_int[temp1] < memory_int[temp2])) i++;
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_LOWER_FLOAT:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(memory_float[temp1] < memory_float[temp2])) i++;
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_LOWER_VEC2:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(length(memory_vec2[temp1]) < length(memory_vec2[temp2]))) i++;
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_LOWER_VEC3:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(length(memory_vec3[temp1]) < length(memory_vec3[temp2]))) i++;
+            break;
+            case MASM_DIRECTIVE_JUMP_IF_LOWER_VEC4:
+                temp1 = AsmProgram[i++];
+                temp2 = AsmProgram[i++];
+                if(!(length(memory_vec4[temp1]) < length(memory_vec4[temp2]))) i++;
+            break;
+            //################################################################//
+            case MASM_DIRECTIVE_INC_INT:
+                temp1 = AsmProgram[i++];
+                memory_int[temp1]++;
+            break;
+            case MASM_DIRECTIVE_DEC_INT:
+                temp1 = AsmProgram[i++];
+                memory_int[temp1]--;
+            break;
+            //################################################################//
         }
     }
     mo.diffuseColor = output_vec3[MASM_TARGET_DIFFUSECOLOR];
