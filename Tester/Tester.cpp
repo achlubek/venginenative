@@ -47,41 +47,38 @@ int main()
 
     SimpleParser* par = new SimpleParser();
     auto axs = par->tokenize("diffuseColor = gradient("
-    "    0.0, texture0,"
-    "    0.4, texture1,"
-    "    0.8, \"loader\" + texture2,"
-    "    pow(texture3, 2.0);"
-    ");"
+        "    0.0, texture0,"
+        "    0.4, texture1,"
+        "    0.8, \"loader\" + texture2,"
+        "    pow(texture3, 2.0);"
+        ");"
     );
 
     // lets test this volatile piece of shit
     game->invoke([]() {
         GLSLVM* vm = new GLSLVM();
         vm->resizeBufferFloat(1);
-        float data = 1.0f;
-        int lpdata[2] = { 0, 6 };
-        vm->bufferSubDataInt(0, 2, &lpdata[0]);
-        vm->bufferSubDataFloat(0, 1, &data);
+
+        string teststring = "elomelo320";
+        int data[100];
+        for (int i = 0; i < teststring.size(); i++)data[i] = teststring[i];
+        data[99] = teststring.size();
+        vm->bufferSubDataInt(0, 100, &data[0]);
         vm->programAssembly = vector<int>{
-            // setup loop
-            /*0*/ MASM_DIRECTIVE_LOAD_INT, 2, 1,
-            /*3*/ MASM_DIRECTIVE_LOAD_INT, 3, 0,
+            MASM_DIRECTIVE_MOV_INVOCATION_ID, 7,
 
-            /*6*/ MASM_DIRECTIVE_LOAD_FLOAT, 2, 0,
-            /*9*/ MASM_DIRECTIVE_LOAD_FLOAT, 3, 0,
-            /*12*/ MASM_DIRECTIVE_ADD_FLOAT, 2, 3,
-            /*15*/ MASM_DIRECTIVE_STORE_FLOAT, 0, 2,
-
-            /*18*/ MASM_DIRECTIVE_DEC_INT, 2,
-            /*20*/ MASM_DIRECTIVE_JUMP_IF_HIGHER_INT, 2, 3,
-            /*23*/ MASM_DIRECTIVE_JUMP_ABSOLUTE, 6
+            MASM_DIRECTIVE_LOAD_BY_POINTER_INT, 0, 7,
+            MASM_DIRECTIVE_LOAD_INT, 1, 99,
+            MASM_DIRECTIVE_ADD_INT, 7, 1,
+            MASM_DIRECTIVE_STORE_BY_POINTER_INT, 7, 0,
 
         };
-        vm->run(1);
-        float result = 0.0f;
-        vm->readSubDataFloat(0, 1, &result);
-        printf("RESU:LT IS %f", result);// EXPECTING 2.0f
-        printf("RESU:LT IS %f", result);// EXPECTING 2.0f
+        vm->run(100);
+        int result[100];
+        vm->readSubDataInt(0, 100, &result[0]);
+        for (int i = 0; i < teststring.size() * 2; i++)printf("%c", (char)result[i]);
+        // EXPECTING 2.0f
+        printf("RESU:LT I");// EXPECTING 2.0f
     });
 
 
@@ -120,13 +117,13 @@ int main()
   //  sq->compileFile(Media::getPath("squireeltest.txt"));
   //  sq->callProcedureVoid("testme");
 
-     game->world->scene = game->asset->loadSceneFile("sp.scene");
-     //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->translate(glm::vec3(0, -62.5f, 0));
-    // for (int i = 0; i < game->world->scene->getMeshes().size(); i++) {
-      //   game->world->scene->getMeshes()[i]->getInstance(0)->transformation->scale(glm::vec3(100.0f));
-   //  }
-    //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->rotate(glm::angleAxis(deg2rad(73.75f), glm::vec3(-0.006f, -0.005f, 1.0f)));
-  //  game->world->scene->addMesh(game->asset->loadMeshFile("treeground.mesh3d"));
+    game->world->scene = game->asset->loadSceneFile("sp.scene");
+    //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->translate(glm::vec3(0, -62.5f, 0));
+   // for (int i = 0; i < game->world->scene->getMeshes().size(); i++) {
+     //   game->world->scene->getMeshes()[i]->getInstance(0)->transformation->scale(glm::vec3(100.0f));
+  //  }
+   //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->rotate(glm::angleAxis(deg2rad(73.75f), glm::vec3(-0.006f, -0.005f, 1.0f)));
+ //  game->world->scene->addMesh(game->asset->loadMeshFile("treeground.mesh3d"));
 
     auto car = new Car();
     auto t = game->asset->loadMeshFile("2dplane.mesh3d");
@@ -142,7 +139,7 @@ int main()
     */
     game->invoke([&]() {
         auto phys = Game::instance->world->physics;
-        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, -0.0, 0.0)), new btBoxShape(btVector3(1111.0, 5.0,1110.0)));
+        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, -0.0, 0.0)), new btBoxShape(btVector3(1111.0, 5.0, 1110.0)));
         //groundpb->body->applyTorque(btVector3(1000, 1000, 1000));
         groundpb->body->setFriction(1010);
         groundpb->enable();
@@ -171,9 +168,9 @@ int main()
     game->onRenderUIFrame->add([&](int zero) {
         if (displayimgui) {
             if (!imugiinit) {
-            //    ImGuiIO& io = ImGui::GetIO();
-                // io.Fonts->ClearFonts();
-                // io.Fonts->AddFontFromFileTTF(Media::getPath("segoeui.ttf").c_str(), 10);
+                //    ImGuiIO& io = ImGui::GetIO();
+                    // io.Fonts->ClearFonts();
+                    // io.Fonts->AddFontFromFileTTF(Media::getPath("segoeui.ttf").c_str(), 10);
                 imugiinit = true;
             }
             if (fov != fovnew) {
@@ -276,8 +273,8 @@ int main()
                   //  ImGui::SliderFloat("Noise8", &Game::instance->renderer->noiseOctave8, 0.01f, 10.0f);
             ImGui::SliderFloat("LensBlurAmount", &Game::instance->renderer->lensBlurSize, 0.01f, 10.0f);
             ImGui::SliderFloat("FocalLength", &cam->focalLength, 0.01f, 10.0f);
-                    //ImGui::SliderFloat("Noise8", &Game::instance->renderer->noiseOctave8, 0.01f, 10.0f);
-            //        ImGui::SliderFloat("RoughnessTerra", &game->world->scene->getMeshes()[0]->getLodLevel(0)->material->roughness, 0.01f, 10.0f);
+            //ImGui::SliderFloat("Noise8", &Game::instance->renderer->noiseOctave8, 0.01f, 10.0f);
+    //        ImGui::SliderFloat("RoughnessTerra", &game->world->scene->getMeshes()[0]->getLodLevel(0)->material->roughness, 0.01f, 10.0f);
             for (auto i = Game::instance->renderer->cloudsShader->shaderVariables.begin(); i != Game::instance->renderer->cloudsShader->shaderVariables.end(); i++) {
                 if (i->second->type == SHADER_VARIABLE_TYPE_FLOAT) ImGui::SliderFloat(i->first.c_str(), &i->second->var_float, 0.01f, 10.0f);
                 if (i->second->type == SHADER_VARIABLE_TYPE_INT) ImGui::SliderInt(i->first.c_str(), &i->second->var_int, 0, 20);
@@ -364,9 +361,9 @@ int main()
     glm::vec3 backvectorlast = glm::vec3(0);
     glm::quat backquat = glm::quat();
     game->onRenderFrame->add([&](int i) {
-      //  printf("%d\n", game->renderer->pickingResult);
-       // game->renderer->pick(cam, glm::vec2(0.5));
-       // t->needBufferUpdate = true;
+        //  printf("%d\n", game->renderer->pickingResult);
+         // game->renderer->pick(cam, glm::vec2(0.5));
+         // t->needBufferUpdate = true;
         if (!cursorFree) {
             float maxspeed = 0.1;
             if (game->getKeyStatus(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
@@ -444,7 +441,7 @@ int main()
                     if (acnt >= 4) {
                         trsf = glm::angleAxis(deg2rad(axes[3] * 80.0f), glm::vec3(-1.0, 0.0, 0.0)) * glm::angleAxis(deg2rad(axes[2] * 80.0f), glm::vec3(0.0, -1.0, 0.0));
                         auto trsf2 = glm::angleAxis(deg2rad(axes[3] * 80.0f), glm::vec3(1.0, 0.0, 0.0)) *  glm::angleAxis(deg2rad(axes[2] * 80.0f), glm::vec3(0.0, 1.0, 0.0));
-                        backvector = trsf2 *  ( backvector);
+                        backvector = trsf2 *  (backvector);
                     }
                     backvector = glm::mat3_cast(glm::inverse(cartrans->orientation)) * backvector;
                     backquat = glm::slerp(backquat, trsf, 0.03f);
@@ -453,7 +450,7 @@ int main()
                     backvector = backvectorlast * 0.97f + backvector * 0.03f;
                     backvectorlast = backvector;
                     cam->transformation->setPosition(cartrans->position + backvector);
-                    cam->transformation->setOrientation(glm::inverse( glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0)) * backquat * cartrans->orientation));
+                    cam->transformation->setOrientation(glm::inverse(glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0)) * backquat * cartrans->orientation));
                 }
 
             }

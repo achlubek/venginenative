@@ -161,6 +161,18 @@ layout (std430, binding = 4) coherent buffer SharedMemoryVec4Buffer
 #define MASM_DIRECTIVE_CAST_FLOAT_VEC3 92
 #define MASM_DIRECTIVE_CAST_FLOAT_VEC4 94 // one reserved for missing REGMOV_INT
 
+#define MASM_DIRECTIVE_LOAD_BY_POINTER_INT 95
+#define MASM_DIRECTIVE_LOAD_BY_POINTER_FLOAT 96
+#define MASM_DIRECTIVE_LOAD_BY_POINTER_VEC2 97
+#define MASM_DIRECTIVE_LOAD_BY_POINTER_VEC3 98
+#define MASM_DIRECTIVE_LOAD_BY_POINTER_VEC4 99
+
+#define MASM_DIRECTIVE_STORE_BY_POINTER_INT 100
+#define MASM_DIRECTIVE_STORE_BY_POINTER_FLOAT 101
+#define MASM_DIRECTIVE_STORE_BY_POINTER_VEC2 102
+#define MASM_DIRECTIVE_STORE_BY_POINTER_VEC3 103
+#define MASM_DIRECTIVE_STORE_BY_POINTER_VEC4 104
+
 #define MASM_TARGET_DIFFUSECOLOR 0
 #define MASM_TARGET_NORMAL 1
 
@@ -725,6 +737,58 @@ void main(){
                 target = AsmProgram[i++];
                 source = AsmProgram[i++];
                 memory_vec4[target] = vec4(memory_float[source]);
+            break;
+            //################################################################//
+            case MASM_DIRECTIVE_LOAD_BY_POINTER_INT:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_int[target] = SharedMemoryInt[memory_int[source]];
+            break;
+            case MASM_DIRECTIVE_LOAD_BY_POINTER_FLOAT:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_float[target] = SharedMemoryFloat[memory_int[source]];
+            break;
+            case MASM_DIRECTIVE_LOAD_BY_POINTER_VEC2:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_vec2[target] = SharedMemoryVec2[memory_int[source]];
+            break;
+            case MASM_DIRECTIVE_LOAD_BY_POINTER_VEC3:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_vec3[target] = SharedMemoryVec3[memory_int[source]];
+            break;
+            case MASM_DIRECTIVE_LOAD_BY_POINTER_VEC4:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                memory_vec4[target] = SharedMemoryVec4[memory_int[source]];
+            break;
+            //################################################################//
+            case MASM_DIRECTIVE_STORE_BY_POINTER_INT:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                SharedMemoryInt[memory_int[target]] = memory_int[source];
+            break;
+            case MASM_DIRECTIVE_STORE_BY_POINTER_FLOAT:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                SharedMemoryFloat[memory_int[target]] = memory_float[source];
+            break;
+            case MASM_DIRECTIVE_STORE_BY_POINTER_VEC2:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                SharedMemoryVec2[memory_int[target]] = memory_vec2[source];
+            break;
+            case MASM_DIRECTIVE_STORE_BY_POINTER_VEC3:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                SharedMemoryVec3[memory_int[target]] = memory_vec3[source];
+            break;
+            case MASM_DIRECTIVE_STORE_BY_POINTER_VEC4:
+                target = AsmProgram[i++];
+                source = AsmProgram[i++];
+                SharedMemoryVec4[memory_int[target]] = memory_vec4[source];
             break;
         }
     }
