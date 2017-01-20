@@ -39,7 +39,7 @@ void ShaderStorageBuffer::mapSubData(int offset, size_t size, const void * data)
 void ShaderStorageBuffer::readSubData(int offset, size_t size, void * data)
 {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, handle);
-    GLvoid* p = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, offset, size, GL_READ_ONLY);
+    GLvoid* p = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, offset, size, GL_MAP_READ_BIT);
     memcpy(data, p, size);
     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 }

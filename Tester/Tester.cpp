@@ -12,6 +12,7 @@
 #include "../VEngineNative/Mesh3d.h";
 #include "../VEngineNative/Light.h";
 #include "../VEngineNative/SquirrelVM.h";
+#include "../VEngineNative/GLSLVM.h";
 #include "../VEngineNative/SimpleParser.h";
 #include "../VEngineNative/imgui/imgui.h";
 
@@ -52,6 +53,37 @@ int main()
     "    pow(texture3, 2.0);"
     ");"
     );
+
+    // lets test this volatile piece of shit
+    game->invoke([]() {
+        GLSLVM* vm = new GLSLVM();
+        vm->resizeBufferFloat(1);
+        float data = 1.0f;
+        int lpdata[2] = { 0, 6 };
+        vm->bufferSubDataInt(0, 2, &lpdata[0]);
+        vm->bufferSubDataFloat(0, 1, &data);
+        vm->programAssembly = vector<int>{
+            // setup loop
+            /*0*/ MASM_DIRECTIVE_LOAD_INT, 2, 1,
+            /*3*/ MASM_DIRECTIVE_LOAD_INT, 3, 0,
+
+            /*6*/ MASM_DIRECTIVE_LOAD_FLOAT, 2, 0,
+            /*9*/ MASM_DIRECTIVE_LOAD_FLOAT, 3, 0,
+            /*12*/ MASM_DIRECTIVE_ADD_FLOAT, 2, 3,
+            /*15*/ MASM_DIRECTIVE_STORE_FLOAT, 0, 2,
+
+            /*18*/ MASM_DIRECTIVE_DEC_INT, 2,
+            /*20*/ MASM_DIRECTIVE_JUMP_IF_HIGHER_INT, 2, 3,
+            /*23*/ MASM_DIRECTIVE_JUMP_ABSOLUTE, 6
+
+        };
+        vm->run(1);
+        float result = 0.0f;
+        vm->readSubDataFloat(0, 1, &result);
+        printf("RESU:LT IS %f", result);// EXPECTING 2.0f
+        printf("RESU:LT IS %f", result);// EXPECTING 2.0f
+    });
+
 
     for (int i = 0; i < axs.size(); i++) {
         if (axs[i].type == TOKEN_NAME) printf("TOKEN_NAME %s\n", axs[i].strdata);

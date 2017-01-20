@@ -26,23 +26,23 @@ vec4 sampleNodeLod0(int i, vec2 uv){
     if(i == 9)  return textureLod(texBind9 , uv, 0).rgba;
 }
 
-layout (std430, binding = 0) buffer SharedMemoryIntBuffer
+layout (std430, binding = 0) coherent buffer SharedMemoryIntBuffer
 {
   int SharedMemoryInt[];
 };
-layout (std430, binding = 1) buffer SharedMemoryFloatBuffer
+layout (std430, binding = 1) coherent buffer SharedMemoryFloatBuffer
 {
   float SharedMemoryFloat[];
 };
-layout (std430, binding = 2) buffer SharedMemoryVec2Buffer
+layout (std430, binding = 2) coherent buffer SharedMemoryVec2Buffer
 {
   vec2 SharedMemoryVec2[];
 };
-layout (std430, binding = 3) buffer SharedMemoryVec3Buffer
+layout (std430, binding = 3) coherent buffer SharedMemoryVec3Buffer
 {
   vec3 SharedMemoryVec3[];
 };
-layout (std430, binding = 4) buffer SharedMemoryVec4Buffer
+layout (std430, binding = 4) coherent buffer SharedMemoryVec4Buffer
 {
   vec4 SharedMemoryVec4[];
 };
@@ -728,4 +728,6 @@ void main(){
             break;
         }
     }
+    barrier();
+    memoryBarrier();
 }
