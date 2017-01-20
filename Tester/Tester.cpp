@@ -60,22 +60,28 @@ int main()
         vm->resizeBufferFloat(1);
 
         string teststring = "elomelo320";
-        int data[100];
-        for (int i = 0; i < teststring.size(); i++)data[i] = teststring[i];
-        data[99] = teststring.size();
-        vm->bufferSubDataInt(0, 100, &data[0]);
-        vm->programAssembly = vector<int>{
-            MASM_DIRECTIVE_MOV_INVOCATION_ID, 7,
+        int data[1000];
+        auto programAssembly = vector<int>{
+            MASM_DIRECTIVE_MOV_INVOCATION_ID, 7, // move invocation id into int reg 7
 
-            MASM_DIRECTIVE_LOAD_BY_POINTER_INT, 0, 7,
-            MASM_DIRECTIVE_LOAD_INT, 1, 99,
-            MASM_DIRECTIVE_ADD_INT, 7, 1,
-            MASM_DIRECTIVE_STORE_BY_POINTER_INT, 7, 0,
-
+            MASM_DIRECTIVE_LOAD_INT, 2, 77, // move value at addres 77 which is 100 to int reg 2
+            MASM_DIRECTIVE_ADD_INT, 7, 2, // int reg 7 += int reg 2 (inv id + 100)
+            MASM_DIRECTIVE_LOAD_BY_POINTER_INT, 0, 7, // load by pointer in int reg 7 which is 100 + inv id < its OK
+            MASM_DIRECTIVE_LOAD_INT, 1, 78, // load value text length into int reg 1
+            MASM_DIRECTIVE_ADD_INT, 7, 1, // int reg 8 += int reg 1 which is text length
+            MASM_DIRECTIVE_STORE_BY_POINTER_INT, 7, 0, // store there 
+            
         };
-        vm->run(100);
+        for (int i = 0; i < programAssembly.size(); i++)data[i] = programAssembly[i];
+        for (int i = 0; i < teststring.size(); i++)data[i + 100] = teststring[i];
+        data[78] = teststring.size();
+        data[77] = 100;
+        vm->resizeBufferInt(1000);
+
+        vm->bufferSubDataInt(0, 1000, &data[0]);
+        vm->run(teststring.size());
         int result[100];
-        vm->readSubDataInt(0, 100, &result[0]);
+        vm->readSubDataInt(100, teststring.size() * 2, &result[0]);
         for (int i = 0; i < teststring.size() * 2; i++)printf("%c", (char)result[i]);
         // EXPECTING 2.0f
         printf("RESU:LT I");// EXPECTING 2.0f

@@ -5,7 +5,7 @@
 
 
 #define MASM_DIRECTIVE_STORE_INT -1
-#define MASM_DIRECTIVE_STORE_FLOAT 0
+#define MASM_DIRECTIVE_STORE_FLOAT 104
 #define MASM_DIRECTIVE_STORE_VEC2 1
 #define MASM_DIRECTIVE_STORE_VEC3 2
 #define MASM_DIRECTIVE_STORE_VEC4 3
@@ -45,7 +45,11 @@
 
 #define MASM_DIRECTIVE_JUMP_ABSOLUTE 31
 #define MASM_DIRECTIVE_JUMP_RELATIVE 32 // cool
-#define MASM_DIRECTIVE_JUMP_BACK 33 // and i thought recursiveness wouldnt be possible
+
+#define MASM_DIRECTIVE_LONG_JUMP_ABSOLUTE 105
+#define MASM_DIRECTIVE_LONG_JUMP_RELATIVE 106 // cool
+
+#define MASM_DIRECTIVE_LONG_JUMP_BACK 33 // and i thought recursiveness wouldnt be possible
 
 #define MASM_DIRECTIVE_JUMP_IF_EQUAL_INT 34
 #define MASM_DIRECTIVE_JUMP_IF_EQUAL_FLOAT 35
@@ -128,10 +132,9 @@
 #define MASM_DIRECTIVE_STORE_BY_POINTER_FLOAT 101
 #define MASM_DIRECTIVE_STORE_BY_POINTER_VEC2 102
 #define MASM_DIRECTIVE_STORE_BY_POINTER_VEC3 103
-#define MASM_DIRECTIVE_STORE_BY_POINTER_VEC4 104
+#define MASM_DIRECTIVE_STORE_BY_POINTER_VEC4 107
 
-#define MASM_TARGET_DIFFUSECOLOR 0
-#define MASM_TARGET_NORMAL 1
+#define MASM_DIRECTIVE_HALT 0
 
 #define MASM_JUMP_STACK_SIZE 16
 #define MASM_OUTPUT_CHUNK_SIZE 4
@@ -146,7 +149,6 @@ class GLSLVM
 public:
     GLSLVM();
     ~GLSLVM();
-    std::vector<int> programAssembly;
     std::vector<Texture2d*> textures;
     std::vector<glm::vec2> texturesScales;
     void run(int instances);

@@ -6,7 +6,6 @@
 GLSLVM::GLSLVM()
 {
     processor = new ShaderProgram("GLSLVM.compute.glsl");
-    programAssembly = std::vector<int>();
     textures = std::vector<Texture2d*>();
     texturesScales = std::vector<glm::vec2>();
     intBuffer = new ShaderStorageBuffer();
@@ -30,9 +29,7 @@ void GLSLVM::run(int instances)
     vec2Buffer->use(2);
     vec3Buffer->use(3);
     vec4Buffer->use(4);
-    s->setUniformVector("AsmProgram", programAssembly);
     s->setUniformVector("TexturesScales", texturesScales);
-    s->setUniform("AsmProgramLength", (int)programAssembly.size());
     s->setUniform("TexturesCount", (int)textures.size());
     for (int i = 0; i < textures.size(); i++) {
         textures[i]->use(i);
@@ -68,50 +65,50 @@ void GLSLVM::resizeBufferVec4(int size)
 
 void GLSLVM::bufferSubDataInt(int offset, int count, int * data)
 {
-    intBuffer->mapSubData(offset, count * sizeof(int), data);
+    intBuffer->mapSubData(offset * sizeof(int), count * sizeof(int), data);
 }
 
 void GLSLVM::bufferSubDataFloat(int offset, int count, float * data)
 {
-    floatBuffer->mapSubData(offset, count * sizeof(float), data);
+    floatBuffer->mapSubData(offset * sizeof(float), count * sizeof(float), data);
 }
 
 void GLSLVM::bufferSubDataVec2(int offset, int count, glm::vec2 * data)
 {
-    vec2Buffer->mapSubData(offset, count * sizeof(float) * 2, data);
+    vec2Buffer->mapSubData(offset * sizeof(float) * 2, count * sizeof(float) * 2, data);
 }
 
 void GLSLVM::bufferSubDataVec3(int offset, int count, glm::vec3 * data)
 {
-    vec3Buffer->mapSubData(offset, count * sizeof(float) * 3, data);
+    vec3Buffer->mapSubData(offset * sizeof(float) * 3, count * sizeof(float) * 3, data);
 }
 
 void GLSLVM::bufferSubDataVec4(int offset, int count, glm::vec4 * data)
 {
-    vec4Buffer->mapSubData(offset, count * sizeof(float) * 4, data);
+    vec4Buffer->mapSubData(offset * sizeof(float) * 4, count * sizeof(float) * 4, data);
 }
 
 void GLSLVM::readSubDataInt(int offset, int size, int * data)
 {
-    intBuffer->readSubData(offset, size * sizeof(int), data);
+    intBuffer->readSubData(offset * sizeof(int), size * sizeof(int), data);
 }
 
 void GLSLVM::readSubDataFloat(int offset, int size, float * data)
 {
-    floatBuffer->readSubData(offset, size * sizeof(float), data);
+    floatBuffer->readSubData(offset * sizeof(float), size * sizeof(float), data);
 }
 
 void GLSLVM::readSubDataVec2(int offset, int size, glm::vec2 * data)
 {
-    vec2Buffer->readSubData(offset, size * sizeof(float) * 2, data);
+    vec2Buffer->readSubData(offset * sizeof(float) * 2, size * sizeof(float) * 2, data);
 }
 
 void GLSLVM::readSubDataVec3(int offset, int size, glm::vec3 * data)
 {
-    vec3Buffer->readSubData(offset, size * sizeof(float) * 3, data);
+    vec3Buffer->readSubData(offset * sizeof(float) * 3, size * sizeof(float) * 3, data);
 }
 
 void GLSLVM::readSubDataVec4(int offset, int size, glm::vec4 * data)
 {
-    vec4Buffer->readSubData(offset, size * sizeof(float) * 4, data);
+    vec4Buffer->readSubData(offset * sizeof(float) * 4, size * sizeof(float) * 4, data);
 }
