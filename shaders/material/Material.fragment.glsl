@@ -196,7 +196,7 @@ void main(){
         }
         if(node.target == MODTARGET_BUMP){
             UV = adjustParallaxUV(node.samplerIndex, UV * node.uvScale) / node.uvScale;
-            data.rgb = examineBumpMap(retrieveSampler(node.samplerIndex), UV * node.uvScale);
+            //data.rgb = examineBumpMap(retrieveSampler(node.samplerIndex), UV * node.uvScale);
             normalmap = nodeCombine(normalmap, data.rgb, node.mode, data.a);
             modifiedNormal = true;
         }

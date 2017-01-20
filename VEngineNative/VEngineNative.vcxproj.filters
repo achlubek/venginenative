@@ -183,7 +183,7 @@
     <ClInclude Include="AbsTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MaterialAssembly.h">
+    <ClInclude Include="GLSLVM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -317,7 +317,7 @@
     <ClCompile Include="AbsTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MaterialAssembly.cpp">
+    <ClCompile Include="GLSLVM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

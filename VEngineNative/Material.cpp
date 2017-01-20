@@ -10,7 +10,6 @@ Material::Material()
     metalness = 0.0;
     nodes = {};
     disableFaceCull = false;
-    Masm = new MaterialAssembly();
 }
 
 Material::~Material()

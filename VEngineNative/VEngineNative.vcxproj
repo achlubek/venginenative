@@ -254,6 +254,7 @@
     <ClInclude Include="GenericShaders.h" />
     <ClInclude Include="glad.h" />
     <ClInclude Include="glfw.h" />
+    <ClInclude Include="GLSLVM.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_internal.h" />
@@ -265,7 +266,6 @@
     <ClInclude Include="khrplatform.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Material.h" />
-    <ClInclude Include="MaterialAssembly.h" />
     <ClInclude Include="MaterialNode.h" />
     <ClInclude Include="Media.h" />
     <ClInclude Include="Mesh3d.h" />
@@ -308,6 +308,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GenericShaders.cpp" />
     <ClCompile Include="glad.cpp" />
+    <ClCompile Include="GLSLVM.cpp" />
     <ClCompile Include="imgui\imgui.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NotOptimization|x64'">NotUsing</PrecompiledHeader>
@@ -320,7 +321,6 @@
     <ClCompile Include="INIReader.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Material.cpp" />
-    <ClCompile Include="MaterialAssembly.cpp" />
     <ClCompile Include="MaterialNode.cpp" />
     <ClCompile Include="Media.cpp" />
     <ClCompile Include="Mesh3d.cpp" />
