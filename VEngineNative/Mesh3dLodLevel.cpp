@@ -10,8 +10,12 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial, float di
     material = imaterial;
     distanceStart = distancestart;
     distanceEnd = distanceend;
-    instancesFiltered = 0;
-    modelInfosBuffer = new ShaderStorageBuffer();
+    instancesFiltered1 = 0;
+    instancesFiltered2 = 0;
+    instancesFiltered3 = 0;
+    modelInfosBuffer1 = new ShaderStorageBuffer();
+    modelInfosBuffer2 = new ShaderStorageBuffer();
+    modelInfosBuffer3 = new ShaderStorageBuffer();
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -31,8 +35,12 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial)
     material = imaterial;
     distanceStart = 0;
     distanceEnd = 99999.0;
-    instancesFiltered = 0;
-    modelInfosBuffer = new ShaderStorageBuffer();
+    instancesFiltered1 = 0;
+    instancesFiltered2 = 0;
+    instancesFiltered3 = 0;
+    modelInfosBuffer1 = new ShaderStorageBuffer();
+    modelInfosBuffer2 = new ShaderStorageBuffer();
+    modelInfosBuffer3 = new ShaderStorageBuffer();
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -52,8 +60,12 @@ Mesh3dLodLevel::Mesh3dLodLevel()
     material = nullptr;
     distanceStart = 0;
     distanceEnd = 99999.0;
-    instancesFiltered = 0;
-    modelInfosBuffer = new ShaderStorageBuffer();
+    instancesFiltered1 = 0;
+    instancesFiltered2 = 0;
+    instancesFiltered3 = 0;
+    modelInfosBuffer1 = new ShaderStorageBuffer();
+    modelInfosBuffer2 = new ShaderStorageBuffer();
+    modelInfosBuffer3 = new ShaderStorageBuffer();
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -73,7 +85,6 @@ Mesh3dLodLevel::~Mesh3dLodLevel()
 
 void Mesh3dLodLevel::draw(const Mesh3d* mesh)
 {
-
     ShaderProgram *shader = ShaderProgram::current;
 
     if (material->diffuseColorTex != nullptr) material->diffuseColorTex->use(10);
@@ -100,9 +111,18 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
 
     shader->setUniform("Id", mesh->Id);
 
-    modelInfosBuffer->use(0);
+    if (currentBuffer == 0)modelInfosBuffer1->use(0);
+    if (currentBuffer == 1)modelInfosBuffer2->use(0);
+    if (currentBuffer == 2)modelInfosBuffer3->use(0);
 
-    info3d->drawInstanced(instancesFiltered);
+    if (currentBuffer == 0)info3d->drawInstanced(instancesFiltered1);
+    if (currentBuffer == 1)info3d->drawInstanced(instancesFiltered2);
+    if (currentBuffer == 2)info3d->drawInstanced(instancesFiltered3);
+
+    currentBuffer++;
+    nextBuffer++;
+    if (currentBuffer > 2) currentBuffer = 0;
+    if (nextBuffer > 2) nextBuffer = 0;
 }
 
 void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
@@ -115,12 +135,20 @@ void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
             filtered.push_back(instances[i]);
         }
     }
-    instancesFiltered = filtered.size();
+    
+    if (nextBuffer == 0)instancesFiltered1 = filtered.size();
+    if (nextBuffer == 1)instancesFiltered2 = filtered.size();
+    if (nextBuffer == 2)instancesFiltered3 = filtered.size();
+
     /*layout rotation f4 translation f3+1 scale f3+1 =>> 12 floats*/
     // Urgently transfrom it into permament mapped buffer
     vector<float> floats;
-    floats.reserve(12 * instancesFiltered);
-    for (unsigned int i = 0; i < instancesFiltered; i++) {
+    int fint = 0;
+    if (nextBuffer == 0)fint = instancesFiltered1;
+    if (nextBuffer == 1)fint = instancesFiltered2;
+    if (nextBuffer == 2)fint = instancesFiltered3;
+    floats.reserve(12 * fint);
+    for (unsigned int i = 0; i < fint; i++) {
         TransformationManager *mgr = filtered[i]->transformation;
         floats.push_back(mgr->orientation.x);
         floats.push_back(mgr->orientation.y);
@@ -137,7 +165,12 @@ void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
         floats.push_back(mgr->size.z);
         floats.push_back(1);
     }
-    modelInfosBuffer->mapData(4 * floats.size(), floats.data());
+    if (nextBuffer == 0)
+        modelInfosBuffer1->mapData(4 * floats.size(), floats.data());
+    if (nextBuffer == 1)
+        modelInfosBuffer2->mapData(4 * floats.size(), floats.data());
+    if (nextBuffer == 2)
+        modelInfosBuffer3->mapData(4 * floats.size(), floats.data());
 }
 
 bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)

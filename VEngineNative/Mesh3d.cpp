@@ -106,7 +106,7 @@ void Mesh3d::draw()
 
 void Mesh3d::setUniforms()
 {
-    if (needBufferUpdate || alwaysUpdateBuffer) {
+   // if (needBufferUpdate || alwaysUpdateBuffer) {
         updateBuffers();
-    }
+  //  }
 }

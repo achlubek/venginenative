@@ -19,8 +19,12 @@ public:
     float needBufferUpdate = true;
     void draw(const Mesh3d* mesh);
     void updateBuffer(const vector<Mesh3dInstance*> &instances);
-    ShaderStorageBuffer *modelInfosBuffer;
 private:
+    ShaderStorageBuffer *modelInfosBuffer1;
+    ShaderStorageBuffer *modelInfosBuffer2;
+    ShaderStorageBuffer *modelInfosBuffer3;
+    int currentBuffer = 0;
+    int nextBuffer = 1;
     bool checkIntersection(Mesh3dInstance* instance);
     vector<int> samplerIndices;
     vector<int> modes;
@@ -32,5 +36,7 @@ private:
     vector<glm::vec4> nodesDatas;
     vector<glm::vec4> nodesColors;
     vector<Texture2d*> textureBinds;
-    size_t instancesFiltered;
+    size_t instancesFiltered1;
+    size_t instancesFiltered2;
+    size_t instancesFiltered3;
 };
