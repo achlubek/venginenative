@@ -45,35 +45,6 @@ int main()
     });
     while (!ready);
 
-    SimpleParser* par = new SimpleParser();
-    auto axs = par->tokenize("diffuseColor = gradient("
-        "    0.0, texture0,"
-        "    0.4f, texture1,"
-        "    8, 123556564, \"loader\" + texture2,"
-        "    pow(texture3, 2.0);"
-        ");"
-    );
-
-    // lets test this volatile piece of shit
-
-
-    for (int i = 0; i < axs.size(); i++) {
-        if (axs[i].type == TOKEN_NAME) printf("TOKEN_NAME %s\n", axs[i].strdata);
-        if (axs[i].type == TOKEN_ASSIGNMENT) printf("TOKEN_ASSIGNMENT %s\n", axs[i].strdata);
-        if (axs[i].type == TOKEN_OPERATOR_ADD) printf("TOKEN_OPERATOR_ADD %s\n", axs[i].strdata);
-        if (axs[i].type == TOKEN_OPERATOR_SUB) printf("TOKEN_OPERATOR_SUB %s\n", axs[i].strdata);
-        if (axs[i].type == TOKEN_OPERATOR_MUL) printf("TOKEN_OPERATOR_MUL %s\n", axs[i].strdata);
-        if (axs[i].type == TOKEN_OPERATOR_DIV) printf("TOKEN_OPERATOR_DIV %s\n", axs[i].strdata);
-        if (axs[i].type == TOKEN_OPERATOR_POW) printf("TOKEN_OPERATOR_POW %s\n", axs[i].strdata);
-        if (axs[i].type == TOKEN_STRING) printf("TOKEN_STRING %s\n", axs[i].strdata);
-        if (axs[i].type == TOKEN_SEMICOLON) printf("TOKEN_SEMICOLON %s\n",   axs[i].strdata);
-        if (axs[i].type == TOKEN_BRACE_OPEN) printf("TOKEN_BRACE_OPEN %s\n", axs[i].strdata);
-        if (axs[i].type == TOKEN_BRACE_CLOSE) printf("TOKEN_BRACE_CLOSE %s\n", axs[i].strdata);
-        if (axs[i].type == TOKEN_CURLY_OPEN) printf("TOKEN_CURLY_OPEN %s\n", axs[i].strdata);
-        if (axs[i].type == TOKEN_CURLY_CLOSE) printf("TOKEN_CURLY_CLOSE %s\n", axs[i].strdata);
-        if (axs[i].type == TOKEN_COMMA) printf("TOKEN_COMMA %s\n", axs[i].strdata);
-    }
-
     Camera *cam = new Camera();
     float fov = 95.0f;
     float fovnew = 95.0f;
@@ -85,83 +56,6 @@ int main()
     glm::quat rot = glm::quat_cast(glm::lookAt(cam->transformation->position, glm::vec3(0), glm::vec3(0, 1, 0)));
     cam->transformation->setOrientation(rot);
     game->world->mainDisplayCamera = cam;
-
-    // mesh loading
-
-  //  SquirrelVM* sq = new SquirrelVM();
-  //  sq->compileFile(Media::getPath("squireeltest.txt"));
-  //  sq->callProcedureVoid("testme");
-
-    game->world->scene = game->asset->loadSceneFile("sp.scene");
-    //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->translate(glm::vec3(0, -62.5f, 0));
-   // for (int i = 0; i < game->world->scene->getMeshes().size(); i++) {
-     //   game->world->scene->getMeshes()[i]->getInstance(0)->transformation->scale(glm::vec3(100.0f));
-  //  }
-   //game->world->scene->getMeshes()[0]->getInstance(0)->transformation->rotate(glm::angleAxis(deg2rad(73.75f), glm::vec3(-0.006f, -0.005f, 1.0f)));
- //  game->world->scene->addMesh(game->asset->loadMeshFile("treeground.mesh3d"));
-
-    auto car = new Car();
-    auto t = game->asset->loadMeshFile("2dplane.mesh3d");
-    t->alwaysUpdateBuffer = true;
-    game->world->scene->addMesh(t);
-    /*
-    for (int x = 0; x < 1; x++) {
-        for (int y = 0; y < 50; y++) {
-            t->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(x, y + 20.0, 0.0))));
-        }
-    }
-
-    */
-    game->invoke([&]() {
-        auto phys = Game::instance->world->physics;
-        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, -0.0, 0.0)), new btBoxShape(btVector3(1111.0, 5.0, 1110.0)));
-        //groundpb->body->applyTorque(btVector3(1000, 1000, 1000));
-        groundpb->body->setFriction(1010);
-        groundpb->enable();
-        /*
-        PhysicalBody* last = nullptr;
-        for (int i = 0; i < t->getInstances().size(); i++) {
-            auto cube = phys->createBody(1.0f, t->getInstance(i)->transformation, new btBoxShape(btVector3(1.0, 1.0, 1.0)));
-            cube->enable();
-            if (last != nullptr) {
-                auto rawconstraint = new btConeTwistConstraint(*(last->body), *(cube->body), btTransform(btQuaternion(), btVector3(0.0, 1.0, 0.0)), btTransform(btQuaternion(), btVector3(0.0, -1.0, 0.0)));
-                rawconstraint->setBreakingImpulseThreshold(9999999.0);
-                auto con = new PhysicalConstraint(rawconstraint, last, cube);
-                con->enable();
-            }
-            last = cube;
-        }*/
-    });
-    auto flagbase = game->asset->loadMeshFile("flagbase.mesh3d");
-    game->world->scene->addMesh(flagbase);
-    GLSLVM* vm = new GLSLVM();
-    game->invoke([&]() {/*
-        vm->resizeBufferFloat(1);
-
-        int data[1000];
-        auto programAssembly = vector<int>{
-            MASM_DIRECTIVE_MOV_INVOCATION_ID, 7, // move invocation id into int reg 7
-
-            MASM_DIRECTIVE_LOAD_INT, 2, 77, // move value at addres 77 which is 100 to int reg 2
-            MASM_DIRECTIVE_ADD_INT, 7, 2, // int reg 7 += int reg 2 (inv id + 100)
-            MASM_DIRECTIVE_LOAD_BY_POINTER_INT, 0, 7, // load by pointer in int reg 7 which is 100 + inv id < its OK
-            MASM_DIRECTIVE_LOAD_INT, 1, 78, // load value text length into int reg 1
-            MASM_DIRECTIVE_ADD_INT, 7, 1, // int reg 8 += int reg 1 which is text length
-            MASM_DIRECTIVE_STORE_BY_POINTER_INT, 7, 0, // store there 
-
-        };
-        for (int i = 0; i < programAssembly.size(); i++)data[i] = programAssembly[i];
-        vm->resizeBufferInt(1000);
-
-        vm->bufferSubDataInt(0, 1000, &data[0]);
-        vm->run(teststring.size());
-        int result[100];
-        vm->readSubDataInt(100, teststring.size() * 2, &result[0]);
-        for (int i = 0; i < teststring.size() * 2; i++)printf("%c", (char)result[i]);
-        // EXPECTING 2.0f
-        printf("RESU:LT I");// EXPECTING 2.0f*/
-    });
-
 
     bool isOpened = true;
     bool isOpened2 = true;
@@ -370,7 +264,7 @@ int main()
         //  printf("%d\n", game->renderer->pickingResult);
          // game->renderer->pick(cam, glm::vec2(0.5));
          // t->needBufferUpdate = true;
-
+        /*
         int cnt = flagbase->getLodLevel(0)->info3d->vbo.size();
         for (int i = 0; i < cnt; i+=12) {
             glm::vec3 vector;
@@ -381,8 +275,8 @@ int main()
             vector.z = 0.2 * glm::sin(game->time * 3.0f + vector.x * 5.4 + vector.y * 0.4);
 
             flagbase->getLodLevel(0)->info3d->vbo[i + 2] = vector.z;
-        }
-        flagbase->getLodLevel(0)->info3d->rebufferVbo(flagbase->getLodLevel(0)->info3d->vbo, true);
+        }*/
+       // flagbase->getLodLevel(0)->info3d->rebufferVbo(flagbase->getLodLevel(0)->info3d->vbo, true);
 
         if (!cursorFree) {
             float maxspeed = 0.1;
@@ -444,35 +338,6 @@ int main()
                 intializedCameraSystem = true;
             }
             if (cameraFollowCar) {
-                int acnt = 0;
-                const float * axes = glfwGetJoystickAxes(0, &acnt);
-                if (acnt >= 1) {
-                    car->setWheelsAngle(axes[0] * 0.9);
-                }
-                if (acnt >= 6) {
-                    float acc = (axes[5] * 0.5 + 0.5);
-                    float brk = (axes[4] * 0.5 + 0.5);
-                    car->setAcceleration((acc - brk) * 0.5);
-                }
-                auto cartrans = car->getTransformation();
-                if (cartrans != nullptr) {
-                    glm::vec3 backvector = glm::vec3(0.0, 1.0, -4.0);
-                    auto trsf = glm::quat();
-                    if (acnt >= 4) {
-                        trsf = glm::angleAxis(deg2rad(axes[3] * 80.0f), glm::vec3(-1.0, 0.0, 0.0)) * glm::angleAxis(deg2rad(axes[2] * 80.0f), glm::vec3(0.0, -1.0, 0.0));
-                        auto trsf2 = glm::angleAxis(deg2rad(axes[3] * 80.0f), glm::vec3(1.0, 0.0, 0.0)) *  glm::angleAxis(deg2rad(axes[2] * 80.0f), glm::vec3(0.0, 1.0, 0.0));
-                        backvector = trsf2 *  (backvector);
-                    }
-                    backvector = glm::mat3_cast(glm::inverse(cartrans->orientation)) * backvector;
-                    backquat = glm::slerp(backquat, trsf, 0.03f);
-                    trsf = backquat;
-
-                    backvector = backvectorlast * 0.97f + backvector * 0.03f;
-                    backvectorlast = backvector;
-                    cam->transformation->setPosition(cartrans->position + backvector);
-                    cam->transformation->setOrientation(glm::inverse(glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0)) * backquat * cartrans->orientation));
-                }
-
             }
             else {
                 float dx = (float)(lastcx - cursor.x);

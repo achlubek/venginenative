@@ -170,7 +170,6 @@ void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
 
 bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
 {
-    return true;
     float radius = glm::max(info3d->aabbmax.length(), info3d->aabbmin.length());
 
     float dst = distance(Game::instance->world->mainDisplayCamera->transformation->position, instance->transformation->position);

@@ -28,7 +28,7 @@ vec4 blurshadowsAOXA(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
-	//return textureLod(cloudsCloudsTex, dir, mlvel).gba;
+	return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
    // float dst = textureLod(coverageDistTex, dir, mlvel).g;
     float aoc = 1.0;
 
@@ -82,7 +82,7 @@ vec4 shade(){
         vec4 brl = blurshadowsAOXA(dir, 0.0);
         retedg.r = min(val, brl.r);
         retavg.r = mix(val, brl.r, CloudsIntegrate);
-		//retavg.r = mix(retavg.r, retedg.r, 0.5);
+		retavg.r = mix(retavg.r, retedg.r, 0.2);
 
         //vec3 blr = blurshadowsAOXA(dir, 0.0);
         retavg.gba = mix(AOGround, brl.gba, CloudsIntegrate);

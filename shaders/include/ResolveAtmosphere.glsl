@@ -110,7 +110,7 @@ vec4 blurshadowsAO(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(shadowsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
-    //return textureLod(shadowsTex, dir, mlvel).gba;
+    return textureLod(shadowsTex, dir, mlvel).rgba;
     float dst = textureLod(coverageDistTex, dir, mlvel).g;
     float aoc = 1.0;
 
@@ -341,8 +341,9 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float dimmer = max(0, 0.06 + 0.94 * dot(normalize(dayData.sunDir), vec3(0,1,0)));
     vec3 scattering = getAtmosphereScattering(dir, roughness);
     vec3 moon = textureMoon(dir);
-    scattering += lenssun(dir) * getSunColorDirectly(0.0) * 1.0;
-    float monsoonconverage = (1.0 - smoothstep(0.995, 1.0, dot(dayData.sunDir, dayData.moonDir))) * 0.7 + 0.3;
+    float monsoonconverage = (1.0 - smoothstep(0.995, 1.0, dot(dayData.sunDir, dayData.moonDir))) * 0.99 + 0.01;
+    float monsoonconverage2 = (1.0 - smoothstep(0.995, 0.996, dot(dir, dayData.moonDir)));
+    scattering += monsoonconverage2 * (lenssun(dir)) * getSunColorDirectly(0.0) * 1.0;
     vec4 cloudsData = smartblur(dir, roughness);
     float coverage = cloudsData.r;
     sshadow = 1.0 - coverage;
