@@ -12,12 +12,13 @@ public:
     void drawInstanced(size_t instances);
     void updateAABB();
     glm::vec3 aabbmin, aabbmax;
+    vector<GLfloat> vbo;
+    void rebufferVbo(vector<GLfloat> data, bool force_resize);
 
 private:
 
     void generate();
 
-    vector<GLfloat> vbo;
     bool generated = false;
     GLuint vboHandle, vaoHandle;
     GLsizei vertexCount;

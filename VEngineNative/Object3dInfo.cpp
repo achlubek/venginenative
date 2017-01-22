@@ -56,14 +56,33 @@ void Object3dInfo::updateAABB()
     }
 }
 
+void Object3dInfo::rebufferVbo(vector<GLfloat> data, bool force_resize)
+{
+    if (!generated) {
+        vbo = data;
+        return;
+    }
+    if (force_resize) {
+        vbo = data;
+        generated = false;
+    } else {
+        glBindBuffer(GL_ARRAY_BUFFER, vboHandle);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * data.size(), data.data(), GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT | GL_ELEMENT_ARRAY_BARRIER_BIT);
+    }
+}
+
 void Object3dInfo::generate()
 {
+    if (vaoHandle > 0) glDeleteVertexArrays(1, &vaoHandle);
+    if (vboHandle > 0) glDeleteBuffers(1, &vboHandle);
     glGenVertexArrays(1, &vaoHandle);
     glGenBuffers(1, &vboHandle);
     glBindVertexArray(vaoHandle);
     glBindBuffer(GL_ARRAY_BUFFER, vboHandle);
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vbo.size(), vbo.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vbo.size(), vbo.data(), GL_DYNAMIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
@@ -78,6 +97,5 @@ void Object3dInfo::generate()
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    //VBO.clear(); //  this should go with fence/barrier/finish
     generated = true;
 }

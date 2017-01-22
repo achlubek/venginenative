@@ -19,7 +19,14 @@ std::vector<SimpleToken> SimpleParser::tokenize(std::string str)
     bool in_string = false;
     int last_start = 0;
     int strl = str.length();
-    #define checklast if (last_start != i - 1) {curtok.strdata = str.substr(last_start + 1, i - last_start - 1); curtok.type = TOKEN_NAME; tokens.push_back(curtok);curtok = SimpleToken();}
+
+    #define checklast if (last_start != i - 1) { \
+        curtok.strdata = str.substr(last_start + 1, i - last_start - 1); \
+        curtok.type = TOKEN_NAME; \
+        tokens.push_back(curtok); \
+        curtok = SimpleToken(); \
+    }
+
     for (int i = 0; i < strl; i++) {
         auto c = str[i];
         if (!in_string) {
