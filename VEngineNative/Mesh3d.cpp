@@ -109,7 +109,4 @@ void Mesh3d::setUniforms()
     if (needBufferUpdate || alwaysUpdateBuffer) {
         updateBuffers();
     }
-    for (int i = 0; i < lodLevels.size(); i++) {
-        lodLevels[i]->setUniforms();
-    }
 }

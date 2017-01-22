@@ -43,7 +43,28 @@ Material * AssetLoader::loadMaterialString(string source)
         }
         // now nodes section
         if (words[0] == "node") {
-            if (node != nullptr) material->addNode(node);
+            if (node != nullptr) {
+                if (node->target == NODE_TARGET_DIFFUSE) {
+                    material->diffuseColorTex = node->texture;
+                    material->diffuseColorTexScale = node->uvScale;
+                }
+                if (node->target == NODE_TARGET_NORMAL) {
+                    material->normalTex = node->texture;
+                    material->normalTexScale = node->uvScale;
+                }
+                if (node->target == NODE_TARGET_BUMP) {
+                    material->bumpTex = node->texture;
+                    material->bumpTexScale = node->uvScale;
+                }
+                if (node->target == NODE_TARGET_ROUGHNESS) {
+                    material->roughnessTex = node->texture;
+                    material->roughnessTexScale = node->uvScale;
+                }
+                if (node->target == NODE_TARGET_METALNESS) {
+                    material->metalnessTex = node->texture;
+                    material->metalnessTexScale = node->uvScale;
+                }
+            }
             node = new MaterialNode();
         }
         if (words[0] == "uvscale") {
@@ -159,7 +180,28 @@ Material * AssetLoader::loadMaterialString(string source)
             }
         }
     }
-    if (node != nullptr) material->addNode(node);
+    if (node != nullptr) {
+        if (node->target == NODE_TARGET_DIFFUSE) {
+            material->diffuseColorTex = node->texture;
+            material->diffuseColorTexScale = node->uvScale;
+        }
+        if (node->target == NODE_TARGET_NORMAL) {
+            material->normalTex = node->texture;
+            material->normalTexScale = node->uvScale;
+        }
+        if (node->target == NODE_TARGET_BUMP) {
+            material->bumpTex = node->texture;
+            material->bumpTexScale = node->uvScale;
+        }
+        if (node->target == NODE_TARGET_ROUGHNESS) {
+            material->roughnessTex = node->texture;
+            material->roughnessTexScale = node->uvScale;
+        }
+        if (node->target == NODE_TARGET_METALNESS) {
+            material->metalnessTex = node->texture;
+            material->metalnessTexScale = node->uvScale;
+        }
+    }
     return material;
 }
 

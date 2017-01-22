@@ -18,7 +18,6 @@ public:
     float distanceEnd;
     float needBufferUpdate = true;
     void draw(const Mesh3d* mesh);
-    void setUniforms();
     void updateBuffer(const vector<Mesh3dInstance*> &instances);
     ShaderStorageBuffer *modelInfosBuffer;
 private:

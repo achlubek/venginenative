@@ -5,18 +5,24 @@ using namespace glm;
 
 Material::Material()
 {
+    diffuseColorTex = nullptr;
+    normalTex = nullptr;
+    bumpTex = nullptr;
+    roughnessTex = nullptr;
+    metalnessTex = nullptr;
+
     diffuseColor = vec3(1);
     roughness = 1.0;
     metalness = 0.0;
-    nodes = {};
-    disableFaceCull = false;
+
+    diffuseColorTexScale = glm::vec2(1.0f);
+    normalTexScale = glm::vec2(1.0f);
+    bumpTexScale = glm::vec2(1.0f);
+    roughnessTexScale = glm::vec2(1.0f);
+    metalnessTexScale = glm::vec2(1.0f);
 }
 
 Material::~Material()
 {
-}
-
-void Material::addNode(MaterialNode * node)
-{
-    nodes.push_back(node);
+    // texture2d needs refcounters because reuse is important
 }

@@ -57,6 +57,23 @@ int main()
     cam->transformation->setOrientation(rot);
     game->world->mainDisplayCamera = cam;
 
+
+    game->world->scene = game->asset->loadSceneFile("sp.scene");
+
+    auto car = new Car();
+    auto t = game->asset->loadMeshFile("2dplane.mesh3d");
+    t->alwaysUpdateBuffer = true;
+    game->world->scene->addMesh(t);
+
+    game->invoke([&]() {
+        auto phys = Game::instance->world->physics;
+        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, -0.0, 0.0)), new btBoxShape(btVector3(1111.0, 5.0, 1110.0)));
+        groundpb->body->setFriction(1010);
+        groundpb->enable();
+    });
+
+
+
     bool isOpened = true;
     bool isOpened2 = true;
 
@@ -276,7 +293,7 @@ int main()
 
             flagbase->getLodLevel(0)->info3d->vbo[i + 2] = vector.z;
         }*/
-       // flagbase->getLodLevel(0)->info3d->rebufferVbo(flagbase->getLodLevel(0)->info3d->vbo, true);
+        // flagbase->getLodLevel(0)->info3d->rebufferVbo(flagbase->getLodLevel(0)->info3d->vbo, true);
 
         if (!cursorFree) {
             float maxspeed = 0.1;
@@ -338,6 +355,34 @@ int main()
                 intializedCameraSystem = true;
             }
             if (cameraFollowCar) {
+                int acnt = 0;
+                const float * axes = glfwGetJoystickAxes(0, &acnt);
+                if (acnt >= 1) {
+                    car->setWheelsAngle(axes[0] * 0.9);
+                }
+                if (acnt >= 6) {
+                    float acc = (axes[5] * 0.5 + 0.5);
+                    float brk = (axes[4] * 0.5 + 0.5);
+                    car->setAcceleration((acc - brk) * 0.5);
+                }
+                auto cartrans = car->getTransformation();
+                if (cartrans != nullptr) {
+                    glm::vec3 backvector = glm::vec3(0.0, 1.0, -4.0);
+                    auto trsf = glm::quat();
+                    if (acnt >= 4) {
+                        trsf = glm::angleAxis(deg2rad(axes[3] * 80.0f), glm::vec3(-1.0, 0.0, 0.0)) * glm::angleAxis(deg2rad(axes[2] * 80.0f), glm::vec3(0.0, -1.0, 0.0));
+                        auto trsf2 = glm::angleAxis(deg2rad(axes[3] * 80.0f), glm::vec3(1.0, 0.0, 0.0)) *  glm::angleAxis(deg2rad(axes[2] * 80.0f), glm::vec3(0.0, 1.0, 0.0));
+                        backvector = trsf2 *  (backvector);
+                    }
+                    backvector = glm::mat3_cast(glm::inverse(cartrans->orientation)) * backvector;
+                    backquat = glm::slerp(backquat, trsf, 0.03f);
+                    trsf = backquat;
+
+                    backvector = backvectorlast * 0.97f + backvector * 0.03f;
+                    backvectorlast = backvector;
+                    cam->transformation->setPosition(cartrans->position + backvector);
+                    cam->transformation->setOrientation(glm::inverse(glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0)) * backquat * cartrans->orientation));
+                }
             }
             else {
                 float dx = (float)(lastcx - cursor.x);

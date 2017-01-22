@@ -75,62 +75,34 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
 {
 
     ShaderProgram *shader = ShaderProgram::current;
+
+    if (material->diffuseColorTex != nullptr) material->diffuseColorTex->use(10);
+    if (material->normalTex != nullptr) material->normalTex->use(11);
+    if (material->bumpTex != nullptr) material->bumpTex->use(12);
+    if (material->roughnessTex != nullptr) material->roughnessTex->use(13);
+    if (material->metalnessTex != nullptr) material->metalnessTex->use(14);
+
     shader->setUniform("Roughness", material->roughness);
     shader->setUniform("Metalness", material->metalness);
     shader->setUniform("DiffuseColor", material->diffuseColor);
-    shader->setUniform("NodesCount", (int)material->nodes.size());
-    shader->setUniformVector("SamplerIndexArray", samplerIndices);
-    shader->setUniformVector("ModeArray", modes);
-    shader->setUniformVector("TargetArray", targets);
-    shader->setUniformVector("SourcesArray", sources);
-    shader->setUniformVector("ModifiersArray", modifiers);
-    shader->setUniformVector("UVScaleArray", uvScales);
-    shader->setUniformVector("NodeDataArray", nodesDatas);
-    shader->setUniformVector("SourceColorsArray", nodesColors);
-    shader->setUniformVector("WrapModesArray", wrapModes);
+
+    shader->setUniform("useDiffuseColorTexInt", material->diffuseColorTex != nullptr ? 1 : 0);
+    shader->setUniform("useNormalTexInt", material->normalTex != nullptr ? 1 : 0);
+    shader->setUniform("useBumpTexInt", material->bumpTex != nullptr ? 1 : 0);
+    shader->setUniform("useRoughnessTexInt", material->roughnessTex != nullptr ? 1 : 0);
+    shader->setUniform("useMetalnessTexInt", material->metalnessTex != nullptr ? 1 : 0);
+
+    shader->setUniform("diffuseColorTexScale", material->diffuseColorTexScale);
+    shader->setUniform("normalTexScale", material->normalTexScale);
+    shader->setUniform("bumpTexScale", material->bumpTexScale);
+    shader->setUniform("roughnessTexScale", material->roughnessTexScale);
+    shader->setUniform("metalnessTexScale", material->metalnessTexScale);
+
     shader->setUniform("Id", mesh->Id);
 
     modelInfosBuffer->use(0);
 
-    for (int i = 0; i < textureBinds.size(); i++) {
-        textureBinds[i]->use(i+10);
-    }
-    if (material->disableFaceCull)glDisable(GL_CULL_FACE);
     info3d->drawInstanced(instancesFiltered);
-    if (material->disableFaceCull)glEnable(GL_CULL_FACE);
-}
-
-void Mesh3dLodLevel::setUniforms()
-{
-    samplerIndices.clear();
-    modes.clear();
-    targets.clear();
-    sources.clear();
-    modifiers.clear();
-    uvScales.clear();
-    nodesDatas.clear();
-    nodesColors.clear();
-    modes.clear();
-    textureBinds.clear();
-    wrapModes.clear();
-
-    int samplerIndex = 0;
-    for (int i = 0; i < material->nodes.size(); i++) {
-        MaterialNode * node = material->nodes[i];
-        samplerIndices.push_back(samplerIndex);
-        modes.push_back(node->mixingMode);
-        targets.push_back(node->target);
-        sources.push_back(node->source);
-        modifiers.push_back(node->modifierflags);
-        uvScales.push_back(node->uvScale);
-        nodesDatas.push_back(node->data);
-        nodesColors.push_back(node->color);
-        wrapModes.push_back(node->wrap);
-        if (node->texture != nullptr && node->source == NODE_SOURCE_TEXTURE) {
-            textureBinds.push_back(node->texture);
-            samplerIndex++;
-        }
-    }
 }
 
 void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
@@ -173,7 +145,7 @@ bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
     float radius = glm::max(info3d->aabbmax.length(), info3d->aabbmin.length());
 
     float dst = distance(Game::instance->world->mainDisplayCamera->transformation->position, instance->transformation->position);
-    if (radius > dst) {
+    if (radius * 2.0f > dst) {
         return true;
     }
 
