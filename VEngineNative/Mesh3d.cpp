@@ -6,8 +6,6 @@ Mesh3d::Mesh3d()
 {
     instances = {};
     lodLevels = {};
-    needBufferUpdate = true;
-    alwaysUpdateBuffer = false;
     Id = Game::instance->getNextId();
 }
 
@@ -26,25 +24,21 @@ Mesh3d * Mesh3d::create(Object3dInfo * info, Material * material)
 void Mesh3d::addInstance(Mesh3dInstance * instance)
 {
     instances.push_back(instance);
-    needBufferUpdate = true;
 }
 
 void Mesh3d::addLodLevel(Mesh3dLodLevel * level)
 {
     lodLevels.push_back(level);
-    needBufferUpdate = true;
 }
 
 void Mesh3d::clearInstances()
 {
     instances.clear();
-    needBufferUpdate = true;
 }
 
 void Mesh3d::clearLodLevels()
 {
     lodLevels.clear();
-    needBufferUpdate = true;
 }
 
 vector<Mesh3dInstance*>& Mesh3d::getInstances()
@@ -75,7 +69,6 @@ void Mesh3d::removeInstance(Mesh3dInstance* instance)
             break;
         }
     }
-    needBufferUpdate = true;
 }
 
 void Mesh3d::removeLodLevel(Mesh3dLodLevel* level)
@@ -86,7 +79,6 @@ void Mesh3d::removeLodLevel(Mesh3dLodLevel* level)
             break;
         }
     }
-    needBufferUpdate = true;
 }
 
 void Mesh3d::updateBuffers()
@@ -94,7 +86,6 @@ void Mesh3d::updateBuffers()
     for (int i = 0; i < lodLevels.size(); i++) {
         lodLevels[i]->updateBuffer(instances);
     }
-    needBufferUpdate = false;
 }
 
 void Mesh3d::draw()
@@ -106,7 +97,5 @@ void Mesh3d::draw()
 
 void Mesh3d::setUniforms()
 {
-   // if (needBufferUpdate || alwaysUpdateBuffer) {
-        updateBuffers();
-  //  }
+    updateBuffers();
 }

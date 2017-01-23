@@ -174,7 +174,7 @@ float sun(vec3 dir, vec3 sundir, float gloss, float ansiox){
 }
 float sshadow = 1.0;
 vec3 shadingWater(PostProcessingData data, vec3 n, vec3 lightDir, vec3 colorA, vec3 colorB){
-    float fresnel  = fresneleffect(0.04, 0.0, normalize(data.cameraPos), n);
+    float fresnel  = fresneleffect(0.08, 0.0, normalize(data.cameraPos), n);
     fresnel = mix(fresnel, 0.05, data.roughness);
     return colorB * ( fresnel);
    // return  colorB * (  fresnel);

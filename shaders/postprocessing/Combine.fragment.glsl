@@ -78,7 +78,7 @@ vec3 testmap(vec3 c){
 
 vec3 tonemap(vec3 xa){
 
-    vec3 a = xa / max(0.1, Luminence * 0.07);
+    vec3 a = xa / max(0.1, Luminence * 0.1);
     a *= Exposure;
     a /= 1.0 + length(a) * 0.4;
     return testmap(rgb_to_srgb(a));
@@ -140,7 +140,7 @@ vec3 BoKeH(vec2 uv){
     float dist = textureLod(waterColorTex, uv, 0.0).a;
 //    return dist * vec3(0.1);
    // if(dist < focus) dist = focus + abs(dist - focus);
-    float amountoriginal = getAmountForDistance(focus, dist) * LensBlurSize * 11.019;
+    float amountoriginal = getAmountForDistance(focus, dist) * LensBlurSize * 21.019;
 
     float amount = clamp(amountoriginal, 0.00, 0.017);
     float xda = amount / 0.017;
@@ -168,7 +168,7 @@ vec3 BoKeH(vec2 uv){
 
 
 vec3 integrateCloudsWater(){
-    vec3 color = LensBlurSize > 0.11 ? BoKeH(UV) : fxaa(waterColorTex, UV).rgb;;
+    vec3 color = LensBlurSize > 0.11 ? BoKeH(UV) : texture(waterColorTex, UV).rgb;;
     //vec3 c = applysimplebloom();
     return tonemap(color);
 }

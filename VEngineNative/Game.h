@@ -29,9 +29,9 @@ public:
     void start();
     void invoke(const function<void(void)> &func);
     void physicsInvoke(const function<void(void)> &func);
-    bool shouldClose;
-    bool hasExited;
-    bool firstFullDrawFinished;
+    volatile bool shouldClose;
+    volatile bool hasExited;
+    volatile bool firstFullDrawFinished;
     float time;
 
     int getKeyStatus(int key);

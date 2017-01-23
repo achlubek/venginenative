@@ -72,10 +72,7 @@ void Car::initialize()
     Game::instance->invoke([&]() {
         bodyMesh = Game::instance->asset->loadMeshFile("fiesta_body.mesh3d");
         tiresMesh = Game::instance->asset->loadMeshFile("fiesta_tyre.mesh3d");
-
-        bodyMesh->alwaysUpdateBuffer = true;
-        tiresMesh->alwaysUpdateBuffer = true;
-
+        
         glm::vec3 frontaxis = glm::vec3(0.0f, -0.538f, 1.13108f);
         glm::vec3 rearaxis = glm::vec3(0.0f, -0.538f, -1.2333f);
         glm::vec3 wheelspacing = glm::vec3(0.70968f, 0.0f, 0.0f);

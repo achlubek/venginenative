@@ -122,7 +122,7 @@ vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
         dir,           // normalized ray direction
         vec3(0,planetradius  ,0) + origin,               // ray origin
         dayData.moonDir,                        // position of the sun
-        22.0 / 3000.0,                           // intensity of the sun
+        22.0 / 300.0,                           // intensity of the sun
         planetradius,                         // radius of the planet in meters
         6471e3,                         // radius of the atmosphere in meters
         vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient

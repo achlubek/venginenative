@@ -119,10 +119,6 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
     if (currentBuffer == 1)info3d->drawInstanced(instancesFiltered2);
     if (currentBuffer == 2)info3d->drawInstanced(instancesFiltered3);
 
-    currentBuffer++;
-    nextBuffer++;
-    if (currentBuffer > 2) currentBuffer = 0;
-    if (nextBuffer > 2) nextBuffer = 0;
 }
 
 void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
@@ -171,14 +167,20 @@ void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
         modelInfosBuffer2->mapData(4 * floats.size(), floats.data());
     if (nextBuffer == 2)
         modelInfosBuffer3->mapData(4 * floats.size(), floats.data());
+    currentBuffer++;
+    nextBuffer++;
+    if (currentBuffer > 2) currentBuffer = 0;
+    if (nextBuffer > 2) nextBuffer = 0;
 }
 
 bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
 {
     float radius = glm::max(info3d->aabbmax.length(), info3d->aabbmin.length());
 
-    float dst = distance(Game::instance->world->mainDisplayCamera->transformation->position, instance->transformation->position);
-    if (radius * 2.0f > dst) {
+    vec3 center = instance->transformation->position + 0.5f * (info3d->aabbmax + info3d->aabbmin);
+
+    float dst = distance(Game::instance->world->mainDisplayCamera->transformation->position, center);
+    if (radius * 4.0f > dst) {
         return true;
     }
 
@@ -190,8 +192,8 @@ bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
     vec3 rdir0 = Game::instance->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.0));
     float maxdt = dot(rdirC, rdir0);
     vec3 helper = ro + rdirC * dst;
-    vec3 helpdir = normalize(helper - instance->transformation->position);
-    vec3 newpos = instance->transformation->position + helpdir * radius;
+    vec3 helpdir = normalize(helper - center);
+    vec3 newpos = center + helpdir * radius;
     vec3 newdir = normalize(newpos - ro);
     float decidingdot = dot(newdir, rdirC);
     return decidingdot > maxdt;

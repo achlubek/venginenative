@@ -22,8 +22,6 @@ public:
     void updateBuffers();
     void draw();
     void setUniforms();
-    bool needBufferUpdate = true;
-    bool alwaysUpdateBuffer = false;
     unsigned int Id;
 private:
     vector<Mesh3dInstance*> instances;

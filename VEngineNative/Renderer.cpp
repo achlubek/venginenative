@@ -368,7 +368,6 @@ void Renderer::pick(Camera* camera, glm::vec2 uv)
     ShaderProgram *shader = Game::instance->shaders->idWriteShader;
     shader->use();
     Game::instance->world->setUniforms(shader, camera);
-    Game::instance->world->setSceneUniforms();
     Game::instance->world->draw(shader, camera);
     Game::instance->invoke([&, uv]() {
         int x = (int)(uv.x * (float)pickingDataTex->width);

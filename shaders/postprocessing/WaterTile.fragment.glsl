@@ -106,25 +106,25 @@ float heightwaterHI2(vec2 pos){
     float tmod = 811.1 * WaterSpeed;
 
     for(int i=0;i<3;i++){
-        vec2 t = vec2(tmod * Time*0.0008);
+        vec2 t = vec2(tmod * Time*0.0003);
         res += wz * snoisesinpow2(pos + t, chop);
         res += wz * snoisesinpow2(pos - t, chop);
         chop = mix(chop, 3.0, 0.3);
         w += wz * 2.0;
         wz *= 0.6;
         pos *= vec2(1.9, 1.7);
-        tmod *= 0.8;
+        tmod *= 0.18;
     }
     pos *= 0.5;
-    for(int i=0;i<4;i++){
+    for(int i=0;i<6;i++){
         vec2 t = vec2(tmod * Time*0.0008);
         res += wz * snoisesinpow(pos + t, chop);
         res += wz * snoisesinpow(pos - t, chop);
         chop = mix(chop, 4.0, 0.3);
         w += wz * 2.0;
-        wz *= 0.6;
-        pos *= vec2(1.9, 1.7);
-        tmod *= 0.8;
+        wz *= 0.7;
+        pos *= vec2(1.4, 1.3);
+        tmod *= 0.18;
     }
     return res / w;
 }

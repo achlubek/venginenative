@@ -46,23 +46,24 @@ int main()
     while (!ready);
 
     Camera *cam = new Camera();
-    float fov = 95.0f;
-    float fovnew = 95.0f;
-    cam->createProjectionPerspective((95.0f), (float)game->width / (float)game->height, 0.01f, 1000);
+    float fov = 85.0f;
+    float fovnew = 85.0f;
+    cam->createProjectionPerspective(fovnew, (float)game->width / (float)game->height, 0.01f, 1000);
     game->onWindowResize->add([&](int zero) {
-        cam->createProjectionPerspective((95.0f), (float)game->width / (float)game->height, 0.01f, 1000);
+        cam->createProjectionPerspective(fovnew, (float)game->width / (float)game->height, 0.01f, 1000);
     });
     cam->transformation->translate(glm::vec3(16, 16, 16));
     glm::quat rot = glm::quat_cast(glm::lookAt(cam->transformation->position, glm::vec3(0), glm::vec3(0, 1, 0)));
     cam->transformation->setOrientation(rot);
     game->world->mainDisplayCamera = cam;
 
+    while (!game->firstFullDrawFinished);
 
-    game->world->scene = game->asset->loadSceneFile("sp.scene");
+    //game->world->scene = game->asset->loadSceneFile("sp.scene");
 
     auto car = new Car();
     auto t = game->asset->loadMeshFile("2dplane.mesh3d");
-    t->alwaysUpdateBuffer = true;
+   // t->alwaysUpdateBuffer = true;
     game->world->scene->addMesh(t);
 
     game->invoke([&]() {
@@ -385,8 +386,16 @@ int main()
                 }
             }
             else {
+                int acnt = 0;
+                const float * axes = glfwGetJoystickAxes(0, &acnt);
                 float dx = (float)(lastcx - cursor.x);
                 float dy = (float)(lastcy - cursor.y);
+                if (acnt >= 4) {
+                    dx -= axes[2] * 10.9;
+                    dy += axes[3] * 10.9;
+                    newpos += (cam->transformation->orientation * glm::vec3(0, 0, -1) * axes[1] * 0.1f);
+                    newpos += (cam->transformation->orientation * glm::vec3(1, 0, 0) * axes[0] * 0.1f);
+                }
                 lastcx = cursor.x;
                 lastcy = cursor.y;
                 yaw += dy * 0.2f;
