@@ -174,7 +174,7 @@ float sun(vec3 dir, vec3 sundir, float gloss, float ansiox){
 }
 float sshadow = 1.0;
 vec3 shadingWater(PostProcessingData data, vec3 n, vec3 lightDir, vec3 colorA, vec3 colorB){
-    float fresnel  = fresneleffect(0.08, 0.0, normalize(data.cameraPos), n);
+    float fresnel  = fresneleffect(0.02, 0.0, normalize(data.cameraPos), n);
     fresnel = mix(fresnel, 0.05, data.roughness);
     return colorB * ( fresnel);
    // return  colorB * (  fresnel);
@@ -343,7 +343,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     vec3 moon = textureMoon(dir);
     float monsoonconverage = (1.0 - smoothstep(0.995, 1.0, dot(dayData.sunDir, dayData.moonDir))) * 0.99 + 0.01;
     float monsoonconverage2 = (1.0 - smoothstep(0.995, 0.996, dot(dir, dayData.moonDir)));
-    scattering += monsoonconverage2 * (lenssun(dir)) * getSunColorDirectly(0.0) * 1.0;
+    scattering += monsoonconverage2 * (lenssun(dir)) * getSunColorDirectly(0.0) * 11.0;
     vec4 cloudsData = smartblur(dir, roughness);
     float coverage = cloudsData.r;
     sshadow = 1.0 - coverage;

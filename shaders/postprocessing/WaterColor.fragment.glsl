@@ -170,7 +170,7 @@ vec4 getLighting(){
     dir = reflect(origdir, normal);
      dir.y = abs(dir.y);
   //  dir.y = max(0.05, dir.y);
-    float fresnel  = fresnel_effect(vec3(0.08), roughness, max(0.0, dot(dir, normal))).x;
+    float fresnel  = fresnel_effect(vec3(0.02), roughness, max(0.0, dot(dir, normal))).x;
   //  return fresnel * vec4(1);
     //float x =  textureQueryLod(waterTileTex, hitpos.xz * WaterScale *  octavescale1).x / textureQueryLevels(waterTileTex);
     // float h = hitwater2(hitpos, dir) * (1.0 - x) + x;
@@ -215,7 +215,7 @@ vec4 getLighting(){
 	//float dst = traceReflection(hitpos, dir);
 	//return vec4(dst);
     result +=   shadingWater(dataReflection, normal, -dayData.sunDir, getSunColor(0.0), atm)  * 1.0 * mix(1.0, 1.0, roughness);
-    vec3 refr = normalize(refract(origdir, normal, 0.33));
+    vec3 refr = normalize(refract(origdir, normal, 0.66));
     if(length(currentData.normal) < 0.01) currentData.cameraDistance = 299999.0;
     float hitdepth = currentData.cameraDistance - hitdist;
     vec3 newposrefracted = hitpos + refr * min(25.0, hitdepth);
@@ -242,12 +242,14 @@ vec4 getLighting(){
     //float ssscoeff = pow(max(0, height1 - (waterdepth*0.5)) * WaterWavesScale * 0.05 * length(WaterScale) , 2.0)  * 0.5 + 0.5;
     vec3 waterSSScolor =  vec3(0.01, 0.33, 0.55)*  0.071 ;
 
-    result += waterSSScolor * getSunColor(0) * (0.3 + height1) * waterdepth * 0.4 * covercloud * max(0.0, dot(dayData.sunDir, VECTOR_UP));
+    result += waterSSScolor * getSunColor(0) * (0.3 + height1) * waterdepth * 0.3 * covercloud * max(0.0, dot(dayData.sunDir, VECTOR_UP));
    // result += 1.0 - smoothstep(0.002, 0.003, ssscoeff2);
     //result += (pow(dot(normal,dayData.sunDir) * 0.4 + 0.6,80.0) * vec3(0.8,0.9,0.6) * 0.12) * getSunColor(0) * (1.0 - fresnel)  * 0.8069;
-    vec3 refr2 = normalize(refr + vec3(0.0, 0.8, 0.0));
-    float superscat = pow(max(0.0, dot(refr, dayData.sunDir)), 8.0) ;//* (1.0 - fresnel);
-    result += waterSSScolor * superscat * getSunColor(0) * 4.0 * covercloud * smoothstep(-0.05, 0.05, refr2.y);
+    vec3 refr2 = normalize(refr + vec3(0.0, 0.6, 0.0));
+    float superscat =1.0;// pow(max(0.0, dot(refr, dayData.sunDir)), 1.0) ;//* (1.0 - fresnel);
+    float cx = smoothstep(-0.05, 0.25, refr2.y);
+    vec3 atmxk = mix(textureLod(atmScattTex, refr, 5.0).rgb, textureLod(resolvedAtmosphereTex, refr2, 2.0).rgb, cx);
+    result += vec3(0.7, 0.8, 0.9) * superscat * (atmxk) * 0.01 * covercloud;
 
      return  vec4(result, 1.0);
 }

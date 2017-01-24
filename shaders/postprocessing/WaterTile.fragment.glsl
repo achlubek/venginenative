@@ -92,40 +92,44 @@ float supernoise(vec2 x){
     float b = noise2X(x + 0.5, 133.0, 326.0, 0.5);
     return (a * b);
 }
-#define cosinelinear(a) (cos(a * 3.1415 * 2.0) * 0.5 + 0.5)
+#define cosinelinear(a) (1.0 - (cos(a * 3.1415) * 0.5 + 0.5))
 #define snoisesinpow(a,b) pow(1.0 - abs(supernoise3d(vec3(a, Time)) - 0.5) * 2.0, b)
 #define XX(a,b) pow(1.0 - abs((a) - 0.5) * 2.0, b)
 #define snoisesinpow2(a,b) pow(cosinelinear(supernoise(a)), b)
+#define snoisesinpow3(a,b) pow(1.0 - abs(supernoise(a ) - 0.5) * 2.0, b)
+#define snoisesinpow4(a,b) pow(supernoise3d(vec3(a, Time * 0.1 * WaterSpeed)) * 1.1, b)
 
 float heightwaterHI2(vec2 pos){
     float res = 0.0;
     pos *= 12.0;
     float w = 0.0;
     float wz = 1.0;
-    float chop = 4.0;
+    float chop = 8.0;
     float tmod = 811.1 * WaterSpeed;
 
     for(int i=0;i<3;i++){
-        vec2 t = vec2(tmod * Time*0.0003);
-        res += wz * snoisesinpow2(pos + t, chop);
-        res += wz * snoisesinpow2(pos - t, chop);
-        chop = mix(chop, 3.0, 0.3);
+        vec2 t = vec2(tmod * Time*0.00018);
+        res += wz * snoisesinpow4(pos + t, chop) * 2.0;
+        res += wz * snoisesinpow4(pos - t, chop) * 2.0;
+        chop = mix(chop, 6.0, 0.3);
+        w += wz * 2.0;
+        wz *= 0.65;
+        pos *= vec2(2.1, 1.9);
+        tmod *= 0.8;
+    }
+    pos *= 0.7;
+    pos *= vec2(1.0, 1.4);
+    for(int i=0;i<4;i++){
+        vec2 t = vec2(tmod * Time*0.00018);
+        res += wz * snoisesinpow4(pos + t, chop);
+        res += wz * snoisesinpow4(pos - t, chop);
+        chop = mix(chop, 8.0, 0.3);
         w += wz * 2.0;
         wz *= 0.6;
-        pos *= vec2(1.9, 1.7);
-        tmod *= 0.18;
+        pos *= vec2(1.8, 1.3);
+        tmod *= 0.8;
     }
-    pos *= 0.5;
-    for(int i=0;i<6;i++){
-        vec2 t = vec2(tmod * Time*0.0008);
-        res += wz * snoisesinpow(pos + t, chop);
-        res += wz * snoisesinpow(pos - t, chop);
-        chop = mix(chop, 4.0, 0.3);
-        w += wz * 2.0;
-        wz *= 0.7;
-        pos *= vec2(1.4, 1.3);
-        tmod *= 0.18;
-    }
+    w *= 0.35;
     return res / w;
 }
 vec4 shade(){
