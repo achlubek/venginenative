@@ -137,11 +137,6 @@ void Game::glfwWindowSizeCallback(GLFWwindow* window, int w, int h)
     renderer->resize(w, h);
 }
 
-void Game::display(string str)
-{
-    cout << str;
-}
-
 void Game::physicsThread()
 {
     double time = glfwGetTime();

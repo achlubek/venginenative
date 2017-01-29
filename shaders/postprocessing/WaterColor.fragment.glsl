@@ -204,11 +204,11 @@ vec4 getLighting(){
 
     //result += mix(shadingWater(dataReflection, -dayData.sunDir, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0)) * fresnel * 1.0, getSunColor(0.5) * 0.33 * whites, min(1.0, whites));// + sampleAtmosphere(normal, 0.0) * fresnel;
     vec3 atm = vec3(0.0);
-    for(int i=0;i<10;i++){
-        atm += textureLod(resolvedAtmosphereTex, dir + randpoint3x() * 0.137 * roughness, roughnessToMipmapX(roughness * (0.02 * WaterWavesScale), resolvedAtmosphereTex)).rgb;
-    }
+    //for(int i=0;i<1;i++){
+        atm += textureLod(resolvedAtmosphereTex, dir, roughnessToMipmapX(roughness * (0.02 * WaterWavesScale), resolvedAtmosphereTex)).rgb;
+    //}
     //vec3 atm =  textureLod(resolvedAtmosphereTex, dir, roughnessToMipmapX(roughness * (0.02 * WaterWavesScale), resolvedAtmosphereTex)).rgb;// * (1.0 - roughness * 0.5) * (1.0 - roughness * 0.5);
-    atm *= 0.1;
+    //atm *= 0.1;
    // return vec4(atm, 1.0);
   // vec2 ssr = traceReflection(hitpos, dir);
    //ssr.x = 1.0 - step(0.0, ssr.x);
@@ -248,8 +248,8 @@ vec4 getLighting(){
     vec3 refr2 = normalize(refr + vec3(0.0, 0.6, 0.0));
     float superscat =1.0;// pow(max(0.0, dot(refr, dayData.sunDir)), 1.0) ;//* (1.0 - fresnel);
     float cx = smoothstep(-0.05, 0.25, refr2.y);
-    vec3 atmxk = mix(textureLod(atmScattTex, refr, 5.0).rgb, textureLod(resolvedAtmosphereTex, refr2, 2.0).rgb, cx);
-    result += vec3(0.7, 0.8, 0.9) * superscat * (atmxk) * 0.01 * covercloud;
+    vec3 atmxk = mix(textureLod(atmScattTex, refr, 7.0).rgb, textureLod(resolvedAtmosphereTex, refr2, 1.0).rgb, cx);
+    result += (1.0 - fresnel) * (1.0 - fresnel) * pow(max(0.0, dot(refr2, dayData.sunDir)), 8.0) * vec3(0.7, 0.8, 0.9) * superscat * (atmxk) * 0.1 * covercloud;
 
      return  vec4(result, 1.0);
 }

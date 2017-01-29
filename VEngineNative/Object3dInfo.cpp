@@ -60,7 +60,7 @@ void Object3dInfo::rebufferVbo(vector<GLfloat> data, bool force_resize)
 {
     if (!generated) {
         vbo = data;
-        return;
+        return; 
     }
     if (force_resize) {
         vbo = data;

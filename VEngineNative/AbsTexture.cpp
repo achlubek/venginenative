@@ -59,12 +59,23 @@ void AbsTexture::generateMipMaps()
     glTexParameteri(type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glGenerateMipmap(type);
 }
+unsigned int upper_power_of_two(unsigned int v)
+{
+    v--;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    v++;
+    return v;
 
+}
 void * AbsTexture::read(char pxs)
 {
     glBindTexture(type, handle);
-    void *pixels = malloc(pxs * width * height);
-    glGetTexImage(type, 0, formatRequested, typeRequested, &pixels);
+    void *pixels = calloc(4, upper_power_of_two(width * height));
+    glGetTexImage(type, 0, formatRequested, typeRequested, pixels);
     return pixels;
 }
 

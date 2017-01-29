@@ -98,10 +98,12 @@ float supernoise(vec2 x){
 #define snoisesinpow2(a,b) pow(cosinelinear(supernoise(a)), b)
 #define snoisesinpow3(a,b) pow(1.0 - abs(supernoise(a ) - 0.5) * 2.0, b)
 #define snoisesinpow4(a,b) pow(supernoise3d(vec3(a, Time * 0.1 * WaterSpeed)) * 1.1, b)
+#define snoisesinpow5(a,b) pow(1.0 - abs(0.5 - supernoise3d(vec3(a, Time * 0.3 * WaterSpeed))) * 2.0, b)
+#define snoisesinpow6(a,b) pow(1.0 - abs(0.5 - supernoise3d(vec3(a, Time * 0.03 * WaterSpeed))) * 2.0, b)
 
 float heightwaterHI2(vec2 pos){
     float res = 0.0;
-    pos *= 12.0;
+    pos *= 6.0;
     float w = 0.0;
     float wz = 1.0;
     float chop = 8.0;
@@ -119,17 +121,19 @@ float heightwaterHI2(vec2 pos){
     }
     pos *= 0.7;
     pos *= vec2(1.0, 1.4);
-    for(int i=0;i<4;i++){
-        vec2 t = vec2(tmod * Time*0.00018);
-        res += wz * snoisesinpow4(pos + t, chop);
-        res += wz * snoisesinpow4(pos - t, chop);
-        chop = mix(chop, 8.0, 0.3);
-        w += wz * 2.0;
-        wz *= 0.6;
-        pos *= vec2(1.8, 1.3);
+    chop = 2.0;
+    wz *= 0.8;
+    for(int i=0;i<13;i++){
+        vec2 t = vec2(tmod );
+        res += wz * snoisesinpow5(pos, chop) * 0.5;
+        //res += wz * snoisesinpow6(pos - t, chop);
+        chop = mix(chop, 3.0, 0.3);
+        w += wz;
+        wz *= 0.5;
+        pos *= vec2(2.1, 1.9);
         tmod *= 0.8;
     }
-    w *= 0.35;
+    w *= 0.55;
     return res / w;
 }
 vec4 shade(){

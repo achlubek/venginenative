@@ -343,9 +343,9 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     vec3 moon = textureMoon(dir);
     float monsoonconverage = (1.0 - smoothstep(0.995, 1.0, dot(dayData.sunDir, dayData.moonDir))) * 0.99 + 0.01;
     float monsoonconverage2 = (1.0 - smoothstep(0.995, 0.996, dot(dir, dayData.moonDir)));
-    scattering += monsoonconverage2 * (lenssun(dir)) * getSunColorDirectly(0.0) * 11.0;
     vec4 cloudsData = smartblur(dir, roughness);
     float coverage = cloudsData.r;
+    scattering += monsoonconverage2 * (1.0 - smoothstep(0.0, 0.9, coverage)) * (lenssun(dir)) * getSunColorDirectly(0.0) * 11.0;
     sshadow = 1.0 - coverage;
     //float dist = cloudsData.g;
     vec4 vdao = blurshadowsAO(dir, roughness);
@@ -379,7 +379,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     vec3 CC = vdao.gba + (SunC * Shadow) + (GroundC);
 
     scattering *= xA + xB * (1.0 - pow(1.0 - DirDT, 14.0));
-    CC = mix(scattering, CC, xA + xB * (1.0 - pow(1.0 - DirDT, 14.0)));
+//    CC = mix(scattering * 0.7, CC, xA + xB * (1.0 - pow(1.0 - DirDT, 14.0)));
     CC *= xA + xB * (1.0 - pow(1.0 - DirDT, 14.0));
 
 

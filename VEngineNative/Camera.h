@@ -16,6 +16,8 @@ public:
     
     void createProjectionPerspective(float fov, float aspectRatio, float nearpl, float farpl);
 
+    void makeCurrent();
+
 private:
     void updateFocalLength();
 };

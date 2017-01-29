@@ -109,7 +109,7 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
     shader->setUniform("roughnessTexScale", material->roughnessTexScale);
     shader->setUniform("metalnessTexScale", material->metalnessTexScale);
 
-    shader->setUniform("Id", mesh->Id);
+    shader->setUniform("ID", mesh->Id);
 
     if (currentBuffer == 0)modelInfosBuffer1->use(0);
     if (currentBuffer == 1)modelInfosBuffer2->use(0);

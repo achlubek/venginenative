@@ -6,6 +6,7 @@ float octavescale1 = 0.1;
 float mipmap1 = 0.0;
 float maxmip = textureQueryLevels(waterTileTex);
 
+#include ProceduralValueNoise.glsl
 
 vec2 heightwaterXO(vec2 uv, vec2 offset, float mipmap){
 
@@ -18,6 +19,12 @@ vec2 heightwaterXO(vec2 uv, vec2 offset, float mipmap){
     vec2 c = textureLod(waterTileTex, zuv3, mipmap).rg;
     vec2 d = textureLod(waterTileTex, zuv4, mipmap).rg;
 	return (a + b + c + d) * 0.55;
+}
+vec2 heightwaterXOX(vec2 uv, vec2 offset, float mipmap){
+
+	vec2 zuv1 = (uv * WaterScale * octavescale1);
+    vec2 a = textureLod(waterTileTex, zuv1, mipmap).rg;
+	return (a);
 }
 vec2 heightwaterX(vec2 uv, float mipmap){
     return heightwaterXO(uv, vec2(0.0), mipmap);
@@ -32,4 +39,4 @@ float heightwater(vec2 uv){
     return heightwaterD(uv, mipmap1 * 1.0).r;
 }
 #define WaterLevel WaterHeight
-#define waterdepth 0.2 * WaterWavesScale
+#define waterdepth 0.1 * WaterWavesScale

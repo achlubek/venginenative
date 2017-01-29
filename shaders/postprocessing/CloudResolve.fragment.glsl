@@ -42,8 +42,8 @@ vec4 shade(){
 	//if(dir.y < 0.0){
 	//	return textureLod(atmScattTex, vec3(dir.x, -dir.y, dir.z), textureQueryLevels(atmScattTex)).rgba  ;
 	//}
-    //if(dir.y < -0.01) return vec4(0.0);
-	dir.y = abs(dir.y);
+	//dir.y = abs(dir.y);
 	color = integrateStepsAndSun(dir);
+    if(dir.y < -0.01) color *= 0.4;
     return vec4( clamp(color, 0.0, 1110.0), 1.0);
 }

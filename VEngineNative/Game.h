@@ -45,19 +45,17 @@ public:
     EventHandler<int> *onKeyPress;
     EventHandler<int> *onKeyRelease;
     EventHandler<int> *onKeyRepeat;
-    void display(string str);
     void bindTexture(GLenum type, GLuint handle, int bindpoint);
     volatile bool physicsNeedsUpdate = false;
     unsigned int getNextId();
 private:
 
-    unsigned int lastId = 0;
+    unsigned int lastId = 1;
 
     queue<function<void(void)>> invokeQueue;
     queue<function<void(void)>> physicsInvokeQueue;
     map<int, GLint> textureMap;
     void renderThread();
     void onRenderFrameFunc();
-    unsigned int uniqueIdCounter = 0;
     static void physicsThread();
 };

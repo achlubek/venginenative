@@ -10,6 +10,7 @@ Texture2d::Texture2d(GLuint ihandle)
     width = 1;
     height = 1;
     components = 4;
+    genMode = genModeEmptyFromDesc;
     data = nullptr;
     usedds = false;
 }
@@ -114,12 +115,14 @@ void Texture2d::generate()
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, largest_supported_anisotropy);
     }
     else {
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage2D(GL_TEXTURE_2D, 0, internalFormatRequested, width, height, 0, formatRequested, typeRequested, (void*)0);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        if (formatRequested == GL_DEPTH_COMPONENT && typeRequested == GL_UNSIGNED_INT)
+        if (formatRequested == GL_DEPTH_COMPONENT)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
     }
 

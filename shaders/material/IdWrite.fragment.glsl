@@ -10,6 +10,6 @@ out uint Red;
 
 
 void main(){
-    Red = 1337u;
+    Red = ID;
     //gl_FragDepth = clamp(Input.Data.y, 0.0, 1.0);
 }

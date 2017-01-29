@@ -233,13 +233,17 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AbstractApp.h" />
     <ClInclude Include="Car.h" />
+    <ClInclude Include="EditorApp.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="WeatherManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AbstractApp.cpp" />
     <ClCompile Include="Car.cpp" />
+    <ClCompile Include="EditorApp.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

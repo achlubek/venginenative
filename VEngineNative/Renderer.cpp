@@ -120,8 +120,9 @@ void Renderer::initializeFbos()
     mrtFbo->attachTexture(mrtDistanceTexture, GL_COLOR_ATTACHMENT2);
     mrtFbo->attachTexture(depthTexture, GL_DEPTH_ATTACHMENT);
 
-    pickingDataTex = new Texture2d(width / 4, height / 4, GL_RGBA32UI, GL_RGBA, GL_UNSIGNED_INT);
+    pickingDataTex = new Texture2d(width / 4, height / 4, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT);
     pickingDepthTexture = new Texture2d(width / 4, height / 4, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
+
     pickingFbo = new Framebuffer();
     pickingFbo->attachTexture(pickingDataTex, GL_COLOR_ATTACHMENT0);
     pickingFbo->attachTexture(pickingDepthTexture, GL_DEPTH_ATTACHMENT);
@@ -375,6 +376,7 @@ void Renderer::pick(Camera* camera, glm::vec2 uv)
         unsigned int * data = (unsigned int *)pickingDataTex->read(4);
         pickingResult = data[y * pickingDataTex->width + x];
         pickingReady = true;
+        free(data);
     });
 }
 
@@ -423,7 +425,7 @@ void Renderer::draw(Camera *camera)
             cloudFace = 0;
             cloudCycleUseOdd = !cloudCycleUseOdd;
         }
-        //if (cloudFace == 3) cloudFace++;
+        if (cloudFace == 3) cloudFace++;
     }
     passPhrase++;
     if (passPhrase > 3) {
@@ -467,9 +469,7 @@ void Renderer::cloudsResolve()
 
 void Renderer::combine(int step)
 {
-    waterColorTexture->generateMipMaps();
-    waterColorTexture->use(16);
-    exposureComputeShader->dispatch(1, 1, 1);
+  //  
     combineFbo->use(false);
     combineShader->use();
     exposureBuffer->use(0);
@@ -487,6 +487,9 @@ void Renderer::combine(int step)
     combineShader->setUniform("CombineStep", step);
 
     quad3dInfo->draw();
+    waterColorTexture->generateMipMaps();
+    waterColorTexture->use(16);
+    exposureComputeShader->dispatch(1, 1, 1);
     //combineTexture->generateMipMaps();
 }
 void Renderer::fxaaTonemap()
