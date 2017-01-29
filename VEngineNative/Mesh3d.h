@@ -23,6 +23,7 @@ public:
     void draw();
     void setUniforms();
     unsigned int Id;
+    string name = "";
 private:
     vector<Mesh3dInstance*> instances;
     vector<Mesh3dLodLevel*> lodLevels;

@@ -31,7 +31,7 @@ public:
     Camera* cam;
     vector<string> commandHistory;
     string currentCommandText;
-    bool isConsoleWindowOpened = false;
+    bool isConsoleWindowOpened = false, isPickingWindowOpened = false;
 
     int currentMode = EDITOR_MODE_IDLE;
     int lastMode = EDITOR_MODE_IDLE;
@@ -55,6 +55,8 @@ public:
     virtual void onBind() override;
 
     virtual void onChar(unsigned int c) override;
+
+    void onCommandText(string text);
 
 private:
     bool ignoreNextChar = false;
