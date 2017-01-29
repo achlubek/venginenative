@@ -11,6 +11,19 @@ EditorApp::~EditorApp()
 {
 }
 
+void EditorApp::switchMode(int mode)
+{
+    // EDITOR_MODE_MOVE_CAMERA needs cursor hidden, everything else needs free cursor
+    if (mode == EDITOR_MODE_MOVE_CAMERA && currentMode != EDITOR_MODE_MOVE_CAMERA) {
+        game->setCursorMode(GLFW_CURSOR_DISABLED);
+    }
+    else if (currentMode == EDITOR_MODE_MOVE_CAMERA && mode != EDITOR_MODE_MOVE_CAMERA) {
+        game->setCursorMode(GLFW_CURSOR_NORMAL);
+    }
+    lastMode = currentMode;
+    currentMode = mode;
+}
+
 void EditorApp::initialize()
 {
     Media::loadFileMap("../../media");
@@ -21,7 +34,7 @@ void EditorApp::initialize()
 
 void EditorApp::onRenderFrame(float elapsed)
 {
-    if (!cursorFree) {
+    if (currentMode == EDITOR_MODE_MOVE_CAMERA) {
         float speed = 0.1f;
         if (game->getKeyStatus(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
             speed *= 0.1f;
@@ -61,9 +74,9 @@ void EditorApp::onRenderFrame(float elapsed)
         glm::vec3 newpos = cam->transformation->position;
         newpos += length(dir) > 0.0 ? (normalize(dir) * speed) : (glm::vec3(0.0));
 
-        if (game->getKeyStatus(GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            game->shouldClose = true;
-        }
+        //if (game->getKeyStatus(GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        //    game->shouldClose = true;
+        //}
         glm::dvec2 cursor = game->getCursorPosition();
 
         int acnt = 0;
@@ -88,10 +101,27 @@ void EditorApp::onRenderFrame(float elapsed)
         cam->transformation->setOrientation(newrot);
         cam->transformation->setPosition(newpos);
     }
+    else if (currentMode == EDITOR_MODE_PICKING) {
+
+    }
+    else if (currentMode == EDITOR_MODE_EDITING) {
+
+    }
+    else if (currentMode == EDITOR_MODE_WRITING_TEXT) {
+
+    }
+    if (isConsoleWindowOpened == false && currentMode == EDITOR_MODE_WRITING_TEXT) {
+        switchMode(EDITOR_MODE_MOVE_CAMERA);
+    }
 }
 
 void EditorApp::onRenderUIFrame(float elapsed)
 {
+    if (currentMode == EDITOR_MODE_WRITING_TEXT) {
+        ImGui::Begin("CMD", &isConsoleWindowOpened, 0);
+        ImGui::Text(currentCommandText.c_str());
+        ImGui::End();
+    }
 }
 
 void EditorApp::onWindowResize(int width, int height)
@@ -100,6 +130,40 @@ void EditorApp::onWindowResize(int width, int height)
 
 void EditorApp::onKeyPress(int key)
 {
+    if (key == GLFW_KEY_F1) {
+        switchMode(EDITOR_MODE_MOVE_CAMERA);
+        return;
+    }
+    else if (key == GLFW_KEY_F2) {
+        switchMode(EDITOR_MODE_PICKING);
+        return;
+    }
+    else if (key == GLFW_KEY_F3) {
+        switchMode(EDITOR_MODE_EDITING);
+        return;
+    }
+    else if (key == GLFW_KEY_T && currentMode != EDITOR_MODE_WRITING_TEXT) {
+        switchMode(EDITOR_MODE_WRITING_TEXT);
+        currentCommandText = "";
+        isConsoleWindowOpened = true;
+        ignoreNextChar = true;
+        return;
+    }
+        
+    // text input yay
+    if (currentMode == EDITOR_MODE_WRITING_TEXT) {
+        if (key == GLFW_KEY_ENTER) {
+            // SUBMIT!
+            if (currentCommandText.substr(0, 6) == "create") {
+                game->world->scene->addMesh(game->asset->loadMeshFile(currentCommandText.substr(7)));
+            }
+            //printf(currentCommandText.c_str());
+            switchMode(lastMode);
+            ignoreNextChar = true;
+        } else if (key == GLFW_KEY_BACKSPACE) {
+            if (currentCommandText.length() > 0) currentCommandText = currentCommandText.substr(0, currentCommandText.length() - 1);
+        }
+    }
 }
 
 void EditorApp::onKeyRelease(int key)
@@ -108,6 +172,11 @@ void EditorApp::onKeyRelease(int key)
 
 void EditorApp::onKeyRepeat(int key)
 {
+    if (currentMode == EDITOR_MODE_WRITING_TEXT) {
+        if (key == GLFW_KEY_BACKSPACE) {
+            if (currentCommandText.length() > 0) currentCommandText = currentCommandText.substr(0, currentCommandText.length() - 1);
+        }
+    }
 }
 
 void EditorApp::onBind()
@@ -124,5 +193,17 @@ void EditorApp::onBind()
     cam->transformation->setOrientation(rot);
     game->world->mainDisplayCamera = cam;
 
-    game->setCursorMode(GLFW_CURSOR_DISABLED);
+    game->setCursorMode(GLFW_CURSOR_NORMAL);
+}
+
+void EditorApp::onChar(unsigned int c)
+{
+    // text input yay
+    if (ignoreNextChar) {
+        ignoreNextChar = false;
+        return;
+    }
+    if (currentMode == EDITOR_MODE_WRITING_TEXT) {
+        currentCommandText += c;
+    }
 }

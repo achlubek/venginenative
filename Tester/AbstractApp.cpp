@@ -28,6 +28,9 @@ void AbstractApp::bind(Game * igame)
     game->onKeyRepeat->add([&](int key) {
         onKeyRepeat(key);
     });
+    game->onChar->add([&](unsigned int c) {
+        onChar(c);
+    });
     game->onWindowResize->add([&](int zero) {
         onWindowResize(game->width, game->height);
     });

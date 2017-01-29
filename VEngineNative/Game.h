@@ -45,6 +45,7 @@ public:
     EventHandler<int> *onKeyPress;
     EventHandler<int> *onKeyRelease;
     EventHandler<int> *onKeyRepeat;
+    EventHandler<unsigned int> *onChar;
     void bindTexture(GLenum type, GLuint handle, int bindpoint);
     volatile bool physicsNeedsUpdate = false;
     unsigned int getNextId();

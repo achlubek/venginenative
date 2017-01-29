@@ -13,6 +13,7 @@ public:
     virtual void onKeyPress(int key) = 0;
     virtual void onKeyRelease(int key) = 0;
     virtual void onKeyRepeat(int key) = 0;
+    virtual void onChar(unsigned int c) = 0;
     virtual void onBind() = 0;
     void bind(Game* game);
     ~AbstractApp();

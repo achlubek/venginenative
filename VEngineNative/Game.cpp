@@ -24,6 +24,7 @@ Game::Game(int windowwidth, int windowheight)
     onKeyPress = new EventHandler<int>();
     onKeyRelease = new EventHandler<int>();
     onKeyRepeat = new EventHandler<int>();
+    onChar = new EventHandler<unsigned int>();
 
     hasExited = false;
 }
@@ -197,6 +198,10 @@ void Game::renderThread()
     glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) -> void {
         instance->glfwWindowSizeCallback(window, width, height);
         instance->onWindowResize->invoke(0);
+    });
+
+    glfwSetCharCallback(window, [](GLFWwindow* window, unsigned int key) -> void {
+        instance->onChar->invoke(key);
     });
 
 //    glfwSetKeyCallback(window, glfwKeyCallback);
