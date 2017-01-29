@@ -7,8 +7,8 @@ struct ModelInfo{
 
 layout (std430, binding = 0) buffer MMBuffer
 {
-  ModelInfo ModelInfos[]; 
-}; 
+  ModelInfo ModelInfos[];
+};
 
 vec3 transform_vertex(int info, vec3 vertex){
     vec3 result = vertex;

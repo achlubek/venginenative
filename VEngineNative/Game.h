@@ -49,6 +49,8 @@ public:
     void bindTexture(GLenum type, GLuint handle, int bindpoint);
     volatile bool physicsNeedsUpdate = false;
     unsigned int getNextId();
+    void* getObjectById(unsigned int id);
+    void registerId(unsigned int id, void* p);
 private:
 
     unsigned int lastId = 1;
@@ -59,4 +61,5 @@ private:
     void renderThread();
     void onRenderFrameFunc();
     static void physicsThread();
+    unordered_map<int, void*> idMap;
 };

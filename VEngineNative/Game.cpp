@@ -25,6 +25,7 @@ Game::Game(int windowwidth, int windowheight)
     onKeyRelease = new EventHandler<int>();
     onKeyRepeat = new EventHandler<int>();
     onChar = new EventHandler<unsigned int>();
+    idMap = unordered_map<int, void*>();
 
     hasExited = false;
 }
@@ -63,6 +64,16 @@ unsigned int Game::getNextId()
 {
     return lastId++;
 }
+void * Game::getObjectById(unsigned int id)
+{
+    return idMap[id];
+}
+
+void Game::registerId(unsigned int id, void * p)
+{
+    idMap[id] = p;
+}
+
 void Game::invoke(const function<void(void)> &func)
 {
     invokeQueue.push(func);

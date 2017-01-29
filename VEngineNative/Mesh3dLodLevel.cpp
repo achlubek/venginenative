@@ -27,6 +27,8 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial, float di
     modes = {};
     textureBinds = {};
     wrapModes = {};
+    id = Game::instance->getNextId();
+    Game::instance->registerId(id, this);
 }
 
 Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial)
@@ -52,6 +54,8 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial)
     modes = {};
     textureBinds = {};
     wrapModes = {};
+    id = Game::instance->getNextId();
+    Game::instance->registerId(id, this);
 }
 
 Mesh3dLodLevel::Mesh3dLodLevel()
@@ -77,6 +81,8 @@ Mesh3dLodLevel::Mesh3dLodLevel()
     modes = {};
     textureBinds = {};
     wrapModes = {};
+    id = Game::instance->getNextId();
+    Game::instance->registerId(id, this);
 }
 
 Mesh3dLodLevel::~Mesh3dLodLevel()
@@ -109,7 +115,8 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
     shader->setUniform("roughnessTexScale", material->roughnessTexScale);
     shader->setUniform("metalnessTexScale", material->metalnessTexScale);
 
-    shader->setUniform("ID", mesh->Id);
+    shader->setUniform("MeshID", mesh->id);
+    shader->setUniform("LodLevelID", id);
 
     if (currentBuffer == 0)modelInfosBuffer1->use(0);
     if (currentBuffer == 1)modelInfosBuffer2->use(0);
@@ -144,6 +151,9 @@ void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
     if (nextBuffer == 1)fint = instancesFiltered2;
     if (nextBuffer == 2)fint = instancesFiltered3;
     floats.reserve(12 * fint);
+    unsigned int * tmp1 = &id;
+    float* tmpf = (float*)tmp1;
+    float specialid = *tmpf;
     for (unsigned int i = 0; i < fint; i++) {
         TransformationManager *mgr = filtered[i]->transformation;
         floats.push_back(mgr->orientation.x);
@@ -159,7 +169,7 @@ void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
         floats.push_back(mgr->size.x);
         floats.push_back(mgr->size.y);
         floats.push_back(mgr->size.z);
-        floats.push_back(1);
+        floats.push_back(specialid);
     }
     if (nextBuffer == 0)
         modelInfosBuffer1->mapData(4 * floats.size(), floats.data());

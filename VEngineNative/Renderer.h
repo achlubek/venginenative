@@ -57,7 +57,9 @@ public:
     float waterSpeed;
     int width;
     int height;
-    unsigned int pickingResult = 0;
+    unsigned int pickingResultMesh = 0;
+    unsigned int pickingResultLod = 0;
+    unsigned int pickingResultInstance = 0;
     volatile bool pickingReady = true;
     void pick(Camera* camera, glm::vec2 uv);
 private:

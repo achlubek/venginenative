@@ -6,7 +6,8 @@ Mesh3d::Mesh3d()
 {
     instances = {};
     lodLevels = {};
-    Id = Game::instance->getNextId();
+    id = Game::instance->getNextId();
+    Game::instance->registerId(id, this);
 }
 
 Mesh3d::~Mesh3d()

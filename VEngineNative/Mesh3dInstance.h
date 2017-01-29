@@ -7,4 +7,5 @@ public:
     Mesh3dInstance();
     Mesh3dInstance(TransformationManager *transmgr);
     ~Mesh3dInstance();
+    unsigned int id;
 };

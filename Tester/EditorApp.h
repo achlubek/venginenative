@@ -29,9 +29,13 @@ public:
     float yaw = 0.0f, pitch = 0.0f;
     double lastcx = 0.0f, lastcy = 0.0f;
     Camera* cam;
+    Mesh3d * pickedUpMesh = nullptr;
+    Mesh3dLodLevel * pickedUpMeshLodLevel = nullptr;
+    Mesh3dInstance * pickedUpMeshInstance = nullptr;
     vector<string> commandHistory;
     string currentCommandText;
-    bool isConsoleWindowOpened = false, isPickingWindowOpened = false;
+    bool isConsoleWindowOpened = false, isPickingWindowOpened = false,
+        transformationWindowOpened = false;
 
     int currentMode = EDITOR_MODE_IDLE;
     int lastMode = EDITOR_MODE_IDLE;

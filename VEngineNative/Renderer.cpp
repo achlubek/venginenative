@@ -120,7 +120,7 @@ void Renderer::initializeFbos()
     mrtFbo->attachTexture(mrtDistanceTexture, GL_COLOR_ATTACHMENT2);
     mrtFbo->attachTexture(depthTexture, GL_DEPTH_ATTACHMENT);
 
-    pickingDataTex = new Texture2d(width / 4, height / 4, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT);
+    pickingDataTex = new Texture2d(width / 4, height / 4, GL_RGBA32UI, GL_RGBA_INTEGER, GL_UNSIGNED_INT);
     pickingDepthTexture = new Texture2d(width / 4, height / 4, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
 
     pickingFbo = new Framebuffer();
@@ -374,7 +374,9 @@ void Renderer::pick(Camera* camera, glm::vec2 uv)
         int x = (int)(uv.x * (float)pickingDataTex->width);
         int y = (int)(uv.y * (float)pickingDataTex->height);
         unsigned int * data = (unsigned int *)pickingDataTex->read(4);
-        pickingResult = data[y * pickingDataTex->width + x];
+        pickingResultMesh = data[(y * pickingDataTex->width + x) * 4];
+        pickingResultLod = data[(y * pickingDataTex->width + x) * 4 + 1];
+        pickingResultInstance = data[(y * pickingDataTex->width + x) * 4 + 2];
         pickingReady = true;
         free(data);
     });

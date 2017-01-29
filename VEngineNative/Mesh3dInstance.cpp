@@ -5,11 +5,15 @@
 Mesh3dInstance::Mesh3dInstance()
 {
     initTransformation();
+    id = Game::instance->getNextId();
+    Game::instance->registerId(id, this);
 }
 
 Mesh3dInstance::Mesh3dInstance(TransformationManager * transmgr)
 {
     transformation = transmgr;
+    id = Game::instance->getNextId();
+    Game::instance->registerId(id, this);
 }
 
 Mesh3dInstance::~Mesh3dInstance()

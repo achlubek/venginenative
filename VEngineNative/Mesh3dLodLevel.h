@@ -17,6 +17,7 @@ public:
     float distanceStart;
     float distanceEnd;
     float needBufferUpdate = true;
+    unsigned int id;
     void draw(const Mesh3d* mesh);
     void updateBuffer(const vector<Mesh3dInstance*> &instances);
 private:

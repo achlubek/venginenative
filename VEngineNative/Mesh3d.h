@@ -22,7 +22,7 @@ public:
     void updateBuffers();
     void draw();
     void setUniforms();
-    unsigned int Id;
+    unsigned int id;
     string name = "";
 private:
     vector<Mesh3dInstance*> instances;

@@ -113,7 +113,17 @@ void EditorApp::onRenderFrame(float elapsed)
         game->renderer->pick(cam, cursor);
     }
     else if (currentMode == EDITOR_MODE_EDITING) {
-
+        if (pickedUpMeshInstance != nullptr) {
+            int acnt = 0;
+            const float * axes = glfwGetJoystickAxes(0, &acnt);
+            if (acnt >= 4) {
+                //    dx -= axes[2] * 10.9;
+                //    dy += axes[3] * 10.9;
+                //    newpos += (cam->transformation->orientation * glm::vec3(0, 0, -1) * axes[1] * 0.1f);
+                //   newpos += (cam->transformation->orientation * glm::vec3(1, 0, 0) * axes[0] * 0.1f);
+                pickedUpMeshInstance->transformation->translate(glm::vec3(axes[0], axes[1], axes[2]));
+            }
+        }
     }
     else if (currentMode == EDITOR_MODE_WRITING_TEXT) {
 
@@ -131,23 +141,16 @@ void EditorApp::onRenderUIFrame(float elapsed)
         ImGui::End();
     }
     else if (currentMode == EDITOR_MODE_PICKING) {
-        if (game->renderer->pickingResult > 0) {
+        if (game->renderer->pickingResultMesh > 0) {
 
-            Mesh3d * m = nullptr;
-            auto meshes = game->world->scene->getMeshes();
-            for (int i = 0; i < meshes.size(); i++) {
-                if (meshes[i]->Id == game->renderer->pickingResult) {
-                    m = meshes[i];
-                    break;
-                }
-            }
-            if (m != nullptr) {
-                auto lod0 = m->getLodLevel(0);
-                ImGui::Begin("PickingResult", &isPickingWindowOpened, 0);
-                ImGui::Text(m->name.c_str());
-                ImGui::End();
-
-            }
+            pickedUpMesh = (Mesh3d *)game->getObjectById(game->renderer->pickingResultMesh);
+            pickedUpMeshLodLevel = (Mesh3dLodLevel *)game->getObjectById(game->renderer->pickingResultLod);
+            pickedUpMeshInstance = (Mesh3dInstance *)game->getObjectById(game->renderer->pickingResultInstance);
+             
+            ImGui::Begin("PickingResult", &isPickingWindowOpened, 0);
+            ImGui::Text(pickedUpMesh->name.c_str());
+            ImGui::End();
+                 
         }
     }
 }
