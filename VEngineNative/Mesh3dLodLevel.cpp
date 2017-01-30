@@ -150,10 +150,7 @@ void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
     if (nextBuffer == 0)fint = instancesFiltered1;
     if (nextBuffer == 1)fint = instancesFiltered2;
     if (nextBuffer == 2)fint = instancesFiltered3;
-    floats.reserve(12 * fint);
-    unsigned int * tmp1 = &id;
-    float* tmpf = (float*)tmp1;
-    float specialid = *tmpf;
+    floats.reserve(16 * fint);
     for (unsigned int i = 0; i < fint; i++) {
         TransformationManager *mgr = filtered[i]->transformation;
         floats.push_back(mgr->orientation.x);
@@ -169,6 +166,14 @@ void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
         floats.push_back(mgr->size.x);
         floats.push_back(mgr->size.y);
         floats.push_back(mgr->size.z);
+        floats.push_back(1);
+
+        unsigned int * tmp1 = &filtered[i]->id;
+        float* tmpf = (float*)tmp1;
+        float specialid = *tmpf;
+        floats.push_back(specialid);
+        floats.push_back(specialid);
+        floats.push_back(specialid);
         floats.push_back(specialid);
     }
     if (nextBuffer == 0)

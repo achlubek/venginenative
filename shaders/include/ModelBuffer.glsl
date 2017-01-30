@@ -3,6 +3,7 @@ struct ModelInfo{
     vec4 Rotation;
     vec4 Translation;
     vec4 Scale;
+    uvec4 idAnd4Empty;
 };
 
 layout (std430, binding = 0) buffer MMBuffer

@@ -116,12 +116,12 @@ void EditorApp::onRenderFrame(float elapsed)
         if (pickedUpMeshInstance != nullptr) {
             int acnt = 0;
             const float * axes = glfwGetJoystickAxes(0, &acnt);
-            if (acnt >= 4) {
+            if (acnt >= 5) {
                 //    dx -= axes[2] * 10.9;
                 //    dy += axes[3] * 10.9;
                 //    newpos += (cam->transformation->orientation * glm::vec3(0, 0, -1) * axes[1] * 0.1f);
                 //   newpos += (cam->transformation->orientation * glm::vec3(1, 0, 0) * axes[0] * 0.1f);
-                pickedUpMeshInstance->transformation->translate(glm::vec3(axes[0], axes[1], axes[2]));
+                pickedUpMeshInstance->transformation->translate(glm::vec3(axes[0], axes[2], axes[1]));
             }
         }
     }
@@ -129,7 +129,7 @@ void EditorApp::onRenderFrame(float elapsed)
 
     }
     if (isConsoleWindowOpened == false && currentMode == EDITOR_MODE_WRITING_TEXT) {
-        switchMode(EDITOR_MODE_MOVE_CAMERA);
+        switchMode(lastMode);
     }
 }
 
@@ -247,9 +247,8 @@ void EditorApp::onBind()
 
     game->setCursorMode(GLFW_CURSOR_NORMAL);
 
-    auto t = game->asset->loadMeshFile("2dplane.mesh3d");
-    t->getLodLevel(0)->info3d->drawMode = GL_TRIANGLE_STRIP;
-    t->name = "2dplane";
+    auto t = game->asset->loadMeshFile("flagbase.mesh3d");
+    t->name = "flagbase";
     game->world->scene->addMesh(t);
 }
 
