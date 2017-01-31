@@ -199,6 +199,7 @@ void Game::renderThread()
     }
 
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(0);
 
     if (!gladLoadGL())
     {

@@ -86,10 +86,10 @@ float getWaterDistance(){
     float planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
 
     float planethit2 = intersectPlane(CameraPosition, dir, vec3(0.0, WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
-    bool hitwater = (intersects(planethit) || intersects(planethit2));// && (length(currentData.normal) < 0.01 || currentData.cameraDistance > planethit);
+    bool hitwater = true;//(planethit > 0.0 || planethit2 > 0.0);// && (length(currentData.normal) < 0.01 || currentData.cameraDistance > planethit);
     float dist = -1.0;
 
-    if(hitwater){
+    if(planethit > 0.0 || planethit2 > 0.0){
         vec3 newpos = CameraPosition + dir * planethit;
         if(WaterWavesScale > 0.01){
             if(WaterWavesScale < 0.09){
@@ -101,7 +101,7 @@ float getWaterDistance(){
                 vec3 newpos2 = CameraPosition + dir * planethit2;
                 float mult2 = 1.0 - max(0.0, dot(newpos2, -VECTOR_UP));
                 float wvw = WaterWavesScale / 10.0;
-                int steps = 1 + int((6.0 + mult2 * 116.0) * wvw);
+                int steps = 1 + int((6.0 + mult2 * 26.0) * wvw);
                //
 
               //  if(planethit < 14.0 && planethit > 0.0) steps *= 10;
@@ -125,8 +125,6 @@ float getWaterDistance(){
         if(length(currentData.normal) > 0.01){
             hitwater = currentData.cameraDistance > dist;
         }
-    }
-    if(hitwater){
         return dist;
     }
     return -1.0;

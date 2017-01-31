@@ -129,6 +129,7 @@ vec4 getLighting(){
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
 
     float hitdist = textureLod(waterDistanceTex, UV, 0.0).r;
+    
    // return vec4(mod(hitdist, 11.0));
     hitdst = length(currentData.normal) < 0.01 ? 99999.0 : currentData.cameraDistance;
     //return  textureLod(inputTex, UV, 0.0);

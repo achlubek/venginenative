@@ -115,11 +115,11 @@ float fbmHI(vec3 p){
    // p *= 0.1;
     p *= 0.011 * FBMSCALE;
     float a = 0.0;
-    float w = 0.66;
+    float w = 0.5;
     for(int i=0;i<6;i++){
         //p += noise(vec3(a));
-        a += supernoise3dX(p) * w;
-        w *= 0.6;
+        a += xsupernoise3d(p) * w;
+        w *= 0.49;
         p = p * 3.0  ;
     }
     return a;// + noise(p * 100.0) * 11;
@@ -143,10 +143,10 @@ float getFronts(vec3 pos){
 
 float cloudsDensity3D(vec3 pos){
     vec3 ps = pos;// + wtim;
-    ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
+    //ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
 
 //    float density = fbmHI(ps * 0.005 + CloudsOffset + vec3(10.0 * Time, 5.5 * Time, 0.0)) * getFronts(pos + (1.0 / 0.005) * vec3(10.0 * Time, 5.5 * Time, 0.0));// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
-    float density = fbmHI(ps * 0.005 + CloudsOffset) * getFronts(pos);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
+    float density = fbmHI(ps * 0.005 + CloudsOffset);// * getFronts(pos);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
     float measurement = (CloudsCeil - CloudsFloor) * 0.5;
     float mediana = (CloudsCeil + CloudsFloor) * 0.5;
     float mlt = sqrt(sqrt( 1.0 - (abs( getHeightOverSea(pos) - mediana ) / measurement )));
@@ -215,7 +215,7 @@ vec3 CAMERA = vec3(0.0, 1.0, 0.0);
 float visibilityspecial(vec3 dir1, vec3 dir2, float z){
     float v = 1.0;
     float iter = 0.0;
-    float stepsize = 1.0 / 12.0;
+    float stepsize = 1.0 / 10.0;
     float rd = stepsize * rand2s(UV * Time);
     iter += stepsize;
     vec3 atmorg = vec3(0,planetradius,0) + CAMERA;
@@ -225,7 +225,7 @@ float visibilityspecial(vec3 dir1, vec3 dir2, float z){
     float d2 = z;
 
     vec3 raydir = normalize((dir2 * d2) - (dir1 * d1));
-    for(int i=0;i<12;i++){
+    for(int i=0;i<10;i++){
         vec3 md = normalize(mix(dir1, dir2, iter + rd));
         float dd = mix(d1, d2, iter + rd);
         Ray r = Ray(atmorg, md);
@@ -233,11 +233,11 @@ float visibilityspecial(vec3 dir1, vec3 dir2, float z){
         float dx = textureLod(mainPassTex, md, 0.0).g + xhitfloorX;
         vec3 recp = md * dx;
         vec3 xdir = normalize(recp - (dir1 * d1));
-        float dt = 1.0 - pow(max(0.0, dot(xdir, raydir)), 2.0);
-        v *= dt;
+        float dt = pow(max(0.0, dot(xdir, raydir)), 1.0);
+        v *= 1.0 / (max(0.0, dd - dx) * 0.001 * CloudsDensityScale + 1.0);
         iter += stepsize;
     }
-    return pow(v, 1.0);
+    return (pow( v, 2.0)) * 1.0;
 }
 #include ResolveAtmosphere.glsl
 float getAO(vec3 pos, float randomization, float weight);
@@ -257,11 +257,11 @@ vec3 getCloudsAL(vec3 dir){
     float rd = rand2s(uv) * 12.1232343456;
     float mult = 1.0;//mix(sqrt(dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, vdt) + 0.02;
     float ao = 0.0;
-    for(int i=0;i<114;i++){
+    for(int i=0;i<11;i++){
         float x = rand2s(uv + rd) * 2.0 - 1.0;
         //rd *= 2.7897;
         uv.x += 1.46456;
-        float y = rand2s(uv + rd) * 1.1 - 0.1;
+        float y = rand2s(uv + rd) * 2.0 - 1.0;
         //rd *= 1.6271255;
         uv.x += 1.234234;
         float z = rand2s(uv + rd) * 2.0 - 1.0;
@@ -273,14 +273,15 @@ vec3 getCloudsAL(vec3 dir){
         vec3 newdir = normalize(p - CAMERA);
         float v = visibilityspecial(dir, newdir, distance(CAMERA, p));
         ao += v;
-        sum += (textureLod(atmScattTex, px, 1.0).rgb) * v * mult;// * pow(vdt2, 4.0);
+        sum += (textureLod(atmScattTex, px, 1.0 + 4.0 * step(0.0, -y)).rgb * (0.2 + 0.8 * step(0.0, -y))) * v * mult;// * pow(vdt2, 4.0);
     }
-    ao /= 114.0;
+    ao /= 11.0;
 
-    float sao = pow((1.0 - ao) * mix(1.0, 1.9, 1.0 / (CloudsDensityScale + 1.0)), 4.0);
+    float sao =  pow(ao * 2.0, 2.0) ;//;
+    //return sao * vec3(1);
     float saomoon = sao;
     //sao *= 1.0 + pow(caa, 2.0) * 1.0 * pow(max(0.0, dot(dir, dayData.sunDir)) * max(0.0, dot(dir, VECTOR_UP)), 5.0);
-    sao = mix(11.0, sao, max(0.0, 1.0 - 1.0 / (12.0 * max(0.0, dot(dir, VECTOR_UP)))));
+    //sao = mix(11.0, sao, max(0.0, 1.0 - 1.0 / (12.0 * max(0.0, dot(dir, VECTOR_UP)))));
     sao *= max(0.0, 1.0 - 1.0 / (6.0 * max(0.0, dot(dayData.sunDir, VECTOR_UP))));
 
     saomoon = mix(11.0, saomoon, max(0.0, 1.0 - 1.0 / (12.0 * max(0.0, dot(dir, VECTOR_UP)))));
@@ -289,7 +290,7 @@ vec3 getCloudsAL(vec3 dir){
 
     float coverage =  smoothstep(0.464, 0.6, CloudsThresholdLow);
   // return vec3(sao) ;
-    return clamp(sum / 114.0 , 0.0, 111.0) + sao * getSunColor(0.0) * 0.2 + saomoon * 0.00015;// * max(0.0, 1.0 - 1.0 / (1.0 + 6.0 * max(0.0, dot(dir, dayData.moonDir))));// + sao * 3.0 + daox * 0.1 ;
+    return clamp(sum / 11.0 , 0.0, 111.0) + sao * getSunColor(0.0) * 0.2 + saomoon * 0.00015;// * max(0.0, 1.0 - 1.0 / (1.0 + 6.0 * max(0.0, dot(dir, dayData.moonDir))));// + sao * 3.0 + daox * 0.1 ;
     //return vec3(0.0) +  sao * 3.0;// + daox * 0.1 ;
 }
 
@@ -297,7 +298,7 @@ vec3 getCloudsAL(vec3 dir){
 
 float weightshadow = 1.1;
 float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2, float weight){
-    const int stepcount = 16;
+    const int stepcount = 14;
     const float stepsize = 1.0 / float(stepcount);
     float iter = 0.0;
     float rd = rand2sTime(UV) * stepsize;

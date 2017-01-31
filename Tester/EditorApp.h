@@ -36,6 +36,9 @@ public:
     string currentCommandText;
     bool isConsoleWindowOpened = false, isPickingWindowOpened = false,
         transformationWindowOpened = false;
+    bool isOpened = true;
+    bool isOpened2 = true;
+    float tmpDayElapsed = 0.5;
 
     int currentMode = EDITOR_MODE_IDLE;
     int lastMode = EDITOR_MODE_IDLE;
