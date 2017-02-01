@@ -367,7 +367,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
 
     #define xA 0.5
     #define xB 0.5
-    float mult = mix(sqrt(dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, SunDT) + 0.02;
+    float mult = mix(sqrt(0.001 + dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, SunDT) + 0.02;
     vec3 raycolor = mult * getSunColor(0.0) * NoiseOctave1 * 0.9;
     //raycolor *= xA + xB * (pow(1.0 - DirDT, 8.0));
     float raysCoverage = min(1.0, (0.05 + 0.95 * pow((1.0 - (asin(DirDT) / (3.1415 * 0.5)) ), 13.0) * NoiseOctave1 * 0.1));
@@ -378,7 +378,6 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     scattering *= xA + xB * (1.0 - pow(1.0 - DirDT, 14.0));
 //    CC = mix(scattering * 0.7, CC, xA + xB * (1.0 - pow(1.0 - DirDT, 14.0)));
     CC *= xA + xB * (1.0 - pow(1.0 - DirDT, 14.0));
-
 
 
     return mix(mix(scattering * monsoonconverage + moon, monsoonconverage * CC, coverage), raycolor * rays, raysCoverage);

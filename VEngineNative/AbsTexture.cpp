@@ -71,10 +71,11 @@ unsigned int upper_power_of_two(unsigned int v)
     return v;
 
 }
-void * AbsTexture::read(char pxs)
+
+void * AbsTexture::read(int pixelbytecount)
 {
     glBindTexture(type, handle);
-    void *pixels = malloc(4 * 4 * upper_power_of_two(width * height));
+    void *pixels = malloc(pixelbytecount * upper_power_of_two(width * height));
     glGetTexImage(type, 0, formatRequested, typeRequested, pixels);
     return pixels;
 }

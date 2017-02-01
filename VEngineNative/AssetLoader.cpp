@@ -10,6 +10,24 @@ AssetLoader::~AssetLoader()
 {
 }
 
+Object3dInfo * AssetLoader::loadObject3dInfoFile(string source)
+{
+    void * cached = Media::checkCache(source);
+    if (cached != nullptr) {
+        return (Object3dInfo*)cached;
+    }
+    unsigned char* bytes;
+    int bytescount = Media::readBinary(source, &bytes);
+    GLfloat * floats = (GLfloat*)bytes;
+    int floatsCount = bytescount / 4;
+    vector<GLfloat> flo(floats, floats + floatsCount);
+
+    auto o = new Object3dInfo(flo);
+    Media::saveCache(source, o);
+    return o;
+    
+}
+
 Material * AssetLoader::loadMaterialString(string source)
 {
     vector<string> materialLines;
@@ -446,7 +464,7 @@ Light * AssetLoader::loadLightString(string source)
         if (words[0] == "lookat") {
             if (words.size() == 4) {
                 light->transformation->setOrientation(glm::quat_cast(glm::lookAt(
-                    light->transformation->position,
+                    light->transformation->getPosition(),
                     glm::vec3(
                         atof(words[1].c_str()),
                         atof(words[2].c_str()),

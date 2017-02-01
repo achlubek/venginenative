@@ -130,10 +130,10 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
 
 void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
 {
-    vec3 cameraPos = Game::instance->world->mainDisplayCamera->transformation->position;
+    vec3 cameraPos = Game::instance->world->mainDisplayCamera->transformation->getPosition();
     vector<Mesh3dInstance*> filtered;
     for (int i = 0; i < instances.size(); i++) {
-        float dst = distance(cameraPos, instances[i]->transformation->position);
+        float dst = distance(cameraPos, instances[i]->transformation->getPosition());
         if (dst >= distanceStart && dst < distanceEnd && checkIntersection(instances[i])) {
             filtered.push_back(instances[i]);
         }
@@ -153,19 +153,22 @@ void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
     floats.reserve(16 * fint);
     for (unsigned int i = 0; i < fint; i++) {
         TransformationManager *mgr = filtered[i]->transformation;
-        floats.push_back(mgr->orientation.x);
-        floats.push_back(mgr->orientation.y);
-        floats.push_back(mgr->orientation.z);
-        floats.push_back(mgr->orientation.w);
+        quat q = mgr->getOrientation();
+        vec3 p = mgr->getPosition();
+        vec3 s = mgr->getSize();
+        floats.push_back(q.x);
+        floats.push_back(q.y);
+        floats.push_back(q.z);
+        floats.push_back(q.w);
 
-        floats.push_back(mgr->position.x);
-        floats.push_back(mgr->position.y);
-        floats.push_back(mgr->position.z);
+        floats.push_back(p.x);
+        floats.push_back(p.y);
+        floats.push_back(p.z);
         floats.push_back(1);
 
-        floats.push_back(mgr->size.x);
-        floats.push_back(mgr->size.y);
-        floats.push_back(mgr->size.z);
+        floats.push_back(s.x);
+        floats.push_back(s.y);
+        floats.push_back(s.z);
         floats.push_back(1);
 
         unsigned int * tmp1 = &filtered[i]->id;
@@ -192,14 +195,14 @@ bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
 {
     float radius = glm::max(info3d->aabbmax.length(), info3d->aabbmin.length());
 
-    vec3 center = instance->transformation->position + 0.5f * (info3d->aabbmax + info3d->aabbmin);
+    vec3 center = instance->transformation->getPosition() + 0.5f * (info3d->aabbmax + info3d->aabbmin);
 
-    float dst = distance(Game::instance->world->mainDisplayCamera->transformation->position, center);
+    float dst = distance(Game::instance->world->mainDisplayCamera->transformation->getPosition(), center);
     if (radius * 4.0f > dst) {
         return true;
     }
 
-    glm::vec3 ro = Game::instance->world->mainDisplayCamera->transformation->position;
+    glm::vec3 ro = Game::instance->world->mainDisplayCamera->transformation->getPosition();
 
     // i cannot find it on net so i craft my own cone/sphere test
 

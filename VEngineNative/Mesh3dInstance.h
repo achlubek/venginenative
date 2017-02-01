@@ -1,6 +1,7 @@
 #pragma once
 #include "AbsTransformable.h"
 #include "TransformationManager.h"
+
 class Mesh3dInstance : public AbsTransformable
 {
 public:

@@ -8,10 +8,14 @@ uniform uint MeshID;
 uniform uint LodLevelID;
 flat in uint MeshInstanceID;
 
-out uvec4 Red;
+layout(location = 0) out uvec4 IdOut;
+layout(location = 1) out vec4 WorldPosOut;
+layout(location = 2) out vec4 NormalOut;
 
 
 void main(){
-    Red = uvec4(MeshID, LodLevelID, MeshInstanceID, 0);
+    IdOut = uvec4(MeshID, LodLevelID, MeshInstanceID, 0);
+    WorldPosOut = vec4(Input.WorldPos, 0.0);
+    NormalOut = vec4(normalize(Input.Normal), 0.0);
     //gl_FragDepth = clamp(Input.Data.y, 0.0, 1.0);
 }

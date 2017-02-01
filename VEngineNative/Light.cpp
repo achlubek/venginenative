@@ -78,7 +78,7 @@ void Light::refreshShadowMap()
                 if (cubeMapper != nullptr) {
                     cubeMapper->use();
                     Camera *cam = cubeMapper->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, true);
-                    cam->transformation->setPosition(transformation->position);
+                    cam->transformation->setPosition(transformation->getPosition());
 
                     ShaderProgram *shader = Game::instance->shaders->depthOnlyShader;
                     shader->use();

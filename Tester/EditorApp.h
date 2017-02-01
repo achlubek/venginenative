@@ -34,6 +34,7 @@ public:
     Mesh3dInstance * pickedUpMeshInstance = nullptr;
     vector<string> commandHistory;
     string currentCommandText;
+    Mesh3d * cursor3dArrow;
     bool isConsoleWindowOpened = false, isPickingWindowOpened = false,
         transformationWindowOpened = false;
     bool isOpened = true;

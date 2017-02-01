@@ -16,7 +16,7 @@ public:
     void bind(int unit, int level);
     void pregenerate();
     void generateMipMaps();
-    void * read(char pixelbytessize);
+    void * read(int pixelbytecount);
     void setWrapModes(GLuint x, GLuint y);
     void setWrapModes(GLuint x, GLuint y, GLuint z);
     virtual void generate() = 0;

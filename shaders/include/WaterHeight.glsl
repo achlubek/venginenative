@@ -11,13 +11,14 @@ float maxmip = textureQueryLevels(waterTileTex);
 vec2 heightwaterXO(vec2 uv, vec2 offset, float mipmap){
 
 	vec2 zuv1 = (uv * WaterScale * octavescale1) + vec2(Time * 0.001 * WaterSpeed);
-	vec2 zuv2 = zuv1 - vec2(Time * 0.0024 * WaterSpeed);
-	vec2 zuv3 = zuv1 + vec2(Time * 0.0027 * WaterSpeed);
-	vec2 zuv4 = zuv1 - vec2(Time * 0.0028 * WaterSpeed);
+	zuv1 = zuv1 - vec2(Time * 0.00124 * WaterSpeed * 1.4);
+	vec2 zuv2 = zuv1 + vec2(Time * 0.0024 * WaterSpeed * 1.4);
+	vec2 zuv3 = zuv1 - vec2(Time * 0.0027 * WaterSpeed * 1.4);
+	vec2 zuv4 = zuv1 + vec2(Time * 0.0028 * WaterSpeed * 1.4);
     vec2 a = textureLod(waterTileTex, zuv1, mipmap).rg;
-    vec2 b = textureLod(waterTileTex, zuv2, mipmap).rg;
-    vec2 c = textureLod(waterTileTex, zuv3, mipmap).rg;
-    vec2 d = textureLod(waterTileTex, zuv4, mipmap).rg;
+    vec2 b = textureLod(waterTileTex, zuv2 * 1.04, mipmap).rg;
+    vec2 c = textureLod(waterTileTex, zuv3 * 1.01, mipmap).rg;
+    vec2 d = textureLod(waterTileTex, zuv4 * 0.98, mipmap).rg;
 	return (a + b + c + d) * 0.55;
 }
 vec2 heightwaterXOX(vec2 uv, vec2 offset, float mipmap){

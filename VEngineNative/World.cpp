@@ -30,8 +30,8 @@ void World::setUniforms(ShaderProgram * shader, Camera *camera)
     camera->cone->update(inverse(rpmatrix));
     shader->setUniform("VPMatrix", vpmatrix);
     shader->setUniform("Resolution", glm::vec2(Game::instance->width, Game::instance->height));
-    shader->setUniform("CameraPosition", camera->transformation->position);
-    shader->setUniform("MainCameraPosition", mainDisplayCamera->transformation->position);
+    shader->setUniform("CameraPosition", camera->transformation->getPosition());
+    shader->setUniform("MainCameraPosition", mainDisplayCamera->transformation->getPosition());
     shader->setUniform("Time", Game::instance->time);
 }
 

@@ -11,6 +11,8 @@ public:
     AssetLoader();
     ~AssetLoader();
 
+    Object3dInfo *loadObject3dInfoFile(string source);
+
     Material *loadMaterialString(string source);
     Material *loadMaterialFile(string source);
 

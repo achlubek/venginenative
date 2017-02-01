@@ -34,13 +34,12 @@ void CubeMapFramebuffer::generate()
     cam_newy->createProjectionPerspective((90.0f), 1.0f, 0.1f, 10000.0f);
     cam_newz->createProjectionPerspective((90.0f), 1.0f, 0.1f, 10000.0f);
 
-    cam_posx->transformation->orientation = glm::quat_cast(glm::lookAt(glm::vec3(0), glm::vec3(1, 0, 0), glm::vec3(0, -1, 0)));
-    cam_posy->transformation->orientation = glm::quat_cast(glm::lookAt(glm::vec3(0), glm::vec3(0, -1, 0), glm::vec3(0, 0, -1)));
-    cam_posz->transformation->orientation = glm::quat_cast(glm::lookAt(glm::vec3(0), glm::vec3(0, 0, 1), glm::vec3(0, -1, 0)));
-
-    cam_newx->transformation->orientation = glm::quat_cast(glm::lookAt(glm::vec3(0), glm::vec3(-1, 0, 0), glm::vec3(0, -1, 0)));
-    cam_newy->transformation->orientation = glm::quat_cast(glm::lookAt(glm::vec3(0), glm::vec3(0, 1, 0), glm::vec3(0, 0, 1)));
-    cam_newz->transformation->orientation = glm::quat_cast(glm::lookAt(glm::vec3(0), glm::vec3(0, 0, -1), glm::vec3(0, -1, 0)));
+    cam_posx->transformation->setOrientation(glm::quat_cast(glm::lookAt(glm::vec3(0), glm::vec3(1, 0, 0), glm::vec3(0, -1, 0))));
+    cam_posy->transformation->setOrientation(glm::quat_cast(glm::lookAt(glm::vec3(0), glm::vec3(0, -1, 0), glm::vec3(0, 0, -1))));
+    cam_posz->transformation->setOrientation(glm::quat_cast(glm::lookAt(glm::vec3(0), glm::vec3(0, 0, 1), glm::vec3(0, -1, 0))));
+    cam_newx->transformation->setOrientation(glm::quat_cast(glm::lookAt(glm::vec3(0), glm::vec3(-1, 0, 0), glm::vec3(0, -1, 0))));
+    cam_newy->transformation->setOrientation(glm::quat_cast(glm::lookAt(glm::vec3(0), glm::vec3(0, 1, 0), glm::vec3(0, 0, 1))));
+    cam_newz->transformation->setOrientation(glm::quat_cast(glm::lookAt(glm::vec3(0), glm::vec3(0, 0, -1), glm::vec3(0, -1, 0))));
 
     facesCameras.push_back(cam_posx);
     facesCameras.push_back(cam_newx);

@@ -56,38 +56,60 @@ TransformationManager::~TransformationManager()
 {
 }
 
+glm::vec3 TransformationManager::getPosition()
+{
+    return position;
+}
+
+glm::vec3 TransformationManager::getSize()
+{
+    return size;
+}
+
+glm::quat TransformationManager::getOrientation()
+{
+    return orientation;
+}
+
 void TransformationManager::setPosition(vec3 value)
 {
     position = value;
+    needsUpdate = true;
 }
 
 void TransformationManager::setSize(vec3 value)
 {
     size = value;
+    needsUpdate = true;
 }
 
 void TransformationManager::setOrientation(quat value)
 {
     orientation = value;
+    needsUpdate = true;
 }
 
 void TransformationManager::translate(vec3 value)
 {
     position += value;
+    needsUpdate = true;
 }
 
 void TransformationManager::scale(vec3 value)
 {
     size *= value;
+    needsUpdate = true;
 }
 
 void TransformationManager::rotate(quat value)
 {
     orientation = value * orientation;
+    needsUpdate = true;
 }
 
 mat4 TransformationManager::getWorldTransform()
 {
+    if (needsUpdate) updateJoints();
     mat4 rotmat = glm::mat4_cast(orientation);
     mat4 transmat = glm::translate(mat4(1), position);
     mat4 scalemat = glm::scale(mat4(1), size);
@@ -96,6 +118,7 @@ mat4 TransformationManager::getWorldTransform()
 
 mat4 TransformationManager::getInverseWorldTransform()
 {
+    if (needsUpdate) updateJoints();
     mat4 rotmat = glm::mat4_cast(inverse(orientation));
     mat4 scalemat = glm::scale(mat4(1), 1.0f / size);
     mat4 transmat = glm::translate(mat4(1), -position);
@@ -104,5 +127,21 @@ mat4 TransformationManager::getInverseWorldTransform()
 
 glm::mat4 TransformationManager::getRotationMatrix()
 {
+    if (needsUpdate) updateJoints();
     return glm::mat4_cast(orientation);
+}
+
+void TransformationManager::updateJoints()
+{
+    needsUpdate = false;
+    int c = joints.size();
+    for (int i = 0; i < c; i++) {
+        auto j = joints[i];
+        vec3 p = position;
+        quat q = orientation;
+        p += j->frame->position;
+        q *= j->frame->orientation;
+        j->target->position = p;
+        j->target->orientation = q;
+    }
 }

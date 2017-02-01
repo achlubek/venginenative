@@ -15,7 +15,7 @@ EnvProbe::EnvProbe(Renderer * irenderer, vector<EnvPlane*>& iplanes)
 void EnvProbe::refresh()
 {
     renderer->envProbesLightMultiplier = 0.05;
-    renderer->renderToFramebuffer(transformation->position, framebuffer);
+    renderer->renderToFramebuffer(transformation->getPosition(), framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     texture->generateMipMaps();
 }
@@ -23,7 +23,7 @@ void EnvProbe::refresh()
 void EnvProbe::setUniforms()
 {
     ShaderProgram *s = ShaderProgram::current;
-    s->setUniform("EnvProbePosition", transformation->position);
+    s->setUniform("EnvProbePosition", transformation->getPosition());
     s->setUniform("EnvProbePlanesCount", (int)planes.size());
     vector<glm::vec3> points;
     vector<glm::vec3> normals;

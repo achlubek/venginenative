@@ -62,13 +62,15 @@ bool PhysicalBody::isEnabled()
 
 void PhysicalBody::readChanges()
 {
-    auto q = btQuaternion(transformation->orientation.x, transformation->orientation.y,
-        transformation->orientation.z, transformation->orientation.w).inverse();
-    auto v = btVector3(transformation->position.x, transformation->position.y, transformation->position.z);
+    glm::quat o = transformation->getOrientation();
+    glm::vec3 p = transformation->getPosition();
+    glm::vec3 s = transformation->getSize();
+    auto q = btQuaternion(o.x, o.y, o.z, o.w).inverse();
+    auto v = btVector3(p.x, p.y, p.z);
 
     auto bt = btTransform();
     bt.setOrigin(v);
     bt.setRotation(q);
     body->setWorldTransform(bt);
-    shape->setLocalScaling(btVector3(transformation->size.x, transformation->size.y, transformation->size.z));
+    shape->setLocalScaling(btVector3(s.x, s.y, s.z));
 }

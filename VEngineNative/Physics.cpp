@@ -92,7 +92,8 @@ void Physics::addConstraint(PhysicalConstraint * c)
 
 PhysicalBody * Physics::createBody(float mass, TransformationManager * startTransform, btCollisionShape * shape)
 {
-    shape->setLocalScaling(btVector3(startTransform->size.x, startTransform->size.y, startTransform->size.z));
+    glm::vec3 s = startTransform->getSize();
+    shape->setLocalScaling(btVector3(s.x, s.y, s.z));
     auto rb = createRigidBody(mass, startTransform, shape);
     auto pb = new PhysicalBody(rb, shape, startTransform);
     return pb;
@@ -149,9 +150,10 @@ btRigidBody * Physics::createRigidBody(float mass, TransformationManager* transf
     if (isDynamic)
         shape->calculateLocalInertia(mass, localInertia);
 
-    auto q = btQuaternion(transform->orientation.x, transform->orientation.y,
-        transform->orientation.z, transform->orientation.w);
-    auto v = btVector3(transform->position.x, transform->position.y, transform->position.z);
+    glm::quat o = transform->getOrientation();
+    glm::vec3 p = transform->getPosition();
+    auto q = btQuaternion(o.x, o.y, o.z, o.w);
+    auto v = btVector3(p.x, p.y, p.z);
 
     auto bt = btTransform();
     bt.setOrigin(v);

@@ -92,38 +92,45 @@ float supernoise(vec2 x){
     float b = noise2X(x + 0.5, 133.0, 326.0, 0.5);
     return (a * b);
 }
-#define cosinelinear(a) (1.0 - (cos(a * 3.1415) * 0.5 + 0.5))
+#define cosinelinear(a) ((cos(a * 3.1415) * -sin(a * 3.1415) * 0.5 + 0.5))
 #define snoisesinpow(a,b) pow(1.0 - abs(supernoise3d(vec3(a, Time)) - 0.5) * 2.0, b)
 #define XX(a,b) pow(1.0 - abs((a) - 0.5) * 2.0, b)
 #define snoisesinpow2(a,b) pow(cosinelinear(supernoise(a)), b)
 #define snoisesinpow3(a,b) pow(1.0 - abs(supernoise(a ) - 0.5) * 2.0, b)
-#define snoisesinpow4(a,b) pow(supernoise3d(vec3(a, Time * 0.1 * WaterSpeed)) * 1.1, b)
-#define snoisesinpow5(a,b) pow(1.0 - abs(0.5 - supernoise3d(vec3(a, Time * 0.3 * WaterSpeed))) * 2.0, b)
+#define snoisesinpow4X(a,b) pow(1.0 - 2.0 * abs(supernoise(a) - 0.5), b)
+#define snoisesinpow4(a,b) pow(cosinelinear(1.0 - 2.0 * abs(supernoise(a) - 0.5)), b)
+#define snoisesinpow5(a,b) pow(1.0 - abs(0.5 - supernoise3d(vec3(a, Time * 0.03 * WaterSpeed))) * 2.0, b)
 #define snoisesinpow6(a,b) pow(1.0 - abs(0.5 - supernoise3d(vec3(a, Time * 0.03 * WaterSpeed))) * 2.0, b)
 
 float heightwaterHI2(vec2 pos){
+    float last = textureLod(bb, UV, 0.0).r;
     float res = 0.0;
     pos *= 6.0;
     float w = 0.0;
     float wz = 1.0;
-    float chop = 8.0;
-    float tmod = 811.1 * WaterSpeed;
+    float chop = 6.0;
+    float tmod = 521.1 * WaterSpeed;
 
-    for(int i=0;i<3;i++){
+    for(int i=0;i<6;i++){
         vec2 t = vec2(tmod * Time*0.00018);
-        res += wz * snoisesinpow4(pos + t, chop) * 2.0;
-        res += wz * snoisesinpow4(pos - t, chop) * 2.0;
-        chop = mix(chop, 6.0, 0.3);
-        w += wz * 2.0;
-        wz *= 0.65;
+        float x1 = snoisesinpow4X(pos + t, chop);
+        float x2 = snoisesinpow4(pos + t, chop);
+        res += wz * mix(x1 * x2, x2, supernoise(pos + t) * 0.5 + 0.5) * 2.5;
+        w += wz * 1.0;
+        x1 = snoisesinpow4X(pos - t, chop);
+        x2 = snoisesinpow4(pos - t, chop);
+        res += wz * mix(x1 * x2, x2, supernoise(pos - t) * 0.5 + 0.5) * 2.5;
+        w += wz * 1.0;
+        chop = mix(chop, 5.0, 0.3);
+        wz *= 0.4;
         pos *= vec2(2.1, 1.9);
         tmod *= 0.8;
     }
-    pos *= 0.7;
-    pos *= vec2(1.0, 1.4);
-    chop = 2.0;
+    //pos *= 0.99;
+    //pos *= vec2(1.0, 1.4);
+    /*chop = 2.0;
     wz *= 0.8;
-    for(int i=0;i<13;i++){
+    for(int i=0;i<5;i++){
         vec2 t = vec2(tmod );
         res += wz * snoisesinpow5(pos, chop) * 0.5;
         //res += wz * snoisesinpow6(pos - t, chop);
@@ -132,9 +139,9 @@ float heightwaterHI2(vec2 pos){
         wz *= 0.5;
         pos *= vec2(2.1, 1.9);
         tmod *= 0.8;
-    }
+    }*/
     w *= 0.55;
-    return res / w;
+    return mix(pow(res / w * 2.0, 2.0), last, 0.95);
 }
 vec4 shade(){
     vec2 uv = UV;

@@ -1,11 +1,9 @@
 #include "stdafx.h"
 #include "EditorApp.h"
 
-
 EditorApp::EditorApp()
 {
 }
-
 
 EditorApp::~EditorApp()
 {
@@ -52,26 +50,26 @@ void EditorApp::onRenderFrame(float elapsed)
         glm::vec3 dw = glm::vec3(0);
         float w = 0.0;
         if (game->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
-            dw += cam->transformation->orientation * glm::vec3(0, 0, -1);
+            dw += cam->transformation->getOrientation() * glm::vec3(0, 0, -1);
             w += 1.0;
         }
         if (game->getKeyStatus(GLFW_KEY_S) == GLFW_PRESS) {
-            dw += cam->transformation->orientation * glm::vec3(0, 0, 1);
+            dw += cam->transformation->getOrientation() * glm::vec3(0, 0, 1);
             w += 1.0;
         }
         if (game->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS) {
-            dw += cam->transformation->orientation * glm::vec3(-1, 0, 0);
+            dw += cam->transformation->getOrientation() * glm::vec3(-1, 0, 0);
             w += 1.0;
         }
         if (game->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS) {
-            dw += cam->transformation->orientation * glm::vec3(1, 0, 0);
+            dw += cam->transformation->getOrientation() * glm::vec3(1, 0, 0);
             w += 1.0;
         }
 
         glm::vec3 a = dw / w;
         //dir = mix(dir, w > 0.0 ? a : dw, 0.02);
         glm::vec3 dir = w > 0.0 ? a : dw;
-        glm::vec3 newpos = cam->transformation->position;
+        glm::vec3 newpos = cam->transformation->getPosition();
         newpos += length(dir) > 0.0 ? (normalize(dir) * speed) : (glm::vec3(0.0));
 
         //if (game->getKeyStatus(GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -152,8 +150,16 @@ void EditorApp::onRenderUIFrame(float elapsed)
     //ImGui::SliderFloat("CloudsWindSpeed", &Game::instance->renderer->cloudsWindSpeed, 0.0f, 10.0f);
     ImGui::SliderFloat("CloudsDensity", &Game::instance->renderer->cloudsDensityScale, 0.0f, 5.0f);
     ImGui::SliderFloat("CloudsIntegration", &Game::instance->renderer->cloudsIntegrate, 0.3f, 0.999f);
+    Game::instance->renderer->cloudsIntegrate = Game::instance->renderer->cloudsIntegrate * 0.99 + (0.97 * 0.01);
+    Game::instance->renderer->cloudsIntegrate /= abs(Game::instance->renderer->dayElapsed - tmpDayElapsed) * 1.0 + 1.0;
     ImGui::SliderFloat3("CloudsOffset", (float*)&Game::instance->renderer->cloudsOffset, -1000.0f, 1000.0f);
     ImGui::Separator();
+
+    tmpDayElapsed += 0.000003f;
+    if (tmpDayElapsed > 1.0) {
+        tmpDayElapsed -= 1.0;
+        Game::instance->renderer->dayElapsed = tmpDayElapsed;
+    }
     
     ImGui::SliderFloat("DayElapsed", (float*)&tmpDayElapsed, 0.0f, 1.0f);
     Game::instance->renderer->dayElapsed = Game::instance->renderer->dayElapsed * 0.99 + tmpDayElapsed * 0.01;
@@ -203,7 +209,10 @@ void EditorApp::onRenderUIFrame(float elapsed)
             pickedUpMesh = (Mesh3d *)game->getObjectById(game->renderer->pickingResultMesh);
             pickedUpMeshLodLevel = (Mesh3dLodLevel *)game->getObjectById(game->renderer->pickingResultLod);
             pickedUpMeshInstance = (Mesh3dInstance *)game->getObjectById(game->renderer->pickingResultInstance);
-             
+
+            cursor3dArrow->getInstance(0)->transformation->setPosition(game->renderer->pickingWorldPos);
+            cursor3dArrow->getInstance(0)->transformation->setOrientation(glm::lookAt(glm::vec3(0.0), game->renderer->pickingNormal, glm::vec3(0.0, 1.0, 0.0)));
+
             ImGui::Begin("PickingResult", &isPickingWindowOpened, 0);
             ImGui::Text(pickedUpMesh->name.c_str());
             ImGui::End();
@@ -302,7 +311,7 @@ void EditorApp::onBind()
         cam->createProjectionPerspective(fovnew, (float)game->width / (float)game->height, 0.01f, 1000);
     });
     cam->transformation->translate(glm::vec3(16, 16, 16));
-    glm::quat rot = glm::quat_cast(glm::lookAt(cam->transformation->position, glm::vec3(0), glm::vec3(0, 1, 0)));
+    glm::quat rot = glm::quat_cast(glm::lookAt(cam->transformation->getPosition(), glm::vec3(0), glm::vec3(0, 1, 0)));
     cam->transformation->setOrientation(rot);
     game->world->mainDisplayCamera = cam;
 
@@ -310,7 +319,11 @@ void EditorApp::onBind()
 
     auto t = game->asset->loadMeshFile("flagbase.mesh3d");
     t->name = "flagbase";
-    game->world->scene->addMesh(t);
+   // game->world->scene->addMesh(t);
+
+    cursor3dArrow = Mesh3d::create(game->asset->loadObject3dInfoFile("arrow.raw"), new Material());
+    cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager()));
+   // game->world->scene->addMesh(cursor3dArrow);
 }
 
 void EditorApp::onChar(unsigned int c)

@@ -90,6 +90,7 @@ Renderer::Renderer(int iwidth, int iheight)
     waterColorShader = new ShaderProgram("PostProcess.vertex.glsl", "WaterColor.fragment.glsl");
     cloudResolveShader = new ShaderProgram("PostProcess.vertex.glsl", "CloudResolve.fragment.glsl");
     exposureComputeShader = new ShaderProgram("CalculateExposure.compute.glsl");
+    pickingReadShader = new ShaderProgram("PickerResultReader.compute.glsl");
     exposureBuffer = new ShaderStorageBuffer();
 
     // skyboxTexture = new CubeMapTexture("posx.jpg", "posy.jpg", "posz.jpg", "negx.jpg", "negy.jpg", "negz.jpg");
@@ -121,11 +122,16 @@ void Renderer::initializeFbos()
     mrtFbo->attachTexture(depthTexture, GL_DEPTH_ATTACHMENT);
 
     pickingDataTex = new Texture2d(width / 4, height / 4, GL_RGBA32UI, GL_RGBA_INTEGER, GL_UNSIGNED_INT);
+    pickingWorldPosTex = new Texture2d(width / 4, height / 4, GL_RGBA32F, GL_RGBA, GL_FLOAT);
+    pickingNormalTex = new Texture2d(width / 4, height / 4, GL_RGBA32F, GL_RGBA, GL_FLOAT);
     pickingDepthTexture = new Texture2d(width / 4, height / 4, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
 
     pickingFbo = new Framebuffer();
     pickingFbo->attachTexture(pickingDataTex, GL_COLOR_ATTACHMENT0);
+    pickingFbo->attachTexture(pickingWorldPosTex, GL_COLOR_ATTACHMENT1);
+    pickingFbo->attachTexture(pickingNormalTex, GL_COLOR_ATTACHMENT2);
     pickingFbo->attachTexture(pickingDepthTexture, GL_DEPTH_ATTACHMENT);
+    pickingResultSSBO = new ShaderStorageBuffer();
 
     deferredTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     deferredFbo = new Framebuffer();
@@ -272,7 +278,7 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     sp->setUniform("UseAO", useAmbientOcclusion);
     sp->setUniform("MieScattCoeff", mieScattCoefficent);
     sp->setUniform("Resolution", glm::vec2(width, height));
-    sp->setUniform("CameraPosition", currentCamera->transformation->position);
+    sp->setUniform("CameraPosition", currentCamera->transformation->getPosition());
     sp->setUniform("FrustumConeLeftBottom", cone->leftBottom);
     sp->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
     sp->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
@@ -364,6 +370,14 @@ void Renderer::pick(Camera* camera, glm::vec2 uv)
 {
     if (!pickingReady) return;
 
+    pickingReadShader->use();
+    pickingReadShader->setUniform("uv", uv);
+    pickingDataTex->use(0);
+    pickingNormalTex->use(1);
+    pickingWorldPosTex->use(2);
+    pickingResultSSBO->use(5);
+    pickingReadShader->dispatch(1, 1, 1);
+
     pickingFbo->use(true);
 
     ShaderProgram *shader = Game::instance->shaders->idWriteShader;
@@ -373,10 +387,33 @@ void Renderer::pick(Camera* camera, glm::vec2 uv)
     Game::instance->invoke([&, uv]() {
         int x = (int)(uv.x * (float)pickingDataTex->width);
         int y = (int)(uv.y * (float)pickingDataTex->height);
-        unsigned int * data = (unsigned int *)pickingDataTex->read(4);
-        pickingResultMesh = data[(y * pickingDataTex->width + x) * 4];
-        pickingResultLod = data[(y * pickingDataTex->width + x) * 4 + 1];
-        pickingResultInstance = data[(y * pickingDataTex->width + x) * 4 + 2];
+
+        unsigned int * data = new unsigned int[4];
+        pickingResultSSBO->readSubData(0, 4 * 4, &data[0]);
+
+        float * datawp = new float[4];
+        pickingResultSSBO->readSubData(2 * 4 * 4, 4 * 4, &datawp[0]);
+
+        float * datan = new float[4];
+        pickingResultSSBO->readSubData(4 * 4, 4 * 4, &datan[0]);
+
+        pickingResultMesh = data[0];
+        pickingResultLod = data[1];
+        pickingResultInstance = data[2];
+
+        if (pickingResultMesh > 0) {
+            pickingWorldPos.x = datawp[0];
+            pickingWorldPos.y = datawp[1];
+            pickingWorldPos.z = datawp[2];
+
+            pickingNormal.x = datan[0];
+            pickingNormal.y = datan[1];
+            pickingNormal.z = datan[2];
+
+            free(datawp);
+            free(datan);
+        }
+
         pickingReady = true;
         free(data);
     });
@@ -387,6 +424,7 @@ void Renderer::draw(Camera *camera)
     if (!gpuInitialized) {
         float* ones = new float[4]{ 1.0f, 1.0f, 1.0f, 1.0f };
         exposureBuffer->mapData(4 * 4, &ones);
+        pickingResultSSBO->mapData(4 * 4 * 3, new float[4 * 4 * 3]{});
         // starsTexture->generateMipMaps();
     }
     Game::instance->bindTexture(GL_TEXTURE_2D, 0, 0);
@@ -454,14 +492,14 @@ void Renderer::cloudsResolve()
         cloudResolveShader->use();
         setCommonUniforms(cloudResolveShader);
         Camera* camera = cloudsResolvedFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, false);
-        camera->transformation->setPosition(currentCamera->transformation->position);
+        camera->transformation->setPosition(currentCamera->transformation->getPosition());
         FrustumCone *cone = camera->cone;
         glm::mat4 vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
         glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
         glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
         camera->cone->update(inverse(rpmatrix));
         cloudResolveShader->setUniform("VPMatrix", vpmatrix);
-        cloudResolveShader->setUniform("CameraPosition", camera->transformation->position);
+        cloudResolveShader->setUniform("CameraPosition", camera->transformation->getPosition());
         cloudResolveShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
         cloudResolveShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
         cloudResolveShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
@@ -556,8 +594,8 @@ void Renderer::deferred()
 
     for (int i = 0; i < lights.size(); i++) {
         deferredShader->setUniform("LightColor", lights[i]->color);
-        deferredShader->setUniform("LightPosition", lights[i]->transformation->position);
-        deferredShader->setUniform("LightOrientation", glm::inverse(lights[i]->transformation->orientation));
+        deferredShader->setUniform("LightPosition", lights[i]->transformation->getPosition());
+        deferredShader->setUniform("LightOrientation", glm::inverse(lights[i]->transformation->getOrientation()));
         deferredShader->setUniform("LightAngle", lights[i]->angle);
         deferredShader->setUniform("LightType", lights[i]->type);
         deferredShader->setUniform("LightCutOffDistance", lights[i]->cutOffDistance);
@@ -690,14 +728,14 @@ void Renderer::atmScatt()
 
         atmScattFbo->use(false);
         Camera* camera = atmScattFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, false);
-        camera->transformation->setPosition(currentCamera->transformation->position);
+        camera->transformation->setPosition(currentCamera->transformation->getPosition());
         FrustumCone *cone = camera->cone;
         glm::mat4 vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
         glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
         glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
         camera->cone->update(inverse(rpmatrix));
         atmScattShader->setUniform("VPMatrix", vpmatrix);
-        atmScattShader->setUniform("CameraPosition", camera->transformation->position);
+        atmScattShader->setUniform("CameraPosition", camera->transformation->getPosition());
         atmScattShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
         atmScattShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
         atmScattShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
@@ -732,7 +770,7 @@ void Renderer::clouds()
     if (passPhrase == 1) {
         currentFbo->use(false);
         Camera* camera = currentFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, false);
-        camera->transformation->setPosition(currentCamera->transformation->position);
+        camera->transformation->setPosition(currentCamera->transformation->getPosition());
         FrustumCone *cone = camera->cone;
         vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
         cameraRotMatrix = camera->transformation->getRotationMatrix();
@@ -740,7 +778,7 @@ void Renderer::clouds()
         camera->cone->update(inverse(rpmatrix));
         cloudsShader->use();
         cloudsShader->setUniform("VPMatrix", vpmatrix);
-        cloudsShader->setUniform("CameraPosition", camera->transformation->position);
+        cloudsShader->setUniform("CameraPosition", camera->transformation->getPosition());
         cloudsShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
         cloudsShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
         cloudsShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
@@ -779,7 +817,7 @@ void Renderer::clouds()
         // for (int i = 0; i < 6; i++) {
         currentFbo->use(false);
         camera = currentFbo->switchFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cloudFace, false);
-        camera->transformation->setPosition(currentCamera->transformation->position);
+        camera->transformation->setPosition(currentCamera->transformation->getPosition());
         cone = camera->cone;
         vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
         cameraRotMatrix = camera->transformation->getRotationMatrix();
@@ -787,7 +825,7 @@ void Renderer::clouds()
         camera->cone->update(inverse(rpmatrix));
         cloudsShader->use();
         cloudsShader->setUniform("VPMatrix", vpmatrix);
-        cloudsShader->setUniform("CameraPosition", camera->transformation->position);
+        cloudsShader->setUniform("CameraPosition", camera->transformation->getPosition());
         cloudsShader->setUniform("FrustumConeLeftBottom", cone->leftBottom);
         cloudsShader->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
         cloudsShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);

@@ -176,9 +176,9 @@ void Game::renderThread()
     }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-    //#ifdef _DEBUG
+    #ifdef _DEBUG
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-  //  #endif
+    #endif
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     //int count;
     //GLFWmonitor** monitors = glfwGetMonitors(&count);
@@ -218,9 +218,9 @@ void Game::renderThread()
 
 //    glfwSetKeyCallback(window, glfwKeyCallback);
 
-  //  #ifdef _DEBUG
+    #ifdef _DEBUG
         glDebugMessageCallback(&debugCallback, NULL);
-   // #endif
+    #endif
 
     printf("VERSION: %s\nVENDOR: %s", glGetString(GL_VERSION), glGetString(GL_VENDOR));
 

@@ -129,7 +129,7 @@ vec4 getLighting(){
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
 
     float hitdist = textureLod(waterDistanceTex, UV, 0.0).r;
-    
+
    // return vec4(mod(hitdist, 11.0));
     hitdst = length(currentData.normal) < 0.01 ? 99999.0 : currentData.cameraDistance;
     //return  textureLod(inputTex, UV, 0.0);
@@ -246,13 +246,10 @@ vec4 getLighting(){
     result += waterSSScolor * getSunColor(0) * (0.3 + height1) * waterdepth * 0.3 * covercloud * max(0.0, dot(dayData.sunDir, VECTOR_UP));
    // result += 1.0 - smoothstep(0.002, 0.003, ssscoeff2);
     //result += (pow(dot(normal,dayData.sunDir) * 0.4 + 0.6,80.0) * vec3(0.8,0.9,0.6) * 0.12) * getSunColor(0) * (1.0 - fresnel)  * 0.8069;
-    vec3 refr2 = normalize(refr + vec3(0.0, 0.6, 0.0));
-    float superscat =1.0;// pow(max(0.0, dot(refr, dayData.sunDir)), 1.0) ;//* (1.0 - fresnel);
-    float cx = smoothstep(-0.05, 0.25, refr2.y);
-    vec3 atmxk = mix(textureLod(atmScattTex, refr, 7.0).rgb, textureLod(resolvedAtmosphereTex, refr2, 1.0).rgb, cx);
-    result += (1.0 - fresnel) * (1.0 - fresnel) * pow(max(0.0, dot(refr2, dayData.sunDir)), 8.0) * vec3(0.7, 0.8, 0.9) * superscat * (atmxk) * 0.1 * covercloud;
-
-     return  vec4(result, 1.0);
+    vec3 refr2 = normalize(refr + vec3(0.0, 0.3, 0.0));
+    float superscat = pow(max(0.0, dot(refr, dayData.sunDir)), 8.0) ;//* (1.0 - fresnel);
+    result += vec3(0.5,0.9,0.8) * superscat * getSunColor(0) * 8.0 * covercloud;
+    return  vec4(result, 1.0);
 }
 
 

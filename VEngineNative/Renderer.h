@@ -60,6 +60,8 @@ public:
     unsigned int pickingResultMesh = 0;
     unsigned int pickingResultLod = 0;
     unsigned int pickingResultInstance = 0;
+    glm::vec3 pickingWorldPos = glm::vec3(0);
+    glm::vec3 pickingNormal = glm::vec3(0);
     volatile bool pickingReady = true;
     void pick(Camera* camera, glm::vec2 uv);
 private:
@@ -93,9 +95,12 @@ private:
     //Picking by color Buffers
     Framebuffer *pickingFbo;
     Texture2d *pickingDataTex;
+    Texture2d *pickingWorldPosTex;
+    Texture2d *pickingNormalTex;
     Texture2d *pickingDepthTexture;
     ShaderProgram *pickingDrawingShader;
     ShaderProgram *pickingReadShader;
+    ShaderStorageBuffer *pickingResultSSBO;
 
     // Effects part
     ShaderProgram *deferredShader;
