@@ -150,12 +150,14 @@ void EditorApp::onRenderUIFrame(float elapsed)
     //ImGui::SliderFloat("CloudsWindSpeed", &Game::instance->renderer->cloudsWindSpeed, 0.0f, 10.0f);
     ImGui::SliderFloat("CloudsDensity", &Game::instance->renderer->cloudsDensityScale, 0.0f, 5.0f);
     ImGui::SliderFloat("CloudsIntegration", &Game::instance->renderer->cloudsIntegrate, 0.3f, 0.999f);
-    Game::instance->renderer->cloudsIntegrate = Game::instance->renderer->cloudsIntegrate * 0.99 + (0.97 * 0.01);
-    Game::instance->renderer->cloudsIntegrate /= abs(Game::instance->renderer->dayElapsed - tmpDayElapsed) * 1.0 + 1.0;
+
+    Game::instance->renderer->cloudsIntegrate = Game::instance->renderer->cloudsIntegrate * 0.997 + (0.99 * 0.003);
+    Game::instance->renderer->cloudsIntegrate /= abs(Game::instance->renderer->dayElapsed - tmpDayElapsed) * 0.2 + 1.0;
+
     ImGui::SliderFloat3("CloudsOffset", (float*)&Game::instance->renderer->cloudsOffset, -1000.0f, 1000.0f);
     ImGui::Separator();
 
-    tmpDayElapsed += 0.000003f;
+  //  tmpDayElapsed += 0.00003f;
     if (tmpDayElapsed > 1.0) {
         tmpDayElapsed -= 1.0;
         Game::instance->renderer->dayElapsed = tmpDayElapsed;

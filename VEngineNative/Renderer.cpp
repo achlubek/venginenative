@@ -187,13 +187,13 @@ void Renderer::initializeFbos()
     cloudsShadowsFboOdd = new CubeMapFramebuffer();
     cloudsShadowsFboOdd->attachTexture(cloudsShadowsTextureOdd, GL_COLOR_ATTACHMENT0);
 
-    cloudsResolvedTexture = new CubeMapTexture(1024, 1024, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    cloudsResolvedTexture = new CubeMapTexture(512, 512, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     cloudsResolvedFbo = new CubeMapFramebuffer();
     cloudsResolvedFbo->attachTexture(cloudsResolvedTexture, GL_COLOR_ATTACHMENT0);
 
     //---------/
 
-    atmScattTexture = new CubeMapTexture(128, 128, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    atmScattTexture = new CubeMapTexture(512, 512, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     atmScattFbo = new CubeMapFramebuffer();
     atmScattFbo->attachTexture(atmScattTexture, GL_COLOR_ATTACHMENT0);
 

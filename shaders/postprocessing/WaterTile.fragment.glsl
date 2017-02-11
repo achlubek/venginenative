@@ -99,8 +99,8 @@ float supernoise(vec2 x){
 #define snoisesinpow3(a,b) pow(1.0 - abs(supernoise(a ) - 0.5) * 2.0, b)
 #define snoisesinpow4X(a,b) pow(1.0 - 2.0 * abs(supernoise(a) - 0.5), b)
 #define snoisesinpow4(a,b) pow(cosinelinear(1.0 - 2.0 * abs(supernoise(a) - 0.5)), b)
-#define snoisesinpow5(a,b) pow(1.0 - abs(0.5 - supernoise3d(vec3(a, Time * 0.03 * WaterSpeed))) * 2.0, b)
-#define snoisesinpow6(a,b) pow(1.0 - abs(0.5 - supernoise3d(vec3(a, Time * 0.03 * WaterSpeed))) * 2.0, b)
+#define snoisesinpow5(a,b) pow(1.0 - abs(0.5 - supernoise3d(vec3(a, Time * 0.3 * WaterSpeed))) * 2.0, b)
+#define snoisesinpow6(a,b) pow(1.0 - abs(0.5 - supernoise3d(vec3(a, Time * 0.3 * WaterSpeed))) * 2.0, b)
 
 float heightwaterHI2(vec2 pos){
     float last = textureLod(bb, UV, 0.0).r;
@@ -109,7 +109,7 @@ float heightwaterHI2(vec2 pos){
     float w = 0.0;
     float wz = 1.0;
     float chop = 6.0;
-    float tmod = 521.1 * WaterSpeed;
+    float tmod = 5210.1 * WaterSpeed;
 
     for(int i=0;i<6;i++){
         vec2 t = vec2(tmod * Time*0.00018);

@@ -1,39 +1,40 @@
 #define iSteps 28
 #define jSteps 28
 
-#include noise3D.glsl
-vec3 getWind(vec3 p){
-    return vec3(
-        snoise(p),
-        snoise(-p),
-        snoise(p.zxy)
-    )  ;// * (supernoise3d(p * 0.1) * 0.5 + 0.5);
-}
+#include ProceduralValueNoise.glsl
+
 uniform float Time;
 float fbmHI(vec3 p){
    // p *= 0.1;
-    p *= 0.0000009;
-    p.x *= 0.3;
-	p += Time * 0.002;
+    p *= 0.0000169;
+    p.x *= 0.489;
+	p += Time * 0.02;
 	//p += getWind(p * 0.2) * 6.0;
 	float a = 0.0;
     float w = 1.0;
     float wc = 1.0;
-	for(int i=0;i<4;i++){
+	for(int i=0;i<7;i++){
         //p += noise(vec3(a));
-		a += (snoise(p) * 0.5 + 0.5) * w;
-		wc += w;
+		a += (supernoise3dX(p)) * w;
+	//	wc += w;
         w *= 0.5;
-		p = p * 3.0;
+		p = p * 2.0;
 	}
 	return a / wc;// + noise(p * 100.0) * 11;
+}
+vec3 wind(vec3 p){
+    return vec3(
+        supernoise3d(p),
+        supernoise3d(p.yzx),
+        supernoise3d(-p.xzy)
+        ) * 2.0 - 1.0;
 }
 vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAtmos, vec3 kRlh, float kMie, float shRlh, float shMie, float g) {
     pSun = normalize(pSun);
     r = normalize(r);
 	float rs = rsi2(Ray(r0, r), Sphere(vec3(0), rAtmos));
 	vec3 px = r0 + r * rs;
-	shMie *= 2.0 * pow(fbmHI(px) * 1.0, 2.0);
+	shMie *= 2.0 * pow(fbmHI(px + wind(px * 0.00000669) * 100000.0) * supernoise3dX(px* 0.00000669 + Time * 0.01) * 1.3, 3.0) + 0.1;
     float iStepSize = rs / float(iSteps);
     float iTime = 0.0;
     vec3 totalRlh = vec3(0,0,0);

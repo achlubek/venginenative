@@ -346,6 +346,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     sshadow = 1.0 - coverage;
     //float dist = cloudsData.g;
     vec4 vdao = blurshadowsAO(dir, roughness);
+    //return vdao.gba;
     float shadow = vdao.r;
     //return ;
     float rays = godrays(dir, raysteps);

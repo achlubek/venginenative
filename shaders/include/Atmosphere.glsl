@@ -213,7 +213,7 @@ Sphere sphere2;
 vec3 CAMERA = vec3(0.0, 1.0, 0.0);
 
 float visibilityspecial(vec3 dir1, vec3 dir2, float z){
-    float v = 1.0;
+    float v = 0.0;
     float iter = 0.0;
     float stepsize = 1.0 / 10.0;
     float rd = stepsize * rand2s(UV * Time);
@@ -234,9 +234,10 @@ float visibilityspecial(vec3 dir1, vec3 dir2, float z){
         vec3 recp = md * dx;
         vec3 xdir = normalize(recp - (dir1 * d1));
         float dt = pow(max(0.0, dot(xdir, raydir)), 1.0);
-        v *= 1.0 / (max(0.0, dd - dx) * 0.001 * CloudsDensityScale + 1.0);
+        v += 1.0 / (max(0.0, dd - dx) * 0.001 + 1.0);
         iter += stepsize;
     }
+    v /= 10.0;
     return (pow( v, 2.0)) * 1.0;
 }
 #include ResolveAtmosphere.glsl
@@ -273,13 +274,12 @@ vec3 getCloudsAL(vec3 dir){
         vec3 newdir = normalize(p - CAMERA);
         float v = visibilityspecial(dir, newdir, distance(CAMERA, p));
         ao += v;
-        sum += (textureLod(atmScattTex, px, 1.0 + 4.0 * step(0.0, -y)).rgb * (0.2 + 0.8 * step(0.0, -y))) * v * mult;// * pow(vdt2, 4.0);
+        sum += (textureLod(atmScattTex, px, 1.0 + 4.0 * step(0.0, -y)).rgb * (0.2 + 0.8 * step(0.0, -y))) * pow(v, 8.0) * mult;// * pow(vdt2, 4.0);
     }
     ao /= 11.0;
-
-    float sao =  pow(ao * 2.0, 2.0) ;//;
-    //return sao * vec3(1);
-    float saomoon = max(sao, pow((1.0 - ao) * 2.0, 2.0));
+    float sao = ao;//;
+    float saomoon = ao;
+//    return sum;
     //sao *= 1.0 + pow(caa, 2.0) * 1.0 * pow(max(0.0, dot(dir, dayData.sunDir)) * max(0.0, dot(dir, VECTOR_UP)), 5.0);
     //sao = mix(11.0, sao, max(0.0, 1.0 - 1.0 / (12.0 * max(0.0, dot(dir, VECTOR_UP)))));
     sao *= max(0.0, 1.0 - 1.0 / (6.0 * max(0.0, dot(dayData.sunDir, VECTOR_UP))));
@@ -287,10 +287,14 @@ vec3 getCloudsAL(vec3 dir){
     //saomoon = mix(11.0, saomoon, max(0.0, 1.0 - 1.0 / (12.0 * max(0.0, dot(dir, VECTOR_UP)))));
     saomoon *= max(0.0, 1.0 - 1.0 / (6.0 * max(0.0, dot(dayData.moonDir, VECTOR_UP))));
     //float dshadow = getAODIR(point, px, 113.0);
+    float x = max(0.0, dot(dayData.sunDir, VECTOR_UP));
+    float a = x;
+    vec3 sss = (1.0 - ao) * getSunColor(0.0) * (1.0 / (0.16 + (1.0 - max(0.0, dot(dir, dayData.sunDir))))) / (CloudsDensityScale + 0.5);
+    //return sss;
 
     float coverage =  smoothstep(0.464, 0.6, CloudsThresholdLow);
   // return vec3(sao) ;
-    return clamp(sum / 11.0 , 0.0, 111.0) + sao * getSunColor(0.0) * 0.2 + ( saomoon ) * 0.00015;// * max(0.0, 1.0 - 1.0 / (1.0 + 6.0 * max(0.0, dot(dir, dayData.moonDir))));// + sao * 3.0 + daox * 0.1 ;
+    return sss + clamp(sum / 11.0 , 0.0, 111.0) + sao * getSunColor(0.0) * 0.2 + ( saomoon ) * 0.00015;// * max(0.0, 1.0 - 1.0 / (1.0 + 6.0 * max(0.0, dot(dir, dayData.moonDir))));// + sao * 3.0 + daox * 0.1 ;
     //return vec3(0.0) +  sao * 3.0;// + daox * 0.1 ;
 }
 

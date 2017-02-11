@@ -9,17 +9,17 @@ float maxmip = textureQueryLevels(waterTileTex);
 #include ProceduralValueNoise.glsl
 
 vec2 heightwaterXO(vec2 uv, vec2 offset, float mipmap){
-
-	vec2 zuv1 = (uv * WaterScale * octavescale1) + vec2(Time * 0.001 * WaterSpeed);
-	zuv1 = zuv1 - vec2(Time * 0.00124 * WaterSpeed * 1.4);
-	vec2 zuv2 = zuv1 + vec2(Time * 0.0024 * WaterSpeed * 1.4);
-	vec2 zuv3 = zuv1 - vec2(Time * 0.0027 * WaterSpeed * 1.4);
-	vec2 zuv4 = zuv1 + vec2(Time * 0.0028 * WaterSpeed * 1.4);
+    uv += vec2(Time * WaterSpeed, 0.0);
+	vec2 zuv1 = (uv * WaterScale * octavescale1) + vec2(Time * 0.01 * WaterSpeed);
+	zuv1 = zuv1 - vec2(Time * 0.0124 * WaterSpeed * 1.4);
+	vec2 zuv2 = zuv1 + vec2(Time * 0.024 * WaterSpeed * 1.4);
+	vec2 zuv3 = zuv1 - vec2(Time * 0.027 * WaterSpeed * 1.4);
+	vec2 zuv4 = zuv1 + vec2(Time * 0.028 * WaterSpeed * 1.4);
     vec2 a = textureLod(waterTileTex, zuv1, mipmap).rg;
     vec2 b = textureLod(waterTileTex, zuv2 * 1.04, mipmap).rg;
     vec2 c = textureLod(waterTileTex, zuv3 * 1.01, mipmap).rg;
     vec2 d = textureLod(waterTileTex, zuv4 * 0.98, mipmap).rg;
-	return (a + b + c + d) * 0.55;
+	return (a + b + c + d) * 0.09 + pow(supernoise3d(vec3(uv.x* WaterScale.x, uv.y* WaterScale.y, Time * WaterSpeed * 2.0) * 0.094 + vec3(Time * WaterSpeed, 0.0, 0.0) * 0.1), 2.0) * 0.90;
 }
 vec2 heightwaterXOX(vec2 uv, vec2 offset, float mipmap){
 
@@ -40,4 +40,4 @@ float heightwater(vec2 uv){
     return heightwaterD(uv, mipmap1 * 1.0).r;
 }
 #define WaterLevel WaterHeight
-#define waterdepth 0.1 * WaterWavesScale
+#define waterdepth 1.1 * WaterWavesScale
