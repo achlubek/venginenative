@@ -319,12 +319,12 @@ void EditorApp::onBind()
 
     game->setCursorMode(GLFW_CURSOR_NORMAL);
 
-    auto t = game->asset->loadMeshFile("flagbase.mesh3d");
-    t->name = "flagbase";
+  //  auto t = game->asset->loadMeshFile("flagbase.mesh3d");
+  //  t->name = "flagbase";
    // game->world->scene->addMesh(t);
 
-    cursor3dArrow = Mesh3d::create(game->asset->loadObject3dInfoFile("arrow.raw"), new Material());
-    cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager()));
+ //   cursor3dArrow = Mesh3d::create(game->asset->loadObject3dInfoFile("arrow.raw"), new Material());
+  //  cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager()));
    // game->world->scene->addMesh(cursor3dArrow);
 }
 
