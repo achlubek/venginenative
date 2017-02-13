@@ -119,7 +119,7 @@ vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
         1.2e3  * MieScattCoeff ,                          // Mie scale height
         0.758                         // Mie preferred scattering direction
     ) +
-     0.4 * atmosphere(
+     2 * atmosphere(
         dir,           // normalized ray direction
         vec3(0,planetradius  ,0) + origin,               // ray origin
         dayData.moonDir,                        // position of the sun
@@ -130,8 +130,8 @@ vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
        // vec3(0.05e-5, 0.10e-5, 0.25e-5) * 2.0, // Rayleigh scattering coefficient
       //  vec3(4.5e-6, 10.0e-6, 2.4e-6), // Rayleigh scattering coefficient
         21e-6,                          // Mie scattering coefficient
-        8e3,                            // Rayleigh scale height
-        1.2e3  * MieScattCoeff ,                          // Mie scale height
+        2e3,                            // Rayleigh scale height
+        11.2e3  * MieScattCoeff ,                          // Mie scale height
         0.758                         // Mie preferred scattering direction
     );
 }

@@ -268,6 +268,55 @@ void Renderer::destroyFbos(bool onlyViewDependant)
     delete lensBlurTextureHorizontal;
     delete lensBlurTextureVertical;
 }
+using namespace glm; 
+mat3 rotationMatrix(vec3 axis, float angle)
+{
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+
+    return mat3(oc * axis.x * axis.x + c, oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s,
+        oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c, oc * axis.y * axis.z - axis.x * s,
+        oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c);
+}
+
+vec3 transformDirDays(vec3 dir, float elapsed, float yearelapsed, float equator_pole) {
+    dir = dir *rotationMatrix(vec3(1.0, 0.0, 0.0), 3.1415 * equator_pole);// move to geo coords
+    dir = dir *rotationMatrix(vec3(0.0, 1.0, 0.0), 6.2831 * elapsed);// rotate around rotationaxis
+    dir = dir *rotationMatrix(vec3(0.0, 1.0, 0.0), -6.2831 * yearelapsed);
+    dir = dir *rotationMatrix(vec3(0.0, 0.0, 1.0), 0.4);
+    return dir;
+}
+struct DayData {
+    vec3 sunDir;
+    vec3 moonDir;
+    vec3 sunSpaceDir;
+    mat3 viewFrame;
+    vec3 moonPos;
+    vec3 earthPos;
+};
+DayData calculateDay(float elapsed, float yearelapsed, float equator_pole) {
+    vec3 sunorigin = vec3(0.0);
+    vec3 earthpos = sunorigin + rotationMatrix(vec3(0.0, 1.0, 0.0), 6.2831 * yearelapsed) * vec3(0.0, 0.0, 1.0) * 149597.870f;
+
+    mat3 surface_frame = mat3(
+        transformDirDays(vec3(1.0, 0.0, 0.0), elapsed, yearelapsed, equator_pole),
+        transformDirDays(vec3(0.0, 1.0, 0.0), elapsed, yearelapsed, equator_pole),
+        transformDirDays(vec3(0.0, 0.0, 1.0), elapsed, yearelapsed, equator_pole)
+    );
+
+    vec3 moonpos = earthpos + rotationMatrix(vec3(0.0, 0.0, 1.0), 6.2831 * 0.1 * yearelapsed) * rotationMatrix(vec3(0.0, 1.0, 0.0), 6.2831 * yearelapsed * 12.0) * vec3(0.0, 0.0, 1.0) * 384.402f;
+    // earthpos += surfacepos_earthorbitspace;
+    auto dd = DayData();
+    dd.sunDir = inverse(surface_frame) * normalize(sunorigin - earthpos);
+    dd.moonDir = inverse(surface_frame) * normalize(moonpos - earthpos);
+    dd.sunSpaceDir = -normalize(sunorigin - moonpos);
+    dd.viewFrame = surface_frame;
+    dd.moonPos = moonpos;
+    dd.earthPos = earthpos;
+    return dd;
+}
 
 void Renderer::setCommonUniforms(ShaderProgram * sp)
 {
@@ -290,6 +339,15 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     sp->setUniform("EquatorPoleMix", equatorPoleMix);
     sp->setUniform("Exposure", exposure);
     sp->setUniform("Contrast", contrast);
+
+    auto dd = calculateDay(dayElapsed, yearElapsed, equatorPoleMix);
+
+    sp->setUniform("dd_sunDir", dd.sunDir);
+    sp->setUniform("dd_moonDir", dd.moonDir);
+    sp->setUniform("dd_sunSpaceDir", dd.sunSpaceDir);
+    sp->setUniform("dd_viewFrame", dd.viewFrame);
+    sp->setUniform("dd_moonPos", dd.moonPos);
+    sp->setUniform("dd_earthPos", dd.earthPos);
 
     double t100 = Game::instance->time * 100.0;
     double t001 = Game::instance->time * 0.001;
@@ -427,8 +485,8 @@ void Renderer::draw(Camera *camera)
         pickingResultSSBO->mapData(4 * 4 * 3, new float[4 * 4 * 3]{});
         // starsTexture->generateMipMaps();
     }
-    Game::instance->bindTexture(GL_TEXTURE_2D, 0, 0);
-    Game::instance->bindTexture(GL_TEXTURE_2D, 1, 0);
+    //Game::instance->bindTexture(GL_TEXTURE_2D, 0, 0);
+    //Game::instance->bindTexture(GL_TEXTURE_2D, 1, 0);
     // csm->map(-sunDirection, camera->transformation->position);
     mrtFbo->use(true);
     //Game::instance->world->setUniforms(Game::instance->shaders->materialGeometryShader, camera);

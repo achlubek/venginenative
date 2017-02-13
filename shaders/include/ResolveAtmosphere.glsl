@@ -302,13 +302,13 @@ vec3 textureMoon(vec3 dir){
     n = calcLookAtMatrix(dayData.moonPos, dayData.earthPos, 0.0) * n;
     n *= rotationMatrix(vec3(0.0, 1.0, 0.0), 1.8415);
    // n *= rotationMatrix(vec3(0.0, 0.0, 1.0), -3.1415);
-    vec3 color = vec3(0.1) + pow(textureLod(moonTex, xyzToPolar(n) , 0.0).rgb, vec3(2.4));
+    vec3 color = vec3(0.0) + pow(textureLod(moonTex, xyzToPolar(n) , 2.0).rgb, vec3(2.4));
 
     vec3 atm = mix(vec3(0.3, 0.1, 0.0), vec3(1.0), 1.0 - pow(1.0 - max(0.0, dayData.moonDir.y * 1.1 - 0.1), 4.0));
     color *= atm;
     sun_moon_mult = step(0.0, i);
-    float monsoonconverage = 1.0 - smoothstep(0.995, 1.0, dot(dayData.sunDir, dayData.moonDir));
-    return clamp(l * color * sun_moon_mult * 0.1 + getStars(dir, 0.0) * (1.0 - sun_moon_mult), 0.0, 2.0);
+    float monsoonconverage =  smoothstep(0.9990, 0.9993, dot(dir, dayData.moonDir));
+    return clamp(l * color * sun_moon_mult * monsoonconverage * 1.1 + getStars(dir, 0.0) * (1.0 - sun_moon_mult), 0.0, 2.0);
 }
 
 

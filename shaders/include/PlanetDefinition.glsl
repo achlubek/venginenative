@@ -27,12 +27,20 @@ float rsi2(in Ray ray, in Sphere sphere)
     maxhit = max(t0, t1);
     if (t1 < 0.0) return -1.0;
     if (t0 < 0.0) return t1;
-    else return t0; 
+    else return t0;
 }
 
 uniform float DayElapsed;
 uniform float YearElapsed;
 uniform float EquatorPoleMix;
+
+
+uniform vec3 dd_sunDir;
+uniform vec3 dd_moonDir;
+uniform vec3 dd_sunSpaceDir;
+uniform mat3 dd_viewFrame;
+uniform vec3 dd_moonPos;
+uniform vec3 dd_earthPos;
 
 struct DayData{
     vec3 sunDir;
@@ -54,19 +62,19 @@ vec3 transformDirDays(vec3 dir, float elapsed, float yearelapsed, float equator_
 DayData calculateDay(float elapsed, float yearelapsed, float equator_pole){
     vec3 sunorigin = vec3(0.0);
     vec3 earthpos = sunorigin + rotationMatrix(vec3(0.0, 1.0, 0.0), 6.2831 * yearelapsed) * vec3(0.0, 0.0, 1.0) * 149597.870;
-    
+
     //vec3 surfacepos_earthspace = normalize(mix(vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0), equator_pole));
     //vec3 surfacepos_earthorbitspace = rotationMatrix(vec3(0.0, 1.0, 0.0), 6.2831 * elapsed) * surfacepos_earthspace;
-    
+
     mat3 surface_frame = mat3(
         transformDirDays(vec3(1.0, 0.0, 0.0), elapsed, yearelapsed, equator_pole),
         transformDirDays(vec3(0.0, 1.0, 0.0), elapsed, yearelapsed, equator_pole),
         transformDirDays(vec3(0.0, 0.0, 1.0), elapsed, yearelapsed, equator_pole)
     );
-    
+
     vec3 moonpos = earthpos + rotationMatrix(vec3(0.0, 0.0, 1.0), 6.2831 * 0.1 * yearelapsed) * rotationMatrix(vec3(0.0, 1.0, 0.0), 6.2831 * yearelapsed * 12.0) * vec3(0.0, 0.0, 1.0) * 384.402;
   // earthpos += surfacepos_earthorbitspace;
-    
+
     return DayData(
         inverse(surface_frame) * normalize(sunorigin - earthpos),
         inverse(surface_frame) * normalize(moonpos - earthpos),
@@ -77,6 +85,6 @@ DayData calculateDay(float elapsed, float yearelapsed, float equator_pole){
     );
 }
 
-DayData dayData = calculateDay(DayElapsed, YearElapsed + 0.25, EquatorPoleMix);
+DayData dayData = DayData(dd_sunDir, dd_moonDir, dd_sunSpaceDir, dd_viewFrame, dd_moonPos, dd_earthPos);
 
 #endif
