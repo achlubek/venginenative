@@ -326,7 +326,9 @@ float lenssun(vec3 dir){
 
     vec3 differente = normalize(dir - sdir) * 4.0;
     //return smoothstep(0.997, 0.998, dot(dir, dayData.sunDir));// fuck it pow(1.0 / (distance(dir, dayData.sunDir) * 22.0 - 0.05), 5.0);
-    return pow(1.0 / abs((distance(dir, sdir) * 22.0 - 0.05)), 4.0 + supernoise3dX(differente) * 4.0);
+    float primary = pow(1.0 / abs((distance(dir, sdir) * 22.0 - 0.05)), 3.0 + supernoise3dX(differente * 1.3 + Time * 0.2) * 1.0);
+
+    return primary;
 }
 
 float thatsunglowIdontknownamefor(vec3 dir, float strength, float power){
@@ -482,7 +484,7 @@ vec3 getNormalLighting(vec2 uv, PostProcessingData data){
     if(length(data.normal) < 0.01){
         data.roughness = 0.0;
         vec3 dir = reconstructCameraSpaceDistance(uv, 1.0);
-        return texture(resolvedAtmosphereTex, dir).rgb;
+        return texture(resolvedAtmosphereTex, dir).rgb ;
     } else {
         return shadeFragment(data);
     }

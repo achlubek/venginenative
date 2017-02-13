@@ -19,7 +19,7 @@ vec2 heightwaterXO(vec2 uv, vec2 offset, float mipmap){
     vec2 b = textureLod(waterTileTex, zuv2 * 1.04, mipmap).rg;
     vec2 c = textureLod(waterTileTex, zuv3 * 1.01, mipmap).rg;
     vec2 d = textureLod(waterTileTex, zuv4 * 0.98, mipmap).rg;
-	return (a + b + c + d) * 0.09 + pow(supernoise3d(vec3(uv.x* WaterScale.x, uv.y* WaterScale.y, Time * WaterSpeed * 2.0) * 0.094 + vec3(Time * WaterSpeed, 0.0, 0.0) * 0.1), 2.0) * 0.90;
+	return (a + b + c + d) * 0.13 + pow(supernoise3d(vec3(uv.x* WaterScale.x, uv.y* WaterScale.y, Time * WaterSpeed * 2.0) * 0.094 + vec3(Time * WaterSpeed, 0.0, 0.0) * 0.1), 2.0) * 0.87;
 }
 vec2 heightwaterXOX(vec2 uv, vec2 offset, float mipmap){
 

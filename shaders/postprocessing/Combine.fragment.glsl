@@ -83,7 +83,7 @@ vec3 tonemap(vec3 xa){
     float l = length(a);
     //a = normalize(a) * mix(l, 0.9, 0.2);
     a = pow(a, vec3(Contrast));
-    return testmap(rgb_to_srgb(a));
+    return (rgb_to_srgb(a));
 
 }
 
@@ -172,7 +172,7 @@ vec3 BoKeH(vec2 uv){
 vec3 integrateCloudsWater(){
     vec3 color = LensBlurSize > 0.11 ? BoKeH(UV) : texture(waterColorTex, UV).rgb;;
     //vec3 c = applysimplebloom();
-    return tonemap(color);
+    return color;
 }
 
 vec4 shade(){
@@ -181,6 +181,35 @@ vec4 shade(){
         color = integrateStepsAndSun();
     } else {
         color = integrateCloudsWater();
+
+
+        vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
+        vec3 dirX = reconstructCameraSpaceDistance(vec2(0.5), 1.0);
+
+        vec2 ss2 = projectvdao(CameraPosition + dayData.sunDir);
+        float cloudsonsun = 1.0 - textureLod(resolvedAtmosphereTex, dayData.sunDir, 2.0).a;
+
+        float mindst = step(0.0, dot(dirX, dayData.sunDir)) *
+            smoothstep(0.0, 0.05, max(0.0, min(ss2.x,
+                min(ss2.y, min(1.0 - ss2.x, 1.0 - ss2.y))
+                )));
+
+        vec3 sdirsec = reconstructCameraSpaceDistance(1.0 - ss2, 1.0);
+        vec3 sdirthr = reconstructCameraSpaceDistance(((((1.0 - ss2) * 2.0 - 1.0) * 0.5) * 0.5 + 0.5), 1.0);
+        vec3 sdirqua = reconstructCameraSpaceDistance(((((ss2) * 2.0 - 1.0) * 0.5) * 0.5 + 0.5), 1.0);
+
+        float secondary = 1.0 - smoothstep(0.06, 0.10, abs(distance(dir, sdirsec)));
+        float third = 1.0 - smoothstep(0.06, 0.09, abs(distance(dir, sdirthr)));
+        float quad = 1.0 - smoothstep(0.06, 0.08, abs(distance(dir, sdirqua)));
+
+        color += cloudsonsun * getSunColor(0.0) * mindst * secondary * vec3(1.0, 1.0, 0.8) * 0.2;
+        color += cloudsonsun * getSunColor(0.0) * mindst * third* vec3(0.6, 0.5, 0.7) * 0.3;
+        color += cloudsonsun * getSunColor(0.0) * mindst * quad* vec3(0.5, 0.5, 0.8) * 0.4;
+
+// want super realistic dirt on lens?
+        //color += mindst * cloudsonsun * getSunColor(0.0) * pow(max(0.0, dot(dir, dayData.sunDir)), 2.0) * 0.01 * (1.0 - smoothstep(0.26, 0.6, abs(0.5 - supernoise3d(vec3(UV.x, UV.y * (Resolution.y / Resolution.x), 0.0) * 30.0))));
+        //color += mindst * cloudsonsun * getSunColor(0.0) * pow(max(0.0, dot(dir, dayData.sunDir)), 2.0) * 0.01 * (1.0 - smoothstep(0.26, 0.6, abs(0.5 - supernoise3d(vec3(UV.x, UV.y * (Resolution.y / Resolution.x), 0.0) * 60.0))));
+        color = tonemap(color);
     }
     return vec4( clamp(color, 0.0, 110.0), currentData.cameraDistance * 0.001);
 }

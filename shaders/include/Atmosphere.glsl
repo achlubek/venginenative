@@ -143,7 +143,7 @@ float getFronts(vec3 pos){
 
 float cloudsDensity3D(vec3 pos){
     vec3 ps = pos;// + wtim;
-    //ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
+    ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
 
 //    float density = fbmHI(ps * 0.005 + CloudsOffset + vec3(10.0 * Time, 5.5 * Time, 0.0)) * getFronts(pos + (1.0 / 0.005) * vec3(10.0 * Time, 5.5 * Time, 0.0));// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
     float density = fbmHI(ps * 0.005 + CloudsOffset);// * getFronts(pos);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
@@ -211,6 +211,7 @@ float visibility(vec3 dir1, vec3 dir2, float d1, float d2){
 Sphere sphere1;
 Sphere sphere2;
 vec3 CAMERA = vec3(0.0, 1.0, 0.0);
+float smoothstepforao = 1.0 - smoothstep(0.0, 0.3, abs(CloudsThresholdLow - CloudsThresholdHigh));
 
 float visibilityspecial(vec3 dir1, vec3 dir2, float z){
     float v = 0.0;
@@ -234,7 +235,7 @@ float visibilityspecial(vec3 dir1, vec3 dir2, float z){
         vec3 recp = md * dx;
         vec3 xdir = normalize(recp - (dir1 * d1));
         float dt = pow(max(0.0, dot(xdir, raydir)), 1.0);
-        v += 1.0 / (max(0.0, dd - dx) * 0.001 + 1.0);
+        v += 1.0 / (max(0.0, dd - dx) * 0.0001 * smoothstepforao + 1.0);
         iter += stepsize;
     }
     v /= 10.0;
@@ -269,12 +270,12 @@ vec3 getCloudsAL(vec3 dir){
         //rd *= 1.234211;
         uv.x += 1.567567;
         rd += 1.234;
-        vec3 px = normalize(vec3(x, y, z));
+        vec3 px = normalize(vec3(x, abs(y), z));
         vec3 p = point + px * 2010.0;
         vec3 newdir = normalize(p - CAMERA);
         float v = visibilityspecial(dir, newdir, distance(CAMERA, p));
         ao += v;
-        sum += (textureLod(atmScattTex, px, 1.0 + 4.0 * step(0.0, -y)).rgb * (0.2 + 0.8 * step(0.0, -y))) * pow(v, 8.0) * mult;// * pow(vdt2, 4.0);
+        sum += (textureLod(atmScattTex, px, 1.0 + 4.0 * step(0.0, -y)).rgb) * pow(v, 8.0) * 3.0;// * pow(vdt2, 4.0);
     }
     ao /= 11.0;
     float sao = ao;//;
@@ -289,12 +290,13 @@ vec3 getCloudsAL(vec3 dir){
     //float dshadow = getAODIR(point, px, 113.0);
     float x = max(0.0, dot(dayData.sunDir, VECTOR_UP));
     float a = x;
-    vec3 sss = (1.0 - ao) * getSunColor(0.0) * (1.0 / (0.16 + (1.0 - max(0.0, dot(dir, dayData.sunDir))))) / (CloudsDensityScale + 0.5);
-    //return sss;
-
+    vec3 sss = pow(1.0 - ao, 2.0) * 11.9 * getSunColorDirectly(0.0)* vdt * vdt * vdt * (1.0 / (0.06 + (1.0 - max(0.0, dot(dir, dayData.sunDir))))) / (CloudsDensityScale*CloudsDensityScale*CloudsDensityScale + 1.0);
+    vec3 grounddiffuse = (ao * 0.8 + 0.2) * getSunColorDirectly(0.0) * vdt* vdt * vdt  * 1.6;
+    //return sss + grounddiffuse;
     float coverage =  smoothstep(0.464, 0.6, CloudsThresholdLow);
   // return vec3(sao) ;
-    return sss + clamp(sum / 11.0 , 0.0, 111.0) + sao * getSunColor(0.0) * 0.2 + ( saomoon ) * 0.00015;// * max(0.0, 1.0 - 1.0 / (1.0 + 6.0 * max(0.0, dot(dir, dayData.moonDir))));// + sao * 3.0 + daox * 0.1 ;
+    vec3 result = grounddiffuse + sss + clamp(sum / 11.0 , 0.0, 111.0) + sao * getSunColorDirectly(0.0)* vdt* vdt * vdt  * 0.2 + ( saomoon ) * 0.00015;// * max(0.0, 1.0 - 1.0 / (1.0 + 6.0 * max(0.0, dot(dir, dayData.moonDir))));// + sao * 3.0 + daox * 0.1 ;
+    return result * 0.5;
     //return vec3(0.0) +  sao * 3.0;// + daox * 0.1 ;
 }
 
@@ -302,17 +304,17 @@ vec3 getCloudsAL(vec3 dir){
 
 float weightshadow = 1.1;
 float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2, float weight){
-    const int stepcount = 14;
+    const int stepcount = 2;
     const float stepsize = 1.0 / float(stepcount);
     float iter = 0.0;
     float rd = rand2sTime(UV) * stepsize;
     float coverageinv = 1.0;
     float linear = distance(p1, mix(p1, p2, stepsize));
-    float mult = weight * stepsize;
+    float mult = stepsize;
     for(int i=0;i<stepcount;i++){
         vec3 pos = mix(p1, p2, iter + rd);
         float clouds = cloudsDensity3D(pos);
-        coverageinv *= 1.0 - clouds * mult;
+        coverageinv *= 1.0 - clouds;
         iter += stepsize;
         if(coverageinv <= 0.0) break;
     }
@@ -331,7 +333,7 @@ float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2, float weight){
     for(int i=0;i<stepcount;i++){
         vec3 pos = mix(p1, p2, iter + rd);
         float clouds = cloudsDensity3D(pos);
-        coverageinv *= 1.0 - clouds * mult;
+        coverageinv *= 1.0 - clouds;
         iter += stepsize;
         if(coverageinv <= 0.0) break;
     }
@@ -341,7 +343,7 @@ float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2, float weight){
 
 
 vec2 internalmarchconservative(vec3 p1, vec3 p2){
-    int stepcount = 18;
+    int stepcount = 12;
     float stepsize = 1.0 / float(stepcount);
     float rd = fract(rand2sTime(UV)) * stepsize;
     float c = 0.0;

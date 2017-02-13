@@ -158,7 +158,7 @@ vec4 getLighting(){
     vec3 origdir = dir;
 
     vec3 normal = normalx(hitpos, 0.0098 + roughness * 0.01, roughness * 0.3);
-//    normal = mix(normal, VECTOR_UP, roughness);
+    normal = mix(normal, VECTOR_UP, roughness * roughness);
    // return pow(max(0.0, dot(normal, dayData.sunDir)), 10.0) * vec4(1);
   //  return vec4(normal.xyzz * vec4(1,0.2,1,0));
 
@@ -249,7 +249,7 @@ vec4 getLighting(){
     vec3 refr2 = normalize(refr + vec3(0.0, 0.3, 0.0));
     float superscat = pow(max(0.0, dot(refr, dayData.sunDir)), 8.0) ;//* (1.0 - fresnel);
     result += vec3(0.5,0.9,0.8) * superscat * getSunColor(0) * 8.0 * covercloud;
-    return  vec4(result, 1.0);
+    return  vec4(result, 0.0);
 }
 
 

@@ -45,5 +45,5 @@ vec4 shade(){
 	//dir.y = abs(dir.y);
 	color = integrateStepsAndSun(dir);
     if(dir.y < -0.01) color *= 0.4;
-    return vec4( clamp(color, 0.0, 1110.0), 1.0);
+    return vec4( clamp(color, 0.0, 1110.0), textureLod(coverageDistTex, dir, 0.0).r);
 }

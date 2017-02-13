@@ -12,13 +12,13 @@ float fbmHI(vec3 p){
 	//p += getWind(p * 0.2) * 6.0;
 	float a = 0.0;
     float w = 1.0;
-    float wc = 1.0;
-	for(int i=0;i<7;i++){
+    float wc = 0.0;
+	for(int i=0;i<4;i++){
         //p += noise(vec3(a));
-		a += (supernoise3dX(p)) * w;
-	//	wc += w;
+		a += clamp(2.0 * abs(0.5 - (supernoise3dX(p))) * w, 0.0, 1.0);
+		wc += w;
         w *= 0.5;
-		p = p * 2.0;
+		p = p * 3.0;
 	}
 	return a / wc;// + noise(p * 100.0) * 11;
 }
@@ -34,7 +34,7 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
     r = normalize(r);
 	float rs = rsi2(Ray(r0, r), Sphere(vec3(0), rAtmos));
 	vec3 px = r0 + r * rs;
-	shMie *= 2.0 * pow(fbmHI(px + wind(px * 0.00000669) * 100000.0) * supernoise3dX(px* 0.00000669 + Time * 0.01) * 1.3, 3.0) + 0.1;
+	shMie *= smoothstep(1.2e3 * 1.0, 1.2e3 * 2.0, shMie) * pow(fbmHI(px  + wind(px * 0.00000669) * 40000.0) * (supernoise3dX(px* 0.00000669 + Time * 0.001)*0.5 + 0.5) * 1.3, 3.0) * 0.8 + 0.2;
     float iStepSize = rs / float(iSteps);
     float iTime = 0.0;
     vec3 totalRlh = vec3(0,0,0);
@@ -115,7 +115,7 @@ vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
        // vec3(0.05e-5, 0.10e-5, 0.25e-5) * 2.0, // Rayleigh scattering coefficient
       //  vec3(4.5e-6, 10.0e-6, 2.4e-6), // Rayleigh scattering coefficient
         21e-6,                          // Mie scattering coefficient
-        4e3,                            // Rayleigh scale height
+        8e3,                            // Rayleigh scale height
         1.2e3  * MieScattCoeff ,                          // Mie scale height
         0.758                         // Mie preferred scattering direction
     ) +

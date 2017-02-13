@@ -15,7 +15,7 @@ uniform float WaterWavesScale;
 
 
 float intersectPlane(vec3 origin, vec3 direction, vec3 point, vec3 normal)
-{ return dot(point - origin, normal) / dot(direction, normal); }
+{ return clamp(dot(point - origin, normal) / dot(direction, normal), -1.0, 9991999.0); }
 
 float rand2sTimex(vec2 co){
     co *= Time;
@@ -87,38 +87,32 @@ float getWaterDistance(){
 
     float planethit2 = intersectPlane(CameraPosition, dir, vec3(0.0, WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
     bool hitwater = true;//(planethit > 0.0 || planethit2 > 0.0);// && (length(currentData.normal) < 0.01 || currentData.cameraDistance > planethit);
-    float dist = -1.0;
 
     if(planethit > 0.0 || planethit2 > 0.0){
         vec3 newpos = CameraPosition + dir * planethit;
+        float dist = -1.0;
         if(WaterWavesScale > 0.01){
-            if(WaterWavesScale < 0.09){
+            vec3 newpos2 = CameraPosition + dir * planethit2;
+            float mult2 = 1.0 - max(0.0, dot(newpos2, -VECTOR_UP));
+            float wvw = WaterWavesScale / 10.0;
+            int steps = 1 + int((6.0 + mult2 * 26.0) * wvw);
+           //
 
-                dist = planethit;
+          //  if(planethit < 14.0 && planethit > 0.0) steps *= 10;
+        //    if(planethit2 < 14.0 && planethit2 > 0.0) steps *= 10;
+			mipmapx = textureQueryLod(waterTileTex, newpos.xz * WaterScale *  octavescale1).x;
+            if(CameraPosition.y > waterdepth + WaterLevel){
 
+                dist = raymarchwater(newpos, newpos2, steps);
+
+            } else if(CameraPosition.y >  WaterLevel && CameraPosition.y <= waterdepth + WaterLevel){
+             //   planethit = min(14999, planethit);
+                dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit, steps);
             } else {
-
-                vec3 newpos2 = CameraPosition + dir * planethit2;
-                float mult2 = 1.0 - max(0.0, dot(newpos2, -VECTOR_UP));
-                float wvw = WaterWavesScale / 10.0;
-                int steps = 1 + int((6.0 + mult2 * 126.0) * wvw);
-               //
-
-              //  if(planethit < 14.0 && planethit > 0.0) steps *= 10;
-            //    if(planethit2 < 14.0 && planethit2 > 0.0) steps *= 10;
-				mipmapx = textureQueryLod(waterTileTex, newpos.xz * WaterScale *  octavescale1).x;
-                if(intersects(planethit) && intersects(planethit2)){
-
-                        dist = raymarchwater(newpos, newpos2, steps);
-
-                } else if(intersects(planethit)){
-                 //   planethit = min(14999, planethit);
-                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit, steps);
-                } else if(intersects(planethit2)){
-                //    planethit2 = min(14999, planethit2);
-                    dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit2, steps);
-                }
+            //    planethit2 = min(14999, planethit2);
+                dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit2, steps);
             }
+
         } else {
             dist = distance(newpos, CameraPosition);
         }
