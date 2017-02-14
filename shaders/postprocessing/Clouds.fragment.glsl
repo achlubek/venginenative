@@ -60,15 +60,19 @@ vec4 shade(){
         vec2 lastData = texture(cloudsCloudsTex, dir).rg;
         vec2 val = raymarchCloudsRay();
         retedg.rg = vec2(max(val.r, lastData.r), min(val.g, lastData.g));
-        retavg.rg = vec2(mix(val.r, lastData.r, CloudsIntegrate), val.g);
+        retavg.rg = vec2(mix(val.r, lastData.r, CloudsIntegrate), mix(val.g, lastData.g, CloudsIntegrate * 0.8));
 	//	retavg.r = mix(retavg.r, retedg.r, 0.2);
 	//	retavg.g = mix(retavg.g, retedg.g, 0.3);
     } else if(RenderPass == 1){
         vec4 lastData = textureLod(cloudsCloudsTex, dir, 0.0).rgba;
         float val = shadows();
 		vec3 AOGround = getCloudsAL(dir);
+        float ao = globalAoOutput;
 		//float AOSky = 1.0 - AOGround;//getCloudsAO(dir, 1.0);
 
+        vec3 SunC = getSunColor(0.0);
+        float SunDT = max(0.0, dot(dayData.sunDir, VECTOR_UP));
+        AOGround += (SunC * val * mix(0.0, val, SunDT * 0.8 + 0.2));
 		/*
         retedg.g = min(AOGround, lastData.g);
         retavg.g = mix(AOGround, lastData.g, CloudsIntegrate);
@@ -78,13 +82,15 @@ vec4 shade(){
 		retavg.g = mix(retavg.g, retedg.g, 0.5);
 		retavg.b = mix(retavg.b, retedg.b, 0.5);
 		retavg.r = mix(retavg.r, retedg.r, 0.1);*/
-        vec4 brl = blurshadowsAOXA(dir, 0.0);
-        retedg.r = min(val, brl.r);
-        retavg.r = mix(val, brl.r, CloudsIntegrate);
+    //    vec4 brl = blurshadowsAOXA(dir, 0.0);
+    //    retedg.r = min(val, brl.r);
+    //    retavg.r = mix(val, brl.r, CloudsIntegrate);
 	//	retavg.r = mix(retavg.r, retedg.r, 0.2);
 
         //vec3 blr = blurshadowsAOXA(dir, 0.0);
-        retavg.gba = mix(AOGround, brl.gba, CloudsIntegrate);
+        vec4 last = textureLod(cloudsCloudsTex, dir, 0.0).rgba;
+        retavg.r = mix(ao, last.r, CloudsIntegrate);
+        retavg.gba = mix(AOGround, last.gba, CloudsIntegrate);
     }
 
     return retavg;

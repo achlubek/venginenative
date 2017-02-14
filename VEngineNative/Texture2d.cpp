@@ -2,6 +2,7 @@
 #include "Texture2d.h"
 #include "Media.h"
 #include "Game.h"
+#include "lupng.h"
 
 Texture2d::Texture2d(GLuint ihandle)
     :AbsTexture(GL_TEXTURE_2D) {
@@ -23,11 +24,22 @@ Texture2d::Texture2d(string filekey)
         genMode = genModeFromFile;
     }
     else {
+        ispng = (strstr(filekey.c_str(), ".png") != nullptr);
         int x, y, n;
-        data = stbi_load(Media::getPath(filekey).c_str(), &x, &y, &n, 0);
-        width = x;
-        height = y;
-        components = n;
+        if (!ispng) {
+            data = stbi_load(Media::getPath(filekey).c_str(), &x, &y, &n, 0);
+            width = x;
+            height = y;
+            components = n;
+        }
+        else {
+            auto img = luPngReadFile(Media::getPath(filekey).c_str());
+            data = img->data; 
+            width = img->width;
+            height = img->height;
+            components = img->channels;
+            is16bitpng = img->depth > 8;
+        }
         generated = false;
         genMode = genModeFromFile;
         usedds = false;
@@ -102,8 +114,9 @@ void Texture2d::generate()
                 format = GL_RGBA;
             }
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-            stbi_image_free(data);
+            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, is16bitpng ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE, data);
+            if(!ispng)stbi_image_free(data);
+            else free(data);
         }
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);

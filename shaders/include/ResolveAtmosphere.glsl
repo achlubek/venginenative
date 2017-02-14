@@ -253,17 +253,16 @@ float godrays(vec3 dir, int steps){
 }
 
 vec2 xyzToPolar(vec3 xyz){
-    float radius = sqrt(xyz.x * xyz.x + xyz.y * xyz.y + xyz.z * xyz.z);
     float theta = atan(xyz.y, xyz.x);
-    float phi = acos(xyz.z / radius);
+    float phi = acos(xyz.z);
     return vec2(theta, phi) / vec2(2.0 *3.1415,  3.1415);
 }
 
 
 vec3 getStars(vec3 dir, float roughness){
     dir = dayData.viewFrame * dir;
-    vec3 c = pow(texture(starsTex, xyzToPolar(dir)).rgb, vec3(2.2));
-    return mix(c * 0.1, vec3(0.001, 0.002, 0.003) * 0.2 * (1.0  - reconstructCameraSpaceDistance(UV, 1.0).y * 0.8), 0.0);
+    vec3 c = pow(textureLod(starsTex, vec2(1.0) - xyzToPolar(dir), 4.0).rrr *5.7, vec3(4.0)) * (supernoise3dX(dir * 100.0 + Time * 5.0) * 0.8 + 0.2);
+    return mix(c * 0.15, vec3(0.001, 0.002, 0.003) * 0.2 * (1.0  - reconstructCameraSpaceDistance(UV, 1.0).y * 0.8), 0.2);
 }
 mat3 calcLookAtMatrix(vec3 origin, vec3 target, float roll) {
   vec3 rr = vec3(sin(roll), cos(roll), 0.0);
@@ -293,12 +292,12 @@ vec3 textureMoon(vec3 dir){
     float l = pow(max(0.0, dot(n, dayData.sunSpaceDir)), 1.2);
     return l * pow(textureLod(moonTex, clamp((sqrt(1.0 - dt) * ud) * 2.22 * 0.5 + 0.5, 0.0, 1.0), 0.0).rgb, vec3(2.4)) * 2.0 + getStars(dir, 0.0) * (1.0 - st);*/
     dir.y = abs(dir.y);
-    Sphere moon = Sphere(dayData.moonPos, 17.37);
+    Sphere moon = Sphere(dayData.moonPos, 35.37);
     Ray r = Ray(dayData.earthPos, dayData.viewFrame * dir);
     float i = rsi2(r, moon);
     vec3 posOnMoon = dayData.earthPos + dayData.viewFrame * dir * i;
     vec3 n = normalize(dayData.moonPos - posOnMoon);
-    float l = pow(max(0.0, dot(n, dayData.sunSpaceDir)), 1.2);
+    float l = 0.0005 + pow(max(0.0, dot(n, dayData.sunSpaceDir)), 1.2);
     n = calcLookAtMatrix(dayData.moonPos, dayData.earthPos, 0.0) * n;
     n *= rotationMatrix(vec3(0.0, 1.0, 0.0), 1.8415);
    // n *= rotationMatrix(vec3(0.0, 0.0, 1.0), -3.1415);
@@ -307,7 +306,7 @@ vec3 textureMoon(vec3 dir){
     vec3 atm = mix(vec3(0.3, 0.1, 0.0), vec3(1.0), 1.0 - pow(1.0 - max(0.0, dayData.moonDir.y * 1.1 - 0.1), 4.0));
     color *= atm;
     sun_moon_mult = step(0.0, i);
-    float monsoonconverage =  smoothstep(0.9990, 0.9993, dot(dir, dayData.moonDir));
+    float monsoonconverage =  smoothstep(0.9957, 0.9962, dot(dir, dayData.moonDir));
     return clamp(l * color * sun_moon_mult * monsoonconverage * 1.1 + getStars(dir, 0.0) * (1.0 - sun_moon_mult), 0.0, 2.0);
 }
 
@@ -357,6 +356,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     vec3 SunC = getSunColor(roughness);// * max(0.0, dot(VECTOR_UP, dayData.sunDir));
     vec3 AtmDiffuse = getDiffuseAtmosphereColor();
     float Shadow = shadow;
+
     //return coverage * vec3(SunC * Shadow);
     vec3 GroundC = vec3(0.5, 0.5, 0.5) * max(0.0, dot(dayData.sunDir, VECTOR_UP));
     float Coverage = 1.0 - smoothstep(0.4, 0.55, CloudsThresholdLow);//texture(coverageDistTex, VECTOR_UP, textureQueryLevels(coverageDistTex)).r;
@@ -376,7 +376,8 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float raysCoverage = min(1.0, (0.05 + 0.95 * pow((1.0 - (asin(DirDT) / (3.1415 * 0.5)) ), 13.0) * NoiseOctave1 * 0.1));
     //return vdao;
     //return vdao.gba;
-    vec3 CC = vdao.gba * mix(Shadow, 1.0, SunDT * 0.8 + 0.2) + (SunC * Shadow * mix(0.0, Shadow, SunDT * 0.8 + 0.2)) + (GroundC);
+    //return lightnings;
+    vec3 CC = vdao.gba;
 
     scattering *= xA + xB * (1.0 - pow(1.0 - DirDT, 14.0));
 //    CC = mix(scattering * 0.7, CC, xA + xB * (1.0 - pow(1.0 - DirDT, 14.0)));

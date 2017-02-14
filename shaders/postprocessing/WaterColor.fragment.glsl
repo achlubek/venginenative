@@ -158,7 +158,7 @@ vec4 getLighting(){
     vec3 origdir = dir;
 
     vec3 normal = normalx(hitpos, 0.0098 + roughness * 0.01, roughness * 0.3);
-    normal = mix(normal, VECTOR_UP, roughness * roughness);
+//    normal = mix(normal, VECTOR_UP, roughness * roughness);
    // return pow(max(0.0, dot(normal, dayData.sunDir)), 10.0) * vec4(1);
   //  return vec4(normal.xyzz * vec4(1,0.2,1,0));
 

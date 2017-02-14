@@ -186,6 +186,12 @@
     <ClInclude Include="GLSLVM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="lupng.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="miniz.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -318,6 +324,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GLSLVM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lupng.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="miniz.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

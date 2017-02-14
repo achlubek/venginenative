@@ -10,5 +10,8 @@ public:
     Texture2d(int iwidth, int iheight, GLint internalFormat, GLenum format, GLenum type);
     ~Texture2d();
 private:
+    bool ispng = false;
+    bool is16bitpng = false;
+
     void generate();
 };
