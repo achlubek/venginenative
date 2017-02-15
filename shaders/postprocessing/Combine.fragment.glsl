@@ -216,7 +216,7 @@ vec4 shade(){
         float dx = textureLod(coverageDistTex, dir, 2.0).g + xhitfloorX;
         float Cx = textureLod(coverageDistTex, dir, 2.0).r;
         vec3 pos = dir * dx;
-        vec3 lightnings = vec3(0.5, 0.6, 0.9) * 0.06 * vec3(1.0 - Shadow) * smoothstep(0.5, 0.7, supernoise3dX(pos * 0.00003 + vec3(0.0, Time * 9.0, 0.0)));
+        vec3 lightnings = 0.0 * vec3(0.5, 0.6, 0.9) * 0.06 * vec3(1.0 - Shadow) * smoothstep(0.5, 0.7, supernoise3dX(pos * 0.00003 + vec3(0.0, Time * 9.0, 0.0)));
         // want super realistic dirt on lens?
         //color += mindst * cloudsonsun * getSunColor(0.0) * pow(max(0.0, dot(dir, dayData.sunDir)), 2.0) * 0.01 * (1.0 - smoothstep(0.26, 0.6, abs(0.5 - supernoise3d(vec3(UV.x, UV.y * (Resolution.y / Resolution.x), 0.0) * 30.0))));
         //color += mindst * cloudsonsun * getSunColor(0.0) * pow(max(0.0, dot(dir, dayData.sunDir)), 2.0) * 0.01 * (1.0 - smoothstep(0.26, 0.6, abs(0.5 - supernoise3d(vec3(UV.x, UV.y * (Resolution.y / Resolution.x), 0.0) * 60.0))));

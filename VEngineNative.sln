@@ -9,12 +9,18 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tester", "Tester\Tester.vcx
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		debugmaybe|x64 = debugmaybe|x64
+		debugmaybe|x86 = debugmaybe|x86
 		NotOptimization|x64 = NotOptimization|x64
 		NotOptimization|x86 = NotOptimization|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{71125D6E-F4CA-4291-911D-5FEC57635065}.debugmaybe|x64.ActiveCfg = debugmaybe|x64
+		{71125D6E-F4CA-4291-911D-5FEC57635065}.debugmaybe|x64.Build.0 = debugmaybe|x64
+		{71125D6E-F4CA-4291-911D-5FEC57635065}.debugmaybe|x86.ActiveCfg = debugmaybe|Win32
+		{71125D6E-F4CA-4291-911D-5FEC57635065}.debugmaybe|x86.Build.0 = debugmaybe|Win32
 		{71125D6E-F4CA-4291-911D-5FEC57635065}.NotOptimization|x64.ActiveCfg = NotOptimization|x64
 		{71125D6E-F4CA-4291-911D-5FEC57635065}.NotOptimization|x64.Build.0 = NotOptimization|x64
 		{71125D6E-F4CA-4291-911D-5FEC57635065}.NotOptimization|x86.ActiveCfg = NotOptimization|Win32
@@ -23,6 +29,10 @@ Global
 		{71125D6E-F4CA-4291-911D-5FEC57635065}.Release|x64.Build.0 = Release|x64
 		{71125D6E-F4CA-4291-911D-5FEC57635065}.Release|x86.ActiveCfg = Release|Win32
 		{71125D6E-F4CA-4291-911D-5FEC57635065}.Release|x86.Build.0 = Release|Win32
+		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.debugmaybe|x64.ActiveCfg = debugmaybe|x64
+		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.debugmaybe|x64.Build.0 = debugmaybe|x64
+		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.debugmaybe|x86.ActiveCfg = debugmaybe|Win32
+		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.debugmaybe|x86.Build.0 = debugmaybe|Win32
 		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.NotOptimization|x64.ActiveCfg = NotOptimization|x64
 		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.NotOptimization|x64.Build.0 = NotOptimization|x64
 		{9AF0A8C8-7184-4445-A2AD-88BA65926D10}.NotOptimization|x86.ActiveCfg = NotOptimization|Win32

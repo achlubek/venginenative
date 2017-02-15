@@ -320,7 +320,9 @@ void EditorApp::onBind()
 
     game->setCursorMode(GLFW_CURSOR_NORMAL);
 
-  //  auto t = game->asset->loadMeshFile("flagbase.mesh3d");
+    auto t = game->asset->loadSceneFile("pav.scene");
+    t->transformation->translate(glm::vec3(0.0, 100.0, 0.0));
+    game->world->scene->addDrawable((AbsDrawable*)t);
   //  t->name = "flagbase";
    // game->world->scene->addMesh(t);
 
@@ -347,6 +349,6 @@ void EditorApp::onCommandText(string text)
         string s = join(args, 1);
         auto m = game->asset->loadMeshFile(s);
         m->name = s;
-        game->world->scene->addMesh(m);
+        game->world->scene->addDrawable((AbsDrawable*)m);
     }
 }

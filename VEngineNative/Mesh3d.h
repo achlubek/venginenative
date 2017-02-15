@@ -2,8 +2,9 @@
 #include "Mesh3dInstance.h";
 #include "Mesh3dLodLevel.h";
 #include "Object3dInfo.h";
+#include "AbsDrawable.h";
 #include "Material.h";
-class Mesh3d
+class Mesh3d : public AbsDrawable
 {
 public:
     Mesh3d();
@@ -19,9 +20,9 @@ public:
     Mesh3dLodLevel *getLodLevel(int index);
     void removeInstance(Mesh3dInstance* instance);
     void removeLodLevel(Mesh3dLodLevel* level);
-    void updateBuffers();
+    void updateBuffers(TransformStruct transform);
     void draw();
-    void setUniforms();
+    void setUniforms(TransformStruct transform);
     unsigned int id;
     string name = "";
 private:

@@ -2,21 +2,19 @@
 #include "EnvProbe.h"
 #include "Light.h"
 #include "Mesh3d.h"
-class Scene
+#include "AbsDrawable.h";
+class Scene : public AbsDrawable
 {
 public:
     Scene();
     ~Scene();
     void draw();
-    void setUniforms();
-    void addMesh(Mesh3d *mesh);
+    void setUniforms(TransformStruct transform);
+    void addDrawable(AbsDrawable *item);
     void addLight(Light *light);
-    void addEnvProbe(EnvProbe *env);
-    vector<Mesh3d*>& getMeshes();
+    vector<AbsDrawable*>& getDrawables();
     vector<Light*>& getLights();
-    vector<EnvProbe*>& getEnvProbes();
 private:
-    vector<Mesh3d*> meshes;
+    vector<AbsDrawable*> drawables;
     vector<Light*> lights;
-    vector<EnvProbe*> envProbes;
 };

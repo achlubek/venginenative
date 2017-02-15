@@ -4,6 +4,7 @@
 
 Mesh3d::Mesh3d()
 {
+    initTransformation();
     instances = {};
     lodLevels = {};
     id = Game::instance->getNextId();
@@ -82,10 +83,10 @@ void Mesh3d::removeLodLevel(Mesh3dLodLevel* level)
     }
 }
 
-void Mesh3d::updateBuffers()
+void Mesh3d::updateBuffers(TransformStruct transform)
 {
     for (int i = 0; i < lodLevels.size(); i++) {
-        lodLevels[i]->updateBuffer(instances);
+        lodLevels[i]->updateBuffer(instances, transform);
     }
 }
 
@@ -96,7 +97,7 @@ void Mesh3d::draw()
     }
 }
 
-void Mesh3d::setUniforms()
+void Mesh3d::setUniforms(TransformStruct transform)
 {
-    updateBuffers();
+    updateBuffers(transform);
 }

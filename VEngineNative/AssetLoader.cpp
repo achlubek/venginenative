@@ -495,7 +495,7 @@ Scene * AssetLoader::loadSceneString(string source)
             if (words.size() >= 2) {
                 stringstream ss;
                 for (int a = 1; a < words.size(); a++)ss << (a == 1 ? "" : " ") << words[a];
-                scene->addMesh(loadMeshFile(ss.str()));
+                scene->addDrawable((AbsDrawable*)loadMeshFile(ss.str()));
             }
         }
         if (words[0] == "light") {

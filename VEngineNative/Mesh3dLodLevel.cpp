@@ -128,7 +128,7 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
 
 }
 
-void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
+void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances, TransformStruct transform)
 {
     vec3 cameraPos = Game::instance->world->mainDisplayCamera->transformation->getPosition();
     vector<Mesh3dInstance*> filtered;
@@ -153,9 +153,9 @@ void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
     floats.reserve(16 * fint);
     for (unsigned int i = 0; i < fint; i++) {
         TransformationManager *mgr = filtered[i]->transformation;
-        quat q = mgr->getOrientation();
-        vec3 p = mgr->getPosition();
-        vec3 s = mgr->getSize();
+        quat q = transform.orientation * mgr->getOrientation();
+        vec3 p = transform.position * mgr->getPosition();
+        vec3 s = transform.size * mgr->getSize();
         floats.push_back(q.x);
         floats.push_back(q.y);
         floats.push_back(q.z);

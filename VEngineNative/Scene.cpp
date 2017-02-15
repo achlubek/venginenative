@@ -4,7 +4,8 @@
 
 Scene::Scene()
 {
-    meshes = {};
+    initTransformation();
+    drawables = {};
     lights = {};
 }
 
@@ -14,23 +15,23 @@ Scene::~Scene()
 
 void Scene::draw()
 {
-    int x = meshes.size();
+    int x = drawables.size();
     for (int i = 0; i < x; i++) {
-        meshes[i]->draw();
+        drawables[i]->draw();
     }
 }
 
-void Scene::setUniforms()
+void Scene::setUniforms(TransformStruct transform)
 {
-    int x = meshes.size();
+    int x = drawables.size();
     for (int i = 0; i < x; i++) {
-        meshes[i]->setUniforms();
+        drawables[i]->setUniforms(transform * transformation->getStruct());
     }
 }
 
-void Scene::addMesh(Mesh3d * mesh)
+void Scene::addDrawable(AbsDrawable * item)
 {
-    meshes.push_back(mesh);
+    drawables.push_back(item);
 }
 
 void Scene::addLight(Light * light)
@@ -38,22 +39,13 @@ void Scene::addLight(Light * light)
     lights.push_back(light);
 }
 
-void Scene::addEnvProbe(EnvProbe * env)
-{
-    envProbes.push_back(env);
-}
 
-vector<Mesh3d*>& Scene::getMeshes()
+vector<AbsDrawable*>& Scene::getDrawables()
 {
-    return meshes;
+    return drawables;
 }
 
 vector<Light*>& Scene::getLights()
 {
     return lights;
-}
-
-vector<EnvProbe*>& Scene::getEnvProbes()
-{
-    return envProbes;
 }

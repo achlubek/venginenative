@@ -12,6 +12,31 @@ public:
     }
 };
 
+struct TransformStruct {
+public:
+    glm::vec3 position;
+    glm::vec3 size;
+    glm::quat orientation;    
+    TransformStruct();
+    TransformStruct(glm::vec3 iposition);
+    TransformStruct(glm::vec3 iposition, glm::quat iorientation);
+    TransformStruct(glm::vec3 iposition, glm::quat iorientation, glm::vec3 isize);
+    TransformStruct(glm::vec3 iposition, glm::vec3 isize);
+    TransformStruct(glm::quat iorientation);
+    TransformStruct(glm::quat iorientation, glm::vec3 isize);    
+    TransformStruct& operator*=(const TransformStruct& rhs)
+    {
+        position += rhs.position;
+        orientation = orientation * rhs.orientation;
+        size *= rhs.size;
+        return *this;
+    }
+    friend TransformStruct &operator*(TransformStruct& lhs, const TransformStruct& rhs)
+    {
+        return TransformStruct(lhs.position + rhs.position, lhs.orientation * rhs.orientation, lhs.size * rhs.size);
+    }
+};
+
 class TransformationManager
 {
 public:
@@ -57,6 +82,11 @@ public:
     }
 
     void updateJoints();
+    
+    TransformStruct getStruct()
+    {
+        return TransformStruct(position, orientation, size);
+    }
 
 private:
 

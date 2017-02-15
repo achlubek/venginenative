@@ -3,6 +3,59 @@
 
 using namespace glm;
 
+
+TransformStruct::TransformStruct()
+{
+    position = vec3(0);
+    size = vec3(1);
+    orientation = quat();
+}
+
+TransformStruct::TransformStruct(glm::vec3 iposition)
+{
+    position = iposition;
+    size = vec3(1);
+    orientation = quat();
+}
+
+TransformStruct::TransformStruct(glm::vec3 iposition, glm::quat iorientation)
+{
+    position = iposition;
+    size = vec3(1);
+    orientation = iorientation;
+}
+
+TransformStruct::TransformStruct(glm::vec3 iposition, glm::quat iorientation, glm::vec3 isize)
+{
+    position = iposition;
+    size = isize;
+    orientation = iorientation;
+}
+
+TransformStruct::TransformStruct(glm::vec3 iposition, glm::vec3 isize)
+{
+    position = iposition;
+    size = isize;
+    orientation = quat();
+}
+
+TransformStruct::TransformStruct(glm::quat iorientation)
+{
+    position = vec3(0);
+    size = vec3(1);
+    orientation = iorientation;
+}
+
+TransformStruct::TransformStruct(glm::quat iorientation, glm::vec3 isize)
+{
+    position = vec3(0);
+    size = isize;
+    orientation = iorientation;
+}
+
+
+//##############################
+
 TransformationManager::TransformationManager()
 {
     position = vec3(0);

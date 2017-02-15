@@ -20,6 +20,6 @@ private:
     void generate();
 
     bool generated = false;
-    GLuint vboHandle, vaoHandle;
-    GLsizei vertexCount;
+    GLuint vboHandle = 0, vaoHandle = 0;
+    GLsizei vertexCount = 0;
 };

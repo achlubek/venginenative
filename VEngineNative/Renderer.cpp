@@ -668,17 +668,7 @@ void Renderer::deferred()
         sphere3dInfo->draw();
     }
 
-    vector<EnvProbe*> probes = Game::instance->world->scene->getEnvProbes();
-
     glCullFace(GL_BACK);
-    envProbesShader->use();
-    envProbesShader->setUniform("EnvProbesLightMultiplier", envProbesLightMultiplier);
-    setCommonUniforms(envProbesShader);
-    for (int i = 0; i < probes.size(); i++) {
-        probes[i]->texture->use(10);
-        probes[i]->setUniforms();
-        quad3dInfo->draw();
-    }
 
     glDisable(GL_BLEND);
 }

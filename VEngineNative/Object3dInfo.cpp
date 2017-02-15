@@ -67,7 +67,7 @@ void Object3dInfo::rebufferVbo(vector<GLfloat> data, bool force_resize)
         generated = false;
     } else {
         glBindBuffer(GL_ARRAY_BUFFER, vboHandle);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * data.size(), data.data(), GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * data.size(), data.data(), GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT | GL_ELEMENT_ARRAY_BARRIER_BIT);
     }
@@ -82,7 +82,7 @@ void Object3dInfo::generate()
     glBindVertexArray(vaoHandle);
     glBindBuffer(GL_ARRAY_BUFFER, vboHandle);
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vbo.size(), vbo.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vbo.size(), vbo.data(), GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
