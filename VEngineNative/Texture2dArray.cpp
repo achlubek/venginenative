@@ -14,6 +14,7 @@ Texture2dArray::Texture2dArray(GLuint ihandle)
 
 Texture2dArray::Texture2dArray(int iwidth, int iheight, int ilevels, GLint internalFormat, GLenum format, GLenum type)
     : AbsTexture(GL_TEXTURE_2D_ARRAY, iwidth, iheight, internalFormat, format, type) {
+    levels = ilevels;
 }
 
 Texture2dArray::~Texture2dArray()

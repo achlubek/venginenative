@@ -9,7 +9,7 @@ CascadeShadowMap::CascadeShadowMap(int width, int height, vector<float> iradiuse
 {
     cascadeCount = iradiuses.size();
     //   texture = new Texture2dArray(width, height, cascadeCount, GL_R32F, GL_RED, GL_FLOAT);
-    textureDepth = new Texture2dArray(width, height, cascadeCount, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
+    textureDepth = new Texture2dArray(width, height, cascadeCount, GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT);
     framebuffer = new Array2dFramebuffer();
     // framebuffer->attachTexture(texture, GL_COLOR_ATTACHMENT0);
     framebuffer->attachTexture(textureDepth, GL_DEPTH_ATTACHMENT);
@@ -62,7 +62,7 @@ void CascadeShadowMap::setUniformsAndBindSampler(ShaderProgram * shader, int sam
         vpmats.push_back(pmat * inv);
     }
     //shader->setUniformVector("CSMPMatrices", pmatrices);
-   // shader->setUniform("CSMCenter", camera->transformation->position);
+    shader->setUniform("CSMCenter", position);
     shader->setUniformVector("CSMVPMatrices", vpmats);
     shader->setUniform("CSMLayers", cascadeCount);
     // shader->setUniformVector("CSMFarplanes", farplanes);

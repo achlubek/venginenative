@@ -88,11 +88,11 @@ float fbmLOW(vec3 p){
     p *= 0.011 * FBMSCALE;
     float a = 0.0;
     float w = 0.66;
-    for(int i=0;i<5;i++){
+    for(int i=0;i<4;i++){
         //p += noise(vec3(a));
         a += xsupernoise3d(p) * w;
-        w *= 0.66;
-        p = p * 2.0 ;
+        w *= 0.5;
+        p = p * 3.0  ;
     }
     return a;// + noise(p * 100.0) * 11;
 }
@@ -116,10 +116,10 @@ float fbmHI(vec3 p){
     p *= 0.011 * FBMSCALE;
     float a = 0.0;
     float w = 0.5;
-    for(int i=0;i<6;i++){
+    for(int i=0;i<8;i++){
         //p += noise(vec3(a));
         a += xsupernoise3d(p) * w;
-        w *= 0.49;
+        w *= 0.5;
         p = p * 3.0  ;
     }
     return a;// + noise(p * 100.0) * 11;
@@ -146,8 +146,10 @@ float cloudsDensity3D(vec3 pos){
     //ps += (getWind(pos * 0.0005  * WindBigScale) * (WindBigPower / WindBigScale)) * 600.0;
 
 //    float density = fbmHI(ps * 0.005 + CloudsOffset + vec3(10.0 * Time, 5.5 * Time, 0.0)) * getFronts(pos + (1.0 / 0.005) * vec3(10.0 * Time, 5.5 * Time, 0.0));// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
-    float density = fbmHI(ps * 0.005 + CloudsOffset);// * getFronts(pos);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
-    density *= supernoise3d(pos * 0.00005);
+    vec3 p = ps * 0.005 + CloudsOffset;
+    float density = fbmLOW( p);
+    //float density = fbmHI( p + fbmHI(p * 0.7) * 110.5);// * getFronts(pos);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
+    //density *= supernoise3d(pos * 0.00005);
     float measurement = (CloudsCeil - CloudsFloor) * 0.5;
     float mediana = (CloudsCeil + CloudsFloor) * 0.5;
     float mlt = sqrt(sqrt( 1.0 - (abs( getHeightOverSea(pos) - mediana ) / measurement )));

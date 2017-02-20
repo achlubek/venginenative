@@ -13,7 +13,6 @@ layout(binding = 29) uniform samplerCube resolvedAtmosphereTex;
 
 #include PostProcessEffectBase.glsl
 #include Atmosphere.glsl
-#include CSM.glsl
 uniform float WaterSpeed;
 #include WaterHeight.glsl
 

@@ -25,7 +25,7 @@ void main(){
     Output.WorldPos = transform_vertex(int(gl_InstanceID), v.xyz);
     Output.Normal = normalize(transform_normal(int(gl_InstanceID), in_normal));
     Output.Tangent = clamp(vec4(normalize(transform_normal(int(gl_InstanceID), in_tangent.xyz)), in_tangent.w), -1.0, 1.0);
-    vec4 outpoint = (VPMatrix) * vec4(Output.WorldPos, 1);
+    vec4 outpoint = (VPMatrix) * vec4(Output.WorldPos, 1.0);
 //    outpoint.w = 0.5 + 0.5 * outpoint.w;
     //outpoint.w = - outpoint.w;
     MeshInstanceID = ModelInfos[int(gl_InstanceID)].idAnd4Empty.x;

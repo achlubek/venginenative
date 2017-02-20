@@ -365,7 +365,7 @@ void EditorApp::onBind()
 
     auto t = game->asset->loadSceneFile("pav.scene");
     for (int i = 0; i < t->getDrawables().size(); i++) {
-        ((Mesh3d*)t->getDrawables()[i])->getInstance(0)->transformation->translate(glm::vec3(0.0, 1000.0, 0.0));
+        ((Mesh3d*)t->getDrawables()[i])->getInstance(0)->transformation->translate(glm::vec3(0.0, 10.0, 0.0));
         game->world->scene->addDrawable(t->getDrawables()[i]);
 
     }

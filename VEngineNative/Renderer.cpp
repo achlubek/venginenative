@@ -44,8 +44,8 @@ Renderer::Renderer(int iwidth, int iheight)
     wind = glm::normalize(glm::vec3(0.3, 0.0, 0.3));
     gpuInitialized = false;
 
-    //csm = new CascadeShadowMap(4096, 4096, { 64, 256, 768, 4096, 4096 * 4 });
-    csm = new CascadeShadowMap(0, 0, {});
+    csm = new CascadeShadowMap(1024, 1024, { 8, 32, 64, 256, 1024 * 4 });
+   // csm = new CascadeShadowMap(0, 0, {});
 
     cloudsOffset = glm::vec3(1);
     dayElapsed = 0.5;
@@ -288,14 +288,7 @@ vec3 transformDirDays(vec3 dir, float elapsed, float yearelapsed, float equator_
     dir = dir *rotationMatrix(vec3(0.0, 0.0, 1.0), 0.4);
     return dir;
 }
-struct DayData {
-    vec3 sunDir;
-    vec3 moonDir;
-    vec3 sunSpaceDir;
-    mat3 viewFrame;
-    vec3 moonPos;
-    vec3 earthPos;
-};
+
 DayData calculateDay(float elapsed, float yearelapsed, float equator_pole) {
     vec3 sunorigin = vec3(0.0);
     vec3 earthpos = sunorigin + rotationMatrix(vec3(0.0, 1.0, 0.0), 6.2831 * yearelapsed) * vec3(0.0, 0.0, 1.0) * 149597.870f;
@@ -341,6 +334,7 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     sp->setUniform("Contrast", contrast);
 
     auto dd = calculateDay(dayElapsed, yearElapsed, equatorPoleMix);
+    dayData = dd;
 
     sp->setUniform("dd_sunDir", dd.sunDir);
     sp->setUniform("dd_moonDir", dd.moonDir);
@@ -487,7 +481,6 @@ void Renderer::draw(Camera *camera)
     }
     Game::instance->bindTexture(GL_TEXTURE_2D, 0, 0);
     Game::instance->bindTexture(GL_TEXTURE_2D, 1, 0);
-    // csm->map(-sunDirection, camera->transformation->position);
     mrtFbo->use(true);
     //Game::instance->world->setUniforms(Game::instance->shaders->materialGeometryShader, camera);
     Game::instance->world->setUniforms(Game::instance->shaders->materialShader, camera);
@@ -497,6 +490,7 @@ void Renderer::draw(Camera *camera)
     if (useAmbientOcclusion) {
         //     ambientOcclusion();
     }
+    csm->map(-dayData.sunDir, currentCamera->transformation->getPosition());
     //mrtAlbedoRoughnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtNormalMetalnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtDistanceTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
@@ -591,6 +585,10 @@ void Renderer::combine(int step)
             combineShader->setUniform("SelectionQuat", selectionOrientation);
         }
     }
+    if (step == 0) {
+
+        csm->setUniformsAndBindSampler(combineShader, 30);
+    }
 
     quad3dInfo->draw();
     waterColorTexture->generateMipMaps();
@@ -643,6 +641,9 @@ void Renderer::recompileShaders()
     waterColorShader->recompile();
     waterMeshShader->recompile();
     cloudResolveShader->recompile();
+    Game::instance->shaders->depthOnlyShader->recompile();
+    Game::instance->shaders->idWriteShader->recompile();
+    Game::instance->shaders->materialShader->recompile();
 }
 
 void Renderer::deferred()

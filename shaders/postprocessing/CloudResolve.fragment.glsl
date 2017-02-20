@@ -28,7 +28,6 @@ uniform int CombineStep;
 #include PostProcessEffectBase.glsl
 #include Atmosphere.glsl
 #include noise2D.glsl
-#include CSM.glsl
 #include FXAA.glsl
 #include ResolveAtmosphere.glsl
 

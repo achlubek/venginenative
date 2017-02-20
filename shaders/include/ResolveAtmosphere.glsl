@@ -372,7 +372,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     #define xA 0.5
     #define xB 0.5
     float mult = mix(sqrt(0.001 + dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, SunDT) + 0.02;
-    vec3 raycolor = mult * getSunColor(0.0) * NoiseOctave1 * 0.9 * rays + (AtmDiffuse * 2.0 + scattering2 * 0.6) * mult * 0.8;
+    vec3 raycolor = mult * getSunColor(0.0) * 0.9 * rays + (AtmDiffuse * 2.0 ) * mult * 0.8;
     //raycolor *= xA + xB * (pow(1.0 - DirDT, 8.0));
     float raysCoverage = min(1.0, (0.05 + 0.95 * pow((1.0 - (asin(DirDT) / (3.1415 * 0.5)) ), 13.0) * NoiseOctave1 * 0.1));
     //return vdao;
@@ -405,9 +405,9 @@ float ssao(vec3 p1){
     float iter = 0.0;
     vec2 uv = UV + vec2(Rand1, Rand2);
     float rd = rand2s(uv) * 12.1232343456;
-    float targetmeters = 0.5;
-    int steps = 111;
-    float stepsize = 1.0 / 111.0;
+    float targetmeters = 0.3;
+    int steps = 11;
+    float stepsize = 1.0 / 11.0;
     for(int i=0;i<steps;i++){
         vec3 vx = vec3(0.0);
         vx.x = rand2s(uv + rd);
@@ -468,9 +468,10 @@ float traceReflection(vec3 pos, vec3 dir){
     return textureLod(mrt_Distance_Bump_Tex, vec2(uv.x, horizon - uv.y), 0).r;
 }
 
+#include CSM.glsl
 vec3 vdao(){
     vec3 c = vec3(0.0);
-    int steps = 100;
+    int steps = 10;
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
     //float fresnel = 0.04 + 0.96 * textureLod(fresnelTex, vec2(clamp(currentData.roughness, 0.01, 0.98), 1.0 - max(0.0, dot(-dir, currentData.normal))), 0.0).r;
     vec3 refdir = reflect(dir, currentData.normal);
@@ -484,9 +485,9 @@ vec3 vdao(){
 
         //p.y = abs(p.y);
     //    float cx = visibility(currentData.worldPos, currentData.worldPos + p * 1.0);
-        c += 0.01 * shade_ray_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, 0.0 + 7.0 * currentData.roughness * currentData.roughness).rgb);
+        c += 0.1 * shade_ray_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, 0.0 + 7.0 * currentData.roughness * currentData.roughness).rgb);
     }
-    return c * ssao(currentData.worldPos);
+    return shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * getSunColor(0.0)) + c * ssao(currentData.worldPos);
 }
 
 vec3 shadeFragment(PostProcessingData data){

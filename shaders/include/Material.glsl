@@ -60,14 +60,16 @@ vec2 adjustParallaxUV(vec2 uv){
    newParallaxHeight = curLayerHeight + prevH * weight + nextH * (1.0 - weight);
    return finalTexCoords;
 }
-
+vec3 normalxb(vec2 pos, vec2 e){
+    vec3 ex = vec3(e.x, e.y, 0.0);
+    vec3 a = vec3(pos.x, textureLod(bumpTex, pos.xy, 0.0).r * parallaxScale, pos.y);
+    vec3 b = vec3(pos.x - e.x, textureLod(bumpTex, pos.xy - ex.xz, 0.0).r * parallaxScale, pos.y);
+    vec3 c = vec3(pos.x       , textureLod(bumpTex, pos.xy + ex.zy, 0.0).r * parallaxScale, pos.y + e.y);
+    vec3 normal = (cross(normalize(a-b), normalize(a-c)));
+    return normalize(normal).xyz;
+}
 vec3 examineBumpMap(vec2 iuv){
-    float bc = texture(bumpTex, iuv).r;
-    vec2 dsp = 1.0 / vec2(textureSize(bumpTex, 0)) * 1;
-    float bdx = texture(bumpTex, iuv).r - texture(bumpTex, iuv+vec2(dsp.x, 0)).r;
-    float bdy = texture(bumpTex, iuv).r - texture(bumpTex, iuv+vec2(0, dsp.y)).r;
-
-    return normalize(vec3( bdx * 3.1415 * 1.0, bdy * 3.1415 * 1.0,max(0, 1.0 - bdx - bdy)));
+    return normalxb(iuv, 1.0 / (textureSize(bumpTex, 0).xy));
 }
 
 float toLogDepth(float depth, float far){
@@ -85,14 +87,18 @@ void outputMaterial(){
     vec3 normalmap = vec3(1.0);
     vec3 tangent = normalize(Input.Tangent.rgb);
     float tangentSign = Input.Tangent.w;
-    mat3 TBN = mat3(
+    vec3 worldPos = Input.WorldPos;
+    mat3 TBN = inverse(mat3(
         normalize(tangent),
         normalize(cross(normal, tangent)) * tangentSign,
         normalize(normal)
-    );
+    ));
     if(useBumpTexInt > 0){
         UV = adjustParallaxUV(UV);
-        normalmap *= examineBumpMap(UV);
+        normalmap = examineBumpMap(UV).xzy;
+        normalmap.r *= -1.0;
+        normalmap.g *= -1.0;
+        //worldPos += normal * parallaxScale *
     }
     if(useDiffuseColorTexInt > 0){
         diffuseColor = texture(diffuseColorTex, UV * diffuseColorTexScale).rgb;
@@ -117,6 +123,6 @@ void outputMaterial(){
     outAlbedoRoughness = vec4(diffuseColor, roughness);
     outNormalsMetalness = vec4(normal, metalness);
 
-    outDistance = max(0.01, distance(CameraPosition, Input.WorldPos));
+    outDistance = max(0.01, distance(CameraPosition, worldPos));
     //gl_FragDepth = toLogDepth(outDistance, 20000.0);
 }

@@ -7,6 +7,7 @@ Game * Game::instance = nullptr;
 Game::Game(int windowwidth, int windowheight)
 {
     instance = this;
+    frame = 0;
     width = windowwidth;
     height = windowheight;
     invokeQueue = queue<function<void(void)>>();
@@ -176,7 +177,7 @@ void Game::renderThread()
     }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-    #ifdef _DEBUG
+    #ifdef V_DEBUG
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     #endif
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -218,7 +219,7 @@ void Game::renderThread()
 
 //    glfwSetKeyCallback(window, glfwKeyCallback);
 
-    #ifdef _DEBUG
+    #ifdef V_DEBUG
         glDebugMessageCallback(&debugCallback, NULL);
     #endif
 
@@ -286,4 +287,5 @@ void Game::onRenderFrameFunc()
     ImGui::Render();
     glDisable(GL_BLEND);
     physicsNeedsUpdate = true;
+    frame++;
 }

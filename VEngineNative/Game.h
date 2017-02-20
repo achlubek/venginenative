@@ -23,6 +23,7 @@ public:
 
     int width;
     int height;
+    int frame;
 
     Game(int windowwidth, int windowheight);
     ~Game();

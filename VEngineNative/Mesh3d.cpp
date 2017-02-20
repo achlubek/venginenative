@@ -8,6 +8,7 @@ Mesh3d::Mesh3d()
     lodLevels = {};
     id = Game::instance->getNextId();
     Game::instance->registerId(id, this);
+    lastUpdateFrameId = -1;
 }
 
 Mesh3d::~Mesh3d()
@@ -98,5 +99,8 @@ void Mesh3d::draw()
 
 void Mesh3d::setUniforms()
 {
-    updateBuffers();
+    if (lastUpdateFrameId != Game::instance->frame) {
+        updateBuffers();
+        lastUpdateFrameId = Game::instance->frame;
+    }
 }

@@ -5,5 +5,5 @@ in Data {
 } Input;
 
 void main(){
-    gl_FragDepth = clamp(Input.Data.y, 0.0, 1.0);
+    //gl_FragDepth = clamp(Input.Data.y, 0.0, 1.0);
 }

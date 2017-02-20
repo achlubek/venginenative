@@ -10,6 +10,14 @@
 #include "ShaderStorageBuffer.h";
 #include "FrustumCone.h";
 #include "INIReader.h";
+struct DayData {
+   glm::vec3 sunDir;
+   glm::vec3 moonDir;
+   glm::vec3 sunSpaceDir;
+   glm::mat3 viewFrame;
+   glm::vec3 moonPos;
+   glm::vec3 earthPos;
+};
 class Renderer
 {
 public:
@@ -198,7 +206,7 @@ private:
     Texture2d *lensBlurTextureHorizontal;
     Texture2d *lensBlurTextureVertical;
     void lensBlur();
-
+    DayData dayData;
     // Output to output fbo
     ShaderProgram *outputShader;
     void output();

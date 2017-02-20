@@ -25,6 +25,7 @@ public:
     void setUniforms();
     unsigned int id;
     string name = "";
+    int lastUpdateFrameId;
 private:
     vector<Mesh3dInstance*> instances;
     vector<Mesh3dLodLevel*> lodLevels;
