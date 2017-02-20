@@ -55,6 +55,9 @@ public:
     glm::vec2 waterScale;
     float waterHeight;
     float waterSpeed;
+    bool showSelection = false;
+    glm::vec3 selectionPosition = glm::vec3(0.0f);
+    glm::quat selectionOrientation = glm::quat();
     int width;
     int height;
     unsigned int pickingResultMesh = 0;

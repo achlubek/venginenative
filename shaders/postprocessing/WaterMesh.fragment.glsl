@@ -72,7 +72,7 @@ float raymarchwater(vec3 start, vec3 end, int stepsI){
         pos = mix(start, end, iter + rd);
         h = hlower + heightwaterD(pos.xz, mipmapx) * waterdepth;
         if(h > pos.y) {
-            return raymarchwater3(mix(start, end, iter - stepsize + rd), mix(start, end, iter + stepsize + rd),8);
+            return raymarchwater2(mix(start, end, iter - stepsize + rd), mix(start, end, iter + stepsize + rd),8);
            // return distance(pos, CameraPosition);
         }
         iter += stepsize;
@@ -95,7 +95,7 @@ float getWaterDistance(){
             vec3 newpos2 = CameraPosition + dir * planethit2;
             float mult2 = 1.0 - max(0.0, dot(newpos2, -VECTOR_UP));
             float wvw = WaterWavesScale / 10.0;
-            int steps = 1 + int((6.0 + mult2 * 26.0) * wvw);
+            int steps = 1 + int((6.0 + mult2 * 126.0) * wvw);
            //
 
           //  if(planethit < 14.0 && planethit > 0.0) steps *= 10;

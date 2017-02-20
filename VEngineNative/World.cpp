@@ -37,5 +37,5 @@ void World::setUniforms(ShaderProgram * shader, Camera *camera)
 
 void World::setSceneUniforms()
 {
-    scene->setUniforms(TransformStruct());
+    scene->setUniforms();
 }

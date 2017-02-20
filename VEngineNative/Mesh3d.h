@@ -20,9 +20,9 @@ public:
     Mesh3dLodLevel *getLodLevel(int index);
     void removeInstance(Mesh3dInstance* instance);
     void removeLodLevel(Mesh3dLodLevel* level);
-    void updateBuffers(TransformStruct transform);
+    void updateBuffers();
     void draw();
-    void setUniforms(TransformStruct transform);
+    void setUniforms();
     unsigned int id;
     string name = "";
 private:

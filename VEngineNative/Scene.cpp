@@ -4,7 +4,6 @@
 
 Scene::Scene()
 {
-    initTransformation();
     drawables = {};
     lights = {};
 }
@@ -21,11 +20,11 @@ void Scene::draw()
     }
 }
 
-void Scene::setUniforms(TransformStruct transform)
+void Scene::setUniforms()
 {
     int x = drawables.size();
     for (int i = 0; i < x; i++) {
-        drawables[i]->setUniforms(transform * transformation->getStruct());
+        drawables[i]->setUniforms();
     }
 }
 

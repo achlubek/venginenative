@@ -18,7 +18,7 @@ public:
     float distanceEnd;
     unsigned int id;
     void draw(const Mesh3d* mesh);
-    void updateBuffer(const vector<Mesh3dInstance*> &instances, TransformStruct transform);
+    void updateBuffer(const vector<Mesh3dInstance*> &instances);
 private:
     ShaderStorageBuffer *modelInfosBuffer1;
     ShaderStorageBuffer *modelInfosBuffer2;

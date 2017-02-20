@@ -32,6 +32,7 @@ void EditorApp::initialize()
 
 void EditorApp::onRenderFrame(float elapsed)
 {
+
     if (currentMode == EDITOR_MODE_MOVE_CAMERA) {
         float speed = 0.1f;
         if (game->getKeyStatus(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
@@ -119,7 +120,7 @@ void EditorApp::onRenderFrame(float elapsed)
                 //    dy += axes[3] * 10.9;
                 //    newpos += (cam->transformation->orientation * glm::vec3(0, 0, -1) * axes[1] * 0.1f);
                 //   newpos += (cam->transformation->orientation * glm::vec3(1, 0, 0) * axes[0] * 0.1f);
-                pickedUpMeshInstance->transformation->translate(glm::vec3(axes[0], axes[2], axes[1]));
+                pickedUpMeshInstance->transformation->translate(glm::vec3(axes[0], axes[2], axes[1]) * 0.01f);
             }
         }
     }
@@ -129,6 +130,12 @@ void EditorApp::onRenderFrame(float elapsed)
     if (isConsoleWindowOpened == false && currentMode == EDITOR_MODE_WRITING_TEXT) {
         switchMode(lastMode);
     }
+}
+
+string vitoa(int i) {
+    auto ss = stringstream();
+    ss << i;
+    return ss.str();
 }
 
 void EditorApp::onRenderUIFrame(float elapsed)
@@ -213,15 +220,50 @@ void EditorApp::onRenderUIFrame(float elapsed)
             pickedUpMeshLodLevel = (Mesh3dLodLevel *)game->getObjectById(game->renderer->pickingResultLod);
             pickedUpMeshInstance = (Mesh3dInstance *)game->getObjectById(game->renderer->pickingResultInstance);
 
-            cursor3dArrow->getInstance(0)->transformation->setPosition(game->renderer->pickingWorldPos);
-            cursor3dArrow->getInstance(0)->transformation->setOrientation(glm::lookAt(glm::vec3(0.0), game->renderer->pickingNormal, glm::vec3(0.0, 1.0, 0.0)));
-
+         //   cursor3dArrow->getInstance(0)->transformation->setPosition(game->renderer->pickingWorldPos);
+         //   cursor3dArrow->getInstance(0)->transformation->setOrientation(glm::lookAt(glm::vec3(0.0), game->renderer->pickingNormal, glm::vec3(0.0, 1.0, 0.0)));
+            game->renderer->selectionPosition = game->renderer->pickingWorldPos;
+            game->renderer->selectionOrientation = glm::quat(glm::lookAt(glm::vec3(0.0), game->renderer->pickingNormal, game->renderer->pickingNormal == glm::vec3(0.0, 1.0, 0.0) ? glm::vec3(0.0, 0.0, 1.0) : glm::vec3(0.0, 1.0, 0.0)));
+            game->renderer->showSelection = true;
             ImGui::Begin("PickingResult", &isPickingWindowOpened, 0);
             ImGui::Text(pickedUpMesh->name.c_str());
             ImGui::End();
                  
         }
     }
+    if (pickedUpMesh != nullptr) {
+        int win = 0;
+        ImGui::Begin("Selected mesh", &customWindowsOpened[win++], 0);
+        ImGui::Text(pickedUpMesh->name.c_str());
+        //ImGui::Text(vitoa(pickedUpMesh->id).c_str());
+        ImGui::End();
+
+        ImGui::Begin("Selected mesh lod level", &customWindowsOpened[win++], 0);
+        ImGui::SliderFloat("Distance start", &pickedUpMeshLodLevel->distanceStart, 0.01, 9999.0);
+        ImGui::SliderFloat("Distance end", &pickedUpMeshLodLevel->distanceEnd, 0.01, 9999.0);
+        ImGui::SliderFloat3("Static diffuse color", &pickedUpMeshLodLevel->material->diffuseColor.x, 0.0, 1.0);
+        ImGui::SliderFloat("Static metalness", &pickedUpMeshLodLevel->material->metalness, 0.0, 1.0);
+        ImGui::SliderFloat("Static roughness", &pickedUpMeshLodLevel->material->roughness, 0.0, 1.0);
+        ImGui::SliderFloat2("Diffuse tex scale", &pickedUpMeshLodLevel->material->diffuseColorTexScale.x, 0.01, 100.0);
+        ImGui::SliderFloat2("Normal tex scale", &pickedUpMeshLodLevel->material->normalTexScale.x, 0.01, 100.0);
+        ImGui::SliderFloat2("Metalness tex scale", &pickedUpMeshLodLevel->material->metalnessTexScale.x, 0.01, 100.0);
+        ImGui::SliderFloat2("Roughness tex scale", &pickedUpMeshLodLevel->material->roughnessTexScale.x, 0.01, 100.0);
+        ImGui::SliderFloat2("Bump tex scale", &pickedUpMeshLodLevel->material->bumpTexScale.x, 0.01, 100.0);
+        ImGui::End();
+
+        ImGui::Begin("Selected mesh instance", &customWindowsOpened[win++], 0);
+        TransformStruct tmp0 = pickedUpMeshInstance->transformation->getStruct();
+        auto euler = glm::eulerAngles(tmp0.orientation);
+        ImGui::SliderFloat3("Position", &tmp0.position.x, -1000.0, 1000.0);
+        ImGui::SliderFloat3("Orientation", &euler.x, -3.1415, 3.1415);
+        ImGui::SliderFloat3("Size", &tmp0.size.x, -10.0, 10.0);
+        tmp0.orientation = glm::quat(euler);
+        pickedUpMeshInstance->transformation->setPosition(tmp0.position);
+        pickedUpMeshInstance->transformation->setOrientation(tmp0.orientation);
+        pickedUpMeshInstance->transformation->setSize(tmp0.size);
+        ImGui::End();
+    }
+    if (currentMode != EDITOR_MODE_PICKING) game->renderer->showSelection = false;
 }
 
 void EditorApp::onWindowResize(int width, int height)
@@ -304,6 +346,7 @@ void EditorApp::onKeyRepeat(int key)
     }
 }
 
+#define foreach(a,b,c)
 void EditorApp::onBind()
 {
     cam = new Camera();
@@ -321,14 +364,17 @@ void EditorApp::onBind()
     game->setCursorMode(GLFW_CURSOR_NORMAL);
 
     auto t = game->asset->loadSceneFile("pav.scene");
-    t->transformation->translate(glm::vec3(0.0, 100.0, 0.0));
-    game->world->scene->addDrawable((AbsDrawable*)t);
+    for (int i = 0; i < t->getDrawables().size(); i++) {
+        ((Mesh3d*)t->getDrawables()[i])->getInstance(0)->transformation->translate(glm::vec3(0.0, 1000.0, 0.0));
+        game->world->scene->addDrawable(t->getDrawables()[i]);
+
+    }
   //  t->name = "flagbase";
    // game->world->scene->addMesh(t);
 
- //   cursor3dArrow = Mesh3d::create(game->asset->loadObject3dInfoFile("arrow.raw"), new Material());
-  //  cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager()));
-   // game->world->scene->addMesh(cursor3dArrow);
+    cursor3dArrow = Mesh3d::create(game->asset->loadObject3dInfoFile("arrow.raw"), new Material());
+    cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager()));
+   // game->world->scene->addDrawable((AbsDrawable*)cursor3dArrow);
 }
 
 void EditorApp::onChar(unsigned int c)

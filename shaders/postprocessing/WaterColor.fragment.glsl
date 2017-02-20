@@ -134,6 +134,7 @@ vec4 getLighting(){
     hitdst = length(currentData.normal) < 0.01 ? 99999.0 : currentData.cameraDistance;
     //return  textureLod(inputTex, UV, 0.0);
     if(hitdist <= 0.01) return  textureLod(inputTex, UV, 0.0);
+    if(hitdist > hitdst) return textureLod(inputTex, UV, 0.0);
     hitdst = min(hitdist, hitdst);
     vec3 hitpos = CameraPosition + reconstructCameraSpaceDistance(UV, hitdist);
 

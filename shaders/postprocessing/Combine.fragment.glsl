@@ -168,6 +168,45 @@ vec3 BoKeH(vec2 uv){
 
 }
 
+#include Quaternions.glsl
+
+uniform int ShowSelection;
+uniform vec3 SelectionPos;
+uniform vec4 SelectionQuat;
+
+vec3 showSelection(vec3 dir){
+    Sphere sp = Sphere(SelectionPos, 1.0);
+    Ray r = Ray(CameraPosition, dir);
+    float primdst = rsi2(r, sp);
+    vec2 minmax = vec2(minhit, maxhit);
+    float outputMult = step(0.0, primdst);
+    float cdst = currentData.cameraDistance;
+    cdst += 99999.0 * (1.0 - step(0.01, cdst));
+    minmax.y = min(minmax.y, cdst);
+    minmax.x = min(minmax.x, cdst);
+    float middle = (minmax.y - minmax.x);
+    float dstmlt = 1.0 - smoothstep(0.0, 1.0, distance(r.o + r.d * middle, sp.pos));
+    vec3 c = outputMult * vec3(0.6, 0.7, 1.0) * (minmax.y - minmax.x);
+    c += shade_ray_data(currentData, -normalize(currentData.worldPos - SelectionPos), vec3(1.0, 1.0, 2.0) * 0.1);
+    // * (minmax.y - minmax.x);
+    /*
+    vec3 n = normalize((r.o + r.d * minmax.x) - SelectionPos);
+
+    vec3 dirx = vec3(1.0, 0.0, 0.0);
+    vec3 diry = vec3(0.0, 1.0, 0.0);
+    vec3 dirz = vec3(0.0, 0.0, 1.0);
+
+    dirx = quat_mul_vec(SelectionQuat, dirx);
+    diry = quat_mul_vec(SelectionQuat, diry);
+    dirz = quat_mul_vec(SelectionQuat, dirz);
+
+    float dtx = pow(abs(dot(dirx, n)), 23.0);
+    float dty = pow(abs(dot(diry, n)), 23.0);
+    float dtz = pow(abs(dot(dirz, n)), 23.0);*/
+
+    //return outputMult * (c + vec3(dtx, dty, dtz) * 2.0);
+    return (c * 7.0);
+}
 
 vec3 integrateCloudsWater(){
     vec3 color = LensBlurSize > 0.11 ? BoKeH(UV) : texture(waterColorTex, UV).rgb;;
@@ -185,6 +224,8 @@ vec4 shade(){
 
         vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
         vec3 dirX = reconstructCameraSpaceDistance(vec2(0.5), 1.0);
+
+        if(ShowSelection == 1) color += showSelection(dir);
 
         vec2 ss2 = projectvdao(CameraPosition + dayData.sunDir);
         float cloudsonsun = 1.0 - textureLod(resolvedAtmosphereTex, dayData.sunDir, 2.0).a;

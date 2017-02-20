@@ -485,8 +485,8 @@ void Renderer::draw(Camera *camera)
         pickingResultSSBO->mapData(4 * 4 * 3, new float[4 * 4 * 3]{});
         // starsTexture->generateMipMaps();
     }
-    //Game::instance->bindTexture(GL_TEXTURE_2D, 0, 0);
-    //Game::instance->bindTexture(GL_TEXTURE_2D, 1, 0);
+    Game::instance->bindTexture(GL_TEXTURE_2D, 0, 0);
+    Game::instance->bindTexture(GL_TEXTURE_2D, 1, 0);
     // csm->map(-sunDirection, camera->transformation->position);
     mrtFbo->use(true);
     //Game::instance->world->setUniforms(Game::instance->shaders->materialGeometryShader, camera);
@@ -529,6 +529,7 @@ void Renderer::draw(Camera *camera)
     if (passPhrase > 3) {
         passPhrase = 0;
         cloudsResolvedTexture->generateMipMaps();
+        atmScattTexture->generateMipMaps();
     }
     gpuInitialized = true;
 }
@@ -583,6 +584,13 @@ void Renderer::combine(int step)
 
     setCommonUniforms(combineShader);
     combineShader->setUniform("CombineStep", step);
+    if (step == 1) {
+        combineShader->setUniform("ShowSelection", showSelection ? 1 : 0);
+        if (showSelection) {
+            combineShader->setUniform("SelectionPos", selectionPosition);
+            combineShader->setUniform("SelectionQuat", selectionOrientation);
+        }
+    }
 
     quad3dInfo->draw();
     waterColorTexture->generateMipMaps();
@@ -789,7 +797,7 @@ void Renderer::atmScatt()
         atmScattShader->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
         quad3dInfo->draw();
     }
-    //atmScattTexture->generateMipMaps();
+    
 }
 
 void Renderer::clouds()

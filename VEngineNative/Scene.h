@@ -3,13 +3,13 @@
 #include "Light.h"
 #include "Mesh3d.h"
 #include "AbsDrawable.h";
-class Scene : public AbsDrawable
+class Scene
 {
 public:
     Scene();
     ~Scene();
     void draw();
-    void setUniforms(TransformStruct transform);
+    void setUniforms();
     void addDrawable(AbsDrawable *item);
     void addLight(Light *light);
     vector<AbsDrawable*>& getDrawables();

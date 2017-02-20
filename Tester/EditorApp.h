@@ -37,6 +37,7 @@ public:
     Mesh3d * cursor3dArrow;
     bool isConsoleWindowOpened = false, isPickingWindowOpened = false,
         transformationWindowOpened = false;
+    bool customWindowsOpened[10] = { false, false, false, false, false, false, false, false, false, false};
     bool isOpened = true;
     bool isOpened2 = true;
     float tmpDayElapsed = 0.5;

@@ -3,6 +3,7 @@
 
 float hash( float n ){
     return fract(sin(n)*758.5453);
+    //return fract(mod(n * 2310.7566730, 21.120312534));
 }
 
 float noise3d( in vec3 x ){
