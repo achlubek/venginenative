@@ -27,10 +27,10 @@ void CascadeShadowMap::map(glm::vec3 ddirection, glm::vec3 iposition)
     position = iposition;
     direction = glm::normalize(ddirection);
     framebuffer->use(false);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
+    //glEnable(GL_DEPTH_TEST);
+    //glDepthFunc(GL_LEQUAL);
     //glDepthFunc(GL_DEPTH_CLAMP);
-    glDisable(GL_CULL_FACE);
+    //glDisable(GL_CULL_FACE);
     glClearColor(1.0, 1.0, 1.0, 1.0);
     for (int i = 0; i < cascadeCount; i++) {
         mat4 pmat = pmatrices[i];

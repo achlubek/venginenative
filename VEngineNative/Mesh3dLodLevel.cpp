@@ -16,6 +16,9 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial, float di
     modelInfosBuffer1 = new ShaderStorageBuffer();
     modelInfosBuffer2 = new ShaderStorageBuffer();
     modelInfosBuffer3 = new ShaderStorageBuffer();
+    materialBuffer1 = new ShaderStorageBuffer();
+    materialBuffer2 = new ShaderStorageBuffer();
+    materialBuffer3 = new ShaderStorageBuffer();
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -43,6 +46,9 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial)
     modelInfosBuffer1 = new ShaderStorageBuffer();
     modelInfosBuffer2 = new ShaderStorageBuffer();
     modelInfosBuffer3 = new ShaderStorageBuffer();
+    materialBuffer1 = new ShaderStorageBuffer();
+    materialBuffer2 = new ShaderStorageBuffer();
+    materialBuffer3 = new ShaderStorageBuffer();
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -70,6 +76,9 @@ Mesh3dLodLevel::Mesh3dLodLevel()
     modelInfosBuffer1 = new ShaderStorageBuffer();
     modelInfosBuffer2 = new ShaderStorageBuffer();
     modelInfosBuffer3 = new ShaderStorageBuffer();
+    materialBuffer1 = new ShaderStorageBuffer();
+    materialBuffer2 = new ShaderStorageBuffer();
+    materialBuffer3 = new ShaderStorageBuffer();
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -88,7 +97,7 @@ Mesh3dLodLevel::Mesh3dLodLevel()
 Mesh3dLodLevel::~Mesh3dLodLevel()
 {
 }
-
+#define vcasti(a) (*((float*)&a))
 void Mesh3dLodLevel::draw(const Mesh3d* mesh)
 {
     ShaderProgram *shader = ShaderProgram::current;
@@ -99,9 +108,11 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
     if (material->roughnessTex != nullptr) material->roughnessTex->use(13);
     if (material->metalnessTex != nullptr) material->metalnessTex->use(14);
 
-    shader->setUniform("Roughness", material->roughness);
-    shader->setUniform("Metalness", material->metalness);
-    shader->setUniform("DiffuseColor", material->diffuseColor);
+    // address 0  here
+    /*
+    shader->setUniform("Roughness", material->roughness);//1
+    shader->setUniform("Metalness", material->metalness);//2
+    shader->setUniform("DiffuseColor", material->diffuseColor);//2 + 4 rgba = 6
 
     shader->setUniform("useDiffuseColorTexInt", material->diffuseColorTex != nullptr ? 1 : 0);
     shader->setUniform("useNormalTexInt", material->normalTex != nullptr ? 1 : 0);
@@ -116,11 +127,15 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
     shader->setUniform("metalnessTexScale", material->metalnessTexScale);
 
     shader->setUniform("MeshID", mesh->id);
-    shader->setUniform("LodLevelID", id);
+    shader->setUniform("LodLevelID", id);*/
 
     if (currentBuffer == 0)modelInfosBuffer1->use(0);
     if (currentBuffer == 1)modelInfosBuffer2->use(0);
     if (currentBuffer == 2)modelInfosBuffer3->use(0);
+
+    if (currentBuffer == 0)materialBuffer1->use(1);
+    if (currentBuffer == 1)materialBuffer2->use(1);
+    if (currentBuffer == 2)materialBuffer3->use(1);
 
     if (currentBuffer == 0)info3d->drawInstanced(instancesFiltered1);
     if (currentBuffer == 1)info3d->drawInstanced(instancesFiltered2);
@@ -128,8 +143,17 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
 
 }
 
-void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
+void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstance*> &instances)
 {
+    // next frame it runs current buffer to 1, next buffer will be 
+    currentBuffer++;
+    if (currentBuffer > 2) currentBuffer = 0;
+
+    if (currentBuffer == 0) nextBuffer = 2;
+    if (currentBuffer == 1) nextBuffer = 0;
+    if (currentBuffer == 2) nextBuffer = 1;
+
+    // buffers into nextbuffer, draws current
     vec3 cameraPos = Game::instance->world->mainDisplayCamera->transformation->getPosition();
     vector<Mesh3dInstance*> filtered;
     for (int i = 0; i < instances.size(); i++) {
@@ -173,7 +197,7 @@ void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
 
         unsigned int * tmp1 = &filtered[i]->id;
         float* tmpf = (float*)tmp1;
-        float specialid = *tmpf;
+        float specialid = *((float*)&filtered[i]->id);
         floats.push_back(specialid);
         floats.push_back(specialid);
         floats.push_back(specialid);
@@ -185,10 +209,60 @@ void Mesh3dLodLevel::updateBuffer(const vector<Mesh3dInstance*> &instances)
         modelInfosBuffer2->mapData(4 * floats.size(), floats.data());
     if (nextBuffer == 2)
         modelInfosBuffer3->mapData(4 * floats.size(), floats.data());
-    currentBuffer++;
-    nextBuffer++;
-    if (currentBuffer > 2) currentBuffer = 0;
-    if (nextBuffer > 2) nextBuffer = 0;
+
+
+    vector<float> floats2;
+    floats2.reserve(32);
+    floats2.push_back(material->roughness);
+    floats2.push_back(material->metalness);
+    floats2.push_back(0.0f);
+    floats2.push_back(0.0f);
+
+    floats2.push_back(material->diffuseColor.x);
+    floats2.push_back(material->diffuseColor.y);
+    floats2.push_back(material->diffuseColor.z);
+    floats2.push_back(0.0f);
+
+    int one = 1;
+    int zero = 0;
+
+    floats2.push_back(vcasti((material->diffuseColorTex != nullptr ? one : zero)));
+    floats2.push_back(vcasti((material->normalTex != nullptr ? one : zero)));
+    floats2.push_back(vcasti((material->bumpTex != nullptr ? one : zero)));
+    floats2.push_back(vcasti((material->roughnessTex != nullptr ? one : zero)));
+
+    floats2.push_back(vcasti((material->metalnessTex != nullptr ? one : zero)));
+    floats2.push_back(0.0f);
+    floats2.push_back(0.0f);
+    floats2.push_back(0.0f); // amd safety 
+
+    floats2.push_back(material->diffuseColorTexScale.x);
+    floats2.push_back(material->diffuseColorTexScale.y);
+    floats2.push_back(material->normalTexScale.x);
+    floats2.push_back(material->normalTexScale.y);
+
+    floats2.push_back(material->bumpTexScale.x);
+    floats2.push_back(material->bumpTexScale.y);
+    floats2.push_back(material->roughnessTexScale.x);
+    floats2.push_back(material->roughnessTexScale.y);
+
+    floats2.push_back(material->metalnessTexScale.x);
+    floats2.push_back(material->metalnessTexScale.y);
+    floats2.push_back(0.0f);
+    floats2.push_back(0.0f);
+
+    floats2.push_back(vcasti(mesh->id));
+    floats2.push_back(vcasti(id));
+    floats2.push_back(0.0f);
+    floats2.push_back(0.0f);
+
+    if (nextBuffer == 0)
+        materialBuffer1->mapData(4 * floats2.size(), floats2.data());
+    if (nextBuffer == 1)
+        materialBuffer2->mapData(4 * floats2.size(), floats2.data());
+    if (nextBuffer == 2)
+        materialBuffer3->mapData(4 * floats2.size(), floats2.data());
+
 }
 
 bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)

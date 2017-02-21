@@ -2,9 +2,8 @@
 #include "Mesh3dInstance.h";
 #include "Mesh3dLodLevel.h";
 #include "Object3dInfo.h";
-#include "AbsDrawable.h";
 #include "Material.h";
-class Mesh3d : public AbsDrawable
+class Mesh3d
 {
 public:
     Mesh3d();

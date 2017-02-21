@@ -19,29 +19,34 @@ ShaderStorageBuffer::~ShaderStorageBuffer()
 void ShaderStorageBuffer::use(unsigned int index)
 {
     if (!generated) generate();
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, handle);
+    glBindBufferBase(bufferType, index, handle);
 }
 
 void ShaderStorageBuffer::mapData(size_t size, const void * data)
 {
     if (!generated) generate();
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, handle);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, GL_DYNAMIC_DRAW);
+    glBindBuffer(bufferType, handle);
+    glBufferData(bufferType, size, data, usageHint);
 }
 void ShaderStorageBuffer::mapSubData(int offset, size_t size, const void * data)
 {
     if (!generated) generate();
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, handle);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, GL_DYNAMIC_DRAW);
-    glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, data);
+    glBindBuffer(bufferType, handle);
+    glBufferData(bufferType, size, data, usageHint);
+    glBufferSubData(bufferType, offset, size, data);
 }
 
 void ShaderStorageBuffer::readSubData(int offset, size_t size, void * data)
 {
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, handle);
-    GLvoid* p = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, offset, size, GL_MAP_READ_BIT);
+    glBindBuffer(bufferType, handle);
+    GLvoid* p = glMapBufferRange(bufferType, offset, size, GL_MAP_READ_BIT);
     memcpy(data, p, size);
-    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+    glUnmapBuffer(bufferType);
+}
+
+void* ShaderStorageBuffer::aquireAsynchronousPointer(int offset, size_t size)
+{
+    return glMapBufferRange(bufferType, offset, size, GL_MAP_UNSYNCHRONIZED_BIT);
 }
 
 void ShaderStorageBuffer::generate()

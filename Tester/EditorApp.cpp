@@ -363,10 +363,10 @@ void EditorApp::onBind()
 
     game->setCursorMode(GLFW_CURSOR_NORMAL);
 
-    auto t = game->asset->loadSceneFile("pav.scene");
-    for (int i = 0; i < t->getDrawables().size(); i++) {
-        ((Mesh3d*)t->getDrawables()[i])->getInstance(0)->transformation->translate(glm::vec3(0.0, 10.0, 0.0));
-        game->world->scene->addDrawable(t->getDrawables()[i]);
+    auto t = game->asset->loadSceneFile("cryteksponza.scene");
+    for (int i = 0; i < t->getMesh3ds().size(); i++) {
+        t->getMesh3ds()[i]->getInstance(0)->transformation->translate(glm::vec3(0.0, 10.0, 0.0));
+        game->world->scene->addMesh3d(t->getMesh3ds()[i]);
 
     }
   //  t->name = "flagbase";
@@ -395,6 +395,6 @@ void EditorApp::onCommandText(string text)
         string s = join(args, 1);
         auto m = game->asset->loadMeshFile(s);
         m->name = s;
-        game->world->scene->addDrawable((AbsDrawable*)m);
+        game->world->scene->addMesh3d(m);
     }
 }

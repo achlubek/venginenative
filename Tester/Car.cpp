@@ -83,8 +83,8 @@ void Car::initialize()
         tiresMesh->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, 6.0, 0.0) + frontaxis - wheelspacing, glm::angleAxis(deg2rad(0.0f), glm::vec3(0.0, 1.0, 0.0)))));
         tiresMesh->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, 6.0, 0.0) + rearaxis + wheelspacing , glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0)))));
         tiresMesh->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, 6.0, 0.0) + rearaxis - wheelspacing , glm::angleAxis(deg2rad(0.0f), glm::vec3(0.0, 1.0, 0.0)))));
-        Game::instance->world->scene->addDrawable((AbsDrawable*)bodyMesh);
-        Game::instance->world->scene->addDrawable((AbsDrawable*)tiresMesh);
+        Game::instance->world->scene->addMesh3d(bodyMesh);
+        Game::instance->world->scene->addMesh3d(tiresMesh);
         Game::instance->physicsInvoke([&]() {
             glm::vec3 frontaxis = glm::vec3(0.0f, -0.538f, 1.13108f);
             glm::vec3 rearaxis = glm::vec3(0.0f, -0.538f, -1.2333f);

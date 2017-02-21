@@ -13,6 +13,20 @@ out Data {
 #include Quaternions.glsl
 
 flat out uint MeshInstanceID;
+flat out uint LodLevelID;
+flat out uint MeshID;
+layout (std140, binding = 1) uniform  MatBuffer
+{
+    vec4 RoughnessMetalness_ZeroZero;
+    vec4 DiffuseColor_Zero;
+    ivec4 UseTex_DNBR;
+    ivec3 UseTex_M_ZeroZeroZero;
+    vec4 ScaleTex_DN;
+    vec4 ScaleTex_BR;
+    vec4 ScaleTex_MZeroZero;
+    uvec4 MeshId_LodLevelId_ZeroZero;
+};
+
 
 #include ModelBuffer.glsl
 
@@ -29,6 +43,8 @@ void main(){
 //    outpoint.w = 0.5 + 0.5 * outpoint.w;
     //outpoint.w = - outpoint.w;
     MeshInstanceID = ModelInfos[int(gl_InstanceID)].idAnd4Empty.x;
+    LodLevelID = MeshId_LodLevelId_ZeroZero.y;
+    MeshID = MeshId_LodLevelId_ZeroZero.x;
     Output.Data.x = 1.0;
     Output.Data.y =  ( outpoint.z ) * 0.5 + 0.5 ;
     gl_Position = outpoint;// + vec4(0, 0.9, 0, 0);

@@ -147,8 +147,8 @@ float cloudsDensity3D(vec3 pos){
 
 //    float density = fbmHI(ps * 0.005 + CloudsOffset + vec3(10.0 * Time, 5.5 * Time, 0.0)) * getFronts(pos + (1.0 / 0.005) * vec3(10.0 * Time, 5.5 * Time, 0.0));// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
     vec3 p = ps * 0.005 + CloudsOffset;
-    float density = fbmLOW( p);
-    //float density = fbmHI( p + fbmHI(p * 0.7) * 110.5);// * getFronts(pos);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
+    //float density = fbmLOW( p);
+    float density = fbmHI( p + fbmHI(p * 0.7) * 55.5);// * getFronts(pos);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
     //density *= supernoise3d(pos * 0.00005);
     float measurement = (CloudsCeil - CloudsFloor) * 0.5;
     float mediana = (CloudsCeil + CloudsFloor) * 0.5;
@@ -310,7 +310,7 @@ vec3 getCloudsAL(vec3 dir){
 
 float weightshadow = 1.1;
 float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2, float weight){
-    const int stepcount = 2;
+    const int stepcount = 22;
     const float stepsize = 1.0 / float(stepcount);
     float iter = 0.0;
     float rd = rand2sTime(UV) * stepsize;
@@ -400,8 +400,9 @@ float getAO(vec3 pos, float randomization, float weight){
     //vec3 dir = normalize(dayData.sunDir + randdir() * randomization);
     vec3 dir = normalize(dayData.sunDir + randdir() * randomization);
     Ray r = Ray(vec3(0,planetradius ,0) +pos, dir);
-    float hitplanet = rsi2(r, planet);
-    //if(hitplanet > 0.0) return 0.0;
+    Ray r2 = Ray(vec3(0,planetradius + rand2sTime(UV) * 2500.0 ,0) +pos, dir);
+    float hitplanet = rsi2(r2, planet);
+    if(hitplanet > 0.0) return 0.0;
     float hitceil = rsi2(r, sphere2);
     float hitfloor = rsi2(r, sphere1);
     vec3 posceil = pos + dir * hitceil;

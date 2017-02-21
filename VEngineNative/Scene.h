@@ -2,19 +2,28 @@
 #include "EnvProbe.h"
 #include "Light.h"
 #include "Mesh3d.h"
-#include "AbsDrawable.h";
 class Scene
 {
 public:
     Scene();
     ~Scene();
+    /*
+    for now steps are:
+    update meshes buffers with frustum culling
+    draw meshes with a shader (this time material)
+    update lights (this inside uses draw meshes with shader (depth only))
+    future:
+    draw particles
+    draw debug lines
+    draw debug points
+    */
     void draw();
-    void setUniforms();
-    void addDrawable(AbsDrawable *item);
+    void prepareFrame();
+    void addMesh3d(Mesh3d *item);
     void addLight(Light *light);
-    vector<AbsDrawable*>& getDrawables();
+    vector<Mesh3d*>& getMesh3ds();
     vector<Light*>& getLights();
 private:
-    vector<AbsDrawable*> drawables;
+    vector<Mesh3d*> mesh3ds;
     vector<Light*> lights;
 };

@@ -4,14 +4,13 @@ in Data {
 #include InOutStageLayout.glsl
 } Input;
 
-uniform uint MeshID;
-uniform uint LodLevelID;
+flat in uint MeshID;
+flat in uint LodLevelID;
 flat in uint MeshInstanceID;
 
 layout(location = 0) out uvec4 IdOut;
 layout(location = 1) out vec4 WorldPosOut;
 layout(location = 2) out vec4 NormalOut;
-
 
 void main(){
     IdOut = uvec4(MeshID, LodLevelID, MeshInstanceID, 0);

@@ -202,7 +202,7 @@ vec3 getSunColorDirectly(float roughness){
     vec3 sunBase = vec3(15.0);
     float dt = max(0.0, (dot(dayData.sunDir, VECTOR_UP)));
     float dt2 = 0.9 + 0.1 * (1.0 - max(0.0, (dot(dayData.sunDir, VECTOR_UP))));
-    vec3 supersundir = 25.0 * textureLod(atmScattTex, vec3(dayData.sunDir.x, max(0.0, dayData.sunDir.y * 0.1), dayData.sunDir.z), 1.0).rgb ;
+    vec3 supersundir = 1.0 * pow(textureLod(atmScattTex, vec3(dayData.sunDir.x, max(0.0, dayData.sunDir.y * 0.1), dayData.sunDir.z), 1.0).rgb, vec3(1.3)) ;
 
     return mix(supersundir, sunBase, 1.0 - pow(1.0 - dt, 4.0));
     //return  max(vec3(0.3, 0.3, 0.0), (  sunBase - vec3(5.5, 18.0, 20.4) *  pow(1.0 - dt, 8.0)));
@@ -210,7 +210,7 @@ vec3 getSunColorDirectly(float roughness){
 
 vec3 getSunColor(float roughness){
     float dt = pow(max(0.0, (dot(dayData.sunDir, VECTOR_UP))), 2.0);
-    return dt * getSunColorDirectly(roughness);
+    return dt * getSunColorDirectly(roughness) * 7.0;
 }
 
 
@@ -348,7 +348,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     sshadow = 1.0 - coverage;
     //float dist = cloudsData.g;
     vec4 vdao = blurshadowsAO(dir, roughness);
-    //return vdao.gba;
+//    return vdao.gba;
     float shadow = vdao.r;
     //return ;
     float rays = godrays(dir, raysteps);
@@ -374,7 +374,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float mult = mix(sqrt(0.001 + dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, SunDT) + 0.02;
     vec3 raycolor = mult * getSunColor(0.0) * 0.9 * rays + (AtmDiffuse * 2.0 ) * mult * 0.8;
     //raycolor *= xA + xB * (pow(1.0 - DirDT, 8.0));
-    float raysCoverage = min(1.0, (0.05 + 0.95 * pow((1.0 - (asin(DirDT) / (3.1415 * 0.5)) ), 13.0) * NoiseOctave1 * 0.1));
+    float raysCoverage = (1.0 / (DirDT * 11.0  *  NoiseOctave1 + 1.0));
     //return vdao;
     //return vdao.gba;
     //return lightnings;

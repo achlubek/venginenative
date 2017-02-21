@@ -4,21 +4,33 @@ layout(binding = 12) uniform sampler2D bumpTex;
 layout(binding = 13) uniform sampler2D roughnessTex;
 layout(binding = 14) uniform sampler2D metalnessTex;
 
-uniform int useDiffuseColorTexInt;
-uniform int useNormalTexInt;
-uniform int useBumpTexInt;
-uniform int useRoughnessTexInt;
-uniform int useMetalnessTexInt;
+layout (std430, binding = 1) buffer MatBuffer
+{
+    vec4 RoughnessMetalness_ZeroZero;
+    vec4 DiffuseColor_Zero;
+    ivec4 UseTex_DNBR;
+    ivec3 UseTex_M_ZeroZeroZero;
+    vec4 ScaleTex_DN;
+    vec4 ScaleTex_BR;
+    vec4 ScaleTex_MZeroZero;
+    uvec4 MeshId_LodLevelId_ZeroZero;
+};
 
-uniform vec3 DiffuseColor;
-uniform float Roughness;
-uniform float Metalness;
+#define useDiffuseColorTexInt UseTex_DNBR.x
+#define useNormalTexInt UseTex_DNBR.y
+#define useBumpTexInt UseTex_DNBR.z
+#define useRoughnessTexInt UseTex_DNBR.w
+#define useMetalnessTexInt UseTex_M_ZeroZeroZero.x
 
-uniform vec2 diffuseColorTexScale;
-uniform vec2 normalTexScale;
-uniform vec2 bumpTexScale;
-uniform vec2 roughnessTexScale;
-uniform vec2 metalnessTexScale;
+#define DiffuseColor DiffuseColor_Zero.rgb
+#define Roughness RoughnessMetalness_ZeroZero.x
+#define Metalness RoughnessMetalness_ZeroZero.y
+
+#define diffuseColorTexScale ScaleTex_DN.xy
+#define normalTexScale ScaleTex_DN.zw
+#define bumpTexScale ScaleTex_BR.xy
+#define roughnessTexScale ScaleTex_BR.zw
+#define metalnessTexScale ScaleTex_MZeroZero.xy
 
 float ParallaxHeightMultiplier = 1.03;
 float newParallaxHeight = 0;

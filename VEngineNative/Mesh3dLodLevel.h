@@ -18,13 +18,18 @@ public:
     float distanceEnd;
     unsigned int id;
     void draw(const Mesh3d* mesh);
-    void updateBuffer(const vector<Mesh3dInstance*> &instances);
+    void updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstance*> &instances);
 private:
     ShaderStorageBuffer *modelInfosBuffer1;
     ShaderStorageBuffer *modelInfosBuffer2;
     ShaderStorageBuffer *modelInfosBuffer3;
+
+    ShaderStorageBuffer *materialBuffer1;
+    ShaderStorageBuffer *materialBuffer2;
+    ShaderStorageBuffer *materialBuffer3;
+
     int currentBuffer = 0;
-    int nextBuffer = 1;
+    int nextBuffer = 1; //smart
     bool checkIntersection(Mesh3dInstance* instance);
     vector<int> samplerIndices;
     vector<int> modes;

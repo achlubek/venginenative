@@ -86,7 +86,7 @@ void Mesh3d::removeLodLevel(Mesh3dLodLevel* level)
 void Mesh3d::updateBuffers()
 {
     for (int i = 0; i < lodLevels.size(); i++) {
-        lodLevels[i]->updateBuffer(instances);
+        lodLevels[i]->updateBuffer(this, instances);
     }
 }
 

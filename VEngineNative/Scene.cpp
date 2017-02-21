@@ -4,7 +4,7 @@
 
 Scene::Scene()
 {
-    drawables = {};
+    mesh3ds = {};
     lights = {};
 }
 
@@ -14,23 +14,23 @@ Scene::~Scene()
 
 void Scene::draw()
 {
-    int x = drawables.size();
+    int x = mesh3ds.size();
     for (int i = 0; i < x; i++) {
-        drawables[i]->draw();
+        mesh3ds[i]->draw();
     }
 }
 
-void Scene::setUniforms()
+void Scene::prepareFrame()
 {
-    int x = drawables.size();
+    int x = mesh3ds.size();
     for (int i = 0; i < x; i++) {
-        drawables[i]->setUniforms();
+        mesh3ds[i]->setUniforms();
     }
 }
 
-void Scene::addDrawable(AbsDrawable * item)
+void Scene::addMesh3d(Mesh3d * item)
 {
-    drawables.push_back(item);
+    mesh3ds.push_back(item);
 }
 
 void Scene::addLight(Light * light)
@@ -39,9 +39,9 @@ void Scene::addLight(Light * light)
 }
 
 
-vector<AbsDrawable*>& Scene::getDrawables()
+vector<Mesh3d*>& Scene::getMesh3ds()
 {
-    return drawables;
+    return mesh3ds;
 }
 
 vector<Light*>& Scene::getLights()
