@@ -10,8 +10,8 @@ public:
 
     void draw();
     void drawInstanced(size_t instances);
-    void updateAABB();
-    glm::vec3 aabbmin, aabbmax;
+    void updateRadius();
+    float radius = 0.0f;
     vector<GLfloat> vbo;
     void rebufferVbo(vector<GLfloat> data, bool force_resize);
 

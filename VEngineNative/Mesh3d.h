@@ -25,6 +25,9 @@ public:
     unsigned int id;
     string name = "";
     int lastUpdateFrameId;
+    bool selectable = true;
+    bool visible = true;
+    bool castShadow = true;
 private:
     vector<Mesh3dInstance*> instances;
     vector<Mesh3dLodLevel*> lodLevels;

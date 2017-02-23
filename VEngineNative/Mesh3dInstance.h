@@ -9,4 +9,5 @@ public:
     Mesh3dInstance(TransformationManager *transmgr);
     ~Mesh3dInstance();
     unsigned int id;
+    bool visible = true;
 };

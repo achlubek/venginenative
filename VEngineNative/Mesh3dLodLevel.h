@@ -17,6 +17,9 @@ public:
     float distanceStart;
     float distanceEnd;
     unsigned int id;
+    bool visible = true;
+    bool castShadow = true;
+    bool selectable = true;
     void draw(const Mesh3d* mesh);
     void updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstance*> &instances);
 private:
@@ -27,7 +30,7 @@ private:
     ShaderStorageBuffer *materialBuffer1;
     ShaderStorageBuffer *materialBuffer2;
     ShaderStorageBuffer *materialBuffer3;
-
+    
     int currentBuffer = 0;
     int nextBuffer = 1; //smart
     bool checkIntersection(Mesh3dInstance* instance);

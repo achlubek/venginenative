@@ -6,6 +6,12 @@ ShaderStorageBuffer::ShaderStorageBuffer()
     generated = false;
 }
 
+ShaderStorageBuffer::ShaderStorageBuffer(GLsizei bytes)
+{
+    prealloc = bytes;
+    generated = false;
+}
+
 ShaderStorageBuffer::ShaderStorageBuffer(GLuint ihandle)
 {
     handle = handle;
@@ -46,11 +52,35 @@ void ShaderStorageBuffer::readSubData(int offset, size_t size, void * data)
 
 void* ShaderStorageBuffer::aquireAsynchronousPointer(int offset, size_t size)
 {
-    return glMapBufferRange(bufferType, offset, size, GL_MAP_UNSYNCHRONIZED_BIT);
+    if (!generated) generate();
+    glBindBuffer(bufferType, handle);
+    if (offset + size > currentBytesCount) preallocate(size + offset, usageHint);
+    return glMapBufferRange(bufferType, offset, size, GL_MAP_UNSYNCHRONIZED_BIT | GL_MAP_WRITE_BIT);
+}
+
+void ShaderStorageBuffer::unmapBuffer()
+{
+    glUnmapBuffer(bufferType);
+}
+
+void ShaderStorageBuffer::invalidate()
+{
+    glBindBuffer(bufferType, handle);
+    glInvalidateBufferData(handle);
+    currentBytesCount = 0;
+}
+
+void ShaderStorageBuffer::preallocate(int bytes, GLbitfield flags)
+{
+    if (!generated) generate();
+    glBindBuffer(bufferType, handle);
+    glBufferData(bufferType, bytes, (void*)0, flags);
+    currentBytesCount = bytes;
 }
 
 void ShaderStorageBuffer::generate()
 {
     glGenBuffers(1, &handle);
     generated = true;
+    if (prealloc > 0) preallocate(prealloc, usageHint);
 }

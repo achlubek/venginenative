@@ -52,9 +52,11 @@ public:
     unsigned int getNextId();
     void* getObjectById(unsigned int id);
     void registerId(unsigned int id, void* p);
+    glm::mat4 viewProjMatrix;
 private:
 
     unsigned int lastId = 1;
+    int vpmatrixUpdateFrameId = -1;
 
     queue<function<void(void)>> invokeQueue;
     queue<function<void(void)>> physicsInvokeQueue;

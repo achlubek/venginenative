@@ -1,9 +1,5 @@
 lodlevel
 start 0.0
 end 9999.0
-info3d sphere.raw
+info3d icos.raw
 material red.material
-
-instance
-translate 0 0 -2
-scale 10

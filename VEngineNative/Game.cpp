@@ -272,6 +272,10 @@ void Game::onRenderFrameFunc()
     onRenderFrame->invoke(0);
 
     if (world->mainDisplayCamera != nullptr) {
+        if (vpmatrixUpdateFrameId != Game::instance->frame) {
+            viewProjMatrix = world->mainDisplayCamera->projectionMatrix * world->mainDisplayCamera->transformation->getInverseWorldTransform();
+            vpmatrixUpdateFrameId = Game::instance->frame;
+        }
         vector<Light*> lights = world->scene->getLights();
         for (int i = 0; i < lights.size(); i++) {
             lights[i]->refreshShadowMap();

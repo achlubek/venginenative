@@ -13,12 +13,14 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial, float di
     instancesFiltered1 = 0;
     instancesFiltered2 = 0;
     instancesFiltered3 = 0;
+    int kb1 = 1024;
+    int mb1 = kb1*1024;
     modelInfosBuffer1 = new ShaderStorageBuffer();
     modelInfosBuffer2 = new ShaderStorageBuffer();
     modelInfosBuffer3 = new ShaderStorageBuffer();
-    materialBuffer1 = new ShaderStorageBuffer();
-    materialBuffer2 = new ShaderStorageBuffer();
-    materialBuffer3 = new ShaderStorageBuffer();
+    materialBuffer1 = new ShaderStorageBuffer(kb1);
+    materialBuffer2 = new ShaderStorageBuffer(kb1);
+    materialBuffer3 = new ShaderStorageBuffer(kb1);
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -43,12 +45,14 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial)
     instancesFiltered1 = 0;
     instancesFiltered2 = 0;
     instancesFiltered3 = 0;
+    int kb1 = 1024;
+    int mb1 = kb1 * 1024;
     modelInfosBuffer1 = new ShaderStorageBuffer();
     modelInfosBuffer2 = new ShaderStorageBuffer();
     modelInfosBuffer3 = new ShaderStorageBuffer();
-    materialBuffer1 = new ShaderStorageBuffer();
-    materialBuffer2 = new ShaderStorageBuffer();
-    materialBuffer3 = new ShaderStorageBuffer();
+    materialBuffer1 = new ShaderStorageBuffer(kb1);
+    materialBuffer2 = new ShaderStorageBuffer(kb1);
+    materialBuffer3 = new ShaderStorageBuffer(kb1);
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -73,12 +77,14 @@ Mesh3dLodLevel::Mesh3dLodLevel()
     instancesFiltered1 = 0;
     instancesFiltered2 = 0;
     instancesFiltered3 = 0;
+    int kb1 = 1024;
+    int mb1 = kb1 * 1024;
     modelInfosBuffer1 = new ShaderStorageBuffer();
     modelInfosBuffer2 = new ShaderStorageBuffer();
     modelInfosBuffer3 = new ShaderStorageBuffer();
-    materialBuffer1 = new ShaderStorageBuffer();
-    materialBuffer2 = new ShaderStorageBuffer();
-    materialBuffer3 = new ShaderStorageBuffer();
+    materialBuffer1 = new ShaderStorageBuffer(kb1);
+    materialBuffer2 = new ShaderStorageBuffer(kb1);
+    materialBuffer3 = new ShaderStorageBuffer(kb1);
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -101,6 +107,19 @@ Mesh3dLodLevel::~Mesh3dLodLevel()
 void Mesh3dLodLevel::draw(const Mesh3d* mesh)
 {
     ShaderProgram *shader = ShaderProgram::current;
+
+    if (currentBuffer == 0 && instancesFiltered1 == 0) return;
+    if (currentBuffer == 1 && instancesFiltered2 == 0) return;
+    if (currentBuffer == 2 && instancesFiltered3 == 0) return;
+
+    if (shader == Game::instance->shaders->idWriteShader && !mesh->selectable) return;
+    if (shader == Game::instance->shaders->idWriteShader && !selectable) return;
+
+    if (shader == Game::instance->shaders->depthOnlyShader && !mesh->castShadow) return;
+    if (shader == Game::instance->shaders->depthOnlyShader && !castShadow) return;
+
+    if (!mesh->visible) return;
+    if (!visible) return;
 
     if (material->diffuseColorTex != nullptr) material->diffuseColorTex->use(10);
     if (material->normalTex != nullptr) material->normalTex->use(11);
@@ -158,7 +177,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
     vector<Mesh3dInstance*> filtered;
     for (int i = 0; i < instances.size(); i++) {
         float dst = distance(cameraPos, instances[i]->transformation->getPosition());
-        if (dst >= distanceStart && dst < distanceEnd && checkIntersection(instances[i])) {
+        if (instances[i]->visible && dst >= distanceStart && dst < distanceEnd && checkIntersection(instances[i])) {
             filtered.push_back(instances[i]);
         }
     }
@@ -168,125 +187,150 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
     if (nextBuffer == 2)instancesFiltered3 = filtered.size();
 
     /*layout rotation f4 translation f3+1 scale f3+1 =>> 12 floats*/
-    // Urgently transfrom it into permament mapped buffer
-    vector<float> floats;
+    // Urgently transfrom it into permament mapped buffer 
+
     int fint = 0;
     if (nextBuffer == 0)fint = instancesFiltered1;
     if (nextBuffer == 1)fint = instancesFiltered2;
     if (nextBuffer == 2)fint = instancesFiltered3;
-    floats.reserve(16 * fint);
-    for (unsigned int i = 0; i < fint; i++) {
-        TransformationManager *mgr = filtered[i]->transformation;
-        quat q = mgr->getOrientation();
-        vec3 p = mgr->getPosition();
-        vec3 s = mgr->getSize();
-        floats.push_back(q.x);
-        floats.push_back(q.y);
-        floats.push_back(q.z);
-        floats.push_back(q.w);
+    if (fint > 0) {
+        void* modelbufferpt = nullptr;
+        if (nextBuffer == 0)
+            modelbufferpt = modelInfosBuffer1->aquireAsynchronousPointer(0, 4 * 16 * fint);
+        if (nextBuffer == 1)
+            modelbufferpt = modelInfosBuffer2->aquireAsynchronousPointer(0, 4 * 16 * fint);
+        if (nextBuffer == 2)
+            modelbufferpt = modelInfosBuffer3->aquireAsynchronousPointer(0, 4 * 16 * fint);
+        int a = 0;
+        for (unsigned int i = 0; i < fint; i++) {
+            TransformationManager *mgr = filtered[i]->transformation;
+            quat q = mgr->getOrientation();
+            vec3 p = mgr->getPosition();
+            vec3 s = mgr->getSize();
+            ((float*)modelbufferpt)[a++] = q.x;
+            ((float*)modelbufferpt)[a++] = q.y;
+            ((float*)modelbufferpt)[a++] = q.z;
+            ((float*)modelbufferpt)[a++] = q.w;
 
-        floats.push_back(p.x);
-        floats.push_back(p.y);
-        floats.push_back(p.z);
-        floats.push_back(1);
+            ((float*)modelbufferpt)[a++] = p.x;
+            ((float*)modelbufferpt)[a++] = p.y;
+            ((float*)modelbufferpt)[a++] = p.z;
+            ((float*)modelbufferpt)[a++] = 1.0f;
 
-        floats.push_back(s.x);
-        floats.push_back(s.y);
-        floats.push_back(s.z);
-        floats.push_back(1);
+            ((float*)modelbufferpt)[a++] = s.x;
+            ((float*)modelbufferpt)[a++] = s.y;
+            ((float*)modelbufferpt)[a++] = s.z;
+            ((float*)modelbufferpt)[a++] = 1.0f;
 
-        unsigned int * tmp1 = &filtered[i]->id;
-        float* tmpf = (float*)tmp1;
-        float specialid = *((float*)&filtered[i]->id);
-        floats.push_back(specialid);
-        floats.push_back(specialid);
-        floats.push_back(specialid);
-        floats.push_back(specialid);
-    }
-    if (nextBuffer == 0)
-        modelInfosBuffer1->mapData(4 * floats.size(), floats.data());
-    if (nextBuffer == 1)
-        modelInfosBuffer2->mapData(4 * floats.size(), floats.data());
-    if (nextBuffer == 2)
-        modelInfosBuffer3->mapData(4 * floats.size(), floats.data());
+            ((int*)modelbufferpt)[a++] = filtered[i]->id;
+            ((int*)modelbufferpt)[a++] = filtered[i]->id;
+            ((int*)modelbufferpt)[a++] = filtered[i]->id;
+            ((int*)modelbufferpt)[a++] = filtered[i]->id;
+        }
+
+        if (nextBuffer == 0)
+            modelInfosBuffer1->unmapBuffer();
+        if (nextBuffer == 1)
+            modelInfosBuffer2->unmapBuffer();
+        if (nextBuffer == 2)
+            modelInfosBuffer3->unmapBuffer();
 
 
-    vector<float> floats2;
-    floats2.reserve(32);
-    floats2.push_back(material->roughness);
-    floats2.push_back(material->metalness);
-    floats2.push_back(0.0f);
-    floats2.push_back(0.0f);
+        vector<float> floats2;
+        floats2.reserve(32);
+        floats2.push_back(material->roughness);
+        floats2.push_back(material->metalness);
+        floats2.push_back(0.0f);
+        floats2.push_back(0.0f);
 
-    floats2.push_back(material->diffuseColor.x);
-    floats2.push_back(material->diffuseColor.y);
-    floats2.push_back(material->diffuseColor.z);
-    floats2.push_back(0.0f);
+        floats2.push_back(material->diffuseColor.x);
+        floats2.push_back(material->diffuseColor.y);
+        floats2.push_back(material->diffuseColor.z);
+        floats2.push_back(0.0f);
 
-    int one = 1;
-    int zero = 0;
+        int one = 1;
+        int zero = 0;
 
-    floats2.push_back(vcasti((material->diffuseColorTex != nullptr ? one : zero)));
-    floats2.push_back(vcasti((material->normalTex != nullptr ? one : zero)));
-    floats2.push_back(vcasti((material->bumpTex != nullptr ? one : zero)));
-    floats2.push_back(vcasti((material->roughnessTex != nullptr ? one : zero)));
+        floats2.push_back(vcasti((material->diffuseColorTex != nullptr ? one : zero)));
+        floats2.push_back(vcasti((material->normalTex != nullptr ? one : zero)));
+        floats2.push_back(vcasti((material->bumpTex != nullptr ? one : zero)));
+        floats2.push_back(vcasti((material->roughnessTex != nullptr ? one : zero)));
 
-    floats2.push_back(vcasti((material->metalnessTex != nullptr ? one : zero)));
-    floats2.push_back(0.0f);
-    floats2.push_back(0.0f);
-    floats2.push_back(0.0f); // amd safety 
+        floats2.push_back(vcasti((material->metalnessTex != nullptr ? one : zero)));
+        floats2.push_back(0.0f);
+        floats2.push_back(0.0f);
+        floats2.push_back(0.0f); // amd safety 
 
-    floats2.push_back(material->diffuseColorTexScale.x);
-    floats2.push_back(material->diffuseColorTexScale.y);
-    floats2.push_back(material->normalTexScale.x);
-    floats2.push_back(material->normalTexScale.y);
+        floats2.push_back(material->diffuseColorTexScale.x);
+        floats2.push_back(material->diffuseColorTexScale.y);
+        floats2.push_back(material->normalTexScale.x);
+        floats2.push_back(material->normalTexScale.y);
 
-    floats2.push_back(material->bumpTexScale.x);
-    floats2.push_back(material->bumpTexScale.y);
-    floats2.push_back(material->roughnessTexScale.x);
-    floats2.push_back(material->roughnessTexScale.y);
+        floats2.push_back(material->bumpTexScale.x);
+        floats2.push_back(material->bumpTexScale.y);
+        floats2.push_back(material->roughnessTexScale.x);
+        floats2.push_back(material->roughnessTexScale.y);
 
-    floats2.push_back(material->metalnessTexScale.x);
-    floats2.push_back(material->metalnessTexScale.y);
-    floats2.push_back(0.0f);
-    floats2.push_back(0.0f);
+        floats2.push_back(material->metalnessTexScale.x);
+        floats2.push_back(material->metalnessTexScale.y);
+        floats2.push_back(0.0f);
+        floats2.push_back(0.0f);
 
-    floats2.push_back(vcasti(mesh->id));
-    floats2.push_back(vcasti(id));
-    floats2.push_back(0.0f);
-    floats2.push_back(0.0f);
+        floats2.push_back(vcasti(mesh->id));
+        floats2.push_back(vcasti(id));
+        floats2.push_back(0.0f);
+        floats2.push_back(0.0f);
 
-    if (nextBuffer == 0)
-        materialBuffer1->mapData(4 * floats2.size(), floats2.data());
-    if (nextBuffer == 1)
-        materialBuffer2->mapData(4 * floats2.size(), floats2.data());
-    if (nextBuffer == 2)
-        materialBuffer3->mapData(4 * floats2.size(), floats2.data());
+        if (nextBuffer == 0)
+            materialBuffer1->mapData(4 * floats2.size(), floats2.data());
+        if (nextBuffer == 1)
+            materialBuffer2->mapData(4 * floats2.size(), floats2.data());
+        if (nextBuffer == 2)
+            materialBuffer3->mapData(4 * floats2.size(), floats2.data());
 
+        }
+}
+
+float rsi2(vec3 ro, vec3 rd, vec3 sp, float sr)
+{
+    vec3 oc = ro - sp;
+    float b = 2.0 * dot(rd, oc);
+    float c = dot(oc, oc) - sr*sr;
+    float disc = sqrt(b * b - 4.0 * c);
+    vec2 ex = vec2(-b - disc, -b + disc) / 2.0f;
+    return ex.x > 0.0 ? ex.x : ex.y;
+}
+
+vec4 projectvdao2(mat4 mat, vec3 pos) {
+    return (mat * vec4(pos, 1.0));
 }
 
 bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
 {
-    float radius = glm::max(info3d->aabbmax.length(), info3d->aabbmin.length());
+    return true;
+    float radius = info3d->radius;
 
-    vec3 center = instance->transformation->getPosition() + 0.5f * (info3d->aabbmax + info3d->aabbmin);
+    vec3 center = instance->transformation->getPosition();// +0.5f * (info3d->aabbmax + info3d->aabbmin);
+    vec3 camerapos = Game::instance->world->mainDisplayCamera->transformation->getPosition();
 
-    float dst = distance(Game::instance->world->mainDisplayCamera->transformation->getPosition(), center);
-    if (radius * 4.0f > dst) {
+    float dst = distance(camerapos, center);
+
+    if (dst < radius) {
+      //  printf("SKIP");
         return true;
     }
-
-    glm::vec3 ro = Game::instance->world->mainDisplayCamera->transformation->getPosition();
-
+    
     // i cannot find it on net so i craft my own cone/sphere test
-
-    vec3 rdirC = Game::instance->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.5));
-    vec3 rdir0 = Game::instance->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.0));
-    float maxdt = dot(rdirC, rdir0);
-    vec3 helper = ro + rdirC * dst;
+    
+    vec3 rdirC = Game::instance->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.5));  
+    vec3 helper = camerapos + rdirC * dst;
     vec3 helpdir = normalize(helper - center);
     vec3 newpos = center + helpdir * radius;
-    vec3 newdir = normalize(newpos - ro);
-    float decidingdot = dot(newdir, rdirC);
-    return decidingdot > maxdt;
+
+    vec4 prraw = projectvdao2(Game::instance->viewProjMatrix, newpos);
+    vec2 pr = (vec2(prraw.x, prraw.y) / prraw.w) * 0.5f + 0.5f;
+    bool sphereintersect = true;
+    if (pr.x < 0.0 || pr.x > 1.0 || pr.y < 0.0 || pr.y > 1.0) sphereintersect =  false;
+    if (prraw.z < 0.0) sphereintersect =  false;
+    return sphereintersect;// || decidingdot > maxdt;
 }

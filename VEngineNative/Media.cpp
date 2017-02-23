@@ -46,8 +46,10 @@ string Media::readString(string key)
 
 string Media::getPath(string key)
 {
-    if (mediaMap.find(key) == mediaMap.end())
+    if (mediaMap.find(key) == mediaMap.end()) {
         printf("File %s not found in media map", key.c_str());
+        return nullptr;
+    }
     return mediaMap.at(key);
 }
 
