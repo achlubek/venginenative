@@ -110,13 +110,13 @@ vec4 blurshadowsAO(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(shadowsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
-    return textureLod(shadowsTex, dir, mlvel).rgba;
+    //return textureLod(shadowsTex, dir, mlvel).rgba;
     float dst = textureLod(coverageDistTex, dir, mlvel).g;
     float aoc = 1.0;
 
     vec4 centerval = textureLod(shadowsTex, dir, mlvel).rgba;
     float cluma = length(centerval);
-    float blurrange = 0.008 * dir.y;
+    float blurrange = 0.18 * (1.0 - 1.0 / (dir.y * 1.0 + 1.0)) * abs(CloudsThresholdHigh - CloudsThresholdLow);
     for(int i=0;i<12;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
         //float there = textureLod(coverageDistTex, rdp, mlvel).g;
@@ -372,7 +372,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     #define xA 0.5
     #define xB 0.5
     float mult = mix(sqrt(0.001 + dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, SunDT) + 0.02;
-    vec3 raycolor = mult * getSunColor(0.0) * 0.9 * rays + (AtmDiffuse * 2.0 ) * mult * 0.8;
+    vec3 raycolor = mult * getSunColor(0.0) * 0.9 * rays + (AtmDiffuse * 1.0 ) * mult * 0.8;
     //raycolor *= xA + xB * (pow(1.0 - DirDT, 8.0));
     float raysCoverage = (1.0 / (DirDT * 11.0  *  NoiseOctave1 + 1.0));
     //return vdao;

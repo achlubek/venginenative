@@ -345,6 +345,23 @@ void EditorApp::onKeyRepeat(int key)
         }
     }
 }
+using namespace glm;
+float hashx(float n) {
+    return fract(sin(n)*758.5453);
+    //return fract(mod(n * 2310.7566730, 21.120312534));
+}
+
+float noise3d(vec3 x) {
+    vec3 p = floor(x);
+    vec3 f = fract(x);
+    f = f*f*(3.0f - 2.0f*f);
+    float n = p.x + p.y*157.0 + 113.0*p.z;
+
+    return mix(mix(mix(hashx(n + 0.0), hashx(n + 1.0), f.x),
+        mix(hashx(n + 157.0), hashx(n + 158.0), f.x), f.y),
+        mix(mix(hashx(n + 113.0), hashx(n + 114.0), f.x),
+            mix(hashx(n + 270.0), hashx(n + 271.0), f.x), f.y), f.z);
+}
 
 #define foreach(a,b,c)
 void EditorApp::onBind()
@@ -369,22 +386,30 @@ void EditorApp::onBind()
         game->world->scene->addMesh3d(t->getMesh3ds()[i]);
 
     }*/
-
+    
+    auto s = game->asset->loadMeshFile("grass_base.mesh3d");
+    s->getLodLevel(0)->disableFaceCulling = true;
+    s->getLodLevel(1)->disableFaceCulling = true;
+    s->getLodLevel(2)->disableFaceCulling = true;
+    s->getLodLevel(3)->disableFaceCulling = true;
+    srand(static_cast <unsigned> (time(0)));
     float fx = 0.0f, fy = 0.0f;
-    for (int x = 0; x < 10; x++) {
-        for (int y = 0; y < 10; y++) {
-            auto s = game->asset->loadMeshFile("icosphere.mesh3d");
-            auto l = s->getLodLevel(0);
-            auto m = l->material;
-            m->roughness = fx;
-            m->metalness = fy;
-            s->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(fx * 20.0f, 20.0f, fy * 20.0f))));
-            game->world->scene->addMesh3d(s);
+    for (int x = 0; x < 200; x++) {
+        for (int y = 0; y < 400; y++) {
+            float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+            float r2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+            float r3 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+            r2 = r2 * 2.0 * 1.0;
+            r3 = r3 * 2.0 * 1.0;
+            auto rot = glm::angleAxis(deg2rad(r * 3.1415f * 2.0f), glm::vec3(0.0, 1.0, 0.0));
+            float noize = noise3d(vec3(fx * 0.2f, fy * 0.2f, 0.0));
+            s->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(fx * 20.0f + 1.0f * r2, 20.0f + noize * 20.0f, fy * 20.0f + 1.0f * r3), rot)));
             fx += 0.1f;
         }
         fy += 0.1f;
         fx = 0.0f;
     }
+    game->world->scene->addMesh3d(s);
   //  t->name = "flagbase";
    // game->world->scene->addMesh(t);
 

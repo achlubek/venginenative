@@ -17,6 +17,7 @@ public:
     float distanceStart;
     float distanceEnd;
     unsigned int id;
+    bool disableFaceCulling = true;
     bool visible = true;
     bool castShadow = true;
     bool selectable = true;

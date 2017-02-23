@@ -116,7 +116,7 @@ float fbmHI(vec3 p){
     p *= 0.011 * FBMSCALE;
     float a = 0.0;
     float w = 0.5;
-    for(int i=0;i<8;i++){
+    for(int i=0;i<5;i++){
         //p += noise(vec3(a));
         a += xsupernoise3d(p) * w;
         w *= 0.5;
@@ -149,10 +149,10 @@ float cloudsDensity3D(vec3 pos){
     vec3 p = ps * 0.005 + CloudsOffset;
     //float density = fbmLOW( p);
     float density = fbmHI( p + fbmHI(p * 0.7) * 55.5);// * getFronts(pos);// * step(CloudsThresholdHigh, fbmLOW(ps * 0.005));
-    //density *= supernoise3d(pos * 0.00005);
+    //density *= supernoise3dX(pos * 0.00005 + CloudsOffset * 0.01);
     float measurement = (CloudsCeil - CloudsFloor) * 0.5;
     float mediana = (CloudsCeil + CloudsFloor) * 0.5;
-    float mlt = sqrt(sqrt( 1.0 - (abs( getHeightOverSea(pos) - mediana ) / measurement )));
+    float mlt = (( 1.0 - (abs( getHeightOverSea(pos) - mediana ) / measurement )));
     float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh, density * mlt);
     return  init;
 }
@@ -297,7 +297,7 @@ vec3 getCloudsAL(vec3 dir){
     float x = max(0.0, dot(dayData.sunDir, VECTOR_UP));
     float a = x;
     vec3 sss = pow(1.0 - ao, 2.0) * 20.9 * getSunColorDirectly(0.0)* vdt * vdt * vdt * (vxdt * vxdt * 0.9 + 0.1) * (1.0 / (0.06 + (1.0 - max(0.0, dot(dir, dayData.sunDir))))) / (CloudsDensityScale*CloudsDensityScale*CloudsDensityScale + 1.0);
-    vec3 grounddiffuse = (ao * 0.8 + 0.2) * getSunColorDirectly(0.0) * vdt* vdt * vdt  * 1.6;
+    vec3 grounddiffuse = (ao * ao) * getSunColorDirectly(0.0) * vdt* vdt * vdt  * 1.6;
 
     float coverage =  smoothstep(0.464, 0.6, CloudsThresholdLow);
   // return vec3(sao) ;
@@ -310,7 +310,7 @@ vec3 getCloudsAL(vec3 dir){
 
 float weightshadow = 1.1;
 float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2, float weight){
-    const int stepcount = 22;
+    const int stepcount = 2;
     const float stepsize = 1.0 / float(stepcount);
     float iter = 0.0;
     float rd = rand2sTime(UV) * stepsize;
@@ -349,7 +349,7 @@ float internalmarchconservativeCoverageOnly(vec3 p1, vec3 p2, float weight){
 
 
 vec2 internalmarchconservative(vec3 p1, vec3 p2){
-    int stepcount = 10;
+    int stepcount = 7;
     float stepsize = 1.0 / float(stepcount);
     float rd = fract(rand2sTime(UV)) * stepsize;
     float c = 0.0;

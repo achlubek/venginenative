@@ -147,10 +147,11 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
     if (currentBuffer == 2)modelInfosBuffer3->use(0);
 
     materialBuffer->use(1);
-
+    if (disableFaceCulling) glDisable(GL_CULL_FACE);
     if (currentBuffer == 0)info3d->drawInstanced(instancesFiltered1);
     if (currentBuffer == 1)info3d->drawInstanced(instancesFiltered2);
     if (currentBuffer == 2)info3d->drawInstanced(instancesFiltered3);
+    if (disableFaceCulling) glEnable(GL_CULL_FACE);
 
 }
 
