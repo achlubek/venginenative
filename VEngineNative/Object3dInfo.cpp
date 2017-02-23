@@ -50,7 +50,8 @@ void Object3dInfo::updateRadius()
     float r = 0.0f;
     for (int i = 0; i < size; i += 12) {
         glm::vec3 p = glm::vec3(vbo[i], vbo[i + 1], vbo[i + 2]);
-        r = glm::max(r, (float)p.length());
+        float dst = glm::distance(glm::vec3(0.0), p);
+        if (dst > r) r = dst;
     }
     radius = r;
 }

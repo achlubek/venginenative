@@ -386,7 +386,7 @@ void EditorApp::onBind()
         game->world->scene->addMesh3d(t->getMesh3ds()[i]);
 
     }*/
-    
+    /*
     auto s = game->asset->loadMeshFile("grass_base.mesh3d");
     s->getLodLevel(0)->disableFaceCulling = true;
     s->getLodLevel(1)->disableFaceCulling = true;
@@ -409,7 +409,33 @@ void EditorApp::onBind()
         fy += 0.1f;
         fx = 0.0f;
     }
-    game->world->scene->addMesh3d(s);
+    game->world->scene->addMesh3d(s);*/
+    
+    int terrainparts = 10;
+    float fullsize = 1000.0;
+    float partsize = 100.0;
+    for (int x = 0; x < 10; x++) {
+        for (int y = 0; y < 10; y++) {
+            stringstream ss0;
+            ss0 << "terr_lod0_" << x << "x" << y << ".raw";
+            stringstream ss1;
+            ss1 << "terr_lod1_" << x << "x" << y << ".raw";
+            stringstream ss2;
+            ss2 << "terr_lod2_" << x << "x" << y << ".raw";
+            auto mat = new Material();
+            mat->diffuseColorTex = new Texture2d("terrain_diffuse.png");
+            Mesh3d* m = Mesh3d::create(game->asset->loadObject3dInfoFile(ss0.str()), mat);
+            m->getInstance(0)->transformation->setPosition(vec3(partsize * x * 5.0f, -80.0, partsize*y * 5.0f));
+            m->getInstance(0)->transformation->setSize(vec3(5.0f));
+            m->getLodLevel(0)->distanceStart = 0.0f;
+            m->getLodLevel(0)->distanceEnd = 150.0f;
+
+            m->addLodLevel(new Mesh3dLodLevel(game->asset->loadObject3dInfoFile(ss1.str()), mat, 150.0f, 350.0f));
+            m->addLodLevel(new Mesh3dLodLevel(game->asset->loadObject3dInfoFile(ss2.str()), mat, 350.0f, 11150.0f));
+            game->world->scene->addMesh3d(m);
+        }
+    }
+    
   //  t->name = "flagbase";
    // game->world->scene->addMesh(t);
 

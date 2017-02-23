@@ -316,7 +316,8 @@ vec4 projectvdao2(mat4 mat, vec3 pos) {
 
 bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
 {
-    float radius = info3d->radius;
+    auto size = instance->transformation->getSize();
+    float radius = info3d->radius * glm::max(glm::max(size.x, size.y), size.z);
 
     vec3 center = instance->transformation->getPosition();// +0.5f * (info3d->aabbmax + info3d->aabbmin);
     vec3 camerapos = Game::instance->world->mainDisplayCamera->transformation->getPosition();

@@ -244,6 +244,11 @@ float visibilityspecial(vec3 dir1, vec3 dir2, float z){
     v /= 9.0;
     return (pow( v, 2.0)) * 1.0;
 }
+
+float smart_inverse_dot(float dt, float coeff){
+    return 1.0 - (1.0 / (1.0 + dt * coeff));
+}
+
 #include ResolveAtmosphere.glsl
 float globalAoOutput = 0.0;
 float getAO(vec3 pos, float randomization, float weight);
@@ -296,7 +301,7 @@ vec3 getCloudsAL(vec3 dir){
     //float dshadow = getAODIR(point, px, 113.0);
     float x = max(0.0, dot(dayData.sunDir, VECTOR_UP));
     float a = x;
-    vec3 sss = pow(1.0 - ao, 2.0) * 20.9 * getSunColorDirectly(0.0)* vdt * vdt * vdt * (vxdt * vxdt * 0.9 + 0.1) * (1.0 / (0.06 + (1.0 - max(0.0, dot(dir, dayData.sunDir))))) / (CloudsDensityScale*CloudsDensityScale*CloudsDensityScale + 1.0);
+    vec3 sss = pow(1.0 - ao, 2.0) * 320.9 * getSunColorDirectly(0.0)* smart_inverse_dot(vdt, 2.0) * (vxdt * vxdt * 0.9 + 0.1) * (1.0 / (0.76 + 5.0 * (1.0 - max(0.0, dot(dir, dayData.sunDir))))) / (CloudsDensityScale*CloudsDensityScale*CloudsDensityScale + 1.0);
     vec3 grounddiffuse = (ao * ao) * getSunColorDirectly(0.0) * vdt* vdt * vdt  * 1.6;
 
     float coverage =  smoothstep(0.464, 0.6, CloudsThresholdLow);
