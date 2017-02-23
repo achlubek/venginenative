@@ -15,7 +15,7 @@ out Data {
 flat out uint MeshInstanceID;
 flat out uint LodLevelID;
 flat out uint MeshID;
-layout (std140, binding = 1) uniform  MatBuffer
+layout (std430, binding = 1) buffer MatBuffer
 {
     vec4 RoughnessMetalness_ZeroZero;
     vec4 DiffuseColor_Zero;

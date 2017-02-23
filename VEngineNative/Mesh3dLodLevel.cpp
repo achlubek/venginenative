@@ -14,13 +14,11 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial, float di
     instancesFiltered2 = 0;
     instancesFiltered3 = 0;
     int kb1 = 1024;
-    int mb1 = kb1*1024;
+    int mb1 = kb1 * 1024;
     modelInfosBuffer1 = new ShaderStorageBuffer();
     modelInfosBuffer2 = new ShaderStorageBuffer();
     modelInfosBuffer3 = new ShaderStorageBuffer();
-    materialBuffer1 = new ShaderStorageBuffer(kb1);
-    materialBuffer2 = new ShaderStorageBuffer(kb1);
-    materialBuffer3 = new ShaderStorageBuffer(kb1);
+    materialBuffer = new ShaderStorageBuffer(kb1);
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -50,9 +48,7 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial)
     modelInfosBuffer1 = new ShaderStorageBuffer();
     modelInfosBuffer2 = new ShaderStorageBuffer();
     modelInfosBuffer3 = new ShaderStorageBuffer();
-    materialBuffer1 = new ShaderStorageBuffer(kb1);
-    materialBuffer2 = new ShaderStorageBuffer(kb1);
-    materialBuffer3 = new ShaderStorageBuffer(kb1);
+    materialBuffer = new ShaderStorageBuffer(kb1);
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -82,9 +78,7 @@ Mesh3dLodLevel::Mesh3dLodLevel()
     modelInfosBuffer1 = new ShaderStorageBuffer();
     modelInfosBuffer2 = new ShaderStorageBuffer();
     modelInfosBuffer3 = new ShaderStorageBuffer();
-    materialBuffer1 = new ShaderStorageBuffer(kb1);
-    materialBuffer2 = new ShaderStorageBuffer(kb1);
-    materialBuffer3 = new ShaderStorageBuffer(kb1);
+    materialBuffer = new ShaderStorageBuffer(kb1);
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -152,9 +146,7 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
     if (currentBuffer == 1)modelInfosBuffer2->use(0);
     if (currentBuffer == 2)modelInfosBuffer3->use(0);
 
-    if (currentBuffer == 0)materialBuffer1->use(1);
-    if (currentBuffer == 1)materialBuffer2->use(1);
-    if (currentBuffer == 2)materialBuffer3->use(1);
+    materialBuffer->use(1);
 
     if (currentBuffer == 0)info3d->drawInstanced(instancesFiltered1);
     if (currentBuffer == 1)info3d->drawInstanced(instancesFiltered2);
@@ -165,77 +157,99 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
 void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstance*> &instances)
 {
     // next frame it runs current buffer to 1, next buffer will be 
-    currentBuffer++;
-    if (currentBuffer > 2) currentBuffer = 0;
-
-    if (currentBuffer == 0) nextBuffer = 2;
-    if (currentBuffer == 1) nextBuffer = 0;
-    if (currentBuffer == 2) nextBuffer = 1;
 
     // buffers into nextbuffer, draws current
     vec3 cameraPos = Game::instance->world->mainDisplayCamera->transformation->getPosition();
     vector<Mesh3dInstance*> filtered;
+    vector<int> newids;
     for (int i = 0; i < instances.size(); i++) {
         float dst = distance(cameraPos, instances[i]->transformation->getPosition());
         if (instances[i]->visible && dst >= distanceStart && dst < distanceEnd && checkIntersection(instances[i])) {
             filtered.push_back(instances[i]);
+            newids.push_back(instances[i]->id);
         }
     }
+    bool changed = false;
+    if (newids.size() != lastIdMap.size()) {
+        changed = true;
+    }
+    else {
+        for (int i = 0; i < newids.size(); i++) {
+            if (newids[i] != lastIdMap[i]) {
+                changed = true;
+                break;
+            }
+        }
+    }
+    lastIdMap.clear();
+    lastIdMap = newids;
     
-    if (nextBuffer == 0)instancesFiltered1 = filtered.size();
-    if (nextBuffer == 1)instancesFiltered2 = filtered.size();
-    if (nextBuffer == 2)instancesFiltered3 = filtered.size();
+    if (changed) pendingUpdates = 3;
 
     /*layout rotation f4 translation f3+1 scale f3+1 =>> 12 floats*/
     // Urgently transfrom it into permament mapped buffer 
 
-    int fint = 0;
-    if (nextBuffer == 0)fint = instancesFiltered1;
-    if (nextBuffer == 1)fint = instancesFiltered2;
-    if (nextBuffer == 2)fint = instancesFiltered3;
-    if (fint > 0) {
-        void* modelbufferpt = nullptr;
-        if (nextBuffer == 0)
-            modelbufferpt = modelInfosBuffer1->aquireAsynchronousPointer(0, 4 * 16 * fint);
-        if (nextBuffer == 1)
-            modelbufferpt = modelInfosBuffer2->aquireAsynchronousPointer(0, 4 * 16 * fint);
-        if (nextBuffer == 2)
-            modelbufferpt = modelInfosBuffer3->aquireAsynchronousPointer(0, 4 * 16 * fint);
-        int a = 0;
-        for (unsigned int i = 0; i < fint; i++) {
-            TransformationManager *mgr = filtered[i]->transformation;
-            quat q = mgr->getOrientation();
-            vec3 p = mgr->getPosition();
-            vec3 s = mgr->getSize();
-            ((float*)modelbufferpt)[a++] = q.x;
-            ((float*)modelbufferpt)[a++] = q.y;
-            ((float*)modelbufferpt)[a++] = q.z;
-            ((float*)modelbufferpt)[a++] = q.w;
+    int fint = filtered.size();
 
-            ((float*)modelbufferpt)[a++] = p.x;
-            ((float*)modelbufferpt)[a++] = p.y;
-            ((float*)modelbufferpt)[a++] = p.z;
-            ((float*)modelbufferpt)[a++] = 1.0f;
+    if (pendingUpdates-- > 0) {
 
-            ((float*)modelbufferpt)[a++] = s.x;
-            ((float*)modelbufferpt)[a++] = s.y;
-            ((float*)modelbufferpt)[a++] = s.z;
-            ((float*)modelbufferpt)[a++] = 1.0f;
+        currentBuffer++;
+        if (currentBuffer > 2) currentBuffer = 0;
 
-            ((int*)modelbufferpt)[a++] = filtered[i]->id;
-            ((int*)modelbufferpt)[a++] = filtered[i]->id;
-            ((int*)modelbufferpt)[a++] = filtered[i]->id;
-            ((int*)modelbufferpt)[a++] = filtered[i]->id;
+        if (currentBuffer == 0) nextBuffer = 2;
+        if (currentBuffer == 1) nextBuffer = 0;
+        if (currentBuffer == 2) nextBuffer = 1;
+
+        if (nextBuffer == 0)instancesFiltered1 = fint;
+        if (nextBuffer == 1)instancesFiltered2 = fint;
+        if (nextBuffer == 2)instancesFiltered3 = fint;
+
+        if (fint > 0) {
+            void* modelbufferpt = nullptr;
+            if (nextBuffer == 0)
+                modelbufferpt = modelInfosBuffer1->aquireAsynchronousPointer(0, 4 * 16 * fint);
+            if (nextBuffer == 1)
+                modelbufferpt = modelInfosBuffer2->aquireAsynchronousPointer(0, 4 * 16 * fint);
+            if (nextBuffer == 2)
+                modelbufferpt = modelInfosBuffer3->aquireAsynchronousPointer(0, 4 * 16 * fint);
+            int a = 0;
+            for (unsigned int i = 0; i < fint; i++) {
+                TransformationManager *mgr = filtered[i]->transformation;
+                quat q = mgr->getOrientation();
+                vec3 p = mgr->getPosition();
+                vec3 s = mgr->getSize();
+                ((float*)modelbufferpt)[a++] = q.x;
+                ((float*)modelbufferpt)[a++] = q.y;
+                ((float*)modelbufferpt)[a++] = q.z;
+                ((float*)modelbufferpt)[a++] = q.w;
+
+                ((float*)modelbufferpt)[a++] = p.x;
+                ((float*)modelbufferpt)[a++] = p.y;
+                ((float*)modelbufferpt)[a++] = p.z;
+                ((float*)modelbufferpt)[a++] = 1.0f;
+
+                ((float*)modelbufferpt)[a++] = s.x;
+                ((float*)modelbufferpt)[a++] = s.y;
+                ((float*)modelbufferpt)[a++] = s.z;
+                ((float*)modelbufferpt)[a++] = 1.0f;
+
+                ((int*)modelbufferpt)[a++] = filtered[i]->id;
+                ((int*)modelbufferpt)[a++] = filtered[i]->id;
+                ((int*)modelbufferpt)[a++] = filtered[i]->id;
+                ((int*)modelbufferpt)[a++] = filtered[i]->id;
+            }
+
+            if (nextBuffer == 0)
+                modelInfosBuffer1->unmapBuffer();
+            if (nextBuffer == 1)
+                modelInfosBuffer2->unmapBuffer();
+            if (nextBuffer == 2)
+                modelInfosBuffer3->unmapBuffer();
         }
+    }
 
-        if (nextBuffer == 0)
-            modelInfosBuffer1->unmapBuffer();
-        if (nextBuffer == 1)
-            modelInfosBuffer2->unmapBuffer();
-        if (nextBuffer == 2)
-            modelInfosBuffer3->unmapBuffer();
-
-
+    if (materialBufferNeedsUpdate) {
+        materialBufferNeedsUpdate = false;
         vector<float> floats2;
         floats2.reserve(32);
         floats2.push_back(material->roughness);
@@ -281,14 +295,8 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
         floats2.push_back(0.0f);
         floats2.push_back(0.0f);
 
-        if (nextBuffer == 0)
-            materialBuffer1->mapData(4 * floats2.size(), floats2.data());
-        if (nextBuffer == 1)
-            materialBuffer2->mapData(4 * floats2.size(), floats2.data());
-        if (nextBuffer == 2)
-            materialBuffer3->mapData(4 * floats2.size(), floats2.data());
-
-        }
+        materialBuffer->mapData(4 * floats2.size(), floats2.data());
+    }
 }
 
 float rsi2(vec3 ro, vec3 rd, vec3 sp, float sr)
@@ -307,7 +315,6 @@ vec4 projectvdao2(mat4 mat, vec3 pos) {
 
 bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
 {
-    return true;
     float radius = info3d->radius;
 
     vec3 center = instance->transformation->getPosition();// +0.5f * (info3d->aabbmax + info3d->aabbmin);
@@ -316,13 +323,13 @@ bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
     float dst = distance(camerapos, center);
 
     if (dst < radius) {
-      //  printf("SKIP");
+        //  printf("SKIP");
         return true;
     }
-    
+
     // i cannot find it on net so i craft my own cone/sphere test
-    
-    vec3 rdirC = Game::instance->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.5));  
+
+    vec3 rdirC = Game::instance->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.5));
     vec3 helper = camerapos + rdirC * dst;
     vec3 helpdir = normalize(helper - center);
     vec3 newpos = center + helpdir * radius;
@@ -330,7 +337,7 @@ bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
     vec4 prraw = projectvdao2(Game::instance->viewProjMatrix, newpos);
     vec2 pr = (vec2(prraw.x, prraw.y) / prraw.w) * 0.5f + 0.5f;
     bool sphereintersect = true;
-    if (pr.x < 0.0 || pr.x > 1.0 || pr.y < 0.0 || pr.y > 1.0) sphereintersect =  false;
-    if (prraw.z < 0.0) sphereintersect =  false;
+    if (pr.x < 0.0 || pr.x > 1.0 || pr.y < 0.0 || pr.y > 1.0) sphereintersect = false;
+    if (prraw.z < 0.0) sphereintersect = false;
     return sphereintersect;// || decidingdot > maxdt;
 }

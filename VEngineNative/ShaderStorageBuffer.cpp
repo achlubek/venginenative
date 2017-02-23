@@ -25,19 +25,21 @@ ShaderStorageBuffer::~ShaderStorageBuffer()
 void ShaderStorageBuffer::use(unsigned int index)
 {
     if (!generated) generate();
-    glBindBufferBase(bufferType, index, handle);
+    glBindBufferRange(bufferType, index, handle, 0, currentBytesCount);
 }
 
 void ShaderStorageBuffer::mapData(size_t size, const void * data)
 {
     if (!generated) generate();
     glBindBuffer(bufferType, handle);
+    currentBytesCount = size;
     glBufferData(bufferType, size, data, usageHint);
 }
 void ShaderStorageBuffer::mapSubData(int offset, size_t size, const void * data)
 {
     if (!generated) generate();
     glBindBuffer(bufferType, handle);
+    currentBytesCount = offset + size;
     glBufferData(bufferType, size, data, usageHint);
     glBufferSubData(bufferType, offset, size, data);
 }

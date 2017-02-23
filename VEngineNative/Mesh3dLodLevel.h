@@ -22,14 +22,13 @@ public:
     bool selectable = true;
     void draw(const Mesh3d* mesh);
     void updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstance*> &instances);
+    bool materialBufferNeedsUpdate = true;
 private:
     ShaderStorageBuffer *modelInfosBuffer1;
     ShaderStorageBuffer *modelInfosBuffer2;
     ShaderStorageBuffer *modelInfosBuffer3;
 
-    ShaderStorageBuffer *materialBuffer1;
-    ShaderStorageBuffer *materialBuffer2;
-    ShaderStorageBuffer *materialBuffer3;
+    ShaderStorageBuffer *materialBuffer;
     
     int currentBuffer = 0;
     int nextBuffer = 1; //smart
@@ -47,4 +46,6 @@ private:
     size_t instancesFiltered1;
     size_t instancesFiltered2;
     size_t instancesFiltered3;
+    vector<int> lastIdMap = vector<int>{};
+    int pendingUpdates = 0;
 };

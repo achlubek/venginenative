@@ -371,18 +371,18 @@ void EditorApp::onBind()
     }*/
 
     float fx = 0.0f, fy = 0.0f;
-    for (int x = 0; x < 100; x++) {
-        for (int y = 0; y < 100; y++) {
+    for (int x = 0; x < 10; x++) {
+        for (int y = 0; y < 10; y++) {
             auto s = game->asset->loadMeshFile("icosphere.mesh3d");
             auto l = s->getLodLevel(0);
             auto m = l->material;
             m->roughness = fx;
             m->metalness = fy;
-            s->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(fx * 200.0f, 20.0f, fy * 200.0f))));
+            s->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(fx * 20.0f, 20.0f, fy * 20.0f))));
             game->world->scene->addMesh3d(s);
-            fx += 0.01f;
+            fx += 0.1f;
         }
-        fy += 0.01f;
+        fy += 0.1f;
         fx = 0.0f;
     }
   //  t->name = "flagbase";
