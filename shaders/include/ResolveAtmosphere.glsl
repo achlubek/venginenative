@@ -356,7 +356,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float mult = mix(sqrt(0.001 + dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, SunDT) + 0.02;
     vec3 raycolor = mult * getSunColor(0.0) * 0.9 * rays + (AtmDiffuse * 1.0 ) * mult * 0.8;
     //raycolor *= xA + xB * (pow(1.0 - DirDT, 8.0));
-    float raysCoverage = (1.0 / (DirDT * 11.0  *  NoiseOctave1 + 1.0));
+    float raysCoverage = clamp((1.0 / (DirDT * 111.0 / NoiseOctave1 + 1.0)), 0.0, 1.0);
     //return vdao;
     //return vdao.gba;
     //return lightnings;

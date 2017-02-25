@@ -275,12 +275,14 @@ vec4 shade(){
         //color += mindst * cloudsonsun * getSunColor(0.0) * pow(max(0.0, dot(dir, dayData.sunDir)), 2.0) * 0.01 * (1.0 - smoothstep(0.26, 0.6, abs(0.5 - supernoise3d(vec3(UV.x, UV.y * (Resolution.y / Resolution.x), 0.0) * 30.0))));
         //color += mindst * cloudsonsun * getSunColor(0.0) * pow(max(0.0, dot(dir, dayData.sunDir)), 2.0) * 0.01 * (1.0 - smoothstep(0.26, 0.6, abs(0.5 - supernoise3d(vec3(UV.x, UV.y * (Resolution.y / Resolution.x), 0.0) * 60.0))));
         float monsoonconverage2 = (1.0 - smoothstep(0.995, 0.996, dot(dir, dayData.moonDir)));
-        vec4 cloudsData = smartblur(dir, 0.0);
+        vec4 cloudsData = smartblur(reconstructCameraSpaceDistance(ss2, 1.0), 0.0);
         float coverage = cloudsData.r;
+        vec4 cloudsData2 = smartblur(dir, 0.0);
+        float coverage2 = cloudsData2.r;
         float ssobj = 1.0 - smoothstep(0.0, 1.01, textureLod(mrt_Distance_Bump_Tex, ss2, 3.0).r);
         float ssobj2 = 1.0 - step(0.1, textureLod(mrt_Distance_Bump_Tex, UV, 0.0).r);
-        //color += monsoonconverage2 * (1.0 - smoothstep(0.0, 0.9, coverage)) * ssobj * (lenssun(dir)) * getSunColorDirectly(0.0) * 6.0;
-        color += monsoonconverage2 * (1.0 - smoothstep(0.0, 0.9, coverage)) * ssobj2 *  step(0.0, dir.y) * (smoothstep(0.995, 0.999, max(0.0, dot(dir, dayData.sunDir)))) * getSunColorDirectly(0.0) * 1.0;
+        color += (1.0 - coverage) * ssobj * (lenssun(dir)) * getSunColorDirectly(0.0) * 6.0;
+        color += monsoonconverage2 * (1.0 - coverage2) * ssobj2 *  step(0.0, dir.y) * (smoothstep(0.998, 0.9985, max(0.0, dot(dir, dayData.sunDir)))) * getSunColorDirectly(0.0) * 3.0;
         color = tonemap(Cx * lightnings + color);
     }
     return vec4( clamp(color, 0.0, 110.0), currentData.cameraDistance * 0.001);
