@@ -34,6 +34,14 @@ int get_file_contents_binary(unsigned char** out_bytes, const char* path) {
     return size;
 }
 
+int put_file_contents_binary(const void* out_bytes, int size, const char* path) {
+    FILE* fh = fopen(path, "wb+");
+    printf("%d\n", size);
+    fwrite(out_bytes, 1, size, fh);
+    fclose(fh);
+    return size;
+}
+
 void Media::loadFileMap(string path)
 {
     searchRecursive(path);
@@ -42,6 +50,11 @@ void Media::loadFileMap(string path)
 string Media::readString(string key)
 {
     return string(get_file_contents(getPath(key).c_str()));
+}
+
+void Media::saveFile(string path, int size, const void * data)
+{
+    put_file_contents_binary(data, size, path.c_str());
 }
 
 string Media::getPath(string key)

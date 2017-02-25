@@ -3,21 +3,22 @@
 
 #include "stdafx.h"
 
-#include "../VEngineNative/Camera.h";
-#include "../VEngineNative/Object3dInfo.h";
-#include "../VEngineNative/Media.h";
-#include "../VEngineNative/World.h";
-#include "../VEngineNative/Scene.h";
-#include "../VEngineNative/Material.h";
-#include "../VEngineNative/Mesh3d.h";
-#include "../VEngineNative/Light.h";
-#include "../VEngineNative/SquirrelVM.h";
-#include "../VEngineNative/GLSLVM.h";
-#include "../VEngineNative/SimpleParser.h";
-#include "../VEngineNative/imgui/imgui.h";
+#include "../VEngineNative/Camera.h"
+#include "../VEngineNative/Object3dInfo.h"
+#include "../VEngineNative/Media.h"
+#include "../VEngineNative/World.h"
+#include "../VEngineNative/Scene.h"
+#include "../VEngineNative/Material.h"
+#include "../VEngineNative/Mesh3d.h"
+#include "../VEngineNative/Light.h"
+#include "../VEngineNative/SquirrelVM.h"
+#include "../VEngineNative/GLSLVM.h"
+#include "../VEngineNative/SimpleParser.h"
+#include "../VEngineNative/imgui/imgui.h"
 
-#include "EditorApp.h";
-#include "Car.h";
+#include "EditorApp.h"
+#include "Car.h"
+#include "Utilities.h"
 
 Mesh3d * loadRawMesh(string file) {
     Material *mat = new Material();
@@ -35,8 +36,14 @@ Mesh3d * loadRawMesh(string file) {
 
 
 
-int main()
+int main(int argc, char* argv[])
 {
+    if (argc == 4 && strcmp(argv[1], "png2int") == 0) {
+        auto u = new Utilities();
+        u->convertPng16RtoUShortRawFile(argv[2], argv[3]);
+        return 0;
+    }
+
     EditorApp* app = new EditorApp();
     app->initialize();
     Game *game = new Game(app->width, app->height);

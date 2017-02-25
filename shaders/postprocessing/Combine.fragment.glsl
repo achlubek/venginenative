@@ -213,6 +213,20 @@ vec3 integrateCloudsWater(){
     return color;
 }
 
+float lenssun(vec3 dir){
+    //return smoothstep(0.997, 0.999, dot(dir, dayData.sunDir));
+    vec3 sdir = dayData.sunDir;
+    vec2 ss1 = projectvdao(CameraPosition + dir);
+    vec2 ss2 = projectvdao(CameraPosition + sdir);
+    ss1.x *= Resolution.x / Resolution.y;
+    ss2.x *= Resolution.x / Resolution.y;
+
+    vec3 differente = normalize(dir - sdir) * 4.0;
+    //return smoothstep(0.997, 0.998, dot(dir, dayData.sunDir));// fuck it pow(1.0 / (distance(dir, dayData.sunDir) * 22.0 - 0.05), 5.0);
+    float primary = pow(1.0 / abs((distance(dir, sdir) * 22.0 - 0.05)), 3.0 + supernoise3dX(differente * 1.3 + Time * 0.2) * 1.0);
+
+    return primary;
+}
 vec4 shade(){
     vec3 color = vec3(0);
     if(CombineStep == STEP_PREVIOUS_SUN){
@@ -260,6 +274,13 @@ vec4 shade(){
         // want super realistic dirt on lens?
         //color += mindst * cloudsonsun * getSunColor(0.0) * pow(max(0.0, dot(dir, dayData.sunDir)), 2.0) * 0.01 * (1.0 - smoothstep(0.26, 0.6, abs(0.5 - supernoise3d(vec3(UV.x, UV.y * (Resolution.y / Resolution.x), 0.0) * 30.0))));
         //color += mindst * cloudsonsun * getSunColor(0.0) * pow(max(0.0, dot(dir, dayData.sunDir)), 2.0) * 0.01 * (1.0 - smoothstep(0.26, 0.6, abs(0.5 - supernoise3d(vec3(UV.x, UV.y * (Resolution.y / Resolution.x), 0.0) * 60.0))));
+        float monsoonconverage2 = (1.0 - smoothstep(0.995, 0.996, dot(dir, dayData.moonDir)));
+        vec4 cloudsData = smartblur(dir, 0.0);
+        float coverage = cloudsData.r;
+        float ssobj = 1.0 - smoothstep(0.0, 1.01, textureLod(mrt_Distance_Bump_Tex, ss2, 3.0).r);
+        float ssobj2 = 1.0 - step(0.1, textureLod(mrt_Distance_Bump_Tex, UV, 0.0).r);
+        //color += monsoonconverage2 * (1.0 - smoothstep(0.0, 0.9, coverage)) * ssobj * (lenssun(dir)) * getSunColorDirectly(0.0) * 6.0;
+        color += monsoonconverage2 * (1.0 - smoothstep(0.0, 0.9, coverage)) * ssobj2 *  step(0.0, dir.y) * (smoothstep(0.995, 0.999, max(0.0, dot(dir, dayData.sunDir)))) * getSunColorDirectly(0.0) * 1.0;
         color = tonemap(Cx * lightnings + color);
     }
     return vec4( clamp(color, 0.0, 110.0), currentData.cameraDistance * 0.001);

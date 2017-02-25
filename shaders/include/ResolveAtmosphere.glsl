@@ -311,24 +311,6 @@ vec3 textureMoon(vec3 dir){
 }
 
 
-float lenssun(vec3 dir){
-    //return smoothstep(0.997, 0.999, dot(dir, dayData.sunDir));
-    vec3 sdir = dayData.sunDir;
-    float x = sdir.y * 0.5 + 0.5;
-    x *= 0.94;
-    x = x * 2.0 - 1.0;
-    sdir.y = mix(x, sdir.y, sdir.y);
-    vec2 ss1 = projectvdao(CameraPosition + dir);
-    vec2 ss2 = projectvdao(CameraPosition + sdir);
-    ss1.x *= Resolution.x / Resolution.y;
-    ss2.x *= Resolution.x / Resolution.y;
-
-    vec3 differente = normalize(dir - sdir) * 4.0;
-    //return smoothstep(0.997, 0.998, dot(dir, dayData.sunDir));// fuck it pow(1.0 / (distance(dir, dayData.sunDir) * 22.0 - 0.05), 5.0);
-    float primary = pow(1.0 / abs((distance(dir, sdir) * 22.0 - 0.05)), 3.0 + supernoise3dX(differente * 1.3 + Time * 0.2) * 1.0);
-
-    return primary;
-}
 
 float thatsunglowIdontknownamefor(vec3 dir, float strength, float power){
     float d = max(0.0, dot(dir, dayData.sunDir));
@@ -344,7 +326,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float monsoonconverage2 = (1.0 - smoothstep(0.995, 0.996, dot(dir, dayData.moonDir)));
     vec4 cloudsData = smartblur(dir, roughness);
     float coverage = cloudsData.r;
-    scattering += monsoonconverage2 * (1.0 - smoothstep(0.0, 0.9, coverage)) * (lenssun(dir)) * getSunColorDirectly(0.0) * 11.0;
+    //scattering += monsoonconverage2 * (1.0 - smoothstep(0.0, 0.9, coverage)) * (lenssun(dir)) * getSunColorDirectly(0.0) * 11.0;
     sshadow = 1.0 - coverage;
     //float dist = cloudsData.g;
     vec4 vdao = blurshadowsAO(dir, roughness);
@@ -405,9 +387,10 @@ float ssao(vec3 p1){
     float iter = 0.0;
     vec2 uv = UV + vec2(Rand1, Rand2);
     float rd = rand2s(uv) * 12.1232343456;
-    float targetmeters = 0.3;
+    float targetmeters = 12.3;
     int steps = 11;
     float stepsize = 1.0 / 11.0;
+    vec3 refl = normalize(reflect(reconstructCameraSpaceDistance(UV, 1.0), currentData.normal));
     for(int i=0;i<steps;i++){
         vec3 vx = vec3(0.0);
         vx.x = rand2s(uv + rd);
@@ -475,6 +458,7 @@ vec3 vdao(){
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
     //float fresnel = 0.04 + 0.96 * textureLod(fresnelTex, vec2(clamp(currentData.roughness, 0.01, 0.98), 1.0 - max(0.0, dot(-dir, currentData.normal))), 0.0).r;
     vec3 refdir = reflect(dir, currentData.normal);
+    vec3 atmdiff = textureLod(resolvedAtmosphereTex, currentData.normal, 9.0).rgb;
     for(int i=0;i<steps;i++){
         vec3 p = normalize(randpoint3());
         p *= sign(dot(p, currentData.normal));
@@ -485,7 +469,7 @@ vec3 vdao(){
 
         //p.y = abs(p.y);
     //    float cx = visibility(currentData.worldPos, currentData.worldPos + p * 1.0);
-        c += 0.1 * shade_ray_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, 0.0 + 7.0 * currentData.roughness * currentData.roughness).rgb);
+        c += 0.1 * v * shade_ray_env_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness, resolvedAtmosphereTex)).rgb, atmdiff);
     }
     return shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * getSunColor(0.0)) + c * ssao(currentData.worldPos);
 }

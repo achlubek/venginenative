@@ -8,7 +8,7 @@ float EnvDFGPolynomial(float green, float roughness, float ndotv )
 {
     float x = pow(1.0 - roughness*0.7, 6.0);
     float y = ndotv;
- 
+
     float b1 = -0.1688;
     float b2 = 1.895;
     float b3 = 0.9903;
@@ -16,7 +16,7 @@ float EnvDFGPolynomial(float green, float roughness, float ndotv )
     float b5 = 8.404;
     float b6 = -5.069;
     float bias = clamp( min( b1 * x + b2 * x * x, b3 + b4 * y + b5 * y * y + b6 * y * y * y ), 0.0, 1.0);
- 
+
     float d0 = 0.6045;
     float d1 = 1.699;
     float d2 = -0.5228;
@@ -26,7 +26,7 @@ float EnvDFGPolynomial(float green, float roughness, float ndotv )
     float d6 = 2.661;
     float delta = clamp( d0 + d1 * x + d2 * y + d3 * x * x + d4 * x * y + d5 * y * y + d6 * x * x * x, 0.0, 1.0);
     float scale = delta - bias;
- 
+
     bias *= clamp( 50.0 * green, 0.0, 1.0);
     return scale + bias;
 }
@@ -68,7 +68,7 @@ vec3 LightingFuncGGX_REF(vec3 N, vec3 V, vec3 L, float roughness, vec3 F0)
     float alphaSqr = alpha*alpha;
     float pi = 3.14159;
     float denom = dotNH * dotNH *(alphaSqr-1.0) + 1.0;
-    D = alphaSqr/(pi * denom * denom);
+    D = alphaSqr/(pi * denom * denom );
 
 
     float k = alpha/2.0;
@@ -109,21 +109,21 @@ vec3 albedo) {
 #define MaterialTypeTessellatedTerrain 7
 vec3 shade(
 vec3 camera,
-vec3 albedo, 
+vec3 albedo,
 vec3 normal,
-vec3 fragmentPosition, 
-vec3 lightPosition, 
-vec3 lightColor, 
-float roughness, 
+vec3 fragmentPosition,
+vec3 lightPosition,
+vec3 lightColor,
+float roughness,
 bool ignoreAtt
 ){
     vec3 lightRelativeToVPos =normalize( lightPosition - fragmentPosition);
-    
+
     vec3 cameraRelativeToVPos = -normalize(fragmentPosition - camera);
-    
+
     float att = CalculateFallof(distance(fragmentPosition, lightPosition));
     att = mix(1.0, att, roughness * roughness);
-    
+
     vec3 specularComponent = LightingFuncGGX_REF(
     normal,
     cameraRelativeToVPos,
@@ -131,24 +131,24 @@ bool ignoreAtt
     roughness,
     lightColor
     );
-    
-    
-    
+
+
+
     return  lightColor * albedo * att;// * CalculateFallof(distance(lightPosition, fragmentPosition));
 }
 
 vec3 shadeDiffuse(
 vec3 camera,
-vec3 albedo, 
+vec3 albedo,
 vec3 normal,
-vec3 fragmentPosition, 
-vec3 lightPosition, 
-vec3 lightColor, 
-float roughness, 
+vec3 fragmentPosition,
+vec3 lightPosition,
+vec3 lightColor,
+float roughness,
 bool ignoreAtt
 ){
     vec3 lightRelativeToVPos =normalize( lightPosition - fragmentPosition);
-    
+
     vec3 cameraRelativeToVPos = -normalize(fragmentPosition - camera);
     float att = CalculateFallof(distance(fragmentPosition, lightPosition));
     return  lightColor * orenNayarDiffuse(lightRelativeToVPos,
@@ -160,13 +160,13 @@ bool ignoreAtt
 
 vec3 shadeInvariantGI(
 vec3 camera,
-vec3 albedo, 
-vec3 fragmentPosition, 
-vec3 lightPosition, 
+vec3 albedo,
+vec3 fragmentPosition,
+vec3 lightPosition,
 vec3 lightColor
 ){
     vec3 lightRelativeToVPos =normalize( lightPosition - fragmentPosition);
-    
+
     vec3 cameraRelativeToVPos = -normalize(fragmentPosition - camera);
     float att = CalculateFallof(distance(fragmentPosition, lightPosition));
     return albedo * lightColor * att;

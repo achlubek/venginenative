@@ -486,7 +486,7 @@ void Renderer::draw(Camera *camera)
     Game::instance->world->setUniforms(Game::instance->shaders->materialShader, camera);
     Game::instance->world->setSceneUniforms();
     Game::instance->world->draw(Game::instance->shaders->materialShader, camera);
-    // mrtDistanceTexture->generateMipMaps();
+    mrtDistanceTexture->generateMipMaps();
     if (useAmbientOcclusion) {
         //     ambientOcclusion();
     }

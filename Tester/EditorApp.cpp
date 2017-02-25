@@ -102,10 +102,10 @@ void EditorApp::onRenderFrame(float elapsed)
     }
     else if (currentMode == EDITOR_MODE_PICKING) {
         glm::vec2 cursor = game->getCursorPosition();
-        cursor.x = max(0.0f, cursor.x);
-        cursor.y = max(0.0f, cursor.y);
-        cursor.x = min((float)width, cursor.x);
-        cursor.y = min((float)height, cursor.y);
+        cursor.x = glm::max(0.0f, cursor.x);
+        cursor.y = glm::max(0.0f, cursor.y);
+        cursor.x = glm::min((float)width, cursor.x);
+        cursor.y = glm::min((float)height, cursor.y);
         cursor.x /= (float)width;
         cursor.y /= (float)height;
         cursor.y = 1.0 - cursor.y;
@@ -238,17 +238,19 @@ void EditorApp::onRenderUIFrame(float elapsed)
         //ImGui::Text(vitoa(pickedUpMesh->id).c_str());
         ImGui::End();
 
+#define invalidate_material() pickedUpMeshLodLevel->materialBufferNeedsUpdate = true
+
         ImGui::Begin("Selected mesh lod level", &customWindowsOpened[win++], 0);
-        ImGui::SliderFloat("Distance start", &pickedUpMeshLodLevel->distanceStart, 0.01, 9999.0);
-        ImGui::SliderFloat("Distance end", &pickedUpMeshLodLevel->distanceEnd, 0.01, 9999.0);
-        ImGui::SliderFloat3("Static diffuse color", &pickedUpMeshLodLevel->material->diffuseColor.x, 0.0, 1.0);
-        ImGui::SliderFloat("Static metalness", &pickedUpMeshLodLevel->material->metalness, 0.0, 1.0);
-        ImGui::SliderFloat("Static roughness", &pickedUpMeshLodLevel->material->roughness, 0.0, 1.0);
-        ImGui::SliderFloat2("Diffuse tex scale", &pickedUpMeshLodLevel->material->diffuseColorTexScale.x, 0.01, 100.0);
-        ImGui::SliderFloat2("Normal tex scale", &pickedUpMeshLodLevel->material->normalTexScale.x, 0.01, 100.0);
-        ImGui::SliderFloat2("Metalness tex scale", &pickedUpMeshLodLevel->material->metalnessTexScale.x, 0.01, 100.0);
-        ImGui::SliderFloat2("Roughness tex scale", &pickedUpMeshLodLevel->material->roughnessTexScale.x, 0.01, 100.0);
-        ImGui::SliderFloat2("Bump tex scale", &pickedUpMeshLodLevel->material->bumpTexScale.x, 0.01, 100.0);
+        if (ImGui::SliderFloat("Distance start", &pickedUpMeshLodLevel->distanceStart, 0.01, 9999.0))invalidate_material();
+        if(ImGui::SliderFloat("Distance end", &pickedUpMeshLodLevel->distanceEnd, 0.01, 9999.0))invalidate_material();
+        if(ImGui::SliderFloat3("Static diffuse color", &pickedUpMeshLodLevel->material->diffuseColor.x, 0.0, 1.0))invalidate_material();
+        if(ImGui::SliderFloat("Static metalness", &pickedUpMeshLodLevel->material->metalness, 0.0, 1.0))invalidate_material();
+        if(ImGui::SliderFloat("Static roughness", &pickedUpMeshLodLevel->material->roughness, 0.0, 1.0))invalidate_material();
+        if(ImGui::SliderFloat2("Diffuse tex scale", &pickedUpMeshLodLevel->material->diffuseColorTexScale.x, 0.01, 100.0))invalidate_material();
+        if(ImGui::SliderFloat2("Normal tex scale", &pickedUpMeshLodLevel->material->normalTexScale.x, 0.01, 100.0))invalidate_material();
+        if(ImGui::SliderFloat2("Metalness tex scale", &pickedUpMeshLodLevel->material->metalnessTexScale.x, 0.01, 100.0))invalidate_material();
+        if(ImGui::SliderFloat2("Roughness tex scale", &pickedUpMeshLodLevel->material->roughnessTexScale.x, 0.01, 100.0))invalidate_material();
+        if(ImGui::SliderFloat2("Bump tex scale", &pickedUpMeshLodLevel->material->bumpTexScale.x, 0.01, 100.0))invalidate_material();
         ImGui::End();
 
         ImGui::Begin("Selected mesh instance", &customWindowsOpened[win++], 0);
@@ -379,8 +381,8 @@ void EditorApp::onBind()
     game->world->mainDisplayCamera = cam;
 
     game->setCursorMode(GLFW_CURSOR_NORMAL);
-
-  /*  auto t = game->asset->loadSceneFile("cryteksponza.scene");
+    /*
+    auto t = game->asset->loadSceneFile("pav.scene");
     for (int i = 0; i < t->getMesh3ds().size(); i++) {
         t->getMesh3ds()[i]->getInstance(0)->transformation->translate(glm::vec3(0.0, 10.0, 0.0));
         game->world->scene->addMesh3d(t->getMesh3ds()[i]);
@@ -410,7 +412,17 @@ void EditorApp::onBind()
         fx = 0.0f;
     }
     game->world->scene->addMesh3d(s);*/
-    
+    /*
+    auto s = game->asset->loadMeshFile("terr_grass.mesh3d");
+    auto grasses = s->getInstances();
+    int grassess = grasses.size();
+    for (int i = 0; i < grassess; i++) {
+        auto pos = grasses[i]->transformation->getPosition();
+        grasses[i]->transformation->setSize(glm::vec3(1.0f));
+        grasses[i]->transformation->setPosition(glm::vec3(pos.x * 1.0f + 500.0f, pos.y * 4.0f - 10.0f, pos.z * 1.0f + 500.0f));
+    }
+    //game->world->scene->addMesh3d(s);
+    */
     int terrainparts = 10;
     float fullsize = 1000.0;
     float partsize = 100.0;
@@ -425,8 +437,8 @@ void EditorApp::onBind()
             auto mat = new Material();
             mat->diffuseColorTex = new Texture2d("terrain_diffuse.png");
             Mesh3d* m = Mesh3d::create(game->asset->loadObject3dInfoFile(ss0.str()), mat);
-            m->getInstance(0)->transformation->setPosition(vec3(partsize * x * 5.0f, -80.0, partsize*y * 5.0f));
-            m->getInstance(0)->transformation->setSize(vec3(5.0f));
+            m->getInstance(0)->transformation->setPosition(vec3(partsize * x * 1.0f, 10.0, partsize*y * 1.0f));
+            m->getInstance(0)->transformation->setSize(vec3(1.0f));
             m->getLodLevel(0)->distanceStart = 0.0f;
             m->getLodLevel(0)->distanceEnd = 150.0f;
 

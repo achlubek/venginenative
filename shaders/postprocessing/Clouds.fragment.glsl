@@ -71,8 +71,8 @@ vec4 shade(){
 		//float AOSky = 1.0 - AOGround;//getCloudsAO(dir, 1.0);
 
         vec3 SunC = getSunColorDirectly(0.0);
-        float SunDT = max(0.0, dot(dayData.sunDir, VECTOR_UP));
-        AOGround += (SunC * val );
+        float SunDT = max(0.0, dot(dayData.sunDir, VECTOR_UP) * 0.9 + 0.1);
+        AOGround += (SunC * val * SunDT);
 		/*
         retedg.g = min(AOGround, lastData.g);
         retavg.g = mix(AOGround, lastData.g, CloudsIntegrate);
