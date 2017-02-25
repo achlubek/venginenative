@@ -78,7 +78,7 @@ vec3 testmap(vec3 c){
 vec3 tonemap(vec3 xa){
     vec3 a = xa / max(0.1, Luminence * 0.1);
     a *= Exposure;
-    a /= 1.0 + length(a) * 0.4;
+    a /= 1.0 + length(a) * 0.5;
     float l = length(a);
     //a = normalize(a) * mix(l, 0.9, 0.2);
     a = pow(a, vec3(Contrast));
@@ -258,9 +258,9 @@ vec4 shade(){
 
         cloudsonsun *= 1.0 - smoothstep(0.996, 1.0, dot(dayData.sunDir, dayData.moonDir));
 
-        color += cloudsonsun * getSunColor(0.0) * mindst * secondary * vec3(1.0, 1.0, 0.8) * 0.2;
-        color += cloudsonsun * getSunColor(0.0) * mindst * third* vec3(0.6, 0.5, 0.7) * 0.3;
-        color += cloudsonsun * getSunColor(0.0) * mindst * quad* vec3(0.5, 0.5, 0.8) * 0.4;
+        color += cloudsonsun * getSunColor(0.0) * mindst * secondary * vec3(1.0, 1.0, 0.8) * 0.02;
+        color += cloudsonsun * getSunColor(0.0) * mindst * third* vec3(0.6, 0.5, 0.7) * 0.03;
+        color += cloudsonsun * getSunColor(0.0) * mindst * quad* vec3(0.5, 0.5, 0.8) * 0.04;
 
         vec4 vdao = blurshadowsAO(dir, 0.0);
         float Shadow = vdao.r;
@@ -281,8 +281,8 @@ vec4 shade(){
         float coverage2 = cloudsData2.r;
         float ssobj = 1.0 - smoothstep(0.0, 1.01, textureLod(mrt_Distance_Bump_Tex, ss2, 3.0).r);
         float ssobj2 = 1.0 - step(0.1, textureLod(mrt_Distance_Bump_Tex, UV, 0.0).r);
-        color += (1.0 - coverage) * ssobj * (lenssun(dir)) * getSunColorDirectly(0.0) * 6.0;
-        color += monsoonconverage2 * (1.0 - coverage2) * ssobj2 *  step(0.0, dir.y) * (smoothstep(0.998, 0.9985, max(0.0, dot(dir, dayData.sunDir)))) * getSunColorDirectly(0.0) * 3.0;
+        color += (1.0 - coverage) * ssobj * (lenssun(dir)) * getSunColorDirectly(0.0) * 6.0 * step(0.0, dayData.sunDir.y);
+        color += monsoonconverage2 * (1.0 - coverage2) * ssobj2 *  step(0.0, dir.y) * (smoothstep(0.998, 0.9985, max(0.0, dot(dir, dayData.sunDir)))) * getSunColorDirectly(0.0) * 13.0;
         color = tonemap(Cx * lightnings + color);
     }
     return vec4( clamp(color, 0.0, 110.0), currentData.cameraDistance * 0.001);

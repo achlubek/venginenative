@@ -422,7 +422,7 @@ void EditorApp::onBind()
         grasses[i]->transformation->setPosition(glm::vec3(pos.x * 1.0f + 500.0f, pos.y * 4.0f - 10.0f, pos.z * 1.0f + 500.0f));
     }
     //game->world->scene->addMesh3d(s);
-    */
+    *//*
     int terrainparts = 10;
     float fullsize = 1000.0;
     float partsize = 100.0;
@@ -447,7 +447,7 @@ void EditorApp::onBind()
             game->world->scene->addMesh3d(m);
         }
     }
-    
+    */
   //  t->name = "flagbase";
    // game->world->scene->addMesh(t);
 
