@@ -110,14 +110,14 @@ vec4 blurshadowsAO(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(shadowsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
-    //return textureLod(shadowsTex, dir, mlvel).rgba;
+    return textureLod(shadowsTex, dir, mlvel).rgba;
     float dst = textureLod(coverageDistTex, dir, mlvel).g;
     float aoc = 1.0;
 
     vec4 centerval = textureLod(shadowsTex, dir, mlvel).rgba;
     float cluma = length(centerval);
     float blurrange = 0.18 * (1.0 - 1.0 / (dir.y * 1.0 + 1.0)) * abs(CloudsThresholdHigh - CloudsThresholdLow);
-    for(int i=0;i<12;i++){
+    for(int i=0;i<32;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
         //float there = textureLod(coverageDistTex, rdp, mlvel).g;
         //float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
@@ -201,11 +201,13 @@ vec3 getDiffuseAtmosphereColor(){
 vec3 getSunColorDirectly(float roughness){
     vec3 sunBase = vec3(15.0);
     float dt = max(0.0, (dot(dayData.sunDir, VECTOR_UP)));
+    float dtx = smoothstep(-0.0, 0.1, dot(dayData.sunDir, VECTOR_UP));
     float dt2 = 0.9 + 0.1 * (1.0 - max(0.0, (dot(dayData.sunDir, VECTOR_UP))));
-    vec3 supersundir = 1.0 * pow(textureLod(atmScattTex, dayData.sunDir, 2.0).rgb, vec3(1.3)) ;
-    supersundir /= length(supersundir) * 1.0 + 1.0;
+    float st = max(0.0, smart_inverse_dot(dt, 11.0));
+    vec3 supersundir = max(vec3(0.0),  dtx *  vec3(mix(14.0, 24.0, st)) - vec3(5.5, 13.0, 22.4));
+//    supersundir /= length(supersundir) * 1.0 + 1.0;
 
-    return mix(supersundir * 8.0, sunBase, 1.0 - pow(1.0 - dt, 4.0));
+    return mix(supersundir * 1.0, sunBase, st);
     //return  max(vec3(0.3, 0.3, 0.0), (  sunBase - vec3(5.5, 18.0, 20.4) *  pow(1.0 - dt, 8.0)));
 }
 

@@ -164,7 +164,6 @@ btRigidBody * Physics::createRigidBody(float mass, TransformationManager* transf
     btRigidBody::btRigidBodyConstructionInfo* rbInfo = new btRigidBody::btRigidBodyConstructionInfo(mass, myMotionState, shape, localInertia);
     btRigidBody* body = new btRigidBody(*rbInfo);
 
-
     body->setSleepingThresholds(0.0f, 0.0f);
     body->setContactProcessingThreshold(0.0f);
     body->setCcdMotionThreshold(0.0f);

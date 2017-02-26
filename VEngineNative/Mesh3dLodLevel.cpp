@@ -163,14 +163,15 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
     vec3 cameraPos = Game::instance->world->mainDisplayCamera->transformation->getPosition();
     vector<Mesh3dInstance*> filtered;
     vector<int> newids;
+    bool changed = false;
     for (int i = 0; i < instances.size(); i++) {
         float dst = distance(cameraPos, instances[i]->transformation->getPosition());
         if (instances[i]->visible && dst >= distanceStart && dst < distanceEnd && checkIntersection(instances[i])) {
             filtered.push_back(instances[i]);
             newids.push_back(instances[i]->id);
+            if (instances[i]->transformation->needsUpdate) changed = true;
         }
     }
-    bool changed = false;
     if (newids.size() != lastIdMap.size()) {
         changed = true;
     }
@@ -216,7 +217,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
             int a = 0;
             for (unsigned int i = 0; i < fint; i++) {
                 TransformationManager *mgr = filtered[i]->transformation;
-                quat q = mgr->getOrientation();
+                quat q = glm::inverse(mgr->getOrientation());
                 vec3 p = mgr->getPosition();
                 vec3 s = mgr->getSize();
                 ((float*)modelbufferpt)[a++] = q.x;

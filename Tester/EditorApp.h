@@ -14,6 +14,8 @@
 #include "../VEngineNative/SimpleParser.h";
 #include "../VEngineNative/imgui/imgui.h";
 
+#include "Car.h"
+
 #define EDITOR_MODE_IDLE 0
 #define EDITOR_MODE_MOVE_CAMERA 1
 #define EDITOR_MODE_PICKING 2
@@ -41,6 +43,7 @@ public:
     bool isOpened = true;
     bool isOpened2 = true;
     float tmpDayElapsed = 0.5;
+    vector<Car *> car;
 
     int currentMode = EDITOR_MODE_IDLE;
     int lastMode = EDITOR_MODE_IDLE;

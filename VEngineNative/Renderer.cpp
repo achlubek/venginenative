@@ -760,6 +760,7 @@ void Renderer::waterColorShaded()
 {
     waterColorFbo->use(false);
     waterColorShader->use();
+    csm->setUniformsAndBindSampler(waterColorShader, 30);
     fogTexture->use(20);
     combineTexture->use(22);
     if (!cloudCycleUseOdd) {

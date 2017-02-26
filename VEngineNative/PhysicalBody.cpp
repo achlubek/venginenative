@@ -17,7 +17,7 @@ PhysicalBody::~PhysicalBody()
 void PhysicalBody::applyChanges()
 {
     auto xyz = body->getCenterOfMassPosition();
-    auto quat = body->getOrientation().inverse();
+    auto quat = body->getOrientation();
     transformation->setPosition(glm::vec3(xyz.x(), xyz.y(), xyz.z()));
     float X = quat.getX();
     float Y = quat.getY();
@@ -65,7 +65,7 @@ void PhysicalBody::readChanges()
     glm::quat o = transformation->getOrientation();
     glm::vec3 p = transformation->getPosition();
     glm::vec3 s = transformation->getSize();
-    auto q = btQuaternion(o.x, o.y, o.z, o.w).inverse();
+    auto q = btQuaternion(o.x, o.y, o.z, o.w);
     auto v = btVector3(p.x, p.y, p.z);
 
     auto bt = btTransform();

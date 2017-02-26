@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "EditorApp.h"
+#include "Car.h"
 
 EditorApp::EditorApp()
 {
@@ -28,6 +29,10 @@ void EditorApp::initialize()
     Media::loadFileMap("../../shaders");
     width = 1920;
     height = 1020;
+}
+
+glm::vec3 quat2vec3(glm::quat q) {
+    return q * glm::vec3(0.0, 0.0, -1.0);
 }
 
 void EditorApp::onRenderFrame(float elapsed)
@@ -78,16 +83,16 @@ void EditorApp::onRenderFrame(float elapsed)
         //}
         glm::dvec2 cursor = game->getCursorPosition();
 
-        int acnt = 0;
-        const float * axes = glfwGetJoystickAxes(0, &acnt);
+        //int acnt = 0;
+        //const float * axes = glfwGetJoystickAxes(0, &acnt);
         float dx = (float)(lastcx - cursor.x);
         float dy = (float)(lastcy - cursor.y);
-        if (acnt >= 4) {
+        //if (acnt >= 4) {
             //    dx -= axes[2] * 10.9;
             //    dy += axes[3] * 10.9;
             //    newpos += (cam->transformation->orientation * glm::vec3(0, 0, -1) * axes[1] * 0.1f);
             //   newpos += (cam->transformation->orientation * glm::vec3(1, 0, 0) * axes[0] * 0.1f);
-        }
+        //}
         lastcx = cursor.x;
         lastcy = cursor.y;
         yaw += dy * 0.2f;
@@ -99,6 +104,19 @@ void EditorApp::onRenderFrame(float elapsed)
         glm::quat newrot = glm::angleAxis(deg2rad(pitch), glm::vec3(0, 1, 0)) * glm::angleAxis(deg2rad(yaw), glm::vec3(1, 0, 0));
         cam->transformation->setOrientation(newrot);
         cam->transformation->setPosition(newpos);
+
+        int acnt = 0;
+        const float * axes = glfwGetJoystickAxes(0, &acnt);
+        if (acnt >= 1) {
+            car[0]->setWheelsAngle(axes[0] * 0.9);
+        }
+        if (acnt >= 6) {
+            float acc = (axes[5] * 0.5 + 0.5);
+            float brk = (axes[4] * 0.5 + 0.5);
+            car[0]->setAcceleration((acc - brk) * 0.5);
+            printf("ACCELERATION: %f\n", (acc - brk) * 0.5);
+        }
+
     }
     else if (currentMode == EDITOR_MODE_PICKING) {
         glm::vec2 cursor = game->getCursorPosition();
@@ -110,6 +128,22 @@ void EditorApp::onRenderFrame(float elapsed)
         cursor.y /= (float)height;
         cursor.y = 1.0 - cursor.y;
         game->renderer->pick(cam, cursor);
+
+        for (int i = 0; i < car.size(); i++) {
+            /*car*/
+            glm::vec3 targetpos = game->renderer->selectionPosition;
+            glm::vec3 flatpos = car[i]->getTransformation()->getPosition();
+            glm::vec3 flatdir = -glm::normalize(quat2vec3(car[i]->getTransformation()->getOrientation()));
+            glm::vec3 targetdir = glm::normalize(targetpos - flatpos);
+
+            glm::vec3 crs = glm::cross(glm::vec3(targetdir), glm::vec3(flatdir));
+            float dt = glm::max(0.0f, glm::dot(glm::vec3(targetdir), glm::vec3(flatdir)));
+
+            car[i]->setWheelsAngle(glm::sign(crs.y) * pow(1.0f - dt, 3.0f));
+            car[i]->setAcceleration(glm::distance(targetpos, flatpos) < 1.0f ? 
+                0.0 : 
+                pow(dt * 0.5 + 0.5, 5.0f) * glm::min(0.065f, glm::distance(targetpos, flatpos) * 1.0f));
+        }
     }
     else if (currentMode == EDITOR_MODE_EDITING) {
         if (pickedUpMeshInstance != nullptr) {
@@ -147,17 +181,17 @@ void EditorApp::onRenderUIFrame(float elapsed)
     //     ImGui::Text("Terrain metalness:");
     //     ImGui::SliderFloat("metalness", &t->getLodLevel(0)->material->metalness, 0.0f, 1.0f);
     //ImGui::SliderFloat("FOV", &fovnew, 5.0f, 175.0f);
-    #define reset() Game::instance->renderer->cloudsIntegrate = 0.0f;
-    if(ImGui::SliderFloat("Exposure", &Game::instance->renderer->exposure, 0.01f, 10.0f))reset();
-    if(ImGui::SliderFloat("Contrast", &Game::instance->renderer->contrast, 0.01f, 10.0f))reset();
-    if(ImGui::SliderFloat("CloudsHeightStart", &Game::instance->renderer->cloudsFloor, 100.0f, 30000.0f))reset();
-    if(ImGui::SliderFloat("CloudsHeightEnd", &Game::instance->renderer->cloudsCeil, 100.0f, 30000.0f))reset();
-    if(ImGui::SliderFloat("CloudsThreshold", &Game::instance->renderer->cloudsThresholdLow, 0.0f, 1.0f))reset();
-    if(ImGui::SliderFloat("CloudsThresholdHigh", &Game::instance->renderer->cloudsThresholdHigh, 0.0f, 1.0f))reset();
+#define reset() Game::instance->renderer->cloudsIntegrate = 0.0f;
+    if (ImGui::SliderFloat("Exposure", &Game::instance->renderer->exposure, 0.01f, 10.0f))reset();
+    if (ImGui::SliderFloat("Contrast", &Game::instance->renderer->contrast, 0.01f, 10.0f))reset();
+    if (ImGui::SliderFloat("CloudsHeightStart", &Game::instance->renderer->cloudsFloor, 100.0f, 30000.0f))reset();
+    if (ImGui::SliderFloat("CloudsHeightEnd", &Game::instance->renderer->cloudsCeil, 100.0f, 30000.0f))reset();
+    if (ImGui::SliderFloat("CloudsThreshold", &Game::instance->renderer->cloudsThresholdLow, 0.0f, 1.0f))reset();
+    if (ImGui::SliderFloat("CloudsThresholdHigh", &Game::instance->renderer->cloudsThresholdHigh, 0.0f, 1.0f))reset();
     //ImGui::SliderFloat("CloudsAtmosphereShaftsMultiplier", &Game::instance->renderer->cloudsAtmosphereShaftsMultiplier, 0.0f, 10.0f);
     //ImGui::SliderFloat("CloudsWindSpeed", &Game::instance->renderer->cloudsWindSpeed, 0.0f, 10.0f);
-    if(ImGui::SliderFloat("CloudsDensity", &Game::instance->renderer->cloudsDensityScale, 0.0f, 5.0f))reset();
-    if(ImGui::SliderFloat("CloudsIntegration", &Game::instance->renderer->cloudsIntegrate, 0.3f, 0.999f))reset();
+    if (ImGui::SliderFloat("CloudsDensity", &Game::instance->renderer->cloudsDensityScale, 0.0f, 5.0f))reset();
+    if (ImGui::SliderFloat("CloudsIntegration", &Game::instance->renderer->cloudsIntegrate, 0.3f, 0.999f))reset();
 
     Game::instance->renderer->cloudsIntegrate = Game::instance->renderer->cloudsIntegrate * 0.997 + (0.99 * 0.003);
     Game::instance->renderer->cloudsIntegrate /= abs(Game::instance->renderer->dayElapsed - tmpDayElapsed) * 0.2 + 1.0;
@@ -165,23 +199,23 @@ void EditorApp::onRenderUIFrame(float elapsed)
     if (ImGui::SliderFloat3("CloudsOffset", (float*)&Game::instance->renderer->cloudsOffset, -1000.0f, 1000.0f))reset();
     ImGui::Separator();
 
-  //  tmpDayElapsed += 0.00003f;
+    //  tmpDayElapsed += 0.00003f;
     if (tmpDayElapsed > 1.0) {
         tmpDayElapsed -= 1.0;
         Game::instance->renderer->dayElapsed = tmpDayElapsed;
     }
-    
+
     if (ImGui::SliderFloat("DayElapsed", (float*)&tmpDayElapsed, 0.0f, 1.0f))reset();
     Game::instance->renderer->dayElapsed = Game::instance->renderer->dayElapsed * 0.99 + tmpDayElapsed * 0.01;
     if (ImGui::SliderFloat("YearElapsed", (float*)&Game::instance->renderer->yearElapsed, 0.0f, 1.0f))reset();
     if (ImGui::SliderFloat("Equator/Pole", (float*)&Game::instance->renderer->equatorPoleMix, 0.0f, 1.0f))reset();
 
-   if(ImGui::SliderFloat("MieScattering", (float*)&Game::instance->renderer->mieScattCoefficent, 0.0f, 20.0f))reset();
-   if(ImGui::SliderFloat("GodRaysStrength", &Game::instance->renderer->noiseOctave1, 0.01f, 10.0f))reset();
-   ImGui::Separator();
-   if(ImGui::SliderFloat("WaterWavesHeight", &Game::instance->renderer->waterWavesScale, 0.0f, 10.0f))reset();
-   if(ImGui::SliderFloat("WaterSpeed", &Game::instance->renderer->waterSpeed, 0.0f, 7.0f))reset();
-   if(ImGui::SliderFloat2("WaterScale", &Game::instance->renderer->waterScale.x, 0.0f, 10.0f))reset();
+    if (ImGui::SliderFloat("MieScattering", (float*)&Game::instance->renderer->mieScattCoefficent, 0.0f, 20.0f))reset();
+    if (ImGui::SliderFloat("GodRaysStrength", &Game::instance->renderer->noiseOctave1, 0.01f, 10.0f))reset();
+    ImGui::Separator();
+    if (ImGui::SliderFloat("WaterWavesHeight", &Game::instance->renderer->waterWavesScale, 0.0f, 10.0f))reset();
+    if (ImGui::SliderFloat("WaterSpeed", &Game::instance->renderer->waterSpeed, 0.0f, 7.0f))reset();
+    if (ImGui::SliderFloat2("WaterScale", &Game::instance->renderer->waterScale.x, 0.0f, 10.0f))reset();
     //        ImGui::SliderFloat2("MeshRoughness", &t->getLodLevel(0)->material->roughness, 0.0f, 1.0f);
     //ImGui::SliderFloat("CloudsDensityThresholdLow", &Game::instance->renderer->cloudsDensityThresholdLow, 0.0f, 1.0f);
     // ImGui::SliderFloat("CloudsDensityThresholdHigh", &Game::instance->renderer->cloudsDensityThresholdHigh, 0.0f, 1.0f);
@@ -220,15 +254,15 @@ void EditorApp::onRenderUIFrame(float elapsed)
             pickedUpMeshLodLevel = (Mesh3dLodLevel *)game->getObjectById(game->renderer->pickingResultLod);
             pickedUpMeshInstance = (Mesh3dInstance *)game->getObjectById(game->renderer->pickingResultInstance);
 
-         //   cursor3dArrow->getInstance(0)->transformation->setPosition(game->renderer->pickingWorldPos);
-         //   cursor3dArrow->getInstance(0)->transformation->setOrientation(glm::lookAt(glm::vec3(0.0), game->renderer->pickingNormal, glm::vec3(0.0, 1.0, 0.0)));
+            //   cursor3dArrow->getInstance(0)->transformation->setPosition(game->renderer->pickingWorldPos);
+            //   cursor3dArrow->getInstance(0)->transformation->setOrientation(glm::lookAt(glm::vec3(0.0), game->renderer->pickingNormal, glm::vec3(0.0, 1.0, 0.0)));
             game->renderer->selectionPosition = game->renderer->pickingWorldPos;
             game->renderer->selectionOrientation = glm::quat(glm::lookAt(glm::vec3(0.0), game->renderer->pickingNormal, game->renderer->pickingNormal == glm::vec3(0.0, 1.0, 0.0) ? glm::vec3(0.0, 0.0, 1.0) : glm::vec3(0.0, 1.0, 0.0)));
             game->renderer->showSelection = true;
             ImGui::Begin("PickingResult", &isPickingWindowOpened, 0);
             ImGui::Text(pickedUpMesh->name.c_str());
             ImGui::End();
-                 
+
         }
     }
     if (pickedUpMesh != nullptr) {
@@ -242,15 +276,15 @@ void EditorApp::onRenderUIFrame(float elapsed)
 
         ImGui::Begin("Selected mesh lod level", &customWindowsOpened[win++], 0);
         if (ImGui::SliderFloat("Distance start", &pickedUpMeshLodLevel->distanceStart, 0.01, 9999.0))invalidate_material();
-        if(ImGui::SliderFloat("Distance end", &pickedUpMeshLodLevel->distanceEnd, 0.01, 9999.0))invalidate_material();
-        if(ImGui::SliderFloat3("Static diffuse color", &pickedUpMeshLodLevel->material->diffuseColor.x, 0.0, 1.0))invalidate_material();
-        if(ImGui::SliderFloat("Static metalness", &pickedUpMeshLodLevel->material->metalness, 0.0, 1.0))invalidate_material();
-        if(ImGui::SliderFloat("Static roughness", &pickedUpMeshLodLevel->material->roughness, 0.0, 1.0))invalidate_material();
-        if(ImGui::SliderFloat2("Diffuse tex scale", &pickedUpMeshLodLevel->material->diffuseColorTexScale.x, 0.01, 100.0))invalidate_material();
-        if(ImGui::SliderFloat2("Normal tex scale", &pickedUpMeshLodLevel->material->normalTexScale.x, 0.01, 100.0))invalidate_material();
-        if(ImGui::SliderFloat2("Metalness tex scale", &pickedUpMeshLodLevel->material->metalnessTexScale.x, 0.01, 100.0))invalidate_material();
-        if(ImGui::SliderFloat2("Roughness tex scale", &pickedUpMeshLodLevel->material->roughnessTexScale.x, 0.01, 100.0))invalidate_material();
-        if(ImGui::SliderFloat2("Bump tex scale", &pickedUpMeshLodLevel->material->bumpTexScale.x, 0.01, 100.0))invalidate_material();
+        if (ImGui::SliderFloat("Distance end", &pickedUpMeshLodLevel->distanceEnd, 0.01, 9999.0))invalidate_material();
+        if (ImGui::SliderFloat3("Static diffuse color", &pickedUpMeshLodLevel->material->diffuseColor.x, 0.0, 1.0))invalidate_material();
+        if (ImGui::SliderFloat("Static metalness", &pickedUpMeshLodLevel->material->metalness, 0.0, 1.0))invalidate_material();
+        if (ImGui::SliderFloat("Static roughness", &pickedUpMeshLodLevel->material->roughness, 0.0, 1.0))invalidate_material();
+        if (ImGui::SliderFloat2("Diffuse tex scale", &pickedUpMeshLodLevel->material->diffuseColorTexScale.x, 0.01, 100.0))invalidate_material();
+        if (ImGui::SliderFloat2("Normal tex scale", &pickedUpMeshLodLevel->material->normalTexScale.x, 0.01, 100.0))invalidate_material();
+        if (ImGui::SliderFloat2("Metalness tex scale", &pickedUpMeshLodLevel->material->metalnessTexScale.x, 0.01, 100.0))invalidate_material();
+        if (ImGui::SliderFloat2("Roughness tex scale", &pickedUpMeshLodLevel->material->roughnessTexScale.x, 0.01, 100.0))invalidate_material();
+        if (ImGui::SliderFloat2("Bump tex scale", &pickedUpMeshLodLevel->material->bumpTexScale.x, 0.01, 100.0))invalidate_material();
         ImGui::End();
 
         ImGui::Begin("Selected mesh instance", &customWindowsOpened[win++], 0);
@@ -448,12 +482,32 @@ void EditorApp::onBind()
         }
     }
     */
-  //  t->name = "flagbase";
-   // game->world->scene->addMesh(t);
+    //  t->name = "flagbase";
+     // game->world->scene->addMesh(t);
+    for (int i = 0; i < 2; i++) {
+      //  car.push_back(new Car(new TransformationManager(glm::vec3(i * 8.0, 6.0, i * 8.0))));
+    }
+    auto t1 = new TransformationManager(glm::vec3(8.0, 6.0, 8.0));
+    car.push_back(new Car(t1));
+    auto t2 = new TransformationManager(glm::vec3(-8.0, 6.0, -8.0));
+    car.push_back(new Car(t2));
+
+
+
+    auto t = game->asset->loadMeshFile("2dplane.mesh3d");
+    // t->alwaysUpdateBuffer = true;
+    game->world->scene->addMesh3d(t);
+
+    game->invoke([&]() {
+        auto phys = Game::instance->world->physics;
+        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, -0.0, 0.0)), new btBoxShape(btVector3(1111.0, 0.5, 1110.0)));
+        groundpb->body->setFriction(10010);
+        groundpb->enable();
+    });
 
     cursor3dArrow = Mesh3d::create(game->asset->loadObject3dInfoFile("arrow.raw"), new Material());
     cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager()));
-   // game->world->scene->addDrawable((AbsDrawable*)cursor3dArrow);
+    // game->world->scene->addDrawable((AbsDrawable*)cursor3dArrow);
 }
 
 void EditorApp::onChar(unsigned int c)

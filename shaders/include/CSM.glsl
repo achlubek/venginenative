@@ -1,4 +1,5 @@
-
+#ifndef _CSM_H_
+#define _CSM_H_
 layout(binding = 30) uniform sampler2DArray CSMTex;
 
 #define MAX_CSM_LAYERS 12
@@ -117,3 +118,4 @@ float CSMReconstructDistance(vec3 pos){
     }
     return 1.0;
 }
+#endif
