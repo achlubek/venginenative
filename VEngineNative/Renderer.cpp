@@ -17,14 +17,14 @@ Renderer::Renderer(int iwidth, int iheight)
 
     cloudsFloor = 3333;
     cloudsCeil = 7700;
-    cloudsThresholdLow = 0.53;
-    cloudsThresholdHigh = 0.56;
+    cloudsThresholdLow = 0.24;
+    cloudsThresholdHigh = 0.30;
     cloudsDensityThresholdLow = 0.0;
     cloudsDensityThresholdHigh = 1.0;
     cloudsDensityScale = 0.7;
     cloudsWindSpeed = 0.4;
 
-    noiseOctave1 = 0.0001;
+    noiseOctave1 = 0.31;
     noiseOctave2 = 1.02;
     noiseOctave3 = 1.03;
     noiseOctave4 = 0.0;
@@ -38,8 +38,8 @@ Renderer::Renderer(int iwidth, int iheight)
     mieScattCoefficent = 1.0;
     nightSkyLightPollution = 0.2;
     lensBlurSize = 0.0;
-    waterScale = glm::vec2(1.0f, 1.5f);
-    waterHeight = 0.3f;
+    waterScale = glm::vec2(0.16f, 0.16f);
+    waterHeight = 0.13f;
     waterSpeed = 1.0f;
     wind = glm::normalize(glm::vec3(0.3, 0.0, 0.3));
     gpuInitialized = false;
@@ -48,9 +48,9 @@ Renderer::Renderer(int iwidth, int iheight)
    // csm = new CascadeShadowMap(0, 0, {});
 
     cloudsOffset = glm::vec3(1);
-    dayElapsed = 0.5;
-    yearElapsed = 0.5;
-    equatorPoleMix = 0.5;
+    dayElapsed = 0.55;
+    yearElapsed = 0.59;
+    equatorPoleMix = 0.7;
 
     atmosphereScale = 1.0;
     waterWavesScale = 1.0;

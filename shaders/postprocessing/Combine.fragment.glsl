@@ -174,7 +174,7 @@ uniform vec3 SelectionPos;
 uniform vec4 SelectionQuat;
 
 vec3 showSelection(vec3 dir){
-    Sphere sp = Sphere(SelectionPos, 1.0);
+    Sphere sp = Sphere(SelectionPos, 0.5);
     Ray r = Ray(CameraPosition, dir);
     float primdst = rsi2(r, sp);
     vec2 minmax = vec2(minhit, maxhit);

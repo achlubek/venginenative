@@ -138,11 +138,18 @@ void EditorApp::onRenderFrame(float elapsed)
 
             glm::vec3 crs = glm::cross(glm::vec3(targetdir), glm::vec3(flatdir));
             float dt = glm::max(0.0f, glm::dot(glm::vec3(targetdir), glm::vec3(flatdir)));
+            float dt2 = glm::max(0.0f, glm::dot(glm::vec3(-targetdir), glm::vec3(flatdir)));
+            if (dt > dt2) {
+                // go to point
+                car[i]->setWheelsAngle(glm::sign(crs.y) * (1.0f - pow(dt, 3.0f)));
+                car[i]->setAcceleration(1.0f);
+            }
+            else {
+                // turn around
+                car[i]->setWheelsAngle(-glm::sign(crs.y));
+                car[i]->setAcceleration(-0.565f);
+            }
 
-            car[i]->setWheelsAngle(glm::sign(crs.y) * pow(1.0f - dt, 3.0f));
-            car[i]->setAcceleration(glm::distance(targetpos, flatpos) < 1.0f ? 
-                0.0 : 
-                pow(dt * 0.5 + 0.5, 5.0f) * glm::min(0.065f, glm::distance(targetpos, flatpos) * 1.0f));
         }
     }
     else if (currentMode == EDITOR_MODE_EDITING) {
@@ -484,13 +491,13 @@ void EditorApp::onBind()
     */
     //  t->name = "flagbase";
      // game->world->scene->addMesh(t);
-    for (int i = 0; i < 2; i++) {
-      //  car.push_back(new Car(new TransformationManager(glm::vec3(i * 8.0, 6.0, i * 8.0))));
+    for (int i = 0; i < 52; i++) {
+        car.push_back(new Car(new TransformationManager(glm::vec3(i * 2.0, 6.0, i * 2.0))));
     }
-    auto t1 = new TransformationManager(glm::vec3(8.0, 6.0, 8.0));
-    car.push_back(new Car(t1));
-    auto t2 = new TransformationManager(glm::vec3(-8.0, 6.0, -8.0));
-    car.push_back(new Car(t2));
+    //auto t1 = new TransformationManager(glm::vec3(8.0, 6.0, 8.0));
+   // car.push_back(new Car(t1));
+  //  auto t2 = new TransformationManager(glm::vec3(-8.0, 6.0, -8.0));
+   // car.push_back(new Car(t2));
 
 
 
@@ -501,7 +508,7 @@ void EditorApp::onBind()
     game->invoke([&]() {
         auto phys = Game::instance->world->physics;
         auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, -0.0, 0.0)), new btBoxShape(btVector3(1111.0, 0.5, 1110.0)));
-        groundpb->body->setFriction(10010);
+        groundpb->body->setFriction(110);
         groundpb->enable();
     });
 
