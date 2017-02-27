@@ -3,7 +3,7 @@
 struct Ray { vec3 o; vec3 d; };
 struct Sphere { vec3 pos; float rad; };
 
-float planetradius = 6371e3;
+float planetradius = 6378000.1;
 Sphere planet = Sphere(vec3(0), planetradius);
 
 float minhit = 0.0;

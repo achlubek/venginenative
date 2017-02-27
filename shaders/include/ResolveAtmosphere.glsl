@@ -110,7 +110,7 @@ vec4 blurshadowsAO(vec3 dir, float roughness){
     float levels = max(0, float(textureQueryLevels(shadowsTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
-    return textureLod(shadowsTex, dir, mlvel).rgba;
+//    return textureLod(shadowsTex, dir, mlvel).rgba;
     float dst = textureLod(coverageDistTex, dir, mlvel).g;
     float aoc = 1.0;
 
@@ -203,11 +203,11 @@ vec3 getSunColorDirectly(float roughness){
     float dt = max(0.0, (dot(dayData.sunDir, VECTOR_UP)));
     float dtx = smoothstep(-0.0, 0.1, dot(dayData.sunDir, VECTOR_UP));
     float dt2 = 0.9 + 0.1 * (1.0 - max(0.0, (dot(dayData.sunDir, VECTOR_UP))));
-    float st = max(0.0, smart_inverse_dot(dt, 11.0));
-    vec3 supersundir = max(vec3(0.0),  dtx *  vec3(mix(14.0, 24.0, st)) - vec3(5.5, 13.0, 22.4));
+    float st = max(0.0, 1.0 - smart_inverse_dot(dt, 11.0));
+    vec3 supersundir = max(vec3(0.0),   vec3(1.0) - st * 4.0 * pow(vec3(50.0/255.0, 111.0/255.0, 153.0/255.0), vec3(2.4)));
 //    supersundir /= length(supersundir) * 1.0 + 1.0;
-
-    return mix(supersundir * 1.0, sunBase, st);
+    return supersundir * 4.0 * smart_inverse_dot(dt, 11.0);
+    //return mix(supersundir * 1.0, sunBase, st);
     //return  max(vec3(0.3, 0.3, 0.0), (  sunBase - vec3(5.5, 18.0, 20.4) *  pow(1.0 - dt, 8.0)));
 }
 
@@ -354,11 +354,10 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     #define xA 0.5
     #define xB 0.5
     float mult = mix(sqrt(0.001 + dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, SunDT) + 0.02;
-    vec3 raycolor = (getSunColorDirectly(0.0) * 2.9 * rays + (AtmDiffuse * 1.0 ) * 0.8) * (1.0 + 1110.0 * (1.0 - smart_inverse_dot(1.0 - max(0.0, dot(dayData.sunDir, dir)-0.005), 2711.0)))* smart_inverse_dot(SunDT, 2.0);
+    vec3 raycolor = (getSunColorDirectly(0.0) * 12.9 * rays + (AtmDiffuse * 1.0 ) * 0.8) + AtmDiffuse * rays * (1.0 + 1110.0 * (1.0 - smart_inverse_dot(1.0 - max(0.0, dot(dayData.sunDir, dir)-0.005), 2711.0)))* smart_inverse_dot(SunDT, 2.0);
 
     //raycolor *= xA + xB * (pow(1.0 - DirDT, 8.0));
-    float noctv = NoiseOctave1 + 0.2 * ( smart_inverse_dot( max(0.0, dot(dayData.sunDir, dir)-0.005), 1.0));
-    float raysCoverage = clamp((1.0 / (DirDT * 61.0 / noctv + 1.0)), 0.0, 1.0);
+    float raysCoverage = clamp((1.0 / (DirDT * 61.0 / NoiseOctave1 + 1.0)), 0.0, 1.0);
     //return vdao;
     //return vdao.gba;
     //return lightnings;

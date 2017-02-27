@@ -108,12 +108,12 @@ void EditorApp::onRenderFrame(float elapsed)
         int acnt = 0;
         const float * axes = glfwGetJoystickAxes(0, &acnt);
         if (acnt >= 1) {
-            car[0]->setWheelsAngle(axes[0] * 0.9);
+//            car[0]->setWheelsAngle(axes[0] * 0.9);
         }
         if (acnt >= 6) {
             float acc = (axes[5] * 0.5 + 0.5);
             float brk = (axes[4] * 0.5 + 0.5);
-            car[0]->setAcceleration((acc - brk) * 0.5);
+         //   car[0]->setAcceleration((acc - brk) * 0.5);
             printf("ACCELERATION: %f\n", (acc - brk) * 0.5);
         }
 
@@ -491,8 +491,8 @@ void EditorApp::onBind()
     */
     //  t->name = "flagbase";
      // game->world->scene->addMesh(t);
-    for (int i = 0; i < 52; i++) {
-        car.push_back(new Car(new TransformationManager(glm::vec3(i * 2.0, 6.0, i * 2.0))));
+    for (int i = 0; i < 50; i++) {
+    //    car.push_back(new Car(new TransformationManager(glm::vec3(i * 2.0, 6.0, i * 2.0))));
     }
     //auto t1 = new TransformationManager(glm::vec3(8.0, 6.0, 8.0));
    // car.push_back(new Car(t1));
