@@ -1,25 +1,31 @@
 #pragma once
 #include "Game.h"
+#include "INIReader.h"
 class Car
 {
 public:
-    Car(TransformationManager * spawn);
+    Car(string definitionkey, TransformationManager * spawn);
     ~Car();
     void draw();
     void setAcceleration(float acc);
     void setWheelsAngle(float angleInRadians);
+    float getWheelsAngle();
     TransformationManager* getTransformation();
     float getSpeed();
+    volatile bool initialized = false;
 
 private:
     PhysicalBody* body, *tyreLF, *tyreRF, *tyreLR, *tyreRR;
     PhysicalConstraint* tyreLFCon, *tyreRFCon, *tyreLRCon, *tyreRRCon;
-    Mesh3d* bodyMesh;
-    Mesh3d* tiresMesh; //4x instanced
+
+    INIReader* definitionReader;
+
+    static Mesh3d* bodyMesh;
+    static Mesh3d* tiresMesh; //4x instanced
     void updateTyreForce(PhysicalConstraint* tyrec, bool enableMotor, float targetVelocity = 0.0f);
 
     void initialize(TransformStruct spawn);
-    volatile bool initialized = false;
     float getAirTorque();
+    float wheelsAngle = 0.0f;
 };
 

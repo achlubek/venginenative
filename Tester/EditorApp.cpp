@@ -108,12 +108,12 @@ void EditorApp::onRenderFrame(float elapsed)
         int acnt = 0;
         const float * axes = glfwGetJoystickAxes(0, &acnt);
         if (acnt >= 1) {
-//            car[0]->setWheelsAngle(axes[0] * 0.9);
+            car[0]->setWheelsAngle(axes[0] * 0.9);
         }
         if (acnt >= 6) {
             float acc = (axes[5] * 0.5 + 0.5);
             float brk = (axes[4] * 0.5 + 0.5);
-         //   car[0]->setAcceleration((acc - brk) * 0.5);
+            car[0]->setAcceleration((acc - brk) * 0.5);
             printf("ACCELERATION: %f\n", (acc - brk) * 0.5);
         }
 
@@ -129,28 +129,6 @@ void EditorApp::onRenderFrame(float elapsed)
         cursor.y = 1.0 - cursor.y;
         game->renderer->pick(cam, cursor);
 
-        for (int i = 0; i < car.size(); i++) {
-            /*car*/
-            glm::vec3 targetpos = game->renderer->selectionPosition;
-            glm::vec3 flatpos = car[i]->getTransformation()->getPosition();
-            glm::vec3 flatdir = -glm::normalize(quat2vec3(car[i]->getTransformation()->getOrientation()));
-            glm::vec3 targetdir = glm::normalize(targetpos - flatpos);
-
-            glm::vec3 crs = glm::cross(glm::vec3(targetdir), glm::vec3(flatdir));
-            float dt = glm::max(0.0f, glm::dot(glm::vec3(targetdir), glm::vec3(flatdir)));
-            float dt2 = glm::max(0.0f, glm::dot(glm::vec3(-targetdir), glm::vec3(flatdir)));
-            if (dt > dt2) {
-                // go to point
-                car[i]->setWheelsAngle(glm::sign(crs.y) * (1.0f - pow(dt, 3.0f)));
-                car[i]->setAcceleration(1.0f);
-            }
-            else {
-                // turn around
-                car[i]->setWheelsAngle(-glm::sign(crs.y));
-                car[i]->setAcceleration(-0.565f);
-            }
-
-        }
     }
     else if (currentMode == EDITOR_MODE_EDITING) {
         if (pickedUpMeshInstance != nullptr) {
@@ -170,6 +148,37 @@ void EditorApp::onRenderFrame(float elapsed)
     }
     if (isConsoleWindowOpened == false && currentMode == EDITOR_MODE_WRITING_TEXT) {
         switchMode(lastMode);
+    }
+
+    if (currentMode != EDITOR_MODE_MOVE_CAMERA && game->renderer->pickingReady) {
+
+        for (int i = 0; i < car.size(); i++) {
+            /*car*/
+            if (!car[i]->initialized)continue;
+            glm::vec3 targetpos = game->renderer->selectionPosition;
+            glm::vec3 flatpos = car[i]->getTransformation()->getPosition();
+            glm::vec3 flatdir = -glm::normalize(quat2vec3(car[i]->getTransformation()->getOrientation()));
+            glm::vec3 targetdir = glm::normalize(targetpos - flatpos);
+
+            glm::vec3 crs = glm::cross(glm::vec3(targetdir), glm::vec3(flatdir));
+            float dt = glm::max(0.0f, glm::dot(glm::vec3(targetdir), glm::vec3(flatdir))); /// 1.0 on track, 0.0 90 degree or more off
+            float dt2 = glm::max(0.0f, glm::dot(glm::vec3(-targetdir), glm::vec3(flatdir)));
+            if (dt > dt2) {
+                // go to point
+                float oldangle = car[i]->getWheelsAngle();
+                float newangle = glm::sign(crs.y) / (1.0 + 0.002 * glm::abs(car[i]->getSpeed() * car[i]->getSpeed()));
+                car[i]->setWheelsAngle(newangle);
+
+                float speedmult = dt;
+                car[i]->setAcceleration(1.0f * (0.89 * speedmult + 0.11));
+            }
+            else {
+                // turn around
+                car[i]->setWheelsAngle(-glm::sign(crs.y));
+                car[i]->setAcceleration(-0.5565f);
+            }
+
+        }
     }
 }
 
@@ -422,13 +431,12 @@ void EditorApp::onBind()
     game->world->mainDisplayCamera = cam;
 
     game->setCursorMode(GLFW_CURSOR_NORMAL);
-    /*
-    auto t = game->asset->loadSceneFile("pav.scene");
-    for (int i = 0; i < t->getMesh3ds().size(); i++) {
-        t->getMesh3ds()[i]->getInstance(0)->transformation->translate(glm::vec3(0.0, 10.0, 0.0));
-        game->world->scene->addMesh3d(t->getMesh3ds()[i]);
+    
+    //auto t = game->asset->loadSceneFile("oldhouse.scene");
+    //for (int i = 0; i < t->getMesh3ds().size(); i++) {
+    //    game->world->scene->addMesh3d(t->getMesh3ds()[i]); 
+    //}
 
-    }*/
     /*
     auto s = game->asset->loadMeshFile("grass_base.mesh3d");
     s->getLodLevel(0)->disableFaceCulling = true;
@@ -491,8 +499,12 @@ void EditorApp::onBind()
     */
     //  t->name = "flagbase";
      // game->world->scene->addMesh(t);
-    for (int i = 0; i < 50; i++) {
-    //    car.push_back(new Car(new TransformationManager(glm::vec3(i * 2.0, 6.0, i * 2.0))));
+    for (int xx = 0; xx < 10; xx++) {
+        for (int yy = 0; yy < 10; yy++)
+        {
+            auto c = new Car(xx % 2 == 0 ? "fiesta.car" : "fiesta.car", new TransformationManager(glm::vec3(xx * 10.0, 44.0, yy * 10.0)));
+            car.push_back(c);
+        }
     }
     //auto t1 = new TransformationManager(glm::vec3(8.0, 6.0, 8.0));
    // car.push_back(new Car(t1));
@@ -501,14 +513,36 @@ void EditorApp::onBind()
 
 
 
-    auto t = game->asset->loadMeshFile("2dplane.mesh3d");
+    auto xt = game->asset->loadMeshFile("2dplane.mesh3d");
     // t->alwaysUpdateBuffer = true;
-   // game->world->scene->addMesh3d(t);
+    game->world->scene->addMesh3d(xt);
 
     game->invoke([&]() {
         auto phys = Game::instance->world->physics;
-        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, -0.0, 0.0)), new btBoxShape(btVector3(1111.0, 0.5, 1110.0)));
-        groundpb->body->setFriction(110);
+        vector<float> vertices = {};
+        vector<int> indices = {};
+        auto wterrobj = game->asset->loadObject3dInfoFile("weirdterrain.raw");
+        auto wterr3d = Mesh3d::create(wterrobj, new Material());
+        //game->world->scene->addMesh3d(wterr3d);
+        int ix = 0;
+        auto str = new btTriangleMesh();
+        for (int i = 0; i < wterrobj->vbo.size(); i+=12 * 3) {
+           // indices.push_back(ix++);
+         //   vertices.push_back(wterrobj->vbo[i]);
+         //   vertices.push_back(wterrobj->vbo[i+1]);
+         //   vertices.push_back(wterrobj->vbo[i+2]);
+            str->addTriangle(
+                btVector3(wterrobj->vbo[i], wterrobj->vbo[i + 1], wterrobj->vbo[i + 2]),
+                btVector3(wterrobj->vbo[i + 12], wterrobj->vbo[i + 1 + 12], wterrobj->vbo[i + 2 + 12]),
+                btVector3(wterrobj->vbo[i + 24], wterrobj->vbo[i + 1 + 24], wterrobj->vbo[i + 2 + 24]), 
+                true
+            );
+            str->addIndex(ix++);
+        }
+         
+        auto shape = new btBvhTriangleMeshShape(str, true, true);
+        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0, 0.5, 1000.0)));
+        groundpb->body->setFriction(1);
         groundpb->enable();
     });
 

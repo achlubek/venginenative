@@ -1,12 +1,16 @@
 #include "stdafx.h"
 #include "Car.h"
+#include "LinearMath/btAlignedObjectArray.h"
+#include "BulletCollision/CollisionShapes/btShapeHull.h"
 
-
-Car::Car(TransformationManager * spawn)
+Car::Car(string definitionkey, TransformationManager * spawn)
 {
+    definitionReader = new INIReader(definitionkey);
     initialize(spawn->getStruct());
 }
 
+Mesh3d* Car::bodyMesh = nullptr;
+Mesh3d* Car::tiresMesh = nullptr;
 
 Car::~Car()
 {
@@ -44,7 +48,7 @@ void Car::setAcceleration(float acc)
         // accelerate
         if (speed > -2.0) {
             // forward
-            float maxspeed = 90.0f;
+            float maxspeed = definitionReader->getf("max_speed_forward");
             updateTyreForce(tyreLFCon, true, acceleration * maxspeed);
             updateTyreForce(tyreRFCon, true, acceleration * maxspeed);
 
@@ -73,7 +77,7 @@ void Car::setAcceleration(float acc)
         else {
             // backward
 
-            float maxspeed = 21.0f;
+            float maxspeed = definitionReader->getf("max_speed_backward");
             updateTyreForce(tyreLFCon, true, acceleration * maxspeed);
             updateTyreForce(tyreRFCon, true, acceleration * maxspeed);
 
@@ -89,8 +93,8 @@ void Car::setWheelsAngle(float angleInRadians)
     if (!initialized) return;
     if (body == nullptr || body->body == nullptr) return;
 
-    float speed = glm::length(glmify3(body->body->getLinearVelocity()));
-    angleInRadians /= 1.0f + speed*speed * 0.01f;
+    wheelsAngle = angleInRadians;
+     
     if (tyreLFCon != nullptr) {
         ((btGeneric6DofConstraint*)tyreLFCon->constraint)->setAngularLowerLimit(btVector3(-1.0, angleInRadians, 0.0));
         ((btGeneric6DofConstraint*)tyreLFCon->constraint)->setAngularUpperLimit(btVector3(-1.0, angleInRadians, 0.0));
@@ -104,6 +108,11 @@ void Car::setWheelsAngle(float angleInRadians)
   //  printf("%f %f %f\n", diff.x, diff.y, diff.z);
   //  body->body->applyForce(bulletify3(diff*10.0f), bulletify3(glm::vec3(0.0, 11.0, 0.0)));
 
+}
+
+float Car::getWheelsAngle()
+{
+    return wheelsAngle;
 }
 
 TransformationManager * Car::getTransformation()
@@ -121,59 +130,48 @@ float Car::getSpeed()
 
 void Car::updateTyreForce(PhysicalConstraint * tyrec, bool enableMotor, float targetVelocity)
 {
+    float maxLimitForce = definitionReader->getf("engine_force");
+    float currentLimitForce = definitionReader->getf("engine_force");
+    float maxMotorForce = definitionReader->getf("engine_force");
+    float loLimit = -definitionReader->getf("engine_limit");
+    float hiLimit = definitionReader->getf("engine_limit");
     auto m = ((btGeneric6DofConstraint*)tyrec->constraint)->getRotationalLimitMotor(0);
     if (!enableMotor) {
         m->m_targetVelocity = 0.0f;
-        m->m_maxLimitForce = 15.0f;
-        m->m_currentLimit = 15.0f;
-        m->m_maxMotorForce = 15.0f;
-        m->m_loLimit = -90.0f;
-        m->m_hiLimit = 90.0f;
         m->m_enableMotor = false;
     }
-    else {
-
-        float maxLimitForce = 15.0f;
-        float currentLimitForce = 15.0f;
-        float maxMotorForce = 15.0f;
-        float loLimit = -90.0f;
-        float hiLimit = 90.0f;
-
-        auto m = ((btGeneric6DofConstraint*)tyrec->constraint)->getRotationalLimitMotor(0);
+    else { 
         m->m_targetVelocity = -targetVelocity;
-        m->m_maxLimitForce = maxLimitForce;
-        m->m_currentLimit = currentLimitForce;
-        m->m_maxMotorForce = maxMotorForce;
-        m->m_loLimit = loLimit;
-        m->m_hiLimit = hiLimit;
         m->m_enableMotor = true;
     }
+    m->m_maxLimitForce = maxLimitForce;
+    m->m_currentLimit = currentLimitForce;
+    m->m_maxMotorForce = maxMotorForce;
+    m->m_loLimit = loLimit;
+    m->m_hiLimit = hiLimit;
 }
 
 void Car::initialize(TransformStruct spawn)
 {
-    bodyMesh = Game::instance->asset->loadMeshFile("fiesta_body.mesh3d");
-    tiresMesh = Game::instance->asset->loadMeshFile("fiesta_tyre.mesh3d");
-
-    glm::vec3 frontaxis = glm::vec3(0.0f, -0.538f, 1.13108f);
-    glm::vec3 rearaxis = glm::vec3(0.0f, -0.538f, -1.2333f);
-    glm::vec3 wheelspacing = glm::vec3(0.70968f, 0.0f, 0.0f);
-
+    if (bodyMesh == nullptr) {
+        bodyMesh = Game::instance->asset->loadMeshFile(definitionReader->gets("body_mesh"));
+        tiresMesh = Game::instance->asset->loadMeshFile(definitionReader->gets("tyre_mesh")); 
+        Game::instance->world->scene->addMesh3d(bodyMesh);
+        Game::instance->world->scene->addMesh3d(tiresMesh);
+    }
+    int carsCount = bodyMesh->getInstances().size();
+     
     bodyMesh->addInstance(new Mesh3dInstance(new TransformationManager(spawn.position)));
 
-    tiresMesh->addInstance(new Mesh3dInstance(new TransformationManager(spawn.position + frontaxis + wheelspacing, glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0)))));
-    tiresMesh->addInstance(new Mesh3dInstance(new TransformationManager(spawn.position + frontaxis - wheelspacing, glm::angleAxis(deg2rad(0.0f), glm::vec3(0.0, 1.0, 0.0)))));
-    tiresMesh->addInstance(new Mesh3dInstance(new TransformationManager(spawn.position + rearaxis + wheelspacing, glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0)))));
-    tiresMesh->addInstance(new Mesh3dInstance(new TransformationManager(spawn.position + rearaxis - wheelspacing, glm::angleAxis(deg2rad(0.0f), glm::vec3(0.0, 1.0, 0.0)))));
-    Game::instance->world->scene->addMesh3d(bodyMesh);
-    Game::instance->world->scene->addMesh3d(tiresMesh);
+    tiresMesh->addInstance(new Mesh3dInstance(new TransformationManager(spawn.position + definitionReader->getv3("wheel_front_left"), glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0)))));
+    tiresMesh->addInstance(new Mesh3dInstance(new TransformationManager(spawn.position + definitionReader->getv3("wheel_front_right"), glm::angleAxis(deg2rad(0.0f), glm::vec3(0.0, 1.0, 0.0)))));
+    tiresMesh->addInstance(new Mesh3dInstance(new TransformationManager(spawn.position + definitionReader->getv3("wheel_rear_left"), glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0)))));
+    tiresMesh->addInstance(new Mesh3dInstance(new TransformationManager(spawn.position + definitionReader->getv3("wheel_rear_right"), glm::angleAxis(deg2rad(0.0f), glm::vec3(0.0, 1.0, 0.0)))));
+    
 
-    Game::instance->invoke([&]() {
+    Game::instance->invoke([&, carsCount]() {
 
-        Game::instance->physicsInvoke([&]() {
-            glm::vec3 frontaxis = glm::vec3(0.0f, -0.538f, 1.13108f);
-            glm::vec3 rearaxis = glm::vec3(0.0f, -0.538f, -1.2333f);
-            glm::vec3 wheelspacing = glm::vec3(0.70968f, 0.0f, 0.0f);
+        Game::instance->physicsInvoke([&, carsCount]() {
 
             auto conx = new btConvexHullShape();
             for (int i = 0; i < bodyMesh->getLodLevel(0)->info3d->vbo.size(); i += 12) {
@@ -181,49 +179,51 @@ void Car::initialize(TransformStruct spawn)
                     bodyMesh->getLodLevel(0)->info3d->vbo[i + 1],
                     bodyMesh->getLodLevel(0)->info3d->vbo[i + 2]), bodyMesh->getLodLevel(0)->info3d->vbo.size() - 1 == i);
             }
-
-            body = Game::instance->world->physics->createBody(880.01f, bodyMesh->getInstance(0), new btBoxShape(btVector3(1.0f, 0.1f, 1.0f)));
-            tyreLF = Game::instance->world->physics->createBody(78.0f, tiresMesh->getInstance(0), new btSphereShape(0.275f));
-            tyreRF = Game::instance->world->physics->createBody(78.0f, tiresMesh->getInstance(1), new btSphereShape(0.275f));
-            tyreLR = Game::instance->world->physics->createBody(78.0f, tiresMesh->getInstance(2), new btSphereShape(0.275f));
-            tyreRR = Game::instance->world->physics->createBody(78.0f, tiresMesh->getInstance(3), new btSphereShape(0.275f));
+            btShapeHull* hull = new btShapeHull(conx);
+            btScalar margin = conx->getMargin();
+            hull->buildHull(margin);
+            btConvexHullShape* simplifiedConvexShape = new btConvexHullShape((btScalar*)hull->getVertexPointer(), hull->numVertices());
+            body = Game::instance->world->physics->createBody(definitionReader->getf("body_mass"), bodyMesh->getInstance(carsCount), simplifiedConvexShape);
+            tyreLF = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount*4), new btSphereShape(definitionReader->getf("tyre_radius")));
+            tyreRF = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount*4 + 1), new btSphereShape(definitionReader->getf("tyre_radius")));
+            tyreLR = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount*4 + 2), new btSphereShape(definitionReader->getf("tyre_radius")));
+            tyreRR = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount*4 + 3), new btSphereShape(definitionReader->getf("tyre_radius")));
 
            // body->body->setDamping(0.0017, 0.006);
            // btTransform cmasstrs = body->body->getCenterOfMassTransform();
            // cmasstrs.setOrigin(cmasstrs.getOrigin() + btVector3(0.0,  2.0, 0.0));
            // body->body->setCenterOfMassTransform(cmasstrs);
 
-            tyreLF->body->setFriction(10.0);
-            tyreRF->body->setFriction(10.0);
-            tyreLR->body->setFriction(10.0);
-            tyreRR->body->setFriction(10.0);
+            tyreLF->body->setFriction(definitionReader->getf("tyre_friction"));
+            tyreRF->body->setFriction(definitionReader->getf("tyre_friction"));
+            tyreLR->body->setFriction(definitionReader->getf("tyre_friction"));
+            tyreRR->body->setFriction(definitionReader->getf("tyre_friction"));
             //body->body->setCollisionFlags(body->body->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
             body->body->setIgnoreCollisionCheck(tyreLF->body, true);
             body->body->setIgnoreCollisionCheck(tyreRF->body, true);
             body->body->setIgnoreCollisionCheck(tyreLR->body, true);
             body->body->setIgnoreCollisionCheck(tyreRR->body, true);
-
-            auto v4 = frontaxis + wheelspacing;
+             
             btTransform frameInA, frameInB;
             frameInA = btTransform::getIdentity();
             frameInB = btTransform::getIdentity();
 
-            frameInA.setOrigin(bulletify3(frontaxis + wheelspacing));
+            frameInA.setOrigin(bulletify3(definitionReader->getv3("wheel_front_left")));
             frameInB.setRotation(bulletifyq(glm::angleAxis(deg2rad(0.0f), glm::vec3(0.0, 1.0, 0.0))));
             auto ct1 = new btGeneric6DofSpringConstraint(*(body->body), *(tyreLF->body), frameInA, frameInB, true);
             tyreLFCon = new PhysicalConstraint(ct1, body, tyreLF);
 
-            frameInA.setOrigin(bulletify3(frontaxis - wheelspacing));
+            frameInA.setOrigin(bulletify3(definitionReader->getv3("wheel_front_right")));
             frameInB.setRotation(bulletifyq(glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0))));
             auto ct2 = new btGeneric6DofSpringConstraint(*(body->body), *(tyreRF->body), frameInA, frameInB, true);
             tyreRFCon = new PhysicalConstraint(ct2, body, tyreRF);
 
-            frameInA.setOrigin(bulletify3(rearaxis + wheelspacing));
+            frameInA.setOrigin(bulletify3(definitionReader->getv3("wheel_rear_left")));
             frameInB.setRotation(bulletifyq(glm::angleAxis(deg2rad(0.0f), glm::vec3(0.0, 1.0, 0.0))));
             auto ct3 = new btGeneric6DofSpringConstraint(*(body->body), *(tyreLR->body), frameInA, frameInB, true);
             tyreLRCon = new PhysicalConstraint(ct3, body, tyreLR);
 
-            frameInA.setOrigin(bulletify3(rearaxis - wheelspacing));
+            frameInA.setOrigin(bulletify3(definitionReader->getv3("wheel_rear_right")));
             frameInB.setRotation(bulletifyq(glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0))));
             auto ct4 = new btGeneric6DofSpringConstraint(*(body->body), *(tyreRR->body), frameInA, frameInB, true);
             tyreRRCon = new PhysicalConstraint(ct4, body, tyreRR);
@@ -249,6 +249,49 @@ void Car::initialize(TransformStruct spawn)
             tyreLRCon->constraint->setBreakingImpulseThreshold(99990.0f);
             tyreRRCon->constraint->setBreakingImpulseThreshold(99990.0f);
 
+
+            float maxLimitForce = definitionReader->getf("engine_force");
+            float currentLimitForce = definitionReader->getf("engine_force");
+            float maxMotorForce = definitionReader->getf("engine_force");
+            float loLimit = -definitionReader->getf("engine_limit");
+            float hiLimit = definitionReader->getf("engine_limit");
+             
+            auto m = ct1->getRotationalLimitMotor(0);
+            m->m_enableMotor = false;
+            m->m_targetVelocity = -0;
+            m->m_maxLimitForce = maxLimitForce;
+            m->m_currentLimit = currentLimitForce;
+            m->m_maxMotorForce = maxMotorForce;
+            m->m_loLimit = loLimit;
+            m->m_hiLimit = hiLimit;
+
+            m = ct2->getRotationalLimitMotor(0);
+            m->m_enableMotor = false;
+            m->m_targetVelocity = -0;
+            m->m_maxLimitForce = maxLimitForce;
+            m->m_currentLimit = currentLimitForce;
+            m->m_maxMotorForce = maxMotorForce;
+            m->m_loLimit = loLimit;
+            m->m_hiLimit = hiLimit;
+
+            m = ct3->getRotationalLimitMotor(0);
+            m->m_enableMotor = false;
+            m->m_targetVelocity = -0;
+            m->m_maxLimitForce = maxLimitForce;
+            m->m_currentLimit = currentLimitForce;
+            m->m_maxMotorForce = maxMotorForce;
+            m->m_loLimit = loLimit;
+            m->m_hiLimit = hiLimit;
+
+            m = ct4->getRotationalLimitMotor(0);
+            m->m_enableMotor = false;
+            m->m_targetVelocity = -0;
+            m->m_maxLimitForce = maxLimitForce;
+            m->m_currentLimit = currentLimitForce;
+            m->m_maxMotorForce = maxMotorForce;
+            m->m_loLimit = loLimit;
+            m->m_hiLimit = hiLimit;
+
             body->enable();
             tyreLF->enable();
             tyreRF->enable();
@@ -259,48 +302,10 @@ void Car::initialize(TransformStruct spawn)
             tyreRFCon->enable();
             tyreLRCon->enable();
             tyreRRCon->enable();
-            // body->body->setLinearVelocity(btVector3(3.0, 15.0, 0.0));
-            //body->body->setAngularVelocity(btVector3(0.0, 0.0, 0.0));
 
-            float maxLimitForce = 35.0f;
-            float currentLimitForce = 5.0f;
-            float maxMotorForce = 35.0f;
-            float loLimit = 5.0f;
-            float hiLimit = 5.0f;
 
-            auto m = ct1->getRotationalLimitMotor(0);
-            m->m_targetVelocity = -0;
-            m->m_maxLimitForce = maxLimitForce;
-            m->m_currentLimit = currentLimitForce;
-            m->m_maxMotorForce = maxMotorForce;
-            m->m_enableMotor = false;
-            m->m_loLimit = -loLimit;
-            m->m_hiLimit = hiLimit;
-
-            m = ct2->getRotationalLimitMotor(0);
-            m->m_maxLimitForce = maxLimitForce;
-            m->m_currentLimit = currentLimitForce;
-            m->m_maxMotorForce = maxMotorForce;
-            m->m_enableMotor = false;
-            m->m_loLimit = -loLimit;
-            m->m_hiLimit = hiLimit;
-
-            m = ct3->getRotationalLimitMotor(0);
-            m->m_maxLimitForce = maxLimitForce;
-            m->m_currentLimit = currentLimitForce;
-            m->m_maxMotorForce = maxMotorForce;
-            m->m_enableMotor = false;
-            m->m_loLimit = -loLimit;
-            m->m_hiLimit = hiLimit;
-
-            m = ct4->getRotationalLimitMotor(0);
-            m->m_maxLimitForce = maxLimitForce;
-            m->m_currentLimit = currentLimitForce;
-            m->m_maxMotorForce = maxMotorForce;
-            m->m_enableMotor = false;
-            m->m_loLimit = -loLimit;
-            m->m_hiLimit = hiLimit;
-
+            body->body->setLinearVelocity(btVector3(0.0, 0.0, 0.0));
+            body->body->setAngularVelocity(btVector3(0.0, 0.0, 0.0));
 
             Game::instance->invoke([&]() {
                 initialized = true;

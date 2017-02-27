@@ -134,11 +134,12 @@ vec4 getLighting(){
     hitdst = length(currentData.normal) < 0.01 ? 99999.0 : currentData.cameraDistance;
     //return  textureLod(inputTex, UV, 0.0);
     if(hitdist <= 0.01) return  textureLod(inputTex, UV, 0.0);
-    if(hitdist > hitdst) return textureLod(inputTex, UV, 0.0);
+    if(hitdist > hitdst && length(currentData.normal) > 0.01) return textureLod(inputTex, UV, 0.0);
     hitdst = min(hitdist, hitdst);
     vec3 hitpos = CameraPosition + reconstructCameraSpaceDistance(UV, hitdist);
 
     float planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
+
     float planethit2 = intersectPlane(CameraPosition, dir, vec3(0.0, WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
 
     vec3 nearsurface = CameraPosition + reconstructCameraSpaceDistance(UV, planethit > 0.0 && planethit2 > 0.0 ? planethit : hitdist);

@@ -355,7 +355,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     #define xA 0.5
     #define xB 0.5
     float mult = mix(sqrt(0.001 + dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, SunDT) + 0.02;
-    vec3 raycolor = (getSunColorDirectly(0.0) * 12.9 * rays + (AtmDiffuse * 1.0 ) * 0.8) + AtmDiffuse * rays * (1.0 + 1110.0 * (1.0 - smart_inverse_dot(1.0 - max(0.0, dot(dayData.sunDir, dir)-0.005), 2711.0)))* smart_inverse_dot(SunDT, 2.0);
+    vec3 raycolor = (getSunColorDirectly(0.0) * 7.9 * rays + (AtmDiffuse * 0.2 ) * 0.8) + AtmDiffuse * 0.2 * rays * (1.0 + 1110.0 * (1.0 - smart_inverse_dot(1.0 - max(0.0, dot(dayData.sunDir, dir)-0.005), 2711.0)))* smart_inverse_dot(SunDT, 2.0);
 
     //raycolor *= xA + xB * (pow(1.0 - DirDT, 8.0));
     float raysCoverage = clamp((1.0 / (DirDT * 61.0 / NoiseOctave1 + 1.0)), 0.0, 1.0);
@@ -389,7 +389,7 @@ float ssao(vec3 p1){
     float iter = 0.0;
     vec2 uv = UV + vec2(Rand1, Rand2);
     float rd = rand2s(uv) * 12.1232343456;
-    float targetmeters = 12.3;
+    float targetmeters = 0.3;
     int steps = 11;
     float stepsize = 1.0 / 11.0;
     vec3 refl = normalize(reflect(reconstructCameraSpaceDistance(UV, 1.0), currentData.normal));

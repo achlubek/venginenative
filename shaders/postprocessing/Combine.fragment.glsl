@@ -78,7 +78,7 @@ vec3 testmap(vec3 c){
 vec3 tonemap(vec3 xa){
     vec3 a = xa / max(0.1, Luminence * 0.1);
     a *= Exposure;
-    a /= 1.0 + length(a) * 0.5;
+    a /= 1.0 + length(a) * 0.1;
     float l = length(a);
     //a = normalize(a) * mix(l, 0.9, 0.2);
     a = pow(a, vec3(Contrast));

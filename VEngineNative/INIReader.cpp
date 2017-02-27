@@ -7,9 +7,42 @@ INIReader::INIReader(string mediakey)
     readString(Media::readString(mediakey));
 }
 
+void INIReader::splitBySpaces(vector<string>& output, string src)
+{
+    int i = 0, d = 0;
+    while (i < src.size()) {
+        if (src[i] == ' ') {
+            output.push_back(src.substr(d, i - d));
+            d = i;
+            while (src[i++] == ' ')  d++;
+        }
+        else {
+            i++;
+        }
+    }
+    if (i == src.size() && d < i) {
+        output.push_back(src.substr(d, i));
+    }
+}
+
 float INIReader::getf(string key)
 {
     return atof(data[key].c_str());
+}
+
+glm::vec2 INIReader::getv2(string key)
+{
+    vector<string> words;
+    splitBySpaces(words, data[key]);
+    return glm::vec2(atof(words[0].c_str()), atof(words[1].c_str()));
+}
+
+glm::vec3 INIReader::getv3(string key)
+{
+    vector<string> words;
+    splitBySpaces(words, data[key]);
+    auto x = glm::vec3(atof(words[0].c_str()), atof(words[1].c_str()), atof(words[2].c_str()));
+    return glm::vec3(atof(words[0].c_str()), atof(words[1].c_str()), atof(words[2].c_str()));
 }
 
 int INIReader::geti(string key)
