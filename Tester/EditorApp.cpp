@@ -503,7 +503,7 @@ void EditorApp::onBind()
 
     auto t = game->asset->loadMeshFile("2dplane.mesh3d");
     // t->alwaysUpdateBuffer = true;
-    game->world->scene->addMesh3d(t);
+   // game->world->scene->addMesh3d(t);
 
     game->invoke([&]() {
         auto phys = Game::instance->world->physics;

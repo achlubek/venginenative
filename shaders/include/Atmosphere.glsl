@@ -116,7 +116,7 @@ float fbmHI(vec3 p){
     p *= 0.011 * FBMSCALE;
     float a = 0.0;
     float w = 0.5;
-    for(int i=0;i<8;i++){
+    for(int i=0;i<5;i++){
         //p += noise(vec3(a));
         a += xsupernoise3d(p) * w;
         w *= 0.5;
@@ -241,7 +241,7 @@ float internalmarchconservativeCoverageOnly1StepOnly(int s, vec3 p1, vec3 p2, fl
 
 
 vec2 internalmarchconservative(vec3 p1, vec3 p2){
-    int stepsmult = int(abs(CloudsFloor - CloudsCeil) * 0.003);
+    int stepsmult = int(abs(CloudsFloor - CloudsCeil) * 0.001);
     int stepcount = 1 + stepsmult;
     float stepsize = 1.0 / float(stepcount);
     float rd = fract(rand2sTime(UV)) * stepsize;
@@ -264,7 +264,7 @@ vec2 internalmarchconservative(vec3 p1, vec3 p2){
         clouds = cloudsDensity3D(pos);
 
         coverageinv -= clouds;
-        depr += step(0.999, coverageinv) * distance(lastpos, pos);
+        depr += step(0.99, coverageinv) * distance(lastpos, pos);
         //if(coverageinv <= 0.0) break;
         lastpos = pos;
         iter += stepsize;

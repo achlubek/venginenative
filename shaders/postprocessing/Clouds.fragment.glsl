@@ -60,9 +60,9 @@ vec4 shade(){
         vec2 lastData = texture(cloudsCloudsTex, dir).rg;
         vec2 val = raymarchCloudsRay();
         retedg.rg = vec2(max(val.r, lastData.r), min(val.g, lastData.g));
-        retavg.rg = vec2(mix(val.r, lastData.r, CloudsIntegrate), mix(val.g, lastData.g, CloudsIntegrate * 0.8));
+        retavg.rg = vec2(mix(val.r, lastData.r, CloudsIntegrate), val.g);
 	//	retavg.r = mix(retavg.r, retedg.r, 0.2);
-		retavg.g = mix(retavg.g, retedg.g, 0.3);
+		//retavg.g = mix(retavg.g, retedg.g, 0.3);
     } else if(RenderPass == 1){
         vec4 lastData = textureLod(cloudsCloudsTex, dir, 0.0).rgba;
 		vec3 AOGround = getCloudsAL(dir);

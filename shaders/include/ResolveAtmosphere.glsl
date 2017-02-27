@@ -1,5 +1,6 @@
 #ifndef RESOLVEATMOSPHERE_H
 #define RESOLVEATMOSPHERE_H
+#include CSM.glsl
 float roughnessToMipmap(float roughness, samplerCube txt){
     //roughness = roughness * roughness;
     float levels = max(0, float(textureQueryLevels(txt)));
@@ -172,11 +173,24 @@ float sun(vec3 dir, vec3 sundir, float gloss, float ansiox){
     return pow(dt, 521.0 * gloss * gloss * gloss * gloss * gloss + 111.0) * (101.0 * gloss + 1.0) * smoothstep(-0.02, -0.01, sundir.y);
    // return smoothstep(0.997, 1.0, dt);
 }
+vec3 getSunColorDirectly(float roughness){
+    vec3 sunBase = vec3(15.0);
+    float dt = max(0.0, (dot(dayData.sunDir, VECTOR_UP)));
+    float dtx = smoothstep(-0.0, 0.1, dot(dayData.sunDir, VECTOR_UP));
+    float dt2 = 0.9 + 0.1 * (1.0 - max(0.0, (dot(dayData.sunDir, VECTOR_UP))));
+    float st = max(0.0, 1.0 - smart_inverse_dot(dt, 11.0));
+    vec3 supersundir = max(vec3(0.0),   vec3(1.0) - st * 4.0 * pow(vec3(50.0/255.0, 111.0/255.0, 153.0/255.0), vec3(2.4)));
+//    supersundir /= length(supersundir) * 1.0 + 1.0;
+    return supersundir * 4.0 * smart_inverse_dot(dt, 11.0);
+    //return mix(supersundir * 1.0, sunBase, st);
+    //return  max(vec3(0.3, 0.3, 0.0), (  sunBase - vec3(5.5, 18.0, 20.4) *  pow(1.0 - dt, 8.0)));
+}
+
 float sshadow = 1.0;
 vec3 shadingWater(PostProcessingData data, vec3 n, vec3 lightDir, vec3 colorA, vec3 colorB){
     float fresnel  = fresneleffect(0.02, 0.0, normalize(data.cameraPos), n);
     fresnel = mix(fresnel, 0.05, data.roughness);
-    return colorB * ( fresnel);
+    return colorB * ( fresnel) + shade_ray_data(data, dayData.sunDir,  getSunColorDirectly(0.0));
    // return  colorB * (  fresnel);
 }
 
@@ -196,19 +210,6 @@ vec3 getDiffuseAtmosphereColor(){
     vec3 dif1  = -dayData.sunDir;
     dif1.y = abs(dif1.y);
     return textureLod(atmScattTex, vec3(0.0, 1.0, 0.0), textureQueryLevels(atmScattTex) - 2.0).rgb;
-}
-
-vec3 getSunColorDirectly(float roughness){
-    vec3 sunBase = vec3(15.0);
-    float dt = max(0.0, (dot(dayData.sunDir, VECTOR_UP)));
-    float dtx = smoothstep(-0.0, 0.1, dot(dayData.sunDir, VECTOR_UP));
-    float dt2 = 0.9 + 0.1 * (1.0 - max(0.0, (dot(dayData.sunDir, VECTOR_UP))));
-    float st = max(0.0, 1.0 - smart_inverse_dot(dt, 11.0));
-    vec3 supersundir = max(vec3(0.0),   vec3(1.0) - st * 4.0 * pow(vec3(50.0/255.0, 111.0/255.0, 153.0/255.0), vec3(2.4)));
-//    supersundir /= length(supersundir) * 1.0 + 1.0;
-    return supersundir * 4.0 * smart_inverse_dot(dt, 11.0);
-    //return mix(supersundir * 1.0, sunBase, st);
-    //return  max(vec3(0.3, 0.3, 0.0), (  sunBase - vec3(5.5, 18.0, 20.4) *  pow(1.0 - dt, 8.0)));
 }
 
 vec3 getSunColor(float roughness){
@@ -259,8 +260,8 @@ vec2 xyzToPolar(vec3 xyz){
 
 
 vec3 getStars(vec3 dir, float roughness){
-    dir = dayData.viewFrame * dir;
-    vec3 c = pow(textureLod(starsTex, vec2(1.0) - xyzToPolar(dir), 4.0).rrr *5.7, vec3(4.0)) * (supernoise3dX(dir * 100.0 + Time * 5.0) * 0.8 + 0.2);
+    dir = normalize(dayData.viewFrame * dir);
+    vec3 c = pow(textureLod(starsTex, vec2(1.0) - xyzToPolar(dir), 0.0).rrr * 3.0, vec3(5.0)) * (supernoise3dX(dir * 100.0 + Time * 5.0) * 0.8 + 0.2);
     return mix(c * 0.15, vec3(0.001, 0.002, 0.003) * 0.2 * (1.0  - reconstructCameraSpaceDistance(UV, 1.0).y * 0.8), 0.2);
 }
 mat3 calcLookAtMatrix(vec3 origin, vec3 target, float roll) {
@@ -452,7 +453,6 @@ float traceReflection(vec3 pos, vec3 dir){
     return textureLod(mrt_Distance_Bump_Tex, vec2(uv.x, horizon - uv.y), 0).r;
 }
 
-#include CSM.glsl
 vec3 vdao(){
     vec3 c = vec3(0.0);
     int steps = 10;
