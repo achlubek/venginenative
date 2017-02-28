@@ -187,10 +187,10 @@ vec3 getSunColorDirectly(float roughness){
 }
 
 float sshadow = 1.0;
-vec3 shadingWater(PostProcessingData data, vec3 n, vec3 lightDir, vec3 colorA, vec3 colorB){
+vec3 shadingWater(PostProcessingData data, vec3 n, vec3 lightDir, vec3 colorA, vec3 colorB, float shadow){
     float fresnel  = fresneleffect(0.02, 0.0, normalize(data.cameraPos), n);
     fresnel = mix(fresnel, 0.05, data.roughness);
-    return colorB * ( fresnel) + shade_ray_data(data, dayData.sunDir,  getSunColorDirectly(0.0));
+    return colorB * ( fresnel) + shade_ray_data(data, dayData.sunDir, shadow *  getSunColorDirectly(0.0));
    // return  colorB * (  fresnel);
 }
 
@@ -472,7 +472,7 @@ vec3 vdao(){
     //    float cx = visibility(currentData.worldPos, currentData.worldPos + p * 1.0);
         c += 0.1 * v * shade_ray_env_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness, resolvedAtmosphereTex)).rgb, atmdiff);
     }
-    return shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * getSunColor(0.0)) + c * ssao(currentData.worldPos);
+    return shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * 20.0 * getSunColorDirectly(0.0)) + c * ssao(currentData.worldPos);
 }
 
 vec3 shadeFragment(PostProcessingData data){

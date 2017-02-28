@@ -12,6 +12,7 @@ public:
     float getWheelsAngle();
     TransformationManager* getTransformation();
     float getSpeed();
+    glm::vec3 getLinearVelocity();
     volatile bool initialized = false;
 
 private:

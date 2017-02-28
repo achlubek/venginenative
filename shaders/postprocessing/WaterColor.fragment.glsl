@@ -218,7 +218,7 @@ vec4 getLighting(){
 	//float dst = traceReflection(hitpos, dir);
 	//return vec4(dst);
     float csmvis = CSMQueryVisibility(worldpos);
-    result +=   shadingWater(dataReflection, normal, -dayData.sunDir, getSunColorDirectly(0.0) * csmvis, atm * (0.3 + 0.7 * csmvis)) * mix(1.0, 1.0, roughness) ;
+    result +=   shadingWater(dataReflection, normal, -dayData.sunDir, getSunColorDirectly(0.0) * csmvis, atm * (0.3 + 0.7 * csmvis), csmvis) * mix(1.0, 1.0, roughness) ;
     vec3 refr = normalize(refract(origdir, normal, 0.66));
     if(length(currentData.normal) < 0.01) currentData.cameraDistance = 299999.0;
     float hitdepth = currentData.cameraDistance - hitdist;

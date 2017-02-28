@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "EditorApp.h"
 #include "Car.h"
+#include "LinearMath/btAlignedObjectArray.h"
+#include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
 
 EditorApp::EditorApp()
 {
@@ -105,6 +107,9 @@ void EditorApp::onRenderFrame(float elapsed)
         cam->transformation->setOrientation(newrot);
         cam->transformation->setPosition(newpos);
 
+        testsound->transformation->setPosition(car[0]->getTransformation()->getPosition());
+        testsound->update(cam);
+
         int acnt = 0;
         const float * axes = glfwGetJoystickAxes(0, &acnt);
         if (acnt >= 1) {
@@ -114,7 +119,14 @@ void EditorApp::onRenderFrame(float elapsed)
             float acc = (axes[5] * 0.5 + 0.5);
             float brk = (axes[4] * 0.5 + 0.5);
             car[0]->setAcceleration((acc - brk) * 0.5);
-            printf("ACCELERATION: %f\n", (acc - brk) * 0.5);
+            printf("ACCELERATION: %f\n", (acc - brk) * 1.0);
+            float targetpitch = 1.0f;// +acc * 0.2f;
+
+            glm::vec3 vel = car[0]->getLinearVelocity();
+            float doppler = glm::dot(glm::normalize(car[0]->getTransformation()->getPosition() - cam->transformation->getPosition()), glm::normalize(vel)) * glm::length(vel) * 0.03;
+            targetpitch *= targetpitch * (1.0 - 0.2 * doppler);
+
+            testsound->setPitch(testsound->getPitch() * 0.99 + 0.01 * targetpitch);
         }
 
     }
@@ -383,6 +395,25 @@ void EditorApp::onKeyPress(int key)
             if (currentCommandText.length() > 0) currentCommandText = currentCommandText.substr(0, currentCommandText.length() - 1);
         }
     }
+    if (key == GLFW_KEY_F5) {
+        glm::vec3 hitpos, hitnorm;
+        auto res = game->world->physics->rayCast(game->world->mainDisplayCamera->transformation->getPosition(),
+            game->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.5)), hitpos, hitnorm);
+        if (res != nullptr) {
+            cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(hitpos)));
+        }
+        
+    }
+
+    if (key == GLFW_KEY_F6) {
+        testsound->play();
+    }
+    if (key == GLFW_KEY_F7) {
+        testsound->pause();
+    }
+    if (key == GLFW_KEY_F8) {
+        testsound->stop();
+    }
 }
 
 void EditorApp::onKeyRelease(int key)
@@ -421,9 +452,9 @@ void EditorApp::onBind()
     cam = new Camera();
     float fov = 85.0f;
     float fovnew = 85.0f;
-    cam->createProjectionPerspective(fovnew, (float)game->width / (float)game->height, 0.01f, 1000);
+    cam->createProjectionPerspective(fovnew, (float)game->width / (float)game->height, 0.01f, 10000);
     game->onWindowResize->add([&](int zero) {
-        cam->createProjectionPerspective(fovnew, (float)game->width / (float)game->height, 0.01f, 1000);
+        cam->createProjectionPerspective(fovnew, (float)game->width / (float)game->height, 0.01f, 10000);
     });
     cam->transformation->translate(glm::vec3(16, 16, 16));
     glm::quat rot = glm::quat_cast(glm::lookAt(cam->transformation->getPosition(), glm::vec3(0), glm::vec3(0, 1, 0)));
@@ -473,8 +504,9 @@ void EditorApp::onBind()
     //game->world->scene->addMesh3d(s);
     *//*
     int terrainparts = 10;
-    float fullsize = 1000.0;
-    float partsize = 100.0;
+    float fullsize = 3000.0;
+    float partsize = 300.0;
+    auto tex = new Texture2d("terrain_diffuse.png");
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
             stringstream ss0;
@@ -484,9 +516,9 @@ void EditorApp::onBind()
             stringstream ss2;
             ss2 << "terr_lod2_" << x << "x" << y << ".raw";
             auto mat = new Material();
-            mat->diffuseColorTex = new Texture2d("terrain_diffuse.png");
+            mat->diffuseColorTex = tex;
             Mesh3d* m = Mesh3d::create(game->asset->loadObject3dInfoFile(ss0.str()), mat);
-            m->getInstance(0)->transformation->setPosition(vec3(partsize * x * 1.0f, 10.0, partsize*y * 1.0f));
+            m->getInstance(0)->transformation->setPosition(vec3(partsize * x * 1.0f, -0.5, partsize*y * 1.0f));
             m->getInstance(0)->transformation->setSize(vec3(1.0f));
             m->getLodLevel(0)->distanceStart = 0.0f;
             m->getLodLevel(0)->distanceEnd = 150.0f;
@@ -495,14 +527,16 @@ void EditorApp::onBind()
             m->addLodLevel(new Mesh3dLodLevel(game->asset->loadObject3dInfoFile(ss2.str()), mat, 350.0f, 11150.0f));
             game->world->scene->addMesh3d(m);
         }
-    }
-    */
+    }*/
+
+    
+
     //  t->name = "flagbase";
      // game->world->scene->addMesh(t);
-    for (int xx = 0; xx < 10; xx++) {
-        for (int yy = 0; yy < 10; yy++)
+    for (int xx = 0; xx < 1; xx++) {
+        for (int yy = 0; yy < 1; yy++)
         {
-            auto c = new Car(xx % 2 == 0 ? "fiesta.car" : "fiesta.car", new TransformationManager(glm::vec3(xx * 10.0, 44.0, yy * 10.0)));
+            auto c = new Car(xx % 2 == 0 ? "fiesta.car" : "fiesta.car", new TransformationManager(glm::vec3(xx * 10.0, 4.0, yy * 10.0)));
             car.push_back(c);
         }
     }
@@ -518,7 +552,7 @@ void EditorApp::onBind()
     game->world->scene->addMesh3d(xt);
 
     game->invoke([&]() {
-        auto phys = Game::instance->world->physics;
+        auto phys = Game::instance->world->physics;/*
         vector<float> vertices = {};
         vector<int> indices = {};
         auto wterrobj = game->asset->loadObject3dInfoFile("weirdterrain.raw");
@@ -539,16 +573,23 @@ void EditorApp::onBind()
             );
             str->addIndex(ix++);
         }
-         
-        auto shape = new btBvhTriangleMeshShape(str, true, true);
-        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0, 0.5, 1000.0)));
+         */
+       // auto shape = new btBvhTriangleMeshShape(str, true, true);
+    //    unsigned char* bytes;
+       // int bytescount = Media::readBinary("SAfull.hmap", &bytes);
+       // auto terrashape = new btHeightfieldTerrainShape(6000, 6000, bytes, 255, 0, 255, 0, PHY_SHORT, false);
+       // auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), terrashape);
+        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0f, 0.25f, 1000.0f)));
         groundpb->body->setFriction(1);
         groundpb->enable();
     });
 
+    testsound = new Sound3d("engine.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+    testsound->setLoop(true);
+
     cursor3dArrow = Mesh3d::create(game->asset->loadObject3dInfoFile("arrow.raw"), new Material());
-    cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager()));
-    // game->world->scene->addDrawable((AbsDrawable*)cursor3dArrow);
+    //cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager()));
+     game->world->scene->addMesh3d(cursor3dArrow);
 }
 
 void EditorApp::onChar(unsigned int c)

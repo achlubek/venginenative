@@ -201,7 +201,7 @@
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Code\squirrel3\include;C:\Code\bullet3\src;C:\Code\glfw-3.2.1\include;%(AdditionalIncludeDirectories);C:\Code\bullet3\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Code\SFML-2.4.2\include;C:\Code\squirrel3\include;C:\Code\bullet3\src;C:\Code\glfw-3.2.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -251,6 +251,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Sound.h" />
     <ClInclude Include="AbsFramebuffer.h" />
     <ClInclude Include="AbsTexture.h" />
     <ClInclude Include="AbsTransformable.h" />
@@ -292,6 +293,7 @@
     <ClInclude Include="PhysicalBody.h" />
     <ClInclude Include="PhysicalConstraint.h" />
     <ClInclude Include="Physics.h" />
+    <ClInclude Include="Sound3d.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ShaderProgram.h" />
@@ -309,6 +311,7 @@
     <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Sound.cpp" />
     <ClCompile Include="AbsFramebuffer.cpp" />
     <ClCompile Include="AbsTexture.cpp" />
     <ClCompile Include="AbsTransformable.cpp" />
@@ -349,6 +352,7 @@
     <ClCompile Include="PhysicalBody.cpp" />
     <ClCompile Include="PhysicalConstraint.cpp" />
     <ClCompile Include="Physics.cpp" />
+    <ClCompile Include="Sound3d.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />

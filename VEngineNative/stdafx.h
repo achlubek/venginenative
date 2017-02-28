@@ -69,3 +69,5 @@ btVector3 bulletify3(glm::vec3 v);
 glm::vec3 glmify3(btVector3 v);
 btQuaternion bulletifyq(glm::quat v);
 glm::quat glmifyq(btQuaternion v);
+
+#include <SFML/Audio.hpp>

@@ -78,8 +78,11 @@ vec3 testmap(vec3 c){
 vec3 tonemap(vec3 xa){
     vec3 a = xa / max(0.1, Luminence * 0.1);
     a *= Exposure;
-    a /= 1.0 + length(a) * 0.1;
-    float l = length(a);
+    float luma = length(a);
+    vec3 xa2 = xa + 0.00001;
+    vec3 coloressence = normalize(xa2);
+    //a /= 1.0 + log(luma) * 1.1;
+    a = coloressence * mix(sqrt(clamp(luma, 0.0001, 99999.0)), luma, 0.5);
     //a = normalize(a) * mix(l, 0.9, 0.2);
     a = pow(a, vec3(Contrast));
     return (rgb_to_srgb(a));

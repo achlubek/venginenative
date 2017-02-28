@@ -128,6 +128,11 @@ float Car::getSpeed()
     return glm::length(velocity) * glm::sign(dt);
 }
 
+glm::vec3 Car::getLinearVelocity()
+{
+    return glmify3(body->body->getLinearVelocity());
+}
+
 void Car::updateTyreForce(PhysicalConstraint * tyrec, bool enableMotor, float targetVelocity)
 {
     float maxLimitForce = definitionReader->getf("engine_force");
