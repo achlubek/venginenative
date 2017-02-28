@@ -1,6 +1,16 @@
 ![A screenshot](http://i.imgur.com/jPEifJr.png "The awesome logo")
 
-OpenGL engine for writing robust and threaded graphical applications in C++.
+### VEngine is 3D Engine designed primarily for making games.
+
+##### What we got here
+- Graphics system using OpenGL 4.5 with help of GLFW3 https://github.com/glfw/glfw and GLAD https://github.com/dav1dde/glad-web
+- Physics system using Bullet Physics https://github.com/bulletphysics/bullet3
+- Audio system using SMFL https://www.sfml-dev.org/
+- Image loading using LuPng https://github.com/jansol/LuPng and stb_image https://github.com/nothings/stb
+- Debug GUI using dear imgui https://github.com/ocornut/imgui
+
+Please see this to learn about usage:
+https://github.com/achlubek/venginenative/blob/master/Tester/EditorApp.cpp 
 
 The software is licensed under MIT license.
 
