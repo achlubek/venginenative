@@ -109,7 +109,31 @@ void EditorApp::onRenderFrame(float elapsed)
 
         testsound->transformation->setPosition(car[0]->getTransformation()->getPosition());
         testsound->update(cam);
+        testsound2->transformation->setPosition(car[0]->getTransformation()->getPosition());
+        testsound2->update(cam);
 
+        wind->transformation->setPosition(car[0]->getTransformation()->getPosition());
+        wind->update(cam);
+
+        auto campos = cam->transformation->getPosition();
+
+        auto rot = glm::angleAxis(game->time * 0.4f, glm::vec3(0.0, 1.0, 0.0));
+
+        ocean1->transformation->setPosition(campos + rot * glm::vec3(4.0, 0.0, 0.0));
+        ocean1->update(cam);
+        ocean2->transformation->setPosition(campos + rot * glm::vec3(0.0, 0.0, 4.0));
+        ocean2->update(cam);
+        ocean3->transformation->setPosition(campos + rot * glm::vec3(-4.0, 0.0, 0.0));
+        ocean3->update(cam);
+        ocean4->transformation->setPosition(campos + rot * glm::vec3(0.0, 0.0, -4.0));
+        ocean4->update(cam);
+
+        float oceanvol = (1.0f / (1.0 + 0.005 * glm::max(0.0f, campos.y * campos.y))) * 100.0;
+        ocean1->setVolume(oceanvol);
+        ocean2->setVolume(oceanvol);
+        ocean3->setVolume(oceanvol);
+        ocean4->setVolume(oceanvol);
+        
         int acnt = 0;
         const float * axes = glfwGetJoystickAxes(0, &acnt);
         if (acnt >= 1) {
@@ -120,13 +144,18 @@ void EditorApp::onRenderFrame(float elapsed)
             float brk = (axes[4] * 0.5 + 0.5);
             car[0]->setAcceleration((acc - brk) * 0.5);
             printf("ACCELERATION: %f\n", (acc - brk) * 1.0);
-            float targetpitch = 1.0f;// +acc * 0.2f;
+            float targetpitch = 0.9f + acc * 0.5f;
 
             glm::vec3 vel = car[0]->getLinearVelocity();
             float doppler = glm::dot(glm::normalize(car[0]->getTransformation()->getPosition() - cam->transformation->getPosition()), glm::normalize(vel)) * glm::length(vel) * 0.03;
             targetpitch *= targetpitch * (1.0 - 0.2 * doppler);
 
-            testsound->setPitch(testsound->getPitch() * 0.99 + 0.01 * targetpitch);
+            testsound->setPitch(testsound->getPitch() * 0.96 + 0.04 * targetpitch);
+            testsound->setVolume(( 0.5 + acc) * 100.0);
+
+            float windpitch = (1.0 - 0.2 * doppler);
+            testsound2->setPitch(windpitch);
+            testsound2->setVolume(car[0]->getSpeed() * 10.0);
         }
 
     }
@@ -192,6 +221,33 @@ void EditorApp::onRenderFrame(float elapsed)
 
         }
     }
+   /* if (car[0]->initialized) {
+        glm::vec3 carpos = car[0]->getTransformation()->getPosition();
+        glm::vec3 carpos2 = carpos + glm::vec3(300.0, 0.0, 300.0);
+
+        float bc = bytes2[((int)carpos2.z) * 6000 + ((int)carpos2.x)];
+        float b = 0.0;
+        float w = 0.0;
+        glm::vec2 flatnorm = glm::vec2(0.0);
+        for (int x = -1; x < 1; x++) {
+            for (int y = -1; y < 1; y++) {
+                float r = bytes2[(y + (int)carpos2.z) * 6000 + (x + (int)carpos2.x)];
+                if(x != 0 || y != 0) flatnorm += (r - bc) * glm::normalize(glm::vec2(x, y));
+                b += r;
+                w += 1.0;
+            }
+        }
+        b /= w;
+        flatnorm /= w;
+        glm::vec3 n = glm::normalize(glm::vec3(flatnorm.x, 4.0, flatnorm.y));
+        
+
+        printf("%f %f %f %f", n.x, n.y, n.z, b);
+        virtualbox->transformation->setPosition(glm::vec3(carpos.x, b - 0.5 - 6.0, carpos.z));
+        virtualbox->transformation->setOrientation(glm::lookAt(glm::vec3(0.0), n, glm::vec3(1.0, 1.0023556, 0.0)));
+        virtualbox->readChanges();
+        cursor3dArrow->getInstance(0)->transformation->setPosition(glm::vec3(carpos.x, b - 0.5 , carpos.z));
+    }*/
 }
 
 string vitoa(int i) {
@@ -400,13 +456,18 @@ void EditorApp::onKeyPress(int key)
         auto res = game->world->physics->rayCast(game->world->mainDisplayCamera->transformation->getPosition(),
             game->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.5)), hitpos, hitnorm);
         if (res != nullptr) {
-            cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(hitpos)));
+            Mesh3dInstance* mnt = new Mesh3dInstance(new TransformationManager(hitpos + glm::vec3(0.0, 3.0, 0.0), glm::quat(), glm::vec3(1)));
+            cursor3dArrow->addInstance(mnt);
+            Physics* p = game->world->physics;
+            auto ob = p->createBody(1.0f, mnt, new btSphereShape(1.0f));
+            ob->enable();
         }
-        
+
     }
 
     if (key == GLFW_KEY_F6) {
         testsound->play();
+        testsound2->play();
     }
     if (key == GLFW_KEY_F7) {
         testsound->pause();
@@ -462,7 +523,7 @@ void EditorApp::onBind()
     game->world->mainDisplayCamera = cam;
 
     game->setCursorMode(GLFW_CURSOR_NORMAL);
-    
+
     //auto t = game->asset->loadSceneFile("oldhouse.scene");
     //for (int i = 0; i < t->getMesh3ds().size(); i++) {
     //    game->world->scene->addMesh3d(t->getMesh3ds()[i]); 
@@ -502,10 +563,11 @@ void EditorApp::onBind()
         grasses[i]->transformation->setPosition(glm::vec3(pos.x * 1.0f + 500.0f, pos.y * 4.0f - 10.0f, pos.z * 1.0f + 500.0f));
     }
     //game->world->scene->addMesh3d(s);
-    *//*
+    */
+    /*
     int terrainparts = 10;
-    float fullsize = 3000.0;
-    float partsize = 300.0;
+    float fullsize = 6000.0;
+    float partsize = 600.0;
     auto tex = new Texture2d("terrain_diffuse.png");
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
@@ -529,17 +591,10 @@ void EditorApp::onBind()
         }
     }*/
 
-    
+
 
     //  t->name = "flagbase";
      // game->world->scene->addMesh(t);
-    for (int xx = 0; xx < 1; xx++) {
-        for (int yy = 0; yy < 1; yy++)
-        {
-            auto c = new Car(xx % 2 == 0 ? "fiesta.car" : "fiesta.car", new TransformationManager(glm::vec3(xx * 10.0, 4.0, yy * 10.0)));
-            car.push_back(c);
-        }
-    }
     //auto t1 = new TransformationManager(glm::vec3(8.0, 6.0, 8.0));
    // car.push_back(new Car(t1));
   //  auto t2 = new TransformationManager(glm::vec3(-8.0, 6.0, -8.0));
@@ -560,36 +615,83 @@ void EditorApp::onBind()
         //game->world->scene->addMesh3d(wterr3d);
         int ix = 0;
         auto str = new btTriangleMesh();
-        for (int i = 0; i < wterrobj->vbo.size(); i+=12 * 3) {
-           // indices.push_back(ix++);
-         //   vertices.push_back(wterrobj->vbo[i]);
-         //   vertices.push_back(wterrobj->vbo[i+1]);
-         //   vertices.push_back(wterrobj->vbo[i+2]);
+        for (int i = 0; i < wterrobj->vbo.size(); i += 12 * 3) {
+            // indices.push_back(ix++);
+          //   vertices.push_back(wterrobj->vbo[i]);
+          //   vertices.push_back(wterrobj->vbo[i+1]);
+          //   vertices.push_back(wterrobj->vbo[i+2]);
             str->addTriangle(
                 btVector3(wterrobj->vbo[i], wterrobj->vbo[i + 1], wterrobj->vbo[i + 2]),
                 btVector3(wterrobj->vbo[i + 12], wterrobj->vbo[i + 1 + 12], wterrobj->vbo[i + 2 + 12]),
-                btVector3(wterrobj->vbo[i + 24], wterrobj->vbo[i + 1 + 24], wterrobj->vbo[i + 2 + 24]), 
+                btVector3(wterrobj->vbo[i + 24], wterrobj->vbo[i + 1 + 24], wterrobj->vbo[i + 2 + 24]),
                 true
             );
             str->addIndex(ix++);
         }
-         */
-       // auto shape = new btBvhTriangleMeshShape(str, true, true);
-    //    unsigned char* bytes;
-       // int bytescount = Media::readBinary("SAfull.hmap", &bytes);
-       // auto terrashape = new btHeightfieldTerrainShape(6000, 6000, bytes, 255, 0, 255, 0, PHY_SHORT, false);
-       // auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), terrashape);
-        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0f, 0.25f, 1000.0f)));
-        groundpb->body->setFriction(1);
+
+        // auto shape = new btBvhTriangleMeshShape(str, true, true);
+        unsigned char* bytes;
+        int bytescount = Media::readBinary("SAfull.hmap", &bytes);
+        bytes2 = new float[bytescount / 2];
+        for (int i = 0; i < bytescount; i += 2) {
+            unsigned short sh = (bytes[i + 1] << 8) | bytes[i];
+            int halfi = i / 2;
+            int x = halfi % 6000;
+            int y = halfi / 6000;
+         //   y = 3000 - y;
+       // printf("%d %d\n", x, y);
+            bytes2[y * 6000 + x] = ((float)sh / 65535.0f) * 255;
+        }
+        auto terrashape = new btHeightfieldTerrainShape(6000, 6000, bytes2, 1.0, 0, 1.0, 1, PHY_FLOAT, false);
+        terrashape->setUseDiamondSubdivision(false);
+        terrashape->setUseZigzagSubdivision(false);
+        terrashape->setMargin(3.0);
+        */
+       // auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(3000.0 - 300.0, -0.5, 3000.0 - 300.0), glm::quat(), glm::vec3(1.0, 1.0, 1.0)), terrashape);
+         auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0f, 0.25f, 1000.0f)));
+        groundpb->body->setFriction(2);
         groundpb->enable();
+
     });
+
+   // virtualbox = game->world->physics->createBody(0.0f, new TransformationManager(), new btBoxShape(btVector3(6.0, 6.0, 6.0)));
+   // virtualbox->enable();
 
     testsound = new Sound3d("engine.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
     testsound->setLoop(true);
+    testsound2 = new Sound3d("brown_noise.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+    testsound2->setLoop(true);
+    wind = new Sound3d("brown_noise.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+    wind->setLoop(true);
+    ocean1 = new Sound3d("ocean1.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+    ocean1->setLoop(true);
+    ocean2 = new Sound3d("ocean2.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+    ocean2->setLoop(true);
+    ocean3 = new Sound3d("ocean3.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+    ocean3->setLoop(true);
+    ocean4 = new Sound3d("ocean4.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+    ocean4->setLoop(true);
 
-    cursor3dArrow = Mesh3d::create(game->asset->loadObject3dInfoFile("arrow.raw"), new Material());
-    //cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager()));
-     game->world->scene->addMesh3d(cursor3dArrow);
+    ocean1->setPitch(0.7f);
+    ocean2->setPitch(0.7f);
+    ocean3->setPitch(0.7f);
+    ocean4->setPitch(0.7f);
+
+    ocean1->play();
+    ocean2->play();
+    ocean3->play();
+    ocean4->play();
+
+    cursor3dArrow = Mesh3d::create(game->asset->loadObject3dInfoFile("deferredsphere.raw"), new Material());
+   // cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0), glm::quat(), glm::vec3(7.0))));
+    game->world->scene->addMesh3d(cursor3dArrow);
+    for (int xx = 0; xx < 11; xx++) {
+        for (int yy = 0; yy < 11; yy++)
+        {
+            auto c = new Car(xx % 2 == 0 ? "fiesta.car" : "fiesta.car", new TransformationManager(glm::vec3(xx * 10.0, 5.0, yy * 10.0)));
+            car.push_back(c);
+        }
+    }
 }
 
 void EditorApp::onChar(unsigned int c)

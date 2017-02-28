@@ -14,7 +14,7 @@ Physics::Physics()
     dispatcher = new btCollisionDispatcher(collisionConf);
     broadphase = new btDbvtBroadphase();
     auto w = new btDiscreteDynamicsWorld(dispatcher, broadphase, new btSequentialImpulseConstraintSolver(), collisionConf);
-    w->getDispatchInfo().m_useContinuous = false;
+    w->getDispatchInfo().m_useContinuous = true;
     w->setGravity(btVector3(gravity.x, gravity.y, gravity.z));
     world = w;
 }
@@ -31,7 +31,7 @@ void Physics::simulationStep(float elapsedTime)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         return;
     }
-    world->stepSimulation(elapsedTime, 4);
+    world->stepSimulation(elapsedTime, 1);
     for (auto b : activeBodies)
     {
         if (b != nullptr && b->body != nullptr && b->body->getActivationState() != ISLAND_SLEEPING)

@@ -107,7 +107,8 @@ void Car::setWheelsAngle(float angleInRadians)
    // float dt = glm::dot(upvec, glm::vec3(0.0, 1.0, 0.0));
   //  printf("%f %f %f\n", diff.x, diff.y, diff.z);
   //  body->body->applyForce(bulletify3(diff*10.0f), bulletify3(glm::vec3(0.0, 11.0, 0.0)));
-
+    auto angvec = body->body->getAngularVelocity();
+    body->body->setAngularVelocity(btVector3(-angvec.x(), angvec.y(), -angvec.z()));
 }
 
 float Car::getWheelsAngle()
