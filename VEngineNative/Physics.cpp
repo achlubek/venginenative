@@ -34,7 +34,7 @@ void Physics::simulationStep(float elapsedTime)
     world->stepSimulation(elapsedTime, 1);
     for (auto b : activeBodies)
     {
-        if (b != nullptr && b->body != nullptr && b->body->getActivationState() != ISLAND_SLEEPING)
+        if (b != nullptr && b->getCollisionObject() != nullptr && b->getCollisionObject()->getActivationState() != ISLAND_SLEEPING)
         {
             b->applyChanges();
         }
@@ -43,15 +43,29 @@ void Physics::simulationStep(float elapsedTime)
     {
         auto lst = std::vector<PhysicalBody*>(addBodyQueue);
         addBodyQueue.clear();
-        for (int i = 0; i<lst.size(); i++)
-            world->addRigidBody(lst[i]->body);
+        for (int i = 0; i < lst.size(); i++) {
+            if (lst[i]->isStatic()) {
+                world->addCollisionObject(lst[i]->getCollisionObject());
+            }
+            else {
+                world->addRigidBody(lst[i]->getRigidBody());
+            }
+        }
     }
     if (removeBodyQueue.size() > 0)
     {
         auto lst = std::vector<PhysicalBody*>(removeBodyQueue);
         removeBodyQueue.clear();
-        for (int i = 0; i<lst.size(); i++)
-            world->removeRigidBody(lst[i]->body);
+        for (int i = 0; i < lst.size(); i++) {
+            if (lst[i]->isStatic()) {
+                if (lst[i]->isStatic()) {
+                    world->removeCollisionObject(lst[i]->getCollisionObject());
+                }
+                else {
+                    world->removeRigidBody(lst[i]->getRigidBody());
+                }
+            }
+        }
     }
     if (addConstraintQueue.size() > 0)
     {
@@ -93,11 +107,20 @@ void Physics::addConstraint(PhysicalConstraint * c)
 
 PhysicalBody * Physics::createBody(float mass, TransformationManager * startTransform, btCollisionShape * shape)
 {
-    glm::vec3 s = startTransform->getSize();
-    shape->setLocalScaling(btVector3(s.x, s.y, s.z));
-    auto rb = createRigidBody(mass, startTransform, shape);
-    auto pb = new PhysicalBody(rb, shape, startTransform);
-    return pb;
+    if (mass != 0.0) {
+        glm::vec3 s = startTransform->getSize();
+        shape->setLocalScaling(btVector3(s.x, s.y, s.z));
+        auto rb = createRigidBody(mass, startTransform, shape);
+        auto pb = new PhysicalBody(rb, shape, startTransform);
+        return pb;
+    }
+    else {
+        glm::vec3 s = startTransform->getSize();
+        shape->setLocalScaling(btVector3(s.x, s.y, s.z));
+        auto rb = createStaticCollisionObject(startTransform, shape);
+        auto pb = new PhysicalBody(rb, shape, startTransform);
+        return pb;
+    }
 }
 
 PhysicalBody * Physics::createBody(float mass, Mesh3dInstance * mesh, btCollisionShape * shape)
@@ -136,7 +159,7 @@ PhysicalBody * Physics::rayCast(glm::vec3 origin, glm::vec3 direction, glm::vec3
 
         for (auto b : activeBodies)
         {
-            if (b->body == rigid) return b;
+            if (b->getRigidBody() == rigid) return b;
         }
 
     }
@@ -168,7 +191,27 @@ btRigidBody * Physics::createRigidBody(float mass, TransformationManager* transf
     body->setSleepingThresholds(0.0f, 0.0f);
     body->setContactProcessingThreshold(0.0f);
     body->setCcdMotionThreshold(0.0f);
-    
+
+    return body;
+}
+btCollisionObject * Physics::createStaticCollisionObject(TransformationManager* transform, btCollisionShape * shape)
+{
+    glm::quat o = transform->getOrientation();
+    glm::vec3 p = transform->getPosition();
+    auto q = btQuaternion(o.x, o.y, o.z, o.w);
+    auto v = btVector3(p.x, p.y, p.z);
+
+    auto bt = btTransform();
+    bt.setOrigin(v);
+    bt.setRotation(q);
+
+    btCollisionObject* body = new btCollisionObject();
+    body->setCollisionShape(shape);
+    body->setWorldTransform(bt);
+
+   // body->setContactProcessingThreshold(0.0f);
+    //body->setCcdMotionThreshold(0.0f);
+
     return body;
 }
 

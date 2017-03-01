@@ -91,7 +91,7 @@ void Car::setWheelsAngle(float angleInRadians)
 {
 
     if (!initialized) return;
-    if (body == nullptr || body->body == nullptr) return;
+    if (body == nullptr || body->getRigidBody() == nullptr) return;
 
     wheelsAngle = angleInRadians;
      
@@ -107,8 +107,8 @@ void Car::setWheelsAngle(float angleInRadians)
    // float dt = glm::dot(upvec, glm::vec3(0.0, 1.0, 0.0));
   //  printf("%f %f %f\n", diff.x, diff.y, diff.z);
   //  body->body->applyForce(bulletify3(diff*10.0f), bulletify3(glm::vec3(0.0, 11.0, 0.0)));
-    auto angvec = body->body->getAngularVelocity();
-    body->body->setAngularVelocity(btVector3(-angvec.x(), angvec.y(), -angvec.z()));
+    auto angvec = body->getRigidBody()->getAngularVelocity();
+    body->getRigidBody()->setAngularVelocity(btVector3(-angvec.x(), angvec.y(), -angvec.z()));
 }
 
 float Car::getWheelsAngle()
@@ -123,7 +123,7 @@ TransformationManager * Car::getTransformation()
 
 float Car::getSpeed()
 {
-    glm::vec3 velocity = glmify3(body->body->getLinearVelocity());
+    glm::vec3 velocity = glmify3(body->getRigidBody()->getLinearVelocity());
     glm::vec3 vector_forward = body->transformation->getOrientation() * glm::vec3(0.0, 0.0, -1.0);
     float dt = -glm::dot(velocity, vector_forward);
     return glm::length(velocity) * glm::sign(dt);
@@ -131,7 +131,7 @@ float Car::getSpeed()
 
 glm::vec3 Car::getLinearVelocity()
 {
-    return glmify3(body->body->getLinearVelocity());
+    return glmify3(body->getRigidBody()->getLinearVelocity());
 }
 
 void Car::updateTyreForce(PhysicalConstraint * tyrec, bool enableMotor, float targetVelocity)
@@ -200,15 +200,15 @@ void Car::initialize(TransformStruct spawn)
            // cmasstrs.setOrigin(cmasstrs.getOrigin() + btVector3(0.0,  2.0, 0.0));
            // body->body->setCenterOfMassTransform(cmasstrs);
 
-            tyreLF->body->setFriction(definitionReader->getf("tyre_friction"));
-            tyreRF->body->setFriction(definitionReader->getf("tyre_friction"));
-            tyreLR->body->setFriction(definitionReader->getf("tyre_friction"));
-            tyreRR->body->setFriction(definitionReader->getf("tyre_friction"));
+            tyreLF->getRigidBody()->setFriction(definitionReader->getf("tyre_friction"));
+            tyreRF->getRigidBody()->setFriction(definitionReader->getf("tyre_friction"));
+            tyreLR->getRigidBody()->setFriction(definitionReader->getf("tyre_friction"));
+            tyreRR->getRigidBody()->setFriction(definitionReader->getf("tyre_friction"));
             //body->body->setCollisionFlags(body->body->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
-            body->body->setIgnoreCollisionCheck(tyreLF->body, true);
-            body->body->setIgnoreCollisionCheck(tyreRF->body, true);
-            body->body->setIgnoreCollisionCheck(tyreLR->body, true);
-            body->body->setIgnoreCollisionCheck(tyreRR->body, true);
+            body->getRigidBody()->setIgnoreCollisionCheck(tyreLF->getRigidBody(), true);
+            body->getRigidBody()->setIgnoreCollisionCheck(tyreRF->getRigidBody(), true);
+            body->getRigidBody()->setIgnoreCollisionCheck(tyreLR->getRigidBody(), true);
+            body->getRigidBody()->setIgnoreCollisionCheck(tyreRR->getRigidBody(), true);
              
             btTransform frameInA, frameInB;
             frameInA = btTransform::getIdentity();
@@ -216,22 +216,22 @@ void Car::initialize(TransformStruct spawn)
 
             frameInA.setOrigin(bulletify3(definitionReader->getv3("wheel_front_left")));
             frameInB.setRotation(bulletifyq(glm::angleAxis(deg2rad(0.0f), glm::vec3(0.0, 1.0, 0.0))));
-            auto ct1 = new btGeneric6DofSpringConstraint(*(body->body), *(tyreLF->body), frameInA, frameInB, true);
+            auto ct1 = new btGeneric6DofSpringConstraint(*(body->getRigidBody()), *(tyreLF->getRigidBody()), frameInA, frameInB, true);
             tyreLFCon = new PhysicalConstraint(ct1, body, tyreLF);
 
             frameInA.setOrigin(bulletify3(definitionReader->getv3("wheel_front_right")));
             frameInB.setRotation(bulletifyq(glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0))));
-            auto ct2 = new btGeneric6DofSpringConstraint(*(body->body), *(tyreRF->body), frameInA, frameInB, true);
+            auto ct2 = new btGeneric6DofSpringConstraint(*(body->getRigidBody()), *(tyreRF->getRigidBody()), frameInA, frameInB, true);
             tyreRFCon = new PhysicalConstraint(ct2, body, tyreRF);
 
             frameInA.setOrigin(bulletify3(definitionReader->getv3("wheel_rear_left")));
             frameInB.setRotation(bulletifyq(glm::angleAxis(deg2rad(0.0f), glm::vec3(0.0, 1.0, 0.0))));
-            auto ct3 = new btGeneric6DofSpringConstraint(*(body->body), *(tyreLR->body), frameInA, frameInB, true);
+            auto ct3 = new btGeneric6DofSpringConstraint(*(body->getRigidBody()), *(tyreLR->getRigidBody()), frameInA, frameInB, true);
             tyreLRCon = new PhysicalConstraint(ct3, body, tyreLR);
 
             frameInA.setOrigin(bulletify3(definitionReader->getv3("wheel_rear_right")));
             frameInB.setRotation(bulletifyq(glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0))));
-            auto ct4 = new btGeneric6DofSpringConstraint(*(body->body), *(tyreRR->body), frameInA, frameInB, true);
+            auto ct4 = new btGeneric6DofSpringConstraint(*(body->getRigidBody()), *(tyreRR->getRigidBody()), frameInA, frameInB, true);
             tyreRRCon = new PhysicalConstraint(ct4, body, tyreRR);
 
             auto x = std::vector<btGeneric6DofSpringConstraint*>{ ct1, ct2, ct3, ct4 };
@@ -310,8 +310,8 @@ void Car::initialize(TransformStruct spawn)
             tyreRRCon->enable();
 
 
-            body->body->setLinearVelocity(btVector3(0.0, 0.0, 0.0));
-            body->body->setAngularVelocity(btVector3(0.0, 0.0, 0.0));
+            body->getRigidBody()->setLinearVelocity(btVector3(0.0, 0.0, 0.0));
+            body->getRigidBody()->setAngularVelocity(btVector3(0.0, 0.0, 0.0));
 
             Game::instance->invoke([&]() {
                 initialized = true;

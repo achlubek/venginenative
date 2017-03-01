@@ -649,7 +649,7 @@ void EditorApp::onBind()
         */
        // auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(3000.0 - 300.0, -0.5, 3000.0 - 300.0), glm::quat(), glm::vec3(1.0, 1.0, 1.0)), terrashape);
          auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0f, 0.25f, 1000.0f)));
-        groundpb->body->setFriction(2);
+      //  groundpb->body->setFriction(2);
         groundpb->enable();
 
     });
@@ -685,8 +685,8 @@ void EditorApp::onBind()
     cursor3dArrow = Mesh3d::create(game->asset->loadObject3dInfoFile("deferredsphere.raw"), new Material());
    // cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0), glm::quat(), glm::vec3(7.0))));
     game->world->scene->addMesh3d(cursor3dArrow);
-    for (int xx = 0; xx < 11; xx++) {
-        for (int yy = 0; yy < 11; yy++)
+    for (int xx = 0; xx < 1; xx++) {
+        for (int yy = 0; yy < 1; yy++)
         {
             auto c = new Car(xx % 2 == 0 ? "fiesta.car" : "fiesta.car", new TransformationManager(glm::vec3(xx * 10.0, 5.0, yy * 10.0)));
             car.push_back(c);

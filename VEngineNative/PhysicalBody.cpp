@@ -4,11 +4,22 @@
 
 PhysicalBody::PhysicalBody(btRigidBody * rigidBody, btCollisionShape * ishape, TransformationManager * manager)
 {
+    isStaticObject = false;
     body = rigidBody;
     shape = ishape;
     transformation = manager;
     constraints = std::set<PhysicalConstraint*>();
 }
+
+PhysicalBody::PhysicalBody(btCollisionObject * rigidBody, btCollisionShape * ishape, TransformationManager * manager)
+{
+    isStaticObject = true;
+    body = rigidBody;
+    shape = ishape;
+    transformation = manager;
+    constraints = std::set<PhysicalConstraint*>();
+}
+
 
 PhysicalBody::~PhysicalBody()
 {
@@ -16,19 +27,21 @@ PhysicalBody::~PhysicalBody()
 
 void PhysicalBody::applyChanges()
 {
-    auto xyz = body->getCenterOfMassPosition();
-    auto quat = body->getOrientation();
-    transformation->setPosition(glm::vec3(xyz.x(), xyz.y(), xyz.z()));
-    float X = quat.getX();
-    float Y = quat.getY();
-    float Z = quat.getZ();
-    float W = quat.getW();
-    glm::quat qt = glm::quat(X, Y, Z, W);
-    qt.x = X;
-    qt.y = Y;
-    qt.z = Z;
-    qt.w = W; // fuck you glm::quat
-    transformation->setOrientation(qt);
+    if (!isStaticObject) {
+        auto xyz = ((btRigidBody*)body)->getCenterOfMassPosition();
+        auto quat = ((btRigidBody*)body)->getOrientation();
+        transformation->setPosition(glm::vec3(xyz.x(), xyz.y(), xyz.z()));
+        float X = quat.getX();
+        float Y = quat.getY();
+        float Z = quat.getZ();
+        float W = quat.getW();
+        glm::quat qt = glm::quat(X, Y, Z, W);
+        qt.x = X;
+        qt.y = Y;
+        qt.z = Z;
+        qt.w = W; // fuck you glm::quat
+        transformation->setOrientation(qt);
+    }
 }
 
 void PhysicalBody::disable()
@@ -73,4 +86,19 @@ void PhysicalBody::readChanges()
     bt.setRotation(q);
     body->setWorldTransform(bt);
     shape->setLocalScaling(btVector3(s.x, s.y, s.z));
+}
+
+bool PhysicalBody::isStatic()
+{
+    return isStaticObject;
+}
+
+btRigidBody * PhysicalBody::getRigidBody()
+{
+    return (btRigidBody*)body;
+}
+
+btCollisionObject * PhysicalBody::getCollisionObject()
+{
+    return body;
 }

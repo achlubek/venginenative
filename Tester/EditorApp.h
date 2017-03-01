@@ -77,7 +77,7 @@ private:
 
     Sound3d* testsound, *testsound2, *wind, *ocean1, *ocean2, *ocean3, *ocean4;
 
-   // float* bytes2;
+    float* bytes2;
 
    // PhysicalBody* virtualbox;
 

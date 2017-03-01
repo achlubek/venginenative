@@ -7,10 +7,9 @@ class PhysicalConstraint;
 class PhysicalBody : public AbsTransformable
 {
 public:
+    PhysicalBody(btCollisionObject* rigidBody, btCollisionShape* ishape, TransformationManager* manager);
     PhysicalBody(btRigidBody* rigidBody, btCollisionShape* ishape, TransformationManager* manager);
     ~PhysicalBody();
-    btRigidBody* body;
-    btCollisionShape* shape;
     void applyChanges();
     void disable();
     void enable();
@@ -19,8 +18,14 @@ public:
     TransformationManager* getTransformationManager();
     bool isEnabled();
     void readChanges();
+    bool isStatic();
+    btRigidBody* getRigidBody();
+    btCollisionObject* getCollisionObject();
 private:
+    btCollisionObject* body;
+    btCollisionShape* shape;
     bool enabled = false;
+    bool isStaticObject = false;
     std::set<PhysicalConstraint*> constraints;
 };
 
