@@ -490,9 +490,14 @@ vec3 getNormalLighting(vec2 uv, PostProcessingData data){
     if(length(data.normal) < 0.01){
         data.roughness = 0.0;
         vec3 dir = reconstructCameraSpaceDistance(uv, 1.0);
-        return texture(resolvedAtmosphereTex, dir).rgb ;
+        return textureLod(resolvedAtmosphereTex, dir, 0.0).rgb ;
     } else {
-        return shadeFragment(data);
+        vec3 dir = reconstructCameraSpaceDistance(uv, 1.0);
+        float dst = data.cameraDistance;
+        vec3 atm = textureLod(atmScattTex, dayData.sunDir, 7.0).rgb;
+        atm = normalize(atm);
+        float coverage = min(1.0, (dst) * 0.00029);
+        return mix(shadeFragment(data), atm, coverage * 0.85);
     }
 }
 #endif

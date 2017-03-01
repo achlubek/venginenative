@@ -252,6 +252,11 @@ vec4 getLighting(){
     vec3 refr2 = normalize(refr + vec3(0.0, 0.3, 0.0));
     float superscat = pow(max(0.0, dot(refr, dayData.sunDir)), 8.0) ;//* (1.0 - fresnel);
     result += csmvis * vec3(0.5,0.9,0.8) * superscat * getSunColorDirectly(0) * 18.0 * covercloud;
+
+    vec3 atma = textureLod(atmScattTex, dayData.sunDir, 7.0).rgb;
+    atma = normalize(atma);
+    float coveragex = min(1.0, (hitdst) * 0.00029);
+    result = mix(result, atma, coveragex * 0.85);
     return  vec4(result  , 0.0);
 }
 

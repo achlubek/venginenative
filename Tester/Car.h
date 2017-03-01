@@ -15,9 +15,10 @@ public:
     glm::vec3 getLinearVelocity();
     volatile bool initialized = false;
 
-private:
     PhysicalBody* body, *tyreLF, *tyreRF, *tyreLR, *tyreRR;
     PhysicalConstraint* tyreLFCon, *tyreRFCon, *tyreLRCon, *tyreRRCon;
+
+private:
 
     INIReader* definitionReader;
 

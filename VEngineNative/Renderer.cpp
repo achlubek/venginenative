@@ -44,7 +44,7 @@ Renderer::Renderer(int iwidth, int iheight)
     wind = glm::normalize(glm::vec3(0.3, 0.0, 0.3));
     gpuInitialized = false;
 
-    csm = new CascadeShadowMap(1024, 1024, { 16, 64, 256, 1024, 1024 * 4 });
+    csm = new CascadeShadowMap(2048, 2048, { 8, 16, 64, 512, 1024 * 4 });
    // csm = new CascadeShadowMap(0, 0, {});
 
     cloudsOffset = glm::vec3(1);

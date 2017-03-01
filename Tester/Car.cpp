@@ -93,7 +93,7 @@ void Car::setWheelsAngle(float angleInRadians)
     if (!initialized) return;
     if (body == nullptr || body->getRigidBody() == nullptr) return;
 
-    wheelsAngle = angleInRadians;
+    wheelsAngle = angleInRadians / (1.0 + 0.1 * glm::pow(getSpeed(), 2.0));
      
     if (tyreLFCon != nullptr) {
         ((btGeneric6DofConstraint*)tyreLFCon->constraint)->setAngularLowerLimit(btVector3(-1.0, angleInRadians, 0.0));
@@ -108,7 +108,7 @@ void Car::setWheelsAngle(float angleInRadians)
   //  printf("%f %f %f\n", diff.x, diff.y, diff.z);
   //  body->body->applyForce(bulletify3(diff*10.0f), bulletify3(glm::vec3(0.0, 11.0, 0.0)));
     auto angvec = body->getRigidBody()->getAngularVelocity();
-    body->getRigidBody()->setAngularVelocity(btVector3(-angvec.x(), angvec.y(), -angvec.z()));
+    body->getRigidBody()->setAngularVelocity(btVector3(-angvec.x()*0.9f, angvec.y(), -angvec.z()*0.9f));
 }
 
 float Car::getWheelsAngle()
@@ -204,7 +204,9 @@ void Car::initialize(TransformStruct spawn)
             tyreRF->getRigidBody()->setFriction(definitionReader->getf("tyre_friction"));
             tyreLR->getRigidBody()->setFriction(definitionReader->getf("tyre_friction"));
             tyreRR->getRigidBody()->setFriction(definitionReader->getf("tyre_friction"));
-            //body->body->setCollisionFlags(body->body->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+            
+            body->getRigidBody()->setCollisionFlags(body->getRigidBody()->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+            
             body->getRigidBody()->setIgnoreCollisionCheck(tyreLF->getRigidBody(), true);
             body->getRigidBody()->setIgnoreCollisionCheck(tyreRF->getRigidBody(), true);
             body->getRigidBody()->setIgnoreCollisionCheck(tyreLR->getRigidBody(), true);

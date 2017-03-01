@@ -464,6 +464,36 @@ void EditorApp::onKeyPress(int key)
         }
 
     }
+    if (key == GLFW_KEY_F9) {
+        glm::vec3 hitpos, hitnorm;
+        auto res = game->world->physics->rayCast(game->world->mainDisplayCamera->transformation->getPosition(),
+            game->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.5)), hitpos, hitnorm);
+        if (res != nullptr) {
+            car[0]->body->transformation->setOrientation(glm::quat());
+            car[0]->body->transformation->setPosition(hitpos + glm::vec3(0.0, 3.0, 0.0));
+            car[0]->body->readChanges();
+
+            car[0]->tyreLF->transformation->setOrientation(glm::quat());
+            car[0]->tyreLF->transformation->setPosition(hitpos + glm::vec3(0.0, 3.0, 0.0));
+            car[0]->tyreLF->readChanges();
+
+            car[0]->tyreLR->transformation->setOrientation(glm::quat());
+            car[0]->tyreLR->transformation->setPosition(hitpos + glm::vec3(0.0, 3.0, 0.0));
+            car[0]->tyreLR->readChanges();
+
+            car[0]->tyreRF->transformation->setOrientation(glm::quat());
+            car[0]->tyreRF->transformation->setPosition(hitpos + glm::vec3(0.0, 3.0, 0.0));
+            car[0]->tyreRF->readChanges();
+
+            car[0]->tyreRR->transformation->setOrientation(glm::quat());
+            car[0]->tyreRR->transformation->setPosition(hitpos + glm::vec3(0.0, 3.0, 0.0));
+            car[0]->tyreRR->readChanges();
+
+           // car[0]->body->getRigidBody()->setLinearVelocity(btVector3(0.0, 0.0, 0.0));
+          //  car[0]->body->getRigidBody()->setAngularVelocity(btVector3(0.0, 0.0, 0.0));
+        }
+
+    }
 
     if (key == GLFW_KEY_F6) {
         testsound->play();
@@ -564,7 +594,7 @@ void EditorApp::onBind()
     }
     //game->world->scene->addMesh3d(s);
     */
-    /*
+    
     int terrainparts = 10;
     float fullsize = 6000.0;
     float partsize = 600.0;
@@ -583,13 +613,13 @@ void EditorApp::onBind()
             m->getInstance(0)->transformation->setPosition(vec3(partsize * x * 1.0f, -0.5, partsize*y * 1.0f));
             m->getInstance(0)->transformation->setSize(vec3(1.0f));
             m->getLodLevel(0)->distanceStart = 0.0f;
-            m->getLodLevel(0)->distanceEnd = 150.0f;
+            m->getLodLevel(0)->distanceEnd = 650.0f;
 
-            m->addLodLevel(new Mesh3dLodLevel(game->asset->loadObject3dInfoFile(ss1.str()), mat, 150.0f, 350.0f));
-            m->addLodLevel(new Mesh3dLodLevel(game->asset->loadObject3dInfoFile(ss2.str()), mat, 350.0f, 11150.0f));
+            m->addLodLevel(new Mesh3dLodLevel(game->asset->loadObject3dInfoFile(ss1.str()), mat, 650.0f, 3350.0f));
+            m->addLodLevel(new Mesh3dLodLevel(game->asset->loadObject3dInfoFile(ss2.str()), mat, 3350.0f, 11150.0f));
             game->world->scene->addMesh3d(m);
         }
-    }*/
+    }
 
 
 
@@ -607,7 +637,7 @@ void EditorApp::onBind()
     game->world->scene->addMesh3d(xt);
 
     game->invoke([&]() {
-        auto phys = Game::instance->world->physics;/*
+        auto phys = Game::instance->world->physics;
         vector<float> vertices = {};
         vector<int> indices = {};
         auto wterrobj = game->asset->loadObject3dInfoFile("weirdterrain.raw");
@@ -632,24 +662,40 @@ void EditorApp::onBind()
         // auto shape = new btBvhTriangleMeshShape(str, true, true);
         unsigned char* bytes;
         int bytescount = Media::readBinary("SAfull.hmap", &bytes);
+        float maxh = 0.0;
+        float minh = 1231230.0;
         bytes2 = new float[bytescount / 2];
         for (int i = 0; i < bytescount; i += 2) {
-            unsigned short sh = (bytes[i + 1] << 8) | bytes[i];
             int halfi = i / 2;
             int x = halfi % 6000;
             int y = halfi / 6000;
-         //   y = 3000 - y;
-       // printf("%d %d\n", x, y);
-            bytes2[y * 6000 + x] = ((float)sh / 65535.0f) * 255;
+
+            float bs = 0.0, bw = 0.0;
+            for (int ix = -5; ix < 5; ix++) {
+                for (int iy = -5; iy < 5; iy++) {
+
+                    int xx = (halfi % 6000) + ix;
+                    int xy = (halfi / 6000) + iy;
+                    if (xx < 0)xx = 0;
+                    if (xx >= 6000) xx = 5999;
+                    if (xy < 0)xy = 0;
+                    if (xy >= 6000) xy = 5999;
+                    bw += 1.0;
+                    int coord = (xy * 6000 + xx) * 2;
+                    unsigned short sh = (bytes[coord + 1] << 8) | bytes[coord];
+                    bs += ((float)sh / 65535.0f) * 512.0f;
+                }
+            }
+            bs /= bw;
+            bytes2[y * 6000 + x] = bs;
+            maxh = glm::max(maxh, bs);
+            minh = glm::min(minh, bs);
         }
-        auto terrashape = new btHeightfieldTerrainShape(6000, 6000, bytes2, 1.0, 0, 1.0, 1, PHY_FLOAT, false);
-        terrashape->setUseDiamondSubdivision(false);
-        terrashape->setUseZigzagSubdivision(false);
-        terrashape->setMargin(3.0);
-        */
-       // auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(3000.0 - 300.0, -0.5, 3000.0 - 300.0), glm::quat(), glm::vec3(1.0, 1.0, 1.0)), terrashape);
-         auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0f, 0.25f, 1000.0f)));
-      //  groundpb->body->setFriction(2);
+        auto terrashape = new btHeightfieldTerrainShape(6000, 6000, bytes2, 1.0, minh, maxh, 1, PHY_FLOAT, false);
+        
+        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(3000.0 - 300.0, -0.5 + maxh * 0.5, 3000.0 - 300.0), glm::quat(), glm::vec3(1.0, 1.0, 1.0)), terrashape);
+         //auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0f, 0.25f, 1000.0f)));
+        groundpb->getCollisionObject()->setFriction(4);
         groundpb->enable();
 
     });
@@ -688,7 +734,7 @@ void EditorApp::onBind()
     for (int xx = 0; xx < 1; xx++) {
         for (int yy = 0; yy < 1; yy++)
         {
-            auto c = new Car(xx % 2 == 0 ? "fiesta.car" : "fiesta.car", new TransformationManager(glm::vec3(xx * 10.0, 5.0, yy * 10.0)));
+            auto c = new Car(xx % 2 == 0 ? "fiesta.car" : "fiesta.car", new TransformationManager(glm::vec3(xx * 10.0, 55.0, yy * 10.0)));
             car.push_back(c);
         }
     }
