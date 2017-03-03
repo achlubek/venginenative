@@ -234,12 +234,12 @@ float lenssun(vec3 dir){
     return primary;
 }
 
-float rdhash = 0.453451 + Time;
+float rdhashx2 = 0.453451 + Time;
 vec2 randpoint2(){
-    float x = rand2s(UV * rdhash);
-    rdhash += 2.1231255;
-    float y = rand2s(UV * rdhash);
-    rdhash += 1.6271255;
+    float x = rand2s(UV * rdhashx2);
+    rdhashx2 += 2.1231255;
+    float y = rand2s(UV * rdhashx2);
+    rdhashx2 += 1.6271255;
     return vec2(x, y) * 2.0 - 1.0;
 }
 
@@ -305,10 +305,14 @@ vec4 shade(){
         //color += monsoonconverage2 * (1.0 - coverage2) * ssobj2 *  step(0.0, dir.y) * (smoothstep(0.998, 0.9985, max(0.0, dot(dir, dayData.sunDir)))) * getSunColorDirectly(0.0) * 13.0;
 
         vec3 csum = vec3(0.0);
-
+        vec2 suncnt = projectsunrsm(currentData.worldPos);
+        float sundst = distance(CameraPosition + dayData.sunDir * 1000.0, currentData.worldPos);
         for(int i=0;i<25;i++){
-
+            vec2 p = suncnt + 0.01 * randpoint2();
+            vec4 data = textureLod(sunRSMTex, p, 0.0).rgba;
+            csum += getSunColorDirectly(0.0) * data.rgb * (1.0 / (1.0 + abs(sundst - data.a)));
         }
+        color = csum;
 
         color = tonemap(Cx * lightnings + color);
     }
