@@ -30,13 +30,12 @@ void outputMaterial(){
         normalize(cross(normal, tangent)) * tangentSign,
         normalize(normal)
     ));
-    if(useBumpTexInt > 0){
+    /*if(useBumpTexInt > 0){
         UV = adjustParallaxUV(UV);
         normalmap = examineBumpMap(UV).xzy;
         normalmap.r *= -1.0;
-        normalmap.g *= -1.0;
-        //worldPos += normal * parallaxScale *
-    }
+        normalmap.g *= -1.0; 
+    }*/
     if(useDiffuseColorTexInt > 0){
         diffuseColor = texture(diffuseColorTex, UV * diffuseColorTexScale).rgb;
     }

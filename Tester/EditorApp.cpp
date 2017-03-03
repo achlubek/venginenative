@@ -556,6 +556,7 @@ void EditorApp::onBind()
 
     auto t = game->asset->loadSceneFile("cryteksponza.scene");
     for (int i = 0; i < t->getMesh3ds().size(); i++) {
+        t->getMesh3ds()[i]->getInstance(0)->transformation->translate(vec3(0.0, 5.0, 0.0));
         game->world->scene->addMesh3d(t->getMesh3ds()[i]); 
     }
 

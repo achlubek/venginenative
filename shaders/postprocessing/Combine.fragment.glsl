@@ -17,7 +17,7 @@ layout(binding = 23) uniform sampler2D waterTileTex;
 layout(binding = 24) uniform sampler2D starsTex;
 layout(binding = 29) uniform samplerCube resolvedAtmosphereTex;
 layout(binding = 31) uniform sampler2D sunRSMTex;
-layout(binding = 32) uniform sampler2D sunRSMWPosTex;
+layout(binding = 34) uniform sampler2D sunRSMWPosTex;
 layout(binding = 33) uniform sampler2D sunRSMNormTex;
 
 uniform int UseAO;
@@ -309,31 +309,45 @@ vec4 shade(){
 //shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * 20.0 * getSunColorDirectly(0.0))
         vec3 csum = vec3(0.0);
         vec2 suncnt = projectsunrsm(currentData.worldPos);
-        float sundst = distance(CameraPosition + dayData.sunDir * 1000.0, currentData.worldPos);
-        for(int i=0;i<25;i++){
-            vec2 p = suncnt + 0.0015 * randpoint2();
-            vec3 albedo = textureLod(sunRSMTex, p, 0.0).rgb;
-            vec3 wpos = textureLod(sunRSMTex, p, 0.0).rgb;
-            vec3 norm = textureLod(sunRSMTex, p, 0.0).rgb;
+        for(int i=0;i<5;i++){
+            vec2 p = suncnt + 0.03215 * randpoint2();
+            vec3 albedo = textureLod(sunRSMTex, p, 3.0).rgb;
+            vec3 wpos = textureLod(sunRSMWPosTex, p, 3.0).rgb;
+            vec3 norm = textureLod(sunRSMNormTex, p, 3.0).rgb;
             float dist = distance(wpos, currentData.worldPos);
-            float att = 1.0 / (1.0 + dist * dist);
-                PostProcessingData dataReflection = PostProcessingData(
-                    albedo,
-                    norm,
-                    norm.yxz,
-                    wpos,
-                    wpos - currentData.worldPos,
-                    dist,
-                    0.0,
-                    0.0
-                );
-            vec3 ray_primary = shade_ray_data(dataReflection, dayData.sunDir, getSunColorDirectly(0.0));
-            vec3 ray_secondary = shade_ray_data(currentData, normalize(currentData.worldPos - wpos), ray_primary);
+            float att = 1.0 / (1.0 + dist * dist * 11.0);//* (1.0 - smoothstep(0.0, 2.4, dist));
+
+            vec3 ray_primary = att * albedo * getSunColorDirectly(0.0);
+            vec3 ray_secondary = max(0.0, dot(-norm, currentData.normal)) * max(0.0, dot(-norm, normalize(wpos - currentData.worldPos))) *
+              ray_primary * mix(currentData.diffuseColor, vec3(1.0), currentData.metalness);
             csum += ray_secondary;
         }
-        color = csum / 25.0;
+        color += 15.0 * csum / 5.0;
+
+        vec3 atma = textureLod(atmScattTex, dayData.sunDir, 7.0).rgb;
+        vec3 volumetrix = atma * 0.0013;
+        int steps = 32;
+        float stepsize = 1.0 / 32.0;
+        float rd = rand2sTime(UV);
+        float iter = rd * stepsize;
+        vec3 start = CameraPosition;
+        vec3 realpos = mix(vec3(99999.0), currentData.worldPos, step(0.01, length(currentData.normal)));
+        float atmceil = intersectPlane(CameraPosition, dir, vec3(0.0, 1000.0, 0.0), vec3(0.0, -1.0, 0.0));
+        vec3 end = length(currentData.normal) > 0.01 ? realpos : (CameraPosition + dir * atmceil);
+        float weight = distance(start, end) * stepsize;
+        float coveragex = 0.0;
+        vec3 suncol = getSunColorDirectly(0.0);
+        for(int i=0;i<steps ;i++){
+            vec3 p = mix(start, end, iter);
+
+            volumetrix += suncol * weight * stepsize * CSMQueryVisibilitySimple(p);
+            coveragex += weight * 0.001;
+
+            iter += stepsize;
+        }
+        color = mix(color, atma * volumetrix, min(1.0, coveragex));
         //color = textureLod(sunRSMTex, UV, 0.0).rgb;
-        color = tonemap(Cx * lightnings + color);
+        color = tonemap( color);
     }
     return vec4( clamp(color, 0.0, 110.0), currentData.cameraDistance * 0.001);
 }

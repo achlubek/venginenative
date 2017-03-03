@@ -515,6 +515,9 @@ void Renderer::draw(Camera *camera)
    // ambientLight();
     //glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     waterTile();
+    sunRSMTex->generateMipMaps();
+    sunRSMWPosTex->generateMipMaps();
+    sunRSMNormTex->generateMipMaps();
     mrtAlbedoRoughnessTex->use(0);
     mrtNormalMetalnessTex->use(1);
     mrtDistanceTexture->use(2);
@@ -592,11 +595,12 @@ void Renderer::combine(int step)
     moonTexture->use(28);
     cloudsResolvedTexture->use(29);
 
+
     setCommonUniforms(combineShader);
     combineShader->setUniform("CombineStep", step);
     if (step == 1) {
         sunRSMTex->use(31);
-        sunRSMWPosTex->use(32);
+        sunRSMWPosTex->use(34);
         sunRSMNormTex->use(33);
         combineShader->setUniform("ShowSelection", showSelection ? 1 : 0);
         if (showSelection) {
@@ -608,7 +612,7 @@ void Renderer::combine(int step)
 
         csm->setUniformsAndBindSampler(combineShader, 30);
         sunRSMTex->use(31);
-        sunRSMWPosTex->use(32);
+        sunRSMWPosTex->use(34);
         sunRSMNormTex->use(33);
     }
 

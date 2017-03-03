@@ -470,9 +470,9 @@ vec3 vdao(){
 
         //p.y = abs(p.y);
     //    float cx = visibility(currentData.worldPos, currentData.worldPos + p * 1.0);
-        c += 0.1 * v * shade_ray_env_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness, resolvedAtmosphereTex)).rgb, atmdiff);
+    //    c += 0.0001 * shade_ray_env_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness, resolvedAtmosphereTex)).rgb, atmdiff);
     }
-    return shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * 20.0 * getSunColorDirectly(0.0)) + c * ssao(currentData.worldPos);
+    return shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * 8.0 * getSunColorDirectly(0.0)) + c * ssao(currentData.worldPos);
 }
 
 vec3 shadeFragment(PostProcessingData data){
@@ -492,12 +492,7 @@ vec3 getNormalLighting(vec2 uv, PostProcessingData data){
         vec3 dir = reconstructCameraSpaceDistance(uv, 1.0);
         return textureLod(resolvedAtmosphereTex, dir, 0.0).rgb ;
     } else {
-        vec3 dir = reconstructCameraSpaceDistance(uv, 1.0);
-        float dst = data.cameraDistance;
-        vec3 atm = textureLod(atmScattTex, dayData.sunDir, 7.0).rgb;
-        atm = normalize(atm);
-        float coverage = min(1.0, (dst) * 0.00029);
-        return mix(shadeFragment(data), atm, coverage * 0.85);
+        return shadeFragment(data);
     }
 }
 #endif
