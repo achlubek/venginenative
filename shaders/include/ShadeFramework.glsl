@@ -19,7 +19,7 @@ vec3 shade_ray(vec3 albedo, vec3 normal, vec3 viewdir, float roughness, float me
     float dotRefL = max(0.0, dot(normalize(mix(refl, normal, roughness * roughness)), lightdir));
     float dotNV = max(0.0, dot(normal,-viewdir));
     float invdotNV = max(0.0, dot(-lightdir,viewdir));
-    vec3 spec_color_nonmetal = lightcolor * fresnel_effect(vec3(0.04), roughness * 0.99 + 0.01, dotNV) * LightingFuncGGX_REF(normalize(normal), -viewdir, lightdir, roughness * 0.96 + 0.04, vec3(1.0));
+    vec3 spec_color_nonmetal = (1.0 - roughness) * lightcolor * fresnel_effect(vec3(0.04), roughness * 0.99 + 0.01, dotNV) * LightingFuncGGX_REF(normalize(normal), -viewdir, lightdir, roughness * 0.96 + 0.04, vec3(1.0));
     vec3 spec_color_metal = lightcolor * fresnel_effect(albedo, roughness * 0.99 + 0.01, dotNV) * LightingFuncGGX_REF(normalize(normal), -viewdir, lightdir, roughness * 0.96 + 0.04, albedo);
     vec3 diffuse_color_nonmetal = albedo * lightcolor * LightingFuncGGX_REF(normal, -viewdir, lightdir, 1.0, albedo) ;
     //return vec3(0.0);
@@ -34,7 +34,7 @@ vec3 shade_ray_env(vec3 albedo, vec3 normal, vec3 viewdir, float roughness, floa
     float dotNV = max(0.0, dot(normal,-viewdir));
     float invdotNV = max(0.0, dot(-lightdir,viewdir));
 
-    vec3 spec_color_nonmetal = lightcolor * fresnel_effect(vec3(0.04), roughness * 0.99 + 0.01, dotNV);
+    vec3 spec_color_nonmetal =  (1.0 - roughness) * lightcolor * fresnel_effect(vec3(0.04), roughness * 0.99 + 0.01, dotNV);
     vec3 spec_color_metal = lightcolor * fresnel_effect(albedo, roughness * 0.99 + 0.01, dotNV);
     vec3 diffuse_color_nonmetal = albedo * lightdiffusecolor;
 //    return vec3(0.0);

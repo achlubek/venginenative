@@ -83,29 +83,55 @@ void EditorApp::onRenderFrame(float elapsed)
         //if (game->getKeyStatus(GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         //    game->shouldClose = true;
         //}
-        glm::dvec2 cursor = game->getCursorPosition();
+        if (cameraFollowCar) {
+            int acnt = 0;
+            const float * axes = glfwGetJoystickAxes(0, &acnt);
+            auto cartrans = car[0]->getTransformation();
+            if (cartrans != nullptr) {
+                glm::vec3 backvector = glm::vec3(0.0, 1.0, -4.0);
+                auto trsf = glm::quat();
+                if (acnt >= 4) {
+                    trsf = glm::angleAxis(deg2rad(axes[3] * 80.0f), glm::vec3(-1.0, 0.0, 0.0)) * glm::angleAxis(deg2rad(axes[2] * 80.0f), glm::vec3(0.0, -1.0, 0.0));
+                    auto trsf2 = glm::angleAxis(deg2rad(axes[3] * 80.0f), glm::vec3(1.0, 0.0, 0.0)) *  glm::angleAxis(deg2rad(axes[2] * 80.0f), glm::vec3(0.0, 1.0, 0.0));
+                    backvector = trsf2 *  (backvector);
+                }
+                backvector = glm::mat3_cast(cartrans->getOrientation()) * backvector;
+                backquat = glm::slerp(backquat, trsf, 0.03f);
+                trsf = backquat;
 
-        //int acnt = 0;
-        //const float * axes = glfwGetJoystickAxes(0, &acnt);
-        float dx = (float)(lastcx - cursor.x);
-        float dy = (float)(lastcy - cursor.y);
-        //if (acnt >= 4) {
-            //    dx -= axes[2] * 10.9;
-            //    dy += axes[3] * 10.9;
-            //    newpos += (cam->transformation->orientation * glm::vec3(0, 0, -1) * axes[1] * 0.1f);
-            //   newpos += (cam->transformation->orientation * glm::vec3(1, 0, 0) * axes[0] * 0.1f);
-        //}
-        lastcx = cursor.x;
-        lastcy = cursor.y;
-        yaw += dy * 0.2f;
-        pitch += dx * 0.2f;
-        if (yaw < -90.0) yaw = -90;
-        if (yaw > 90.0) yaw = 90;
-        if (pitch < -360.0f) pitch += 360.0f;
-        if (pitch > 360.0f) pitch -= 360.0f;
-        glm::quat newrot = glm::angleAxis(deg2rad(pitch), glm::vec3(0, 1, 0)) * glm::angleAxis(deg2rad(yaw), glm::vec3(1, 0, 0));
-        cam->transformation->setOrientation(newrot);
-        cam->transformation->setPosition(newpos);
+                backvector = backvectorlast * 0.97f + backvector * 0.03f;
+                backvectorlast = backvector;
+                cam->transformation->setPosition(cartrans->getPosition() + backvector);
+                cam->transformation->setOrientation(glm::inverse(glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0)) * backquat * glm::inverse(cartrans->getOrientation())));
+            }
+
+        }
+        else {
+            glm::dvec2 cursor = game->getCursorPosition();
+
+            //int acnt = 0;
+            //const float * axes = glfwGetJoystickAxes(0, &acnt);
+            float dx = (float)(lastcx - cursor.x);
+            float dy = (float)(lastcy - cursor.y);
+            //if (acnt >= 4) {
+                //    dx -= axes[2] * 10.9;
+                //    dy += axes[3] * 10.9;
+                //    newpos += (cam->transformation->orientation * glm::vec3(0, 0, -1) * axes[1] * 0.1f);
+                //   newpos += (cam->transformation->orientation * glm::vec3(1, 0, 0) * axes[0] * 0.1f);
+            //}
+            lastcx = cursor.x;
+            lastcy = cursor.y;
+            yaw += dy * 0.2f;
+            pitch += dx * 0.2f;
+            if (yaw < -90.0) yaw = -90;
+            if (yaw > 90.0) yaw = 90;
+            if (pitch < -360.0f) pitch += 360.0f;
+            if (pitch > 360.0f) pitch -= 360.0f;
+            glm::quat newrot = glm::angleAxis(deg2rad(pitch), glm::vec3(0, 1, 0)) * glm::angleAxis(deg2rad(yaw), glm::vec3(1, 0, 0));
+            cam->transformation->setOrientation(newrot);
+            cam->transformation->setPosition(newpos);
+
+        }
 
         testsound->transformation->setPosition(car[0]->getTransformation()->getPosition());
         testsound->update(cam);
@@ -489,10 +515,25 @@ void EditorApp::onKeyPress(int key)
             car[0]->tyreRR->transformation->setPosition(hitpos + glm::vec3(0.0, 3.0, 0.0));
             car[0]->tyreRR->readChanges();
 
-           // car[0]->body->getRigidBody()->setLinearVelocity(btVector3(0.0, 0.0, 0.0));
-          //  car[0]->body->getRigidBody()->setAngularVelocity(btVector3(0.0, 0.0, 0.0));
+            car[0]->body->getRigidBody()->setLinearVelocity(btVector3(0.0, 0.0, 0.0));
+            car[0]->body->getRigidBody()->setAngularVelocity(btVector3(0.0, 0.0, 0.0));
+
+            car[0]->tyreLF->getRigidBody()->setLinearVelocity(btVector3(0.0, 0.0, 0.0));
+            car[0]->tyreLF->getRigidBody()->setAngularVelocity(btVector3(0.0, 0.0, 0.0));
+
+            car[0]->tyreRF->getRigidBody()->setLinearVelocity(btVector3(0.0, 0.0, 0.0));
+            car[0]->tyreRF->getRigidBody()->setAngularVelocity(btVector3(0.0, 0.0, 0.0));
+
+            car[0]->tyreLR->getRigidBody()->setLinearVelocity(btVector3(0.0, 0.0, 0.0));
+            car[0]->tyreLR->getRigidBody()->setAngularVelocity(btVector3(0.0, 0.0, 0.0));
+
+            car[0]->tyreRR->getRigidBody()->setLinearVelocity(btVector3(0.0, 0.0, 0.0));
+            car[0]->tyreRR->getRigidBody()->setAngularVelocity(btVector3(0.0, 0.0, 0.0));
         }
 
+    }
+    if (key == GLFW_KEY_F10) {
+        cameraFollowCar = !cameraFollowCar;
     }
 
     if (key == GLFW_KEY_F6) {
@@ -553,8 +594,8 @@ void EditorApp::onBind()
     game->world->mainDisplayCamera = cam;
 
     game->setCursorMode(GLFW_CURSOR_NORMAL);
-
-    auto t = game->asset->loadSceneFile("cryteksponza.scene");
+    
+    auto t = game->asset->loadSceneFile("oldhouse.scene");
     for (int i = 0; i < t->getMesh3ds().size(); i++) {
         t->getMesh3ds()[i]->getInstance(0)->transformation->translate(vec3(0.0, 5.0, 0.0));
         game->world->scene->addMesh3d(t->getMesh3ds()[i]); 
@@ -620,8 +661,8 @@ void EditorApp::onBind()
             m->addLodLevel(new Mesh3dLodLevel(game->asset->loadObject3dInfoFile(ss2.str()), mat, 3350.0f, 11150.0f));
             game->world->scene->addMesh3d(m);
         }
-    }*/
-
+    }
+    */
 
 
     //  t->name = "flagbase";
@@ -694,7 +735,7 @@ void EditorApp::onBind()
         }
         auto terrashape = new btHeightfieldTerrainShape(6000, 6000, bytes2, 1.0, minh, maxh, 1, PHY_FLOAT, false);
         */
-        //auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(3000.0 - 300.0, -0.5 + maxh * 0.5, 3000.0 - 300.0), glm::quat(), glm::vec3(1.0, 1.0, 1.0)), terrashape);
+      //  auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(3000.0 - 300.0, -0.5 + maxh * 0.5, 3000.0 - 300.0), glm::quat(), glm::vec3(1.0, 1.0, 1.0)), terrashape);
          auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0f, 0.25f, 1000.0f)));
         groundpb->getCollisionObject()->setFriction(4);
         groundpb->enable();

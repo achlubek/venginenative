@@ -79,6 +79,10 @@ private:
 
     float* bytes2;
 
+    glm::quat backquat = glm::quat();
+    glm::vec3 backvectorlast = glm::vec3();
+    bool cameraFollowCar = false;
+
    // PhysicalBody* virtualbox;
 
 };

@@ -309,20 +309,22 @@ vec4 shade(){
 //shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * 20.0 * getSunColorDirectly(0.0))
         vec3 csum = vec3(0.0);
         vec2 suncnt = projectsunrsm(currentData.worldPos);
-        for(int i=0;i<5;i++){
-            vec2 p = suncnt + 0.03215 * randpoint2();
-            vec3 albedo = textureLod(sunRSMTex, p, 3.0).rgb;
-            vec3 wpos = textureLod(sunRSMWPosTex, p, 3.0).rgb;
-            vec3 norm = textureLod(sunRSMNormTex, p, 3.0).rgb;
+        for(int i=0;i<12;i++){
+            vec2 p = suncnt + 0.1 * randpoint2();
+            vec3 albedo = textureLod(sunRSMTex, p, 5.0).rgb;
+            vec3 wpos = textureLod(sunRSMWPosTex, p, 5.0).rgb;
+            vec3 norm = textureLod(sunRSMNormTex, p, 5.0).rgb;
             float dist = distance(wpos, currentData.worldPos);
             float att = 1.0 / (1.0 + dist * dist * 11.0);//* (1.0 - smoothstep(0.0, 2.4, dist));
 
             vec3 ray_primary = att * albedo * getSunColorDirectly(0.0);
-            vec3 ray_secondary = max(0.0, dot(-norm, currentData.normal)) * max(0.0, dot(-norm, normalize(wpos - currentData.worldPos))) *
+            vec3 ray_secondary = (0.5 + 0.5 * dot(norm, -currentData.normal)) * max(0.0, dot(-norm, normalize(wpos - currentData.worldPos))) *
               ray_primary * mix(currentData.diffuseColor, vec3(1.0), currentData.metalness);
             csum += ray_secondary;
         }
-        color += 15.0 * csum / 5.0;
+        vec3 rsmres = 15.0 * csum / 12.0;
+        rsmres /= 0.01 + length(rsmres) * 1.01;
+        color += rsmres;
 
         vec3 atma = textureLod(atmScattTex, dayData.sunDir, 7.0).rgb;
         vec3 volumetrix = atma * 0.0013;
@@ -332,7 +334,7 @@ vec4 shade(){
         float iter = rd * stepsize;
         vec3 start = CameraPosition;
         vec3 realpos = mix(vec3(99999.0), currentData.worldPos, step(0.01, length(currentData.normal)));
-        float atmceil = intersectPlane(CameraPosition, dir, vec3(0.0, 1000.0, 0.0), vec3(0.0, -1.0, 0.0));
+        float atmceil = intersectPlane(CameraPosition, dir, vec3(0.0, 1100.0, 0.0), vec3(0.0, -1.0, 0.0));
         vec3 end = length(currentData.normal) > 0.01 ? realpos : (CameraPosition + dir * atmceil);
         float weight = distance(start, end) * stepsize;
         float coveragex = 0.0;
@@ -340,12 +342,12 @@ vec4 shade(){
         for(int i=0;i<steps ;i++){
             vec3 p = mix(start, end, iter);
 
-            volumetrix += suncol * weight * stepsize * CSMQueryVisibilitySimple(p);
-            coveragex += weight * 0.001;
+            volumetrix += suncol * weight * stepsize * CSMQueryVisibilitySimple(p)  * max(0.0, 1.0 - coveragex);
+            coveragex += weight * 0.0001 * (1.0 - smoothstep(0.0, 1100.0, p.y));
 
             iter += stepsize;
         }
-        color = mix(color, atma * volumetrix, min(1.0, coveragex));
+        //color = mix(color, atma * volumetrix, min(1.0, coveragex));
         //color = textureLod(sunRSMTex, UV, 0.0).rgb;
         color = tonemap( color);
     }
