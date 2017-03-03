@@ -113,6 +113,14 @@ private:
     ShaderProgram *pickingReadShader;
     ShaderStorageBuffer *pickingResultSSBO;
 
+    //
+    Camera* sunRSMCamera;
+    ShaderProgram *sunRSMShader;
+    Framebuffer *sunRSMFbo;
+    Texture2d *sunRSMTex;
+    Texture2d *sunRSMDepthTex;
+    void prepareSunRSM();
+
     // Effects part
     ShaderProgram *deferredShader;
     ShaderProgram *envProbesShader;

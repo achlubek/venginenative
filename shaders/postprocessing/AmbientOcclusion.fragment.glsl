@@ -255,20 +255,20 @@ float rand2s(vec2 co){
 float fastAO(float hemisphereSize, int quality){
     float ratio = Resolution.y/Resolution.x;
     float outc = 0.0;
-    
+
     float xaon = currentData.cameraDistance;
     float factor = 1.0 / (xaon +1.0);
     vec2 multiplier = vec2(ratio, 1) * 0.03 * factor * hemisphereSize;
-    
+
     float rot = rand2s(UV) * 3.1415 * 2;
-	
+
 	vec3 normalcenter = currentData.normal;
     vec2 normproj = normalize(projectvdao(currentData.worldPos + normalcenter * 0.05) - UV);
 	vec3 projref = normalize(reflect(currentData.cameraPos, currentData.normal));
     vec2 refproj = normalize(projectvdao(currentData.worldPos + projref * 0.05) - UV);
     float iter = 0.0;
     float stepsz = 1.0 / xsamples.length();
-		
+
     mat2 RM = mat2(cos(rot), -sin(rot), sin(rot), cos(rot));
     for(int g=0;g < xsamples.length();g+=quality){
         vec2 sampl = RM * xsamples[g];
@@ -276,21 +276,21 @@ float fastAO(float hemisphereSize, int quality){
        // sampl = mix(refproj  * iter * 0.4, sampl * multiplier, currentData.roughness);
 		vec2 nuv = UV + sampl;
 		//if(nuv.x > 1.0 || nuv.x < 0.0 || nuv.y > 1.0 || nuv.y<0.0) continue;
-        float aondata = texture(mrt_Distance_Bump_Tex, nuv).r;    
-        vec3 normdata = texture(mrt_Normal_Metalness_Tex, nuv).rgb;        
-		
+        float aondata = texture(mrt_Distance_Bump_Tex, nuv).r;
+        vec3 normdata = texture(mrt_Normal_Metalness_Tex, nuv).rgb;
+
 		vec3 dir = normalize((FrustumConeLeftBottom + FrustumConeBottomLeftToBottomRight * nuv.x + FrustumConeBottomLeftToTopLeft * nuv.y));
 		vec3 newpos = dir * aondata;
-        
+
 		float indirectAmount =  max(0, dot(normalcenter, normdata)) ;
-      
+
 		float occ = max(0, dot(normalize(newpos - currentData.cameraPos), normalcenter)) * indirectAmount;
       //  float occ =  smoothstep(0.0, hemisphereSize, xaon - aondata);
-		
+
 		float fact =  1.0 - clamp(distance(newpos, currentData.cameraPos) - 10.1, 0.0, 1.0);
 		outc += occ * fact;
         iter += stepsz;
-    
+
     }
     return outc / (float(xsamples.length()) / (float(quality)));
 }

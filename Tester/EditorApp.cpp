@@ -554,10 +554,10 @@ void EditorApp::onBind()
 
     game->setCursorMode(GLFW_CURSOR_NORMAL);
 
-    //auto t = game->asset->loadSceneFile("oldhouse.scene");
-    //for (int i = 0; i < t->getMesh3ds().size(); i++) {
-    //    game->world->scene->addMesh3d(t->getMesh3ds()[i]); 
-    //}
+    auto t = game->asset->loadSceneFile("oldhouse.scene");
+    for (int i = 0; i < t->getMesh3ds().size(); i++) {
+        game->world->scene->addMesh3d(t->getMesh3ds()[i]); 
+    }
 
     /*
     auto s = game->asset->loadMeshFile("grass_base.mesh3d");
@@ -594,7 +594,7 @@ void EditorApp::onBind()
     }
     //game->world->scene->addMesh3d(s);
     */
-    
+    /*
     int terrainparts = 10;
     float fullsize = 6000.0;
     float partsize = 600.0;
@@ -619,7 +619,7 @@ void EditorApp::onBind()
             m->addLodLevel(new Mesh3dLodLevel(game->asset->loadObject3dInfoFile(ss2.str()), mat, 3350.0f, 11150.0f));
             game->world->scene->addMesh3d(m);
         }
-    }
+    }*/
 
 
 
@@ -637,7 +637,7 @@ void EditorApp::onBind()
     game->world->scene->addMesh3d(xt);
 
     game->invoke([&]() {
-        auto phys = Game::instance->world->physics;
+        auto phys = Game::instance->world->physics;/*
         vector<float> vertices = {};
         vector<int> indices = {};
         auto wterrobj = game->asset->loadObject3dInfoFile("weirdterrain.raw");
@@ -692,9 +692,9 @@ void EditorApp::onBind()
             minh = glm::min(minh, bs);
         }
         auto terrashape = new btHeightfieldTerrainShape(6000, 6000, bytes2, 1.0, minh, maxh, 1, PHY_FLOAT, false);
-        
-        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(3000.0 - 300.0, -0.5 + maxh * 0.5, 3000.0 - 300.0), glm::quat(), glm::vec3(1.0, 1.0, 1.0)), terrashape);
-         //auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0f, 0.25f, 1000.0f)));
+        */
+        //auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(3000.0 - 300.0, -0.5 + maxh * 0.5, 3000.0 - 300.0), glm::quat(), glm::vec3(1.0, 1.0, 1.0)), terrashape);
+         auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0f, 0.25f, 1000.0f)));
         groundpb->getCollisionObject()->setFriction(4);
         groundpb->enable();
 

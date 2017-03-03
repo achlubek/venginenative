@@ -16,10 +16,13 @@ layout(binding = 28) uniform sampler2D moonTex;
 layout(binding = 23) uniform sampler2D waterTileTex;
 layout(binding = 24) uniform sampler2D starsTex;
 layout(binding = 29) uniform samplerCube resolvedAtmosphereTex;
+layout(binding = 31) uniform sampler2D sunRSMTex;
 
 uniform int UseAO;
 
 uniform int CombineStep;
+
+uniform mat4 SunRSMVPMatrix;
 #define STEP_PREVIOUS_SUN 0
 #define STEP_WATER_CLOUDS 1
 
@@ -230,6 +233,20 @@ float lenssun(vec3 dir){
 
     return primary;
 }
+
+float rdhash = 0.453451 + Time;
+vec2 randpoint2(){
+    float x = rand2s(UV * rdhash);
+    rdhash += 2.1231255;
+    float y = rand2s(UV * rdhash);
+    rdhash += 1.6271255;
+    return vec2(x, y) * 2.0 - 1.0;
+}
+
+vec2 projectsunrsm(vec3 pos){
+    vec4 tmp = (SunRSMVPMatrix * vec4(pos, 1.0));
+    return (tmp.xy / tmp.w) * 0.5 + 0.5;
+}
 vec4 shade(){
     vec3 color = vec3(0);
     if(CombineStep == STEP_PREVIOUS_SUN){
@@ -286,6 +303,13 @@ vec4 shade(){
         float ssobj2 = 1.0 - step(0.1, textureLod(mrt_Distance_Bump_Tex, UV, 0.0).r);
         color += (1.0 - coverage) * ssobj * (lenssun(dir)) * getSunColorDirectly(0.0) * 36.0 * step(0.0, dayData.sunDir.y);
         //color += monsoonconverage2 * (1.0 - coverage2) * ssobj2 *  step(0.0, dir.y) * (smoothstep(0.998, 0.9985, max(0.0, dot(dir, dayData.sunDir)))) * getSunColorDirectly(0.0) * 13.0;
+
+        vec3 csum = vec3(0.0);
+
+        for(int i=0;i<25;i++){
+
+        }
+
         color = tonemap(Cx * lightnings + color);
     }
     return vec4( clamp(color, 0.0, 110.0), currentData.cameraDistance * 0.001);

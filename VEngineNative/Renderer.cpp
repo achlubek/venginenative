@@ -133,6 +133,13 @@ void Renderer::initializeFbos()
     pickingFbo->attachTexture(pickingDepthTexture, GL_DEPTH_ATTACHMENT);
     pickingResultSSBO = new ShaderStorageBuffer();
 
+    sunRSMCamera = new Camera();
+    sunRSMFbo = new Framebuffer();
+    sunRSMTex = new Texture2d(2048, 2048, GL_RGBA32F, GL_RGBA, GL_FLOAT);
+    sunRSMDepthTex = new Texture2d(2048, 2048, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
+    sunRSMFbo->attachTexture(sunRSMTex, GL_COLOR_ATTACHMENT0);
+    sunRSMFbo->attachTexture(sunRSMDepthTex, GL_DEPTH_ATTACHMENT);
+
     deferredTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     deferredFbo = new Framebuffer();
     deferredFbo->attachTexture(deferredTexture, GL_COLOR_ATTACHMENT0);
@@ -368,6 +375,10 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     sp->setUniform("NoiseOctave7", noiseOctave7);
     sp->setUniform("NoiseOctave8", noiseOctave8);
 
+
+    glm::mat4 sunRSMvpmatrix = sunRSMCamera->projectionMatrix * sunRSMCamera->transformation->getInverseWorldTransform();
+    sp->setUniform("SunRSMVPMatrix", sunRSMvpmatrix);
+
     sp->setUniform("WaterScale", waterScale);
     sp->setUniform("WaterHeight", waterHeight);
     sp->setUniform("WaterSpeed", waterSpeed);
@@ -491,6 +502,7 @@ void Renderer::draw(Camera *camera)
         //     ambientOcclusion();
     }
     csm->map(-dayData.sunDir, currentCamera->transformation->getPosition());
+    prepareSunRSM();
     //mrtAlbedoRoughnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtNormalMetalnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtDistanceTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
@@ -588,6 +600,7 @@ void Renderer::combine(int step)
     if (step == 0) {
 
         csm->setUniformsAndBindSampler(combineShader, 30);
+        sunRSMTex->use(31);
     }
 
     quad3dInfo->draw();
@@ -644,6 +657,24 @@ void Renderer::recompileShaders()
     Game::instance->shaders->depthOnlyShader->recompile();
     Game::instance->shaders->idWriteShader->recompile();
     Game::instance->shaders->materialShader->recompile();
+    Game::instance->shaders->sunRSMWriteShader->recompile();
+}
+
+void Renderer::prepareSunRSM()
+{
+    sunRSMFbo->use(true);
+    ShaderProgram *shader = Game::instance->shaders->sunRSMWriteShader;
+    shader->use();
+    shader->setUniform("sunDir", dayData.sunDir);
+
+    mat4 pmat = glm::ortho(-1, 1, -1, 1, -1, 1);
+    vec3 radius = vec3(256.0f);
+    sunRSMCamera->transformation->setPosition(currentCamera->transformation->getPosition());
+    sunRSMCamera->transformation->setOrientation(glm::inverse(glm::lookAt(vec3(0), dayData.sunDir, (dayData.sunDir == vec3(0, -1, 0) ? vec3(0, 0, 1) : vec3(0, 1, 0)))));
+    sunRSMCamera->transformation->setSize(radius);
+
+    Game::instance->world->setUniforms(shader, sunRSMCamera);
+    Game::instance->world->draw(shader, sunRSMCamera);
 }
 
 void Renderer::deferred()
