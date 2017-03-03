@@ -17,6 +17,8 @@ layout(binding = 23) uniform sampler2D waterTileTex;
 layout(binding = 24) uniform sampler2D starsTex;
 layout(binding = 29) uniform samplerCube resolvedAtmosphereTex;
 layout(binding = 31) uniform sampler2D sunRSMTex;
+layout(binding = 32) uniform sampler2D sunRSMWPosTex;
+layout(binding = 33) uniform sampler2D sunRSMNormTex;
 
 uniform int UseAO;
 
@@ -304,16 +306,33 @@ vec4 shade(){
         color += (1.0 - coverage) * ssobj * (lenssun(dir)) * getSunColorDirectly(0.0) * 36.0 * step(0.0, dayData.sunDir.y);
         //color += monsoonconverage2 * (1.0 - coverage2) * ssobj2 *  step(0.0, dir.y) * (smoothstep(0.998, 0.9985, max(0.0, dot(dir, dayData.sunDir)))) * getSunColorDirectly(0.0) * 13.0;
 
+//shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * 20.0 * getSunColorDirectly(0.0))
         vec3 csum = vec3(0.0);
         vec2 suncnt = projectsunrsm(currentData.worldPos);
         float sundst = distance(CameraPosition + dayData.sunDir * 1000.0, currentData.worldPos);
         for(int i=0;i<25;i++){
-            vec2 p = suncnt + 0.01 * randpoint2();
-            vec4 data = textureLod(sunRSMTex, p, 0.0).rgba;
-            csum += getSunColorDirectly(0.0) * data.rgb * (1.0 / (1.0 + abs(sundst - data.a)));
+            vec2 p = suncnt + 0.0015 * randpoint2();
+            vec3 albedo = textureLod(sunRSMTex, p, 0.0).rgb;
+            vec3 wpos = textureLod(sunRSMTex, p, 0.0).rgb;
+            vec3 norm = textureLod(sunRSMTex, p, 0.0).rgb;
+            float dist = distance(wpos, currentData.worldPos);
+            float att = 1.0 / (1.0 + dist * dist);
+                PostProcessingData dataReflection = PostProcessingData(
+                    albedo,
+                    norm,
+                    norm.yxz,
+                    wpos,
+                    wpos - currentData.worldPos,
+                    dist,
+                    0.0,
+                    0.0
+                );
+            vec3 ray_primary = shade_ray_data(dataReflection, dayData.sunDir, getSunColorDirectly(0.0));
+            vec3 ray_secondary = shade_ray_data(currentData, normalize(currentData.worldPos - wpos), ray_primary);
+            csum += ray_secondary;
         }
-        color = csum;
-
+        color = csum / 25.0;
+        //color = textureLod(sunRSMTex, UV, 0.0).rgb;
         color = tonemap(Cx * lightnings + color);
     }
     return vec4( clamp(color, 0.0, 110.0), currentData.cameraDistance * 0.001);

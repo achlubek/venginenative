@@ -554,7 +554,7 @@ void EditorApp::onBind()
 
     game->setCursorMode(GLFW_CURSOR_NORMAL);
 
-    auto t = game->asset->loadSceneFile("oldhouse.scene");
+    auto t = game->asset->loadSceneFile("cryteksponza.scene");
     for (int i = 0; i < t->getMesh3ds().size(); i++) {
         game->world->scene->addMesh3d(t->getMesh3ds()[i]); 
     }

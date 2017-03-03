@@ -118,6 +118,8 @@ private:
     ShaderProgram *sunRSMShader;
     Framebuffer *sunRSMFbo;
     Texture2d *sunRSMTex;
+    Texture2d *sunRSMWPosTex;
+    Texture2d *sunRSMNormTex;
     Texture2d *sunRSMDepthTex;
     void prepareSunRSM();
 

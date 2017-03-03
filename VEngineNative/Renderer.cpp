@@ -135,9 +135,13 @@ void Renderer::initializeFbos()
 
     sunRSMCamera = new Camera();
     sunRSMFbo = new Framebuffer();
-    sunRSMTex = new Texture2d(2048, 2048, GL_RGBA32F, GL_RGBA, GL_FLOAT);
+    sunRSMTex = new Texture2d(2048, 2048, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE);
+    sunRSMWPosTex = new Texture2d(2048, 2048, GL_RGBA32F, GL_RGBA, GL_FLOAT);
+    sunRSMNormTex = new Texture2d(2048, 2048, GL_RGBA16F, GL_RGBA, GL_FLOAT);
     sunRSMDepthTex = new Texture2d(2048, 2048, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
     sunRSMFbo->attachTexture(sunRSMTex, GL_COLOR_ATTACHMENT0);
+    sunRSMFbo->attachTexture(sunRSMWPosTex, GL_COLOR_ATTACHMENT1);
+    sunRSMFbo->attachTexture(sunRSMNormTex, GL_COLOR_ATTACHMENT2);
     sunRSMFbo->attachTexture(sunRSMDepthTex, GL_DEPTH_ATTACHMENT);
 
     deferredTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
@@ -591,6 +595,9 @@ void Renderer::combine(int step)
     setCommonUniforms(combineShader);
     combineShader->setUniform("CombineStep", step);
     if (step == 1) {
+        sunRSMTex->use(31);
+        sunRSMWPosTex->use(32);
+        sunRSMNormTex->use(33);
         combineShader->setUniform("ShowSelection", showSelection ? 1 : 0);
         if (showSelection) {
             combineShader->setUniform("SelectionPos", selectionPosition);
@@ -601,6 +608,8 @@ void Renderer::combine(int step)
 
         csm->setUniformsAndBindSampler(combineShader, 30);
         sunRSMTex->use(31);
+        sunRSMWPosTex->use(32);
+        sunRSMNormTex->use(33);
     }
 
     quad3dInfo->draw();
@@ -668,7 +677,7 @@ void Renderer::prepareSunRSM()
     shader->setUniform("sunDir", dayData.sunDir);
 
     mat4 pmat = glm::ortho(-1, 1, -1, 1, -1, 1);
-    vec3 radius = vec3(256.0f);
+    vec3 radius = vec3(64.0f);
     sunRSMCamera->transformation->setPosition(currentCamera->transformation->getPosition());
     sunRSMCamera->transformation->setOrientation(glm::inverse(glm::lookAt(vec3(0), dayData.sunDir, (dayData.sunDir == vec3(0, -1, 0) ? vec3(0, 0, 1) : vec3(0, 1, 0)))));
     sunRSMCamera->transformation->setSize(radius);
