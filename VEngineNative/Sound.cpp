@@ -22,12 +22,13 @@ Sound::~Sound()
 void Sound::play()
 {
     if (ready && sound.getStatus() != sound.Playing) {
-        auto t = thread([&]()
-        {
+       // auto t = thread([&]()
+       // {
+        // SMFL kick off thread on its own
             sound.play();
-            while (sound.getStatus() == sound.Playing);
-        });
-        t.detach();
+           // while (sound.getStatus() == sound.Playing);
+       // });
+    //    t.detach();
     }
 }
 

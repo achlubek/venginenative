@@ -57,7 +57,7 @@ void* ShaderStorageBuffer::aquireAsynchronousPointer(int offset, size_t size)
     if (!generated) generate();
     glBindBuffer(bufferType, handle);
     if (offset + size > currentBytesCount) preallocate(size + offset, usageHint);
-    return glMapBufferRange(bufferType, offset, size, GL_MAP_WRITE_BIT);
+    return glMapBufferRange(bufferType, offset, size, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
 }
 
 void ShaderStorageBuffer::unmapBuffer()

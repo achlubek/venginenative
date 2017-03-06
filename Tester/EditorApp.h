@@ -81,6 +81,7 @@ private:
 
     glm::quat backquat = glm::quat();
     glm::vec3 backvectorlast = glm::vec3();
+    glm::vec3 lastpos = glm::vec3();
     bool cameraFollowCar = false;
 
    // PhysicalBody* virtualbox;

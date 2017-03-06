@@ -159,8 +159,10 @@ void Game::physicsThread()
             Game::instance->physicsInvokeQueue.front()();
             Game::instance->physicsInvokeQueue.pop();
         }
-        //if (!Game::instance->physicsNeedsUpdate)
-        //    continue;
+        if (!Game::instance->physicsNeedsUpdate) {
+            Sleep(4);
+            continue;
+        }
 
         double now = glfwGetTime();
         Game::instance->world->physics->simulationStep((float)((now - time)));

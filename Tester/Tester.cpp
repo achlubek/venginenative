@@ -19,6 +19,8 @@
 #include "EditorApp.h"
 #include "Car.h"
 #include "Utilities.h"
+#include "windows.h"
+
 
 Mesh3d * loadRawMesh(string file) {
     Material *mat = new Material();
@@ -56,7 +58,9 @@ int main(int argc, char* argv[])
     
     app->bind(game);
 
-    while (!game->hasExited);
+    while (!game->hasExited) {
+        Sleep(100);
+    }
 
     return 0;
 }

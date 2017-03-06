@@ -101,7 +101,8 @@ void EditorApp::onRenderFrame(float elapsed)
 
                 backvector = backvectorlast * 0.97f + backvector * 0.03f;
                 backvectorlast = backvector;
-                cam->transformation->setPosition(cartrans->getPosition() + backvector);
+                lastpos = lastpos * 0.9f + cartrans->getPosition() * 0.1f;
+                cam->transformation->setPosition(lastpos + backvector);
                 cam->transformation->setOrientation(glm::inverse(glm::angleAxis(deg2rad(180.0f), glm::vec3(0.0, 1.0, 0.0)) * backquat * glm::inverse(cartrans->getOrientation())));
             }
 
@@ -169,7 +170,7 @@ void EditorApp::onRenderFrame(float elapsed)
             float acc = (axes[5] * 0.5 + 0.5);
             float brk = (axes[4] * 0.5 + 0.5);
             car[0]->setAcceleration((acc - brk) * 0.5);
-            printf("ACCELERATION: %f\n", (acc - brk) * 1.0);
+           // printf("ACCELERATION: %f\n", (acc - brk) * 1.0);
             float targetpitch = 0.9f + acc * 0.5f;
 
             glm::vec3 vel = car[0]->getLinearVelocity();
@@ -233,7 +234,7 @@ void EditorApp::onRenderFrame(float elapsed)
             if (dt > dt2) {
                 // go to point
                 float oldangle = car[i]->getWheelsAngle();
-                float newangle = glm::sign(crs.y) / (1.0 + 0.002 * glm::abs(car[i]->getSpeed() * car[i]->getSpeed()));
+                float newangle = (glm::sign(crs.y) * ((1.0 - dt) + 0.06)) / (1.0 + 0.002 * glm::abs(car[i]->getSpeed() * car[i]->getSpeed()));
                 car[i]->setWheelsAngle(newangle);
 
                 float speedmult = dt;
@@ -594,12 +595,12 @@ void EditorApp::onBind()
     game->world->mainDisplayCamera = cam;
 
     game->setCursorMode(GLFW_CURSOR_NORMAL);
-    
-    auto t = game->asset->loadSceneFile("oldhouse.scene");
+    /*
+    auto t = game->asset->loadSceneFile("oldcity.scene");
     for (int i = 0; i < t->getMesh3ds().size(); i++) {
-        t->getMesh3ds()[i]->getInstance(0)->transformation->translate(vec3(0.0, 5.0, 0.0));
+        t->getMesh3ds()[i]->getInstance(0)->transformation->translate(vec3(0.0, 1.5, 0.0));
         game->world->scene->addMesh3d(t->getMesh3ds()[i]); 
-    }
+    }*/
 
     /*
     auto s = game->asset->loadMeshFile("grass_base.mesh3d");
@@ -673,13 +674,14 @@ void EditorApp::onBind()
    // car.push_back(new Car(t2));
 
 
-
+    
     auto xt = game->asset->loadMeshFile("2dplane.mesh3d");
     // t->alwaysUpdateBuffer = true;
     game->world->scene->addMesh3d(xt);
-
+    
     game->invoke([&]() {
-        auto phys = Game::instance->world->physics;/*
+        auto phys = Game::instance->world->physics;
+        /*
         vector<float> vertices = {};
         vector<int> indices = {};
         auto wterrobj = game->asset->loadObject3dInfoFile("weirdterrain.raw");
@@ -773,8 +775,8 @@ void EditorApp::onBind()
     cursor3dArrow = Mesh3d::create(game->asset->loadObject3dInfoFile("deferredsphere.raw"), new Material());
    // cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0), glm::quat(), glm::vec3(7.0))));
     game->world->scene->addMesh3d(cursor3dArrow);
-    for (int xx = 0; xx < 1; xx++) {
-        for (int yy = 0; yy < 1; yy++)
+    for (int xx = 0; xx < 11; xx++) {
+        for (int yy = 0; yy < 11; yy++)
         {
             auto c = new Car(xx % 2 == 0 ? "fiesta.car" : "fiesta.car", new TransformationManager(glm::vec3(xx * 10.0, 55.0, yy * 10.0)));
             car.push_back(c);

@@ -681,7 +681,7 @@ void Renderer::prepareSunRSM()
     shader->setUniform("sunDir", dayData.sunDir);
 
     mat4 pmat = glm::ortho(-1, 1, -1, 1, -1, 1);
-    vec3 radius = vec3(64.0f);
+    vec3 radius = vec3(128.0f);
     sunRSMCamera->transformation->setPosition(currentCamera->transformation->getPosition());
     sunRSMCamera->transformation->setOrientation(glm::inverse(glm::lookAt(vec3(0), dayData.sunDir, (dayData.sunDir == vec3(0, -1, 0) ? vec3(0, 0, 1) : vec3(0, 1, 0)))));
     sunRSMCamera->transformation->setSize(radius);
