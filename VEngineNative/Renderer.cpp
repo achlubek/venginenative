@@ -245,7 +245,7 @@ void Renderer::destroyFbos(bool onlyViewDependant)
         delete cloudsTextureEven;
         delete cloudsFboOdd;
         delete cloudsTextureOdd;
-        delete cloudsShadowsFboEven;
+        delete cloudsShadowsFboEven; 
         delete cloudsShadowsTextureEven;
         delete cloudsShadowsFboOdd;
         delete cloudsShadowsTextureOdd;

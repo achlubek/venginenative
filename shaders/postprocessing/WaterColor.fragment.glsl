@@ -202,7 +202,7 @@ vec4 getLighting(){
         origdir * camdist,
         camdist,
         clamp(roughness * 0.4 - 0.1, 0.0, 1.0),
-        0.0
+        1.0
     );
 
     //result += mix(shadingWater(dataReflection, -dayData.sunDir, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0)) * fresnel * 1.0, getSunColor(0.5) * 0.33 * whites, min(1.0, whites));// + sampleAtmosphere(normal, 0.0) * fresnel;

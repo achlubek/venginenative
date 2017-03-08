@@ -87,7 +87,7 @@ vec3 tonemap(vec3 xa){
     vec3 xa2 = xa + 0.00001;
     vec3 coloressence = normalize(xa2);
     //a /= 1.0 + log(luma) * 1.1;
-    a = coloressence * mix(sqrt(clamp(luma, 0.0001, 99999.0)), luma, 0.5);
+    //a = coloressence * mix(sqrt(clamp(luma, 0.0001, 99999.0)), luma, 0.5);
     //a = normalize(a) * mix(l, 0.9, 0.2);
     a = pow(a, vec3(Contrast));
     return (rgb_to_srgb(a));

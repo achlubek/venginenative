@@ -775,8 +775,8 @@ void EditorApp::onBind()
     cursor3dArrow = Mesh3d::create(game->asset->loadObject3dInfoFile("deferredsphere.raw"), new Material());
    // cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0), glm::quat(), glm::vec3(7.0))));
     game->world->scene->addMesh3d(cursor3dArrow);
-    for (int xx = 0; xx < 11; xx++) {
-        for (int yy = 0; yy < 11; yy++)
+    for (int xx = 0; xx < 1; xx++) {
+        for (int yy = 0; yy < 1; yy++)
         {
             auto c = new Car(xx % 2 == 0 ? "fiesta.car" : "fiesta.car", new TransformationManager(glm::vec3(xx * 10.0, 55.0, yy * 10.0)));
             car.push_back(c);

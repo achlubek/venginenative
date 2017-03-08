@@ -143,9 +143,23 @@ float heightwaterHI2(vec2 pos){
     w *= 0.55;
     return mix(pow(res / w * 2.0, 2.0), last, 0.95);
 }
+float wave(vec2 uv, vec2 emitter, float speed, float phase){
+	float dst = distance(uv, emitter);
+	return pow((0.5 + 0.5 * sin(dst * phase - Time * speed)), 3.0);
+}
+
+float genwaves(vec2 position){
+	float w = wave(position, vec2(0.3, 0.4), 2.0, 10.0) * 0.8;
+	w += wave(position, vec2(0.6, 0.11), 2.0, 20.0) * 0.8;
+	//w += wave(position, vec2(0.9, 0.6), 10.0, 90.0)* 0.5;
+//	w += wave(position, vec2(0.1, 0.84), 10.0, 150.0)* 0.5;
+	//w += wave(position, vec2(0.732, 0.91), 10.0, 150.0) * 0.1;
+    return w * 0.5;
+}
 vec4 shade(){
     vec2 uv = UV;
     float c1 = heightwaterHI2(uv);
+    //float c1 = genwaves(uv);
     float color = c1;
     return vec4(color, 0.0, 0.0, 0.0);
 }
