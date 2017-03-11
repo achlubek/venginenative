@@ -637,7 +637,7 @@ void EditorApp::onBind()
     }
     //game->world->scene->addMesh3d(s);
     */
-    /*
+    
     int terrainparts = 10;
     float fullsize = 6000.0;
     float partsize = 600.0;
@@ -663,7 +663,7 @@ void EditorApp::onBind()
             game->world->scene->addMesh3d(m);
         }
     }
-    */
+    
 
 
     //  t->name = "flagbase";
@@ -675,9 +675,9 @@ void EditorApp::onBind()
 
 
     
-    auto xt = game->asset->loadMeshFile("isl.mesh3d");
+ //   auto xt = game->asset->loadMeshFile("isl.mesh3d");
     // t->alwaysUpdateBuffer = true;
-    game->world->scene->addMesh3d(xt);
+  //  game->world->scene->addMesh3d(xt);
     
     game->invoke([&]() {
         auto phys = Game::instance->world->physics;

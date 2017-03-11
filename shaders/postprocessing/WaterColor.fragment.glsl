@@ -41,11 +41,16 @@ vec3 normalx(vec3 pos, float e, float roughness){
 uniform float AboveSpan;
 
 vec2 project_above(vec3 pos){
-    return ToCameraSpace(pos).xz / AboveSpan;
+    vec2 a = ((pos - CameraPosition).xz / AboveSpan) * 0.5 + 0.5;
+    //a.y = 1.0 - a.y;
+    a.x = 1.0 - a.x;
+    return a;
 }
 
 float getFoam(vec3 pos){
-    return textureLod(waterFoamTex, clamp(project_above(pos), 0.0, 1.0), 0.0).r;
+    vec2 u = project_above(pos);
+    if(u.x<=0.0 || u.y<=0.0 || u.x>=1.0 || u.y>=1.0) return 0.0;
+    return textureLod(waterFoamTex, u, 0.0).r;
 }
 
 #include ResolveAtmosphere.glsl
@@ -135,6 +140,18 @@ vec3 randpoint3x(){
     return vec3(x, y, z) * 2.0 - 1.0;
 }
 float hitdst = 0.0;
+float fbmHI2(vec3 p){
+	float a = 0.0;
+    float w = 1.0;
+    float wc = 0.0;
+	for(int i=0;i<5;i++){
+		a += supernoise3dX(p) * w;
+		wc += w;
+        w *= 0.6;
+		p = p * 3.0;
+	}
+	return a / wc;
+}
 vec4 getLighting(){
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
 
@@ -212,10 +229,10 @@ vec4 getLighting(){
         hitpos,
         origdir * camdist,
         camdist,
-        clamp(foam + roughness * 0.4 - 0.1, 0.0, 1.0),
+        clamp(roughness * 0.4 - 0.1, 0.0, 1.0),
         1.0
     );
-    return vec3(foam);
+    //return vec4(foam);
 
     //result += mix(shadingWater(dataReflection, -dayData.sunDir, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0)) * fresnel * 1.0, getSunColor(0.5) * 0.33 * whites, min(1.0, whites));// + sampleAtmosphere(normal, 0.0) * fresnel;
     vec3 atm = vec3(0.0);
@@ -264,7 +281,7 @@ vec4 getLighting(){
     vec3 refr2 = normalize(refr + vec3(0.0, 0.3, 0.0));
     float superscat = pow(max(0.0, dot(refr, dayData.sunDir)), 8.0) ;//* (1.0 - fresnel);
     result += csmvis * vec3(0.5,0.9,0.8) * superscat * getSunColorDirectly(0) * 18.0 * covercloud;
-
+    result = mix(result, vec3(2.0 * csmvis)  * getSunColorDirectly(0.0), smoothstep(0.3, 0.9, foam) * fbmHI2(hitpos * 1.0));
     return  vec4(result  , 0.0);
 }
 

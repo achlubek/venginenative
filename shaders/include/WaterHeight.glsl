@@ -13,18 +13,18 @@ float wave(vec2 uv, vec2 emitter, float speed, float phase){
 	return pow((0.5 + 0.5 * sin(dst * phase - Time * speed * WaterSpeed)), 3.0);
 }
 float genwaves(vec2 position){
-	float w = wave(position, vec2(-7.3, 1.4), 1.0, 4.5) * 0.8;
-	w += wave(position, vec2(6.3, -2.4), 1.0, 5.0) * 0.8;
+	float w = wave(position, vec2(-700.3, 100.4), 1.0, 4.5) * 0.8;
+	w += wave(position, vec2(600.3, -200.4), 1.0, 5.0) * 0.8;
 
-	w += wave(position, vec2(1.3, -6.4), 1.0, 4.0) * 0.5;
-	w += wave(position, vec2(-0.3, 7.4), 1.0, 4.0) * 0.5;
+	w += wave(position, vec2(100.3, -600.4), 1.0, 4.0) * 0.5;
+	w += wave(position, vec2(-900.3, 700.4), 1.0, 4.0) * 0.5;
 
 
-	w += wave(position, vec2(-7.3, 5.4), 2.0, 24.0) * 0.1;
-	w += wave(position, vec2(7.3, -2.4), 2.0, 22.0) * 0.1;
+	w += wave(position, vec2(-700.3, 500.4), 2.0, 24.0) * 0.1;
+	w += wave(position, vec2(700.3, -200.4), 2.0, 22.0) * 0.1;
 
-	w += wave(position, vec2(3.3, -6.4), 4.0, 22.0) * 0.08;
-	w += wave(position, vec2(-1.3, 4.4), 4.0, 20.0) * 0.08;
+	w += wave(position, vec2(300.3, -600.4), 4.0, 22.0) * 0.08;
+	w += wave(position, vec2(-100.3, 400.4), 4.0, 20.0) * 0.08;
 
 
     return w * 0.65;
