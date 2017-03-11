@@ -88,7 +88,8 @@ Renderer::Renderer(int iwidth, int iheight)
     waterTileShader = new ShaderProgram("PostProcess.vertex.glsl", "WaterTile.fragment.glsl");
     waterMeshShader = new ShaderProgram("PostProcess.vertex.glsl", "WaterMesh.fragment.glsl");
     waterColorShader = new ShaderProgram("PostProcess.vertex.glsl", "WaterColor.fragment.glsl");
-    cloudResolveShader = new ShaderProgram("PostProcess.vertex.glsl", "CloudResolve.fragment.glsl");
+	cloudResolveShader = new ShaderProgram("PostProcess.vertex.glsl", "CloudResolve.fragment.glsl");
+	waterFoamShader = new ShaderProgram("PostProcess.vertex.glsl", "WaterFoam.fragment.glsl");
     exposureComputeShader = new ShaderProgram("CalculateExposure.compute.glsl");
     pickingReadShader = new ShaderProgram("PickerResultReader.compute.glsl");
     exposureBuffer = new ShaderStorageBuffer();
@@ -143,6 +144,26 @@ void Renderer::initializeFbos()
     sunRSMFbo->attachTexture(sunRSMWPosTex, GL_COLOR_ATTACHMENT1);
     sunRSMFbo->attachTexture(sunRSMNormTex, GL_COLOR_ATTACHMENT2);
     sunRSMFbo->attachTexture(sunRSMDepthTex, GL_DEPTH_ATTACHMENT);
+
+	aboveCamera = new Camera();
+	aboveCameraLastPos = glm::vec3(0.0);
+	aboveCameraDelta = glm::vec3(0.0);
+	aboveSpan = 120.0f;
+	aboveFbo = new Framebuffer();
+	aboveDataTex = new Texture2d(1024, 1024, GL_RGBA32F, GL_RGBA, GL_FLOAT);
+	aboveDepthTex = new Texture2d(1024, 1024, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
+	aboveFbo->attachTexture(aboveDataTex, GL_COLOR_ATTACHMENT0);
+	aboveFbo->attachTexture(aboveDepthTex, GL_DEPTH_ATTACHMENT);
+
+
+	waterFoamFboOdd = new Framebuffer();
+	waterFoamTexOdd = new Texture2d(1024, 1024, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+	waterFoamFboOdd->attachTexture(waterFoamTexOdd, GL_COLOR_ATTACHMENT0);
+
+	waterFoamFboEven = new Framebuffer();
+	waterFoamTexEven = new Texture2d(1024, 1024, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+	waterFoamFboEven->attachTexture(waterFoamTexEven, GL_COLOR_ATTACHMENT0);
+
 
     deferredTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     deferredFbo = new Framebuffer();
@@ -507,6 +528,7 @@ void Renderer::draw(Camera *camera)
     }
     csm->map(-dayData.sunDir, currentCamera->transformation->getPosition());
     prepareSunRSM();
+	updateAboveView();
     //mrtAlbedoRoughnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtNormalMetalnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtDistanceTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
@@ -515,6 +537,7 @@ void Renderer::draw(Camera *camera)
    // ambientLight();
     //glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     waterTile();
+	aboveDataTex->generateMipMaps();
     sunRSMTex->generateMipMaps();
     sunRSMWPosTex->generateMipMaps();
     sunRSMNormTex->generateMipMaps();
@@ -523,6 +546,7 @@ void Renderer::draw(Camera *camera)
     mrtDistanceTexture->use(2);
     atmScatt();
     clouds();
+	waterFoam();
     fog();
     cloudsResolve();
     combine(0);
@@ -596,12 +620,14 @@ void Renderer::combine(int step)
     cloudsResolvedTexture->use(29);
 
 
+	combineShader->setUniform("AboveSpan", aboveSpan);
     setCommonUniforms(combineShader);
     combineShader->setUniform("CombineStep", step);
     if (step == 1) {
         sunRSMTex->use(31);
         sunRSMWPosTex->use(34);
         sunRSMNormTex->use(33);
+		aboveDataTex->use(23);
         combineShader->setUniform("ShowSelection", showSelection ? 1 : 0);
         if (showSelection) {
             combineShader->setUniform("SelectionPos", selectionPosition);
@@ -613,7 +639,8 @@ void Renderer::combine(int step)
         csm->setUniformsAndBindSampler(combineShader, 30);
         sunRSMTex->use(31);
         sunRSMWPosTex->use(34);
-        sunRSMNormTex->use(33);
+		sunRSMNormTex->use(33);
+		aboveDataTex->use(23);
     }
 
     quad3dInfo->draw();
@@ -666,11 +693,13 @@ void Renderer::recompileShaders()
     waterTileShader->recompile();
     waterColorShader->recompile();
     waterMeshShader->recompile();
-    cloudResolveShader->recompile();
+	cloudResolveShader->recompile();
+	waterFoamShader->recompile();
     Game::instance->shaders->depthOnlyShader->recompile();
     Game::instance->shaders->idWriteShader->recompile();
     Game::instance->shaders->materialShader->recompile();
-    Game::instance->shaders->sunRSMWriteShader->recompile();
+	Game::instance->shaders->sunRSMWriteShader->recompile();
+	Game::instance->shaders->aboveViewShader->recompile();
 }
 
 void Renderer::prepareSunRSM()
@@ -688,6 +717,36 @@ void Renderer::prepareSunRSM()
 
     Game::instance->world->setUniforms(shader, sunRSMCamera);
     Game::instance->world->draw(shader, sunRSMCamera);
+}
+
+void Renderer::updateAboveView()
+{
+	aboveFbo->use(true);
+	ShaderProgram *shader = Game::instance->shaders->aboveViewShader;
+	shader->use(); 
+
+	vec3 radius = vec3(aboveSpan);
+	aboveCamera->transformation->setPosition(currentCamera->transformation->getPosition());
+	aboveCamera->transformation->setOrientation(glm::lookAt(vec3(0), vec3(0, -1, 0), vec3(0, 0, 1)));
+	aboveCamera->transformation->setSize(radius);
+
+	Game::instance->world->setUniforms(shader, aboveCamera);
+	Game::instance->world->draw(shader, aboveCamera);
+}
+
+void Renderer::waterFoam()
+{
+	auto writefbo = waterFoamRenderOdd ? waterFoamFboOdd : waterFoamFboEven;
+	auto readtex = waterFoamRenderOdd ? waterFoamTexEven : waterFoamTexOdd;
+	writefbo->use(false);
+	waterFoamShader->use();
+	setCommonUniforms(waterFoamShader);
+	waterFoamShader->setUniform("AboveSpan", aboveSpan);
+	aboveDataTex->use(23);
+	readtex->use(24);
+	quad3dInfo->draw();
+
+	waterFoamRenderOdd = !waterFoamRenderOdd;
 }
 
 void Renderer::deferred()
@@ -743,7 +802,7 @@ void Renderer::waterTile()
     Framebuffer * fbo = waterTileUseFBO1 ? waterTileFbo1 : waterTileFbo2;
     fbo->use(false);
     waterTileShader->use();
-    tex2->use(23);
+    tex2->use(19);
     waterTileShader->setUniform("WaterSpeed", waterSpeed);
     waterTileShader->setUniform("Resolution", glm::vec2(width, height));
     waterTileShader->setUniform("Time", Game::instance->time);
@@ -751,7 +810,7 @@ void Renderer::waterTile()
     tex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     tex->generateMipMaps();
     waterTileUseFBO1 = !waterTileUseFBO1;
-    tex->use(23);
+    tex->use(19);
 }
 
 void Renderer::ambientOcclusion()
@@ -815,8 +874,15 @@ void Renderer::waterColorShaded()
         cloudsTextureEven->use(25);
         cloudsShadowsTextureEven->use(26);
     }
+	if (waterFoamRenderOdd) {
+		waterFoamTexEven->use(15);
+	}
+	else {
+		waterFoamTexOdd->use(15);
+	}
     cloudsResolvedTexture->use(29);
 
+	waterColorShader->setUniform("AboveSpan", aboveSpan);
     setCommonUniforms(waterColorShader);
     quad3dInfo->draw();
     //waterColorTexture->generateMipMaps();

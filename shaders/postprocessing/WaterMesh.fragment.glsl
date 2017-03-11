@@ -100,9 +100,12 @@ float getWaterDistance(){
         int steps = 1 + int(min(32.0, max(planethit, planethit2) * 0.1) * wvw);
 
 	//	mipmapx = textureQueryLod(waterTileTex, (CameraPosition + dir * min(planethit, planethit2)).xz * WaterScale *  octavescale1).x;
-
         if(planethit > 0.0 && planethit2 > 0.0){
-            dist = raymarchwater(CameraPosition  + dir * min(planethit, planethit2), CameraPosition + dir * max(planethit, planethit2), 128);
+            if(min(planethit, planethit2) < 6000.0){
+                dist = raymarchwater(CameraPosition  + dir * min(planethit, planethit2), CameraPosition + dir * max(planethit, planethit2), 128);
+            } else {
+                dist = max(planethit, planethit2);
+            }
         } else {
             float H = step(0.0, planethit) * planethit + step(0.0, planethit2) * planethit2;
             dist = raymarchwater(CameraPosition, CameraPosition + dir * min(H, 2999.0), min(2000, int(1.0 * H)));

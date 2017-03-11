@@ -8,5 +8,6 @@ public:
     ShaderProgram *materialShader;
     ShaderProgram *depthOnlyShader;
     ShaderProgram *idWriteShader;
-    ShaderProgram *sunRSMWriteShader;
+	ShaderProgram *sunRSMWriteShader;
+	ShaderProgram *aboveViewShader;
 };

@@ -675,7 +675,7 @@ void EditorApp::onBind()
 
 
     
-    auto xt = game->asset->loadMeshFile("2dplane.mesh3d");
+    auto xt = game->asset->loadMeshFile("isl.mesh3d");
     // t->alwaysUpdateBuffer = true;
     game->world->scene->addMesh3d(xt);
     

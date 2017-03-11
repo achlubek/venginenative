@@ -2,7 +2,7 @@
 uniform float WaterHeight;
 uniform vec3 Wind;
 uniform vec2 WaterScale;
-float octavescale1 = 0.1;
+float octavescale1 = 0.03;
 float mipmap1 = 0.0;
 float maxmip = textureQueryLevels(waterTileTex);
 
@@ -31,7 +31,7 @@ float genwaves(vec2 position){
 }
 vec2 heightwaterXO(vec2 uv, vec2 offset, float mipmap){
 
-    float inith = genwaves(uv * 0.0735 * WaterScale) * (1.0 - smoothstep(0.0, 7.0, mipmap));
+    float inith = genwaves(uv * 0.01735 * WaterScale) * (1.0 - smoothstep(0.0, 7.0, mipmap));
 
     uv += vec2(Time * WaterSpeed, 0.0);
 	vec2 zuv1 = (uv * WaterScale * octavescale1) + vec2(Time * 0.01 * WaterSpeed);
@@ -42,7 +42,7 @@ vec2 heightwaterXO(vec2 uv, vec2 offset, float mipmap){
 }
 float heightwaterXOLO(vec2 uv, vec2 offset, float mipmap){
 
-    float inith = genwaves(uv * 0.0735 * WaterScale) * (1.0 - smoothstep(0.0, 7.0, mipmap));
+    float inith = genwaves(uv * 0.01735 * WaterScale) * (1.0 - smoothstep(0.0, 7.0, mipmap));
     return (0.11 + inith) * 0.5;
 }
 vec2 heightwaterXOX(vec2 uv, vec2 offset, float mipmap){

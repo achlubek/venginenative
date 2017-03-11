@@ -3,7 +3,7 @@
 #include PostProcessEffectBase.glsl
 
 layout(binding = 16) uniform sampler2D inputTex;
-layout(binding = 23) uniform sampler2D bb;
+layout(binding = 19) uniform sampler2D bb;
 
 uniform float Time;
 uniform float WaterSpeed;

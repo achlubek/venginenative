@@ -1,8 +1,9 @@
 #version 430 core
 
+layout(binding = 15) uniform sampler2D waterFoamTex;
+layout(binding = 19) uniform sampler2D waterTileTex;
 layout(binding = 21) uniform sampler2D waterDistanceTex;
 layout(binding = 22) uniform sampler2D inputTex;
-layout(binding = 23) uniform sampler2D waterTileTex;
 
 layout(binding = 25) uniform samplerCube coverageDistTex;
 layout(binding = 26) uniform samplerCube shadowsTex;
@@ -37,6 +38,15 @@ vec3 normalx(vec3 pos, float e, float roughness){
 
 #define WaterLevel WaterHeight
 
+uniform float AboveSpan;
+
+vec2 project_above(vec3 pos){
+    return ToCameraSpace(pos).xz / AboveSpan;
+}
+
+float getFoam(vec3 pos){
+    return textureLod(waterFoamTex, clamp(project_above(pos), 0.0, 1.0), 0.0).r;
+}
 
 #include ResolveAtmosphere.glsl
 
@@ -148,14 +158,15 @@ vec4 getLighting(){
     float mipmap2 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 11.2467).x;
     float mipmap3 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 151.2467).x ;
     float roughness2 = clamp((pow(mipmap1/ textureQueryLevels(waterTileTex), 1.0)) , 0.0, 13.0);
-    float roughness = clamp(roughness2 , 0.0, 1.0);
+    float roughness = clamp(sqrt(hitdist) * 0.01, 0.0, 0.6);//clamp(roughness2 , 0.0, 1.0);
     //return vec4(1) * roughness;
-    MIP = 0.7 * roughness * textureQueryLevels(waterTileTex);
+    MIP = roughness * textureQueryLevels(waterTileTex);
     //mipmap1 *= 0.0;
     float height1  = heightwater(hitpos.xz);
    // float foam  = foamwater(hitpos.xz, 0);
     float height2  = heightwaterD(hitpos.xz, 0.8 * textureQueryLevels(waterTileTex));
 
+    float foam = getFoam(hitpos);
 
     vec3 origdir = dir;
 
@@ -201,9 +212,10 @@ vec4 getLighting(){
         hitpos,
         origdir * camdist,
         camdist,
-        clamp(roughness * 0.4 - 0.1, 0.0, 1.0),
+        clamp(foam + roughness * 0.4 - 0.1, 0.0, 1.0),
         1.0
     );
+    return vec3(foam);
 
     //result += mix(shadingWater(dataReflection, -dayData.sunDir, getSunColor(0.0), sampleAtmosphere(dir, roughness, 0.0)) * fresnel * 1.0, getSunColor(0.5) * 0.33 * whites, min(1.0, whites));// + sampleAtmosphere(normal, 0.0) * fresnel;
     vec3 atm = vec3(0.0);
