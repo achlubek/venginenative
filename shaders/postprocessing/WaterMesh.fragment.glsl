@@ -24,6 +24,7 @@ float rand2sTimex(vec2 co){
 
 #define intersects(a) (a >= 0.0)
 float mipmapx = 0.2;
+bool isReallyUnderWater = false;
 float raymarchwater3(vec3 start, vec3 end, int stepsI){
     float stepsize = 1.0 / stepsI;
     float iter = 0;
@@ -32,10 +33,11 @@ float raymarchwater3(vec3 start, vec3 end, int stepsI){
     float hupper = waterdepth + WaterLevel;
     float hlower = WaterLevel;
     float rd = stepsize * rand2sTimex(UV);
+    vec2 zer = vec2(0.0);
     for(int i=0;i<stepsI + 1;i++){
         pos = mix(start, end, iter + rd);
-        h = hlower + heightwaterD(pos.xz, mipmapx) * waterdepth;
-        if(h > pos.y) {
+        h = hlower + heightwaterXOLO(pos.xz, zer, mipmapx) * waterdepth;
+        if((!isReallyUnderWater && h > pos.y) || (isReallyUnderWater && h < pos.y)) {
             return distance(pos, CameraPosition);
         }
         iter += stepsize;
@@ -50,10 +52,11 @@ float raymarchwater2(vec3 start, vec3 end, int stepsI){
     float hupper = waterdepth + WaterLevel;
     float hlower = WaterLevel;
     float rd = stepsize * rand2sTimex(UV);
+    vec2 zer = vec2(0.0);
     for(int i=0;i<stepsI + 1;i++){
         pos = mix(start, end, iter + rd);
-        h = hlower + heightwaterD(pos.xz, mipmapx) * waterdepth;
-        if(h > pos.y) {
+        h = hlower + heightwaterXOLO(pos.xz, zer, mipmapx) * waterdepth;
+        if((!isReallyUnderWater && h > pos.y) || (isReallyUnderWater && h < pos.y)) {
             return raymarchwater3(mix(start, end, iter - stepsize + rd), mix(start, end, iter + stepsize + rd), 16);
         }
         iter += stepsize;
@@ -68,10 +71,11 @@ float raymarchwater(vec3 start, vec3 end, int stepsI){
     float hupper = waterdepth + WaterLevel;
     float hlower = WaterLevel;
     float rd = stepsize * rand2sTimex(UV);
+    vec2 zer = vec2(0.0);
     for(int i=0;i<stepsI + 1;i++){
         pos = mix(start, end, iter + rd);
-        h = hlower + heightwaterD(pos.xz, mipmapx) * waterdepth;
-        if(h > pos.y) {
+        h = hlower + heightwaterXOLO(pos.xz, zer, mipmapx) * waterdepth;
+        if((!isReallyUnderWater && h > pos.y) || (isReallyUnderWater && h < pos.y)) {
             return raymarchwater2(mix(start, end, iter - stepsize + rd), mix(start, end, iter + stepsize + rd),8);
            // return distance(pos, CameraPosition);
         }
@@ -88,34 +92,22 @@ float getWaterDistance(){
     float planethit2 = intersectPlane(CameraPosition, dir, vec3(0.0, WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
     bool hitwater = true;//(planethit > 0.0 || planethit2 > 0.0);// && (length(currentData.normal) < 0.01 || currentData.cameraDistance > planethit);
 
+    isReallyUnderWater = WaterLevel + heightwaterXOLO(CameraPosition.xz, vec2(0.0), 0.0) * waterdepth > CameraPosition.y;
+
     if(planethit > 0.0 || planethit2 > 0.0){
-        vec3 newpos = CameraPosition + dir * planethit;
         float dist = -1.0;
-        if(WaterWavesScale > 0.01){
-            vec3 newpos2 = CameraPosition + dir * planethit2;
-            float mult2 = 1.0 - max(0.0, dot(newpos2, -VECTOR_UP));
-            float wvw = WaterWavesScale / 10.0;
-            int steps = 1 + int((6.0 + mult2 * 126.0) * wvw);
-           //
+        float wvw = WaterWavesScale / 10.0;
+        int steps = 1 + int(min(32.0, max(planethit, planethit2) * 0.1) * wvw);
 
-          //  if(planethit < 14.0 && planethit > 0.0) steps *= 10;
-        //    if(planethit2 < 14.0 && planethit2 > 0.0) steps *= 10;
-			mipmapx = textureQueryLod(waterTileTex, newpos.xz * WaterScale *  octavescale1).x;
-            if(CameraPosition.y > waterdepth + WaterLevel){
+	//	mipmapx = textureQueryLod(waterTileTex, (CameraPosition + dir * min(planethit, planethit2)).xz * WaterScale *  octavescale1).x;
 
-                dist = raymarchwater(newpos, newpos2, steps);
-
-            } else if(CameraPosition.y >  WaterLevel && CameraPosition.y <= waterdepth + WaterLevel){
-             //   planethit = min(14999, planethit);
-                dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit, steps);
-            } else {
-            //    planethit2 = min(14999, planethit2);
-                dist = raymarchwater(CameraPosition, CameraPosition + dir * planethit2, steps);
-            }
-
+        if(planethit > 0.0 && planethit2 > 0.0){
+            dist = raymarchwater(CameraPosition  + dir * min(planethit, planethit2), CameraPosition + dir * max(planethit, planethit2), 128);
         } else {
-            dist = distance(newpos, CameraPosition);
+            float H = step(0.0, planethit) * planethit + step(0.0, planethit2) * planethit2;
+            dist = raymarchwater(CameraPosition, CameraPosition + dir * min(H, 2999.0), min(2000, int(1.0 * H)));
         }
+
         if(length(currentData.normal) > 0.01){
             hitwater = currentData.cameraDistance > dist;
         }
