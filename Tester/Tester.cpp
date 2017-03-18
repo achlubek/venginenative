@@ -44,7 +44,10 @@ int main(int argc, char* argv[])
         auto u = new Utilities();
         u->convertPng16RtoUShortRawFile(argv[2], argv[3]);
         return 0;
-    }
+	}
+	else if (strcmp(argv[1], "treegen") == 0) {
+
+	}
 
     EditorApp* app = new EditorApp();
     app->initialize();

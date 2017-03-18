@@ -4,15 +4,15 @@
 layout(binding = 3) uniform samplerCube skyboxTex;
 layout(binding = 5) uniform sampler2D directTex;
 layout(binding = 6) uniform sampler2D alTex;
-layout(binding = 16) uniform sampler2D aoxTex;
-layout(binding = 20) uniform sampler2D fogTex;
+//layout(binding = 16) uniform sampler2D aoxTex;
+//layout(binding = 20) uniform sampler2D fogTex;
 layout(binding = 21) uniform sampler2D waterColorTex;
 layout(binding = 22) uniform sampler2D inputTex;
 layout(binding = 23) uniform sampler2D aboveViewDataTex;
 
 layout(binding = 25) uniform samplerCube coverageDistTex;
 layout(binding = 26) uniform samplerCube shadowsTex;
-layout(binding = 27) uniform samplerCube skyfogTex;
+//layout(binding = 27) uniform samplerCube skyfogTex;
 layout(binding = 28) uniform sampler2D moonTex;
 layout(binding = 23) uniform sampler2D waterTileTex;
 layout(binding = 24) uniform sampler2D starsTex;
@@ -354,6 +354,6 @@ vec4 shade(){
         //color = textureLod(sunRSMTex, UV, 0.0).rgb;
         color = tonemap( color);
     }
-    
+
     return vec4( clamp(color, 0.0, 110.0), currentData.cameraDistance * 0.001);
 }

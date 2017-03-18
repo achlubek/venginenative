@@ -456,56 +456,18 @@ vec3 getCloudsAL(vec3 dir){
     //return vec3(0.0) +  sao * 3.0;// + daox * 0.1 ;
 }
 #define intersects(a) (a >= 0.0)
+
 vec2 raymarchCloudsRay(){
     vec3 viewdir = normalize(reconstructCameraSpaceDistance(UV, 1.0));
     vec3 atmorg = vec3(0,planetradius,0) + CAMERA;
     Ray r = Ray(atmorg, viewdir);
-    float height = length(atmorg);
-    float cloudslow = planetradius + CloudsFloor;
-    float cloudshigh = planetradius + CloudsCeil;
     vec3 campos = CAMERA;
-
 
     sphere1 = Sphere(vec3(0), planetradius + CloudsFloor);
     sphere2 = Sphere(vec3(0), planetradius + CloudsCeil);
 
-    float planethit = rsi2(r, planet);
     float hitfloor = rsi2(r, sphere1);
-    float floorminhit = minhit;
-    float floormaxhit = maxhit;
     float hitceil = rsi2(r, sphere2);
-    float ceilminhit = minhit;
-    float ceilmaxhit = maxhit;
-    float dststart = 0.0;
-    float dstend = 0.0;
-    float coverageinv = 1.0;
-    vec2 res = vec2(0);/*
-    if(height < cloudslow){
-        if(planethit < 0){
-            res = internalmarchconservative(campos + viewdir * hitfloor, campos + viewdir * hitceil);
-        }
-    } else if(height >= cloudslow && height < cloudshigh){
-        if(intersects(hitfloor)){
-            res = internalmarchconservative(campos, campos + viewdir * floorminhit);
-            if(!intersects(planethit)){
-                vec2 r2 = internalmarchconservative(campos + viewdir * floormaxhit, campos + viewdir * ceilmaxhit);
-                float r =1.0 - (1.0 - res.r) * (1.0 - r2.r);
-                res = mix(r2, res, res.r);
-                res.r = r;
-            }
-        } else {
-            res = internalmarchconservative(campos, campos + viewdir * hitceil);
-        }
-    } else if(height > cloudshigh){
-        if(!intersects(hitfloor) && !intersects(hitceil)){
-            res = vec2(0);
-        } else if(!intersects(hitfloor)){
-            res = internalmarchconservative(campos + viewdir * minhit, campos + viewdir * maxhit);
-        } else {
-            res = internalmarchconservative(campos + viewdir * ceilminhit, campos + viewdir * floorminhit);
-        }
-    }
-    */
-    res = internalmarchconservative(campos + viewdir * hitfloor, campos + viewdir * hitceil);
-    return res;
+
+    return internalmarchconservative(campos + viewdir * hitfloor, campos + viewdir * hitceil);
 }
