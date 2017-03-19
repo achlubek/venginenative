@@ -14,7 +14,7 @@ public:
     void mapData(size_t size, const void * data);
     void mapSubData(int offset, size_t size, const void * data);
     void readSubData(int offset, size_t size, void * data);
-    void* aquireAsynchronousPointer(int offset, size_t size);
+    void* acquireAsynchronousPointer(int offset, size_t size);
     void unmapBuffer();
     void preallocate(GLsizei bytes, GLbitfield flags);
     void invalidate();

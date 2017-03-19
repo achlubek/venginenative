@@ -52,7 +52,7 @@ void ShaderStorageBuffer::readSubData(int offset, size_t size, void * data)
     glUnmapBuffer(bufferType);
 }
 
-void* ShaderStorageBuffer::aquireAsynchronousPointer(int offset, size_t size)
+void* ShaderStorageBuffer::acquireAsynchronousPointer(int offset, size_t size)
 {
     if (!generated) generate();
     glBindBuffer(bufferType, handle);

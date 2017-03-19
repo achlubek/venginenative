@@ -209,11 +209,11 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
         if (fint > 0) {
             void* modelbufferpt = nullptr;
             if (nextBuffer == 0)
-                modelbufferpt = modelInfosBuffer1->aquireAsynchronousPointer(0, 4 * 16 * fint);
+                modelbufferpt = modelInfosBuffer1->acquireAsynchronousPointer(0, 4 * 16 * fint);
             if (nextBuffer == 1)
-                modelbufferpt = modelInfosBuffer2->aquireAsynchronousPointer(0, 4 * 16 * fint);
+                modelbufferpt = modelInfosBuffer2->acquireAsynchronousPointer(0, 4 * 16 * fint);
             if (nextBuffer == 2)
-                modelbufferpt = modelInfosBuffer3->aquireAsynchronousPointer(0, 4 * 16 * fint);
+                modelbufferpt = modelInfosBuffer3->acquireAsynchronousPointer(0, 4 * 16 * fint);
             int a = 0;
             for (unsigned int i = 0; i < fint; i++) {
                 TransformationManager *mgr = filtered[i]->transformation;

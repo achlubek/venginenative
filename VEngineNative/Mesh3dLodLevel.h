@@ -5,6 +5,7 @@ class Mesh3d;
 #include "Object3dInfo.h"
 #include "Mesh3dInstance.h"
 #include "Texture2d.h"
+#include "Skeleton.h"
 class Mesh3dLodLevel
 {
 public:
@@ -30,6 +31,8 @@ private:
     ShaderStorageBuffer *modelInfosBuffer3;
 
     ShaderStorageBuffer *materialBuffer;
+	Skeleton* skeleton;
+	SkeletonPose* skeletonPose;
     
     int currentBuffer = 0;
     int nextBuffer = 1; //smart
