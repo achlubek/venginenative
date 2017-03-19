@@ -20,7 +20,7 @@ layout (std430, binding = 1) buffer MatBuffer
     vec4 RoughnessMetalness_ZeroZero;
     vec4 DiffuseColor_Zero;
     ivec4 UseTex_DNBR;
-    ivec3 UseTex_M_UseSkeleton_Zero_Zero;
+    ivec4 UseTex_M_UseSkeleton_Zero_Zero;
     vec4 ScaleTex_DN;
     vec4 ScaleTex_BR;
     vec4 ScaleTex_MZeroZero;
@@ -48,11 +48,11 @@ vec3 applySkeletonPose(vec3 v){
     vec3 result = vec3(0.0);
     for(int i=0;i<sws.weights_count;i++){
         float wei = sws.weights[i];
-        result += wei * sws.bones[i] * v;
+        result += wei * (skeletonPose[sws.bones[i]] * vec4(v, 1.0)).xyz;
         w += wei;
     }
     result /= max(0.01, w);
-    float stp = step(w, 0.001);
+    float stp = step( 0.001, w);
     return result * stp + v * (1.0 - stp);
 }
 
@@ -61,7 +61,7 @@ vec3 applySkeletonPose(vec3 v){
 void main(){
 
     vec4 v = vec4(in_position,1);
-    v.xyz = applySkeletonPose(v.xyz);
+    if(UseTex_M_UseSkeleton_Zero_Zero.y == 1) v.xyz = applySkeletonPose(v.xyz);
 
     Output.instanceId = int(gl_InstanceID);
     Output.TexCoord = vec2(in_uv.x, in_uv.y);

@@ -46,14 +46,14 @@ void Skeleton::updateBuffers(SkeletonPose* pose, bool poseOnly)
 			pointerI[cursor++] = wcnt > 5 ? elem[5].bone : 0;
 			pointerI[cursor++] = wcnt > 6 ? elem[6].bone : 0; // 7th
 
-			pointerF[cursor++] = wcnt > 0 ? elem[0].weight : 0.0;
-			pointerF[cursor++] = wcnt > 1 ? elem[1].weight : 0.0;
-			pointerF[cursor++] = wcnt > 2 ? elem[2].weight : 0.0;
-			pointerF[cursor++] = wcnt > 3 ? elem[3].weight : 0.0;
+			pointerF[cursor++] = wcnt > 0 ? elem[0].weight : 0.0f;
+			pointerF[cursor++] = wcnt > 1 ? elem[1].weight : 0.0f;
+			pointerF[cursor++] = wcnt > 2 ? elem[2].weight : 0.0f;
+			pointerF[cursor++] = wcnt > 3 ? elem[3].weight : 0.0f;
 
-			pointerF[cursor++] = wcnt > 4 ? elem[4].weight : 0.0;
-			pointerF[cursor++] = wcnt > 5 ? elem[5].weight : 0.0;
-			pointerF[cursor++] = wcnt > 6 ? elem[6].weight : 0.0; // 7th
+			pointerF[cursor++] = wcnt > 4 ? elem[4].weight : 0.0f;
+			pointerF[cursor++] = wcnt > 5 ? elem[5].weight : 0.0f;
+			pointerF[cursor++] = wcnt > 6 ? elem[6].weight : 0.0f; // 7th
 			pointerF[cursor++] = 0; // 8th
 		}
 		weightsSSBO->unmapBuffer();
@@ -70,4 +70,14 @@ void Skeleton::updateBuffers(SkeletonPose* pose, bool poseOnly)
 		}
 		bonesSSBO->unmapBuffer();
 	}
+}
+
+void Skeleton::use(SkeletonPose* pose, int weightIndex, int bonesIndex)
+{
+	if (needsUpdate) {
+		updateBuffers(pose, false);
+	}
+	weightsSSBO->use(weightIndex);
+	bonesSSBO->use(bonesIndex);
+
 }

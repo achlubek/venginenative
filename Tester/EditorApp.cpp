@@ -160,7 +160,7 @@ void EditorApp::onRenderFrame(float elapsed)
         ocean2->setVolume(oceanvol);
         ocean3->setVolume(oceanvol);
         ocean4->setVolume(oceanvol);
-        
+
         int acnt = 0;
         const float * axes = glfwGetJoystickAxes(0, &acnt);
         if (acnt >= 1) {
@@ -170,7 +170,7 @@ void EditorApp::onRenderFrame(float elapsed)
             float acc = (axes[5] * 0.5 + 0.5);
             float brk = (axes[4] * 0.5 + 0.5);
             car[0]->setAcceleration((acc - brk) * 0.5);
-           // printf("ACCELERATION: %f\n", (acc - brk) * 1.0);
+            // printf("ACCELERATION: %f\n", (acc - brk) * 1.0);
             float targetpitch = 0.9f + acc * 0.5f;
 
             glm::vec3 vel = car[0]->getLinearVelocity();
@@ -178,7 +178,7 @@ void EditorApp::onRenderFrame(float elapsed)
             targetpitch *= targetpitch * (1.0 - 0.2 * doppler);
 
             testsound->setPitch(testsound->getPitch() * 0.96 + 0.04 * targetpitch);
-            testsound->setVolume(( 0.5 + acc) * 100.0);
+            testsound->setVolume((0.5 + acc) * 100.0);
 
             float windpitch = (1.0 - 0.2 * doppler);
             testsound2->setPitch(windpitch);
@@ -248,33 +248,33 @@ void EditorApp::onRenderFrame(float elapsed)
 
         }
     }
-   /* if (car[0]->initialized) {
-        glm::vec3 carpos = car[0]->getTransformation()->getPosition();
-        glm::vec3 carpos2 = carpos + glm::vec3(300.0, 0.0, 300.0);
+    /* if (car[0]->initialized) {
+         glm::vec3 carpos = car[0]->getTransformation()->getPosition();
+         glm::vec3 carpos2 = carpos + glm::vec3(300.0, 0.0, 300.0);
 
-        float bc = bytes2[((int)carpos2.z) * 6000 + ((int)carpos2.x)];
-        float b = 0.0;
-        float w = 0.0;
-        glm::vec2 flatnorm = glm::vec2(0.0);
-        for (int x = -1; x < 1; x++) {
-            for (int y = -1; y < 1; y++) {
-                float r = bytes2[(y + (int)carpos2.z) * 6000 + (x + (int)carpos2.x)];
-                if(x != 0 || y != 0) flatnorm += (r - bc) * glm::normalize(glm::vec2(x, y));
-                b += r;
-                w += 1.0;
-            }
-        }
-        b /= w;
-        flatnorm /= w;
-        glm::vec3 n = glm::normalize(glm::vec3(flatnorm.x, 4.0, flatnorm.y));
-        
+         float bc = bytes2[((int)carpos2.z) * 6000 + ((int)carpos2.x)];
+         float b = 0.0;
+         float w = 0.0;
+         glm::vec2 flatnorm = glm::vec2(0.0);
+         for (int x = -1; x < 1; x++) {
+             for (int y = -1; y < 1; y++) {
+                 float r = bytes2[(y + (int)carpos2.z) * 6000 + (x + (int)carpos2.x)];
+                 if(x != 0 || y != 0) flatnorm += (r - bc) * glm::normalize(glm::vec2(x, y));
+                 b += r;
+                 w += 1.0;
+             }
+         }
+         b /= w;
+         flatnorm /= w;
+         glm::vec3 n = glm::normalize(glm::vec3(flatnorm.x, 4.0, flatnorm.y));
 
-        printf("%f %f %f %f", n.x, n.y, n.z, b);
-        virtualbox->transformation->setPosition(glm::vec3(carpos.x, b - 0.5 - 6.0, carpos.z));
-        virtualbox->transformation->setOrientation(glm::lookAt(glm::vec3(0.0), n, glm::vec3(1.0, 1.0023556, 0.0)));
-        virtualbox->readChanges();
-        cursor3dArrow->getInstance(0)->transformation->setPosition(glm::vec3(carpos.x, b - 0.5 , carpos.z));
-    }*/
+
+         printf("%f %f %f %f", n.x, n.y, n.z, b);
+         virtualbox->transformation->setPosition(glm::vec3(carpos.x, b - 0.5 - 6.0, carpos.z));
+         virtualbox->transformation->setOrientation(glm::lookAt(glm::vec3(0.0), n, glm::vec3(1.0, 1.0023556, 0.0)));
+         virtualbox->readChanges();
+         cursor3dArrow->getInstance(0)->transformation->setPosition(glm::vec3(carpos.x, b - 0.5 , carpos.z));
+     }*/
 }
 
 string vitoa(int i) {
@@ -599,7 +599,7 @@ void EditorApp::onBind()
     auto t = game->asset->loadSceneFile("oldcity.scene");
     for (int i = 0; i < t->getMesh3ds().size(); i++) {
         t->getMesh3ds()[i]->getInstance(0)->transformation->translate(vec3(0.0, 1.5, 0.0));
-        game->world->scene->addMesh3d(t->getMesh3ds()[i]); 
+        game->world->scene->addMesh3d(t->getMesh3ds()[i]);
     }*/
 
     /*
@@ -637,7 +637,8 @@ void EditorApp::onBind()
     }
     //game->world->scene->addMesh3d(s);
     */
-    
+    /*
+
     int terrainparts = 10;
     float fullsize = 6000.0;
     float partsize = 600.0;
@@ -663,8 +664,8 @@ void EditorApp::onBind()
             game->world->scene->addMesh3d(m);
         }
     }
-    
 
+    */
 
     //  t->name = "flagbase";
      // game->world->scene->addMesh(t);
@@ -674,11 +675,11 @@ void EditorApp::onBind()
    // car.push_back(new Car(t2));
 
 
-    
+
  //   auto xt = game->asset->loadMeshFile("isl.mesh3d");
     // t->alwaysUpdateBuffer = true;
   //  game->world->scene->addMesh3d(xt);
-    
+
     game->invoke([&]() {
         auto phys = Game::instance->world->physics;
         /*
@@ -737,15 +738,15 @@ void EditorApp::onBind()
         }
         auto terrashape = new btHeightfieldTerrainShape(6000, 6000, bytes2, 1.0, minh, maxh, 1, PHY_FLOAT, false);
         */
-      //  auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(3000.0 - 300.0, -0.5 + maxh * 0.5, 3000.0 - 300.0), glm::quat(), glm::vec3(1.0, 1.0, 1.0)), terrashape);
-         auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0f, 0.25f, 1000.0f)));
+        //  auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(3000.0 - 300.0, -0.5 + maxh * 0.5, 3000.0 - 300.0), glm::quat(), glm::vec3(1.0, 1.0, 1.0)), terrashape);
+        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0f, 0.25f, 1000.0f)));
         groundpb->getCollisionObject()->setFriction(4);
         groundpb->enable();
 
     });
 
-   // virtualbox = game->world->physics->createBody(0.0f, new TransformationManager(), new btBoxShape(btVector3(6.0, 6.0, 6.0)));
-   // virtualbox->enable();
+    // virtualbox = game->world->physics->createBody(0.0f, new TransformationManager(), new btBoxShape(btVector3(6.0, 6.0, 6.0)));
+    // virtualbox->enable();
 
     testsound = new Sound3d("engine.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
     testsound->setLoop(true);
@@ -773,7 +774,8 @@ void EditorApp::onBind()
     ocean4->play();
 
     cursor3dArrow = Mesh3d::create(game->asset->loadObject3dInfoFile("deferredsphere.raw"), new Material());
-   // cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0), glm::quat(), glm::vec3(7.0))));
+    cursor3dArrow->clearInstances();
+    // cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0), glm::quat(), glm::vec3(7.0))));
     game->world->scene->addMesh3d(cursor3dArrow);
     for (int xx = 0; xx < 1; xx++) {
         for (int yy = 0; yy < 1; yy++)
@@ -783,21 +785,65 @@ void EditorApp::onBind()
         }
     }
 
-	// SKELETON TEST
+    // SKELETON TEST
 
-	auto skel = game->asset->loadSkeletonFile("mrstick.skeleton");
-	auto mrstickobj = game->asset->loadObject3dInfoFile("mrstick.raw");
-	auto mrstick = Mesh3d::create(mrstickobj, new Material());
-	mrstick->getLodLevel(0)->skeleton = skel;
-	auto pose = new SkeletonPose();
-	mrstick->getLodLevel(0)->skeletonPose = pose;
-	for (int i = 0; i < skel->bones.size(); i++) {
-		auto svec = (skel->bones[i] * glm::vec4(0.0, 0.0, 0.0, 1.0));
-		auto lvec = glm::vec3(svec.x, svec.y, svec.z) / svec.w;
-		cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(lvec)));
-		pose->pose.push_back(glm::translate(glm::mat4(1), lvec));
-	}
-	game->world->scene->addMesh3d(mrstick);
+    auto skel = game->asset->loadSkeletonFile("mrstick.skeleton");
+    auto mrstickobj = game->asset->loadObject3dInfoFile("mrstick.raw");
+    auto mrstick = Mesh3d::create(mrstickobj, new Material());
+    mrstick->getLodLevel(0)->skeleton = skel;
+    auto pose = new SkeletonPose();
+    mrstick->getLodLevel(0)->skeletonPose = pose;
+    for (int i = 0; i < skel->bones.size(); i++) {
+        auto svec = (skel->bones[i] * glm::vec4(0.0, 0.0, 0.0, 1.0));
+        auto lvec = glm::vec3(svec.x, svec.y, svec.z) / svec.w;
+
+        glm::vec3 sum = glm::vec3(0.0);
+        float sumw = 0.0f;
+        int vertid = 0;
+        for (int z = 0; z < mrstickobj->vbo.size(); z += 12) {
+            if (skel->weights.size() <= vertid) break;
+            glm::vec3 vert = glm::vec3(mrstickobj->vbo[z], mrstickobj->vbo[z + 1], mrstickobj->vbo[z + 2]);
+            for (int a = 0; a < skel->weights[vertid].size(); a++) {
+                auto sws = skel->weights[vertid][a];
+                if (sws.bone != i) continue;
+                sum += sws.weight * vert;
+                sumw += sws.weight;
+            }
+            vertid++;
+        }
+        if (sumw > 0.0f) {
+            sum /= sumw;
+        }
+        else {
+            sum = glm::vec3(0.0);
+        }
+
+        pose->pose.push_back(glm::translate(glm::mat4(1), sum));
+
+        float sumr = 0.0;
+        sumw = 0.0f;
+        vertid = 0;
+        for (int z = 0; z < mrstickobj->vbo.size(); z += 12) {
+            if (skel->weights.size() <= vertid) break;
+            glm::vec3 vert = glm::vec3(mrstickobj->vbo[z], mrstickobj->vbo[z + 1], mrstickobj->vbo[z + 2]);
+            for (int a = 0; a < skel->weights[vertid].size(); a++) {
+                auto sws = skel->weights[vertid][a];
+                if (sws.bone != i) continue;
+                sumr += sws.weight * glm::length(sum - vert);
+                sumw += sws.weight;
+            }
+            vertid++;
+        }
+        if (sumw > 0.0f) {
+            sumr /= sumw;
+        }
+        else {
+            sumr = 0.05f;
+        }
+        cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(sum, glm::vec3(sumr))));
+    }
+    mrstick->getInstance(0)->transformation->translate(glm::vec3(0.0, 6.0, 0.0));
+    game->world->scene->addMesh3d(mrstick);
 
 }
 

@@ -148,6 +148,10 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
     shader->setUniform("MeshID", mesh->id);
     shader->setUniform("LodLevelID", id);*/
 
+	if (skeleton != nullptr) {
+		skeleton->use(skeletonPose, 2, 3);
+	}
+
     if (currentBuffer == 0)modelInfosBuffer1->use(0);
     if (currentBuffer == 1)modelInfosBuffer2->use(0);
     if (currentBuffer == 2)modelInfosBuffer3->use(0);

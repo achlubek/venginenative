@@ -9,7 +9,7 @@ layout (std430, binding = 1) buffer MatBuffer
     vec4 RoughnessMetalness_ZeroZero;
     vec4 DiffuseColor_Zero;
     ivec4 UseTex_DNBR;
-    ivec3 UseTex_M_ZeroZeroZero;
+    ivec4 UseTex_M_UseSkeleton_Zero_Zero;
     vec4 ScaleTex_DN;
     vec4 ScaleTex_BR;
     vec4 ScaleTex_MZeroZero;
@@ -20,7 +20,7 @@ layout (std430, binding = 1) buffer MatBuffer
 #define useNormalTexInt UseTex_DNBR.y
 #define useBumpTexInt UseTex_DNBR.z
 #define useRoughnessTexInt UseTex_DNBR.w
-#define useMetalnessTexInt UseTex_M_ZeroZeroZero.x
+#define useMetalnessTexInt UseTex_M_UseSkeleton_Zero_Zero.x
 
 #define DiffuseColor DiffuseColor_Zero.rgb
 #define Roughness RoughnessMetalness_ZeroZero.x

@@ -36,6 +36,7 @@ Skeleton * AssetLoader::loadSkeletonString(string source)
 	for (int i = 0; i < skelLines.size(); i++) {
 		vector<string> words;
 		splitBySpaces(words, skelLines[i]);
+        if (words.size() == 0)continue;
 		if (words[0] == "vertex_weights") {
 			if (words.size() >= 3) {
 				int vid = atoi(words[1].c_str());
@@ -54,12 +55,20 @@ Skeleton * AssetLoader::loadSkeletonString(string source)
 			if (words.size() >= 2) {
 				int current = skel->bones.size();
 				skel->bones.push_back(glm::mat4(1));
-				for (int w = 1; w < words.size(); w++) {
-					skel->bones[current][(w - 1) / 4][(w - 1) % 4] = atof(words[w].c_str());
-				}
+                glm::quat q = glm::quat();
+                glm::vec3 t = glm::vec3(1);
+                q.x = atof(words[1].c_str());
+                q.y = atof(words[2].c_str());
+                q.z = atof(words[3].c_str());
+                q.w = atof(words[4].c_str());
+                t.x = atof(words[5].c_str());
+                t.y = atof(words[6].c_str());
+                t.z = atof(words[7].c_str());
+                skel->bones[current] = glm::translate(glm::mat4_cast(q), t);
 			}
 		}
 	}
+    return skel;
 }
 
 Skeleton * AssetLoader::loadSkeletonFile(string source)

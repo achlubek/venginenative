@@ -34,5 +34,7 @@ public:
 	ShaderStorageBuffer* weightsSSBO;
 	ShaderStorageBuffer* bonesSSBO;
 	void updateBuffers(SkeletonPose* pose, bool poseOnly);
+	void use(SkeletonPose* pose, int weightIndex, int bonesIndex);
+	volatile bool needsUpdate = true;
 };
 
