@@ -30,6 +30,8 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial, float di
     modes = {};
     textureBinds = {};
     wrapModes = {};
+	skeleton = nullptr;
+	skeletonPose = nullptr;
     id = Game::instance->getNextId();
     Game::instance->registerId(id, this);
 }
@@ -60,6 +62,8 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial)
     modes = {};
     textureBinds = {};
     wrapModes = {};
+	skeleton = nullptr;
+	skeletonPose = nullptr;
     id = Game::instance->getNextId();
     Game::instance->registerId(id, this);
 }
@@ -90,6 +94,8 @@ Mesh3dLodLevel::Mesh3dLodLevel()
     modes = {};
     textureBinds = {};
     wrapModes = {};
+	skeleton = nullptr;
+	skeletonPose = nullptr;
     id = Game::instance->getNextId();
     Game::instance->registerId(id, this);
 }
@@ -273,7 +279,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
         floats2.push_back(vcasti((material->roughnessTex != nullptr ? one : zero)));
 
         floats2.push_back(vcasti((material->metalnessTex != nullptr ? one : zero)));
-        floats2.push_back(0.0f);
+        floats2.push_back(vcasti((skeleton != nullptr ? one : zero)));
         floats2.push_back(0.0f);
         floats2.push_back(0.0f); // amd safety 
 

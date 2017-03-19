@@ -782,6 +782,23 @@ void EditorApp::onBind()
             car.push_back(c);
         }
     }
+
+	// SKELETON TEST
+
+	auto skel = game->asset->loadSkeletonFile("mrstick.skeleton");
+	auto mrstickobj = game->asset->loadObject3dInfoFile("mrstick.raw");
+	auto mrstick = Mesh3d::create(mrstickobj, new Material());
+	mrstick->getLodLevel(0)->skeleton = skel;
+	auto pose = new SkeletonPose();
+	mrstick->getLodLevel(0)->skeletonPose = pose;
+	for (int i = 0; i < skel->bones.size(); i++) {
+		auto svec = (skel->bones[i] * glm::vec4(0.0, 0.0, 0.0, 1.0));
+		auto lvec = glm::vec3(svec.x, svec.y, svec.z) / svec.w;
+		cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(lvec)));
+		pose->pose.push_back(glm::translate(glm::mat4(1), lvec));
+	}
+	game->world->scene->addMesh3d(mrstick);
+
 }
 
 void EditorApp::onChar(unsigned int c)

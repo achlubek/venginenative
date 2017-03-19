@@ -20,19 +20,48 @@ layout (std430, binding = 1) buffer MatBuffer
     vec4 RoughnessMetalness_ZeroZero;
     vec4 DiffuseColor_Zero;
     ivec4 UseTex_DNBR;
-    ivec3 UseTex_M_ZeroZeroZero;
+    ivec3 UseTex_M_UseSkeleton_Zero_Zero;
     vec4 ScaleTex_DN;
     vec4 ScaleTex_BR;
     vec4 ScaleTex_MZeroZero;
     uvec4 MeshId_LodLevelId_ZeroZero;
 };
 
+struct SkeletonWeightsStruct{
+	int weights_count;
+	int[7] bones;
+	float[8] weights;
+};
+layout (std430, binding = 2) buffer SkelWeiBuffer
+{
+    SkeletonWeightsStruct[] skeletonWeightsArray;
+};
+layout (std430, binding = 3) buffer SkelPosBuffer
+{
+    mat4[] skeletonPose;
+};
+
+vec3 applySkeletonPose(vec3 v){
+    int id = gl_VertexID;
+    SkeletonWeightsStruct sws = skeletonWeightsArray[id];
+    float w = 0.0;
+    vec3 result = vec3(0.0);
+    for(int i=0;i<sws.weights_count;i++){
+        float wei = sws.weights[i];
+        result += wei * sws.bones[i] * v;
+        w += wei;
+    }
+    result /= max(0.01, w);
+    float stp = step(w, 0.001);
+    return result * stp + v * (1.0 - stp);
+}
 
 #include ModelBuffer.glsl
 
 void main(){
 
     vec4 v = vec4(in_position,1);
+    v.xyz = applySkeletonPose(v.xyz);
 
     Output.instanceId = int(gl_InstanceID);
     Output.TexCoord = vec2(in_uv.x, in_uv.y);

@@ -25,14 +25,14 @@ public:
     void draw(const Mesh3d* mesh);
     void updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstance*> &instances);
     bool materialBufferNeedsUpdate = true;
+	Skeleton* skeleton;
+	SkeletonPose* skeletonPose;
 private:
     ShaderStorageBuffer *modelInfosBuffer1;
     ShaderStorageBuffer *modelInfosBuffer2;
     ShaderStorageBuffer *modelInfosBuffer3;
 
     ShaderStorageBuffer *materialBuffer;
-	Skeleton* skeleton;
-	SkeletonPose* skeletonPose;
     
     int currentBuffer = 0;
     int nextBuffer = 1; //smart
