@@ -38,7 +38,7 @@ public:
     int getKeyStatus(int key);
     void setCursorMode(int mode);
     glm::dvec2 getCursorPosition();
-    void glfwWindowSizeCallback(GLFWwindow* window, int width, int height);
+    void glfwWindowSizeCallback(GLFWwindow* window, int width, int height); 
 
     EventHandler<int> *onRenderFrame;
     EventHandler<int> *onRenderUIFrame;
@@ -46,6 +46,8 @@ public:
     EventHandler<int> *onKeyPress;
     EventHandler<int> *onKeyRelease;
     EventHandler<int> *onKeyRepeat;
+    EventHandler<int> *onMouseDown;
+    EventHandler<int> *onMouseUp;
     EventHandler<unsigned int> *onChar;
     void bindTexture(GLenum type, GLuint handle, int bindpoint);
     volatile bool physicsNeedsUpdate = false;

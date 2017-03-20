@@ -1,5 +1,10 @@
 diffuse 1 1 1
 #diffuse 0.0
-roughness 1.0
+roughness 0.3
 metalness 0.0
  
+node
+texture mrstick.png
+mix REPLACE
+target DIFFUSE
+uvscale 1.0 -1.0

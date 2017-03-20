@@ -34,6 +34,12 @@ void AbstractApp::bind(Game * igame)
     game->onWindowResize->add([&](int zero) {
         onWindowResize(game->width, game->height);
     });
+    game->onMouseDown->add([&](int id) {
+        onMouseDown(id);
+    });
+    game->onMouseUp->add([&](int id) {
+        onMouseUp(id);
+    });
 }
 
 AbstractApp::~AbstractApp()

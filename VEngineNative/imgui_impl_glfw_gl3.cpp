@@ -143,6 +143,7 @@ void ImGui_ImplGlfwGL3_MouseButtonCallback(GLFWwindow*, int button, int action, 
 {
     if (action == GLFW_PRESS && button >= 0 && button < 3)
         g_MousePressed[button] = true;
+
 }
 
 void ImGui_ImplGlfwGL3_ScrollCallback(GLFWwindow*, double /*xoffset*/, double yoffset)
@@ -343,7 +344,7 @@ bool    ImGui_ImplGlfwGL3_Init(GLFWwindow* window, bool install_callbacks)
 
     if (install_callbacks)
     {
-        glfwSetMouseButtonCallback(window, ImGui_ImplGlfwGL3_MouseButtonCallback);
+        //glfwSetMouseButtonCallback(window, ImGui_ImplGlfwGL3_MouseButtonCallback);
         glfwSetScrollCallback(window, ImGui_ImplGlfwGL3_ScrollCallback);
         glfwSetKeyCallback(window, ImGui_ImplGlfwGL3_KeyCallback);
         //glfwSetCharCallback(window, ImGui_ImplGlfwGL3_CharCallback);

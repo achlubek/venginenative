@@ -112,6 +112,7 @@ PhysicalBody * Physics::createBody(float mass, TransformationManager * startTran
         shape->setLocalScaling(btVector3(s.x, s.y, s.z));
         auto rb = createRigidBody(mass, startTransform, shape);
         auto pb = new PhysicalBody(rb, shape, startTransform);
+        rb->setUserPointer(pb);
         return pb;
     }
     else {
@@ -119,6 +120,7 @@ PhysicalBody * Physics::createBody(float mass, TransformationManager * startTran
         shape->setLocalScaling(btVector3(s.x, s.y, s.z));
         auto rb = createStaticCollisionObject(startTransform, shape);
         auto pb = new PhysicalBody(rb, shape, startTransform);
+        rb->setUserPointer(pb);
         return pb;
     }
 }
@@ -155,12 +157,8 @@ PhysicalBody * Physics::rayCast(glm::vec3 origin, glm::vec3 direction, glm::vec3
     if (rayCallback.hasHit()) {
         hitpos = vglmify3(rayCallback.m_hitPointWorld);
         hitnorm = vglmify3(rayCallback.m_hitNormalWorld);
-        auto rigid = (btRigidBody*)rayCallback.m_collisionObject; // risky
-
-        for (auto b : activeBodies)
-        {
-            if (b->getRigidBody() == rigid) return b;
-        }
+        auto rigid = (btCollisionObject*)rayCallback.m_collisionObject; // risky
+        return (PhysicalBody *)rigid->getUserPointer();
 
     }
     return nullptr;

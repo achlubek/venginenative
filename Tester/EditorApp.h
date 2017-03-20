@@ -73,6 +73,10 @@ public:
 
     virtual void onChar(unsigned int c) override;
 
+    virtual void onMouseDown(int button) override;
+
+    virtual void onMouseUp(int button) override;
+
     void onCommandText(string text);
 
 private:
@@ -82,12 +86,17 @@ private:
 
     float* bytes2;
 
+    glm::vec3 physicsPickDirection = glm::vec3(0.0, 1.0, 0.0);
+    float physicsPickDistance = 0.0;
+    bool inPhysicsPickMode = false;
+    PhysicalBody* physicsPickedBody;
+
     glm::quat backquat = glm::quat();
     glm::vec3 backvectorlast = glm::vec3();
     glm::vec3 lastpos = glm::vec3();
     bool cameraFollowCar = false;
 
    // PhysicalBody* virtualbox;
-
+    
 };
 

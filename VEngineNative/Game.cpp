@@ -25,9 +25,10 @@ Game::Game(int windowwidth, int windowheight)
     onKeyPress = new EventHandler<int>();
     onKeyRelease = new EventHandler<int>();
     onKeyRepeat = new EventHandler<int>();
+    onMouseDown = new EventHandler<int>();
+    onMouseUp = new EventHandler<int>();
     onChar = new EventHandler<unsigned int>();
     idMap = unordered_map<int, void*>();
-
     hasExited = false;
 }
 
@@ -42,8 +43,8 @@ void Game::start()
 }
 
 void Game::bindTexture(GLenum type, GLuint handle, int bindpoint)
-{ 
-    if (textureMap.find(bindpoint) == textureMap.end()) { 
+{
+    if (textureMap.find(bindpoint) == textureMap.end()) {
         textureMap[bindpoint] = handle;
         glActiveTexture(GL_TEXTURE0 + bindpoint);
         glBindTexture(type, handle);
@@ -171,6 +172,17 @@ void Game::physicsThread()
     }
 }
 
+void mousebuttoncallback(GLFWwindow * window, int button, int action, int mods) {
+
+    int id = 0;
+    if (button == GLFW_MOUSE_BUTTON_LEFT) id = 0;
+    if (button == GLFW_MOUSE_BUTTON_RIGHT) id = 1;
+    if (button == GLFW_MOUSE_BUTTON_MIDDLE) id = 2;
+    if (action == GLFW_PRESS) Game::instance->onMouseDown->invoke(id);
+    if (action == GLFW_RELEASE) Game::instance->onMouseUp->invoke(id);
+    ImGui_ImplGlfwGL3_MouseButtonCallback(window, button, action, mods);
+}
+
 void Game::renderThread()
 {
     if (!glfwInit()) {
@@ -178,10 +190,10 @@ void Game::renderThread()
         return;
     }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-    #ifdef V_DEBUG
-        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-    #endif
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+#ifdef V_DEBUG
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+#endif
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     //int count;
     //GLFWmonitor** monitors = glfwGetMonitors(&count);
@@ -210,6 +222,8 @@ void Game::renderThread()
         return;
     }
 
+    glfwSetMouseButtonCallback(window, mousebuttoncallback);
+
     glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) -> void {
         instance->glfwWindowSizeCallback(window, width, height);
         instance->onWindowResize->invoke(0);
@@ -219,11 +233,11 @@ void Game::renderThread()
         instance->onChar->invoke(key);
     });
 
-//    glfwSetKeyCallback(window, glfwKeyCallback);
+    //    glfwSetKeyCallback(window, glfwKeyCallback);
 
-    #ifdef V_DEBUG
-        glDebugMessageCallback(&debugCallback, NULL);
-    #endif
+#ifdef V_DEBUG
+    glDebugMessageCallback(&debugCallback, NULL);
+#endif
 
     printf("VERSION: %s\nVENDOR: %s", glGetString(GL_VERSION), glGetString(GL_VENDOR));
 

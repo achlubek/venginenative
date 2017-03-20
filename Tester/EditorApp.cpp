@@ -226,9 +226,20 @@ void EditorApp::onRenderFrame(float elapsed)
                 pickedUpMeshInstance->transformation->translate(glm::vec3(axes[0], axes[2], axes[1]) * 0.01f);
             }
         }
+        
     }
     else if (currentMode == EDITOR_MODE_WRITING_TEXT) {
 
+    }
+
+    if (inPhysicsPickMode && physicsPickedBody != nullptr) {
+        glm::dvec2 cursor = game->getCursorPosition();
+        glm::vec2 uv = glm::vec2(cursor.x, cursor.y) / glm::vec2(game->renderer->width, game->renderer->height);
+        uv.y = 1.0 - uv.y;
+        glm::vec3 raycastDir = cam->cone->reconstructDirection(uv);
+        physicsPickDirection = physicsPickDirection * 0.9f + raycastDir * 0.1f;
+        physicsPickedBody->transformation->setPosition(cam->transformation->getPosition() + physicsPickDirection * physicsPickDistance);
+        physicsPickedBody->readChanges();
     }
     if (isConsoleWindowOpened == false && currentMode == EDITOR_MODE_WRITING_TEXT) {
         switchMode(lastMode);
@@ -858,7 +869,7 @@ void EditorApp::onBind()
         else {
             sumr = 0.05f;
         }
-        cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(sum, glm::vec3(sumr * 0.1f))));
+        cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(sum, glm::vec3(sumr * 1.1f))));
         bonesposes.push_back(sum);
         bonessizes.push_back(sumr);
     }
@@ -867,7 +878,7 @@ void EditorApp::onBind()
     bonesConstrs = vector<PhysicalConstraint*>{};
     for (int i = 0; i < bonesposes.size(); i++) {
         auto p = bonesposes[i];
-        PhysicalBody* pb = game->world->physics->createBody( 0.1f, new TransformationManager(p + glm::vec3(0.0, 6.0, 0.0)), new btSphereShape(0.05f));
+        PhysicalBody* pb = game->world->physics->createBody(glm::min(bonessizes[i] * 0.05f, 1.0f), new TransformationManager(p + glm::vec3(0.0, 6.0, 0.0)), new btSphereShape(bonessizes[i]));
         bonesBodies.push_back(pb);
         bonesBinds.push_back(p);
     }
@@ -888,13 +899,14 @@ void EditorApp::onBind()
 
         frameInA.setOrigin(bulletify3(vector1_to_midway));
         frameInB.setOrigin(bulletify3(vector2_to_midway));
-        auto ct1 = new btGeneric6DofConstraint(*(bonesBodies[i]->getRigidBody()), *(bonesBodies[closestindex]->getRigidBody()), frameInA, frameInB, true);
-        ct1->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
-        ct1->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
-        ct1->setLinearLowerLimit(btVector3(0.0, 0.0, 0.0));
-        ct1->setLinearUpperLimit(btVector3(0.0, 0.0, 0.0));
+        auto ct1 = new btGeneric6DofSpring2Constraint(*(bonesBodies[i]->getRigidBody()), *(bonesBodies[closestindex]->getRigidBody()), frameInA, frameInB);
+        ct1->setAngularLowerLimit(btVector3(-0.01, -0.01, -0.01));
+        ct1->setAngularUpperLimit(btVector3(0.01, 0.01, 0.01));
+        ct1->setLinearLowerLimit(btVector3(-0.01, -0.01, -0.01));
+        ct1->setLinearUpperLimit(btVector3(0.01, 0.01, 0.01));
+
         PhysicalConstraint* pc = new PhysicalConstraint(ct1, bonesBodies[i], bonesBodies[closestindex]);
-        ct1->setBreakingImpulseThreshold(99990.0f);
+        ct1->setBreakingImpulseThreshold(999990.0f);
         bonesConstrs.push_back(pc);
         bonesBodies[i]->enable();
         bonesBodies[closestindex]->enable();
@@ -905,15 +917,7 @@ void EditorApp::onBind()
             bonesBodies[i]->getRigidBody()->setIgnoreCollisionCheck(bonesBodies[g]->getRigidBody(), true);
         }
     }
-    bonesBodies[0]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 0.0));
-    bonesBodies[2]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 2.0));
-    bonesBodies[3]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 0.0));
-    bonesBodies[4]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 0.0));
-    bonesBodies[5]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 20.0));
-    bonesBodies[6]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 0.0));
-    bonesBodies[7]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0,20.0));
-    bonesBodies[8]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 20.0));
-    bonesBodies[9]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 20.0));
+    bonesBodies[15]->getRigidBody()->setLinearVelocity(btVector3(0.0, 127.0, 120.0));
     mrstick->getInstance(0)->transformation->translate(glm::vec3(0.0, 0.0, 0.0));
     game->world->scene->addMesh3d(mrstick);
 
@@ -939,4 +943,29 @@ void EditorApp::onCommandText(string text)
         m->name = s;
         game->world->scene->addMesh3d(m);
     }
+}
+
+void EditorApp::onMouseDown(int button)
+{
+    glm::dvec2 cursor = game->getCursorPosition();
+    glm::vec2 uv = glm::vec2(cursor.x, cursor.y) / glm::vec2(game->renderer->width, game->renderer->height);
+    uv.y = 1.0 - uv.y;
+    glm::vec3 raycastDir = cam->cone->reconstructDirection(uv);
+    glm::vec3 hitpos, hitnorm;
+    auto body = game->world->physics->rayCast(cam->transformation->getPosition(), raycastDir, hitpos, hitnorm);
+    printf("1PICKED %f %f \n", uv.x, uv.y );
+    if (body != nullptr && !body->isStatic()) {
+        physicsPickedBody = body;
+        physicsPickDirection = raycastDir;
+        physicsPickDistance = glm::distance(hitpos, cam->transformation->getPosition());
+        inPhysicsPickMode = true;
+        printf("PICKED");
+    }
+
+}
+
+void EditorApp::onMouseUp(int button)
+{
+    inPhysicsPickMode = false;
+    printf("UNPICKED");
 }
