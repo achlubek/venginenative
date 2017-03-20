@@ -30,11 +30,13 @@ public:
 	Skeleton();
 	~Skeleton();
 	vector<vector<SkeletonBoneWeight>> weights; // list of "vertices" each containing a list of "weights"
-	vector<glm::mat4> bones;
+    vector<glm::mat4> bones;
+    vector<int> parents; 
 	ShaderStorageBuffer* weightsSSBO;
 	ShaderStorageBuffer* bonesSSBO;
 	void updateBuffers(SkeletonPose* pose, bool poseOnly);
 	void use(SkeletonPose* pose, int weightIndex, int bonesIndex);
-	volatile bool needsUpdate = true;
+    volatile bool needsUpdate = true;
+    volatile bool poseNeedsUpdate = true;
 };
 

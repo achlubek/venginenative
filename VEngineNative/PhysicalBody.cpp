@@ -68,6 +68,11 @@ void PhysicalBody::removeConstraint(PhysicalConstraint * c)
     constraints.erase(c);
 }
 
+TransformationManager * PhysicalBody::getTransformationManager()
+{
+    return transformation;
+}
+
 bool PhysicalBody::isEnabled()
 {
     return enabled;

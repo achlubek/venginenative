@@ -40,6 +40,13 @@ glm::vec3 quat2vec3(glm::quat q) {
 void EditorApp::onRenderFrame(float elapsed)
 {
 
+    for (int i = 0; i < bonesBodies.size(); i++) {
+        mrstick->getLodLevel(0)->skeletonPose->pose[i] = glm::translate(
+           glm::mat4(1),
+            bonesBodies[i]->getTransformationManager()->getPosition());
+        mrstick->getLodLevel(0)->skeleton->poseNeedsUpdate = true;
+    }
+
     if (currentMode == EDITOR_MODE_MOVE_CAMERA) {
         float speed = 0.1f;
         if (game->getKeyStatus(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
@@ -676,9 +683,8 @@ void EditorApp::onBind()
 
 
 
- //   auto xt = game->asset->loadMeshFile("isl.mesh3d");
-    // t->alwaysUpdateBuffer = true;
-  //  game->world->scene->addMesh3d(xt);
+    auto xt = game->asset->loadMeshFile("2dplane.mesh3d"); 
+    game->world->scene->addMesh3d(xt);
 
     game->invoke([&]() {
         auto phys = Game::instance->world->physics;
@@ -780,7 +786,7 @@ void EditorApp::onBind()
     for (int xx = 0; xx < 1; xx++) {
         for (int yy = 0; yy < 1; yy++)
         {
-            auto c = new Car(xx % 2 == 0 ? "fiesta.car" : "fiesta.car", new TransformationManager(glm::vec3(xx * 10.0, 55.0, yy * 10.0)));
+            auto c = new Car(xx % 2 == 0 ? "fiesta.car" : "fiesta.car", new TransformationManager(glm::vec3(xx * 10.0 + 33.0, 55.0, yy * 10.0)));
             car.push_back(c);
         }
     }
@@ -789,9 +795,11 @@ void EditorApp::onBind()
 
     auto skel = game->asset->loadSkeletonFile("mrstick.skeleton");
     auto mrstickobj = game->asset->loadObject3dInfoFile("mrstick.raw");
-    auto mrstick = Mesh3d::create(mrstickobj, new Material());
+    mrstick = Mesh3d::create(mrstickobj, new Material());
     mrstick->getLodLevel(0)->skeleton = skel;
     auto pose = new SkeletonPose();
+    auto bonesposes = vector<glm::vec3>();
+    auto bonessizes = vector<float>();
     mrstick->getLodLevel(0)->skeletonPose = pose;
     for (int i = 0; i < skel->bones.size(); i++) {
         auto svec = (skel->bones[i] * glm::vec4(0.0, 0.0, 0.0, 1.0));
@@ -817,6 +825,7 @@ void EditorApp::onBind()
         else {
             sum = glm::vec3(0.0);
         }
+         
 
         pose->pose.push_back(glm::translate(glm::mat4(1), sum));
 
@@ -841,8 +850,62 @@ void EditorApp::onBind()
             sumr = 0.05f;
         }
         cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(sum, glm::vec3(sumr))));
+        bonesposes.push_back(sum);
+        bonessizes.push_back(sumr);
     }
-    mrstick->getInstance(0)->transformation->translate(glm::vec3(0.0, 6.0, 0.0));
+    bonesBodies = vector<PhysicalBody*>{};
+    bonesBinds = vector<glm::vec3>{};
+    bonesConstrs = vector<PhysicalConstraint*>{};
+    for (int i = 0; i < bonesposes.size(); i++) {
+        auto p = bonesposes[i];
+        PhysicalBody* pb = game->world->physics->createBody( 0.1f, new TransformationManager(p + glm::vec3(0.0, 6.0, 0.0)), new btSphereShape(0.05f));
+        bonesBodies.push_back(pb);
+        bonesBinds.push_back(p);
+    }
+    for (int i = 0; i < bonesposes.size(); i++) {
+        auto p = bonesposes[i];
+        int closestindex = skel->parents[i];
+        if (closestindex < 0) {
+            bonesBodies[i]->enable();
+            continue;
+        }
+        auto closest = bonesposes[skel->parents[i]];
+        auto midway = (closest + p) * 0.5f;
+        auto vector1_to_midway = (midway - p);
+        auto vector2_to_midway = (midway - closest); 
+        btTransform frameInA, frameInB;
+        frameInA = btTransform::getIdentity();
+        frameInB = btTransform::getIdentity();
+
+        frameInA.setOrigin(bulletify3(vector1_to_midway));
+        frameInB.setOrigin(bulletify3(vector2_to_midway));
+        auto ct1 = new btGeneric6DofConstraint(*(bonesBodies[i]->getRigidBody()), *(bonesBodies[closestindex]->getRigidBody()), frameInA, frameInB, true);
+        ct1->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
+        ct1->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
+        ct1->setLinearLowerLimit(btVector3(0.0, 0.0, 0.0));
+        ct1->setLinearUpperLimit(btVector3(0.0, 0.0, 0.0));
+        PhysicalConstraint* pc = new PhysicalConstraint(ct1, bonesBodies[i], bonesBodies[closestindex]);
+        ct1->setBreakingImpulseThreshold(99990.0f);
+        bonesConstrs.push_back(pc);
+        bonesBodies[i]->enable();
+        bonesBodies[closestindex]->enable();
+        pc->enable();
+    }
+    for (int i = 0; i < bonesposes.size(); i++) {
+        for (int g = 0; g < bonesposes.size(); g++) {
+            bonesBodies[i]->getRigidBody()->setIgnoreCollisionCheck(bonesBodies[g]->getRigidBody(), true);
+        }
+    }
+    bonesBodies[0]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 0.0));
+    bonesBodies[2]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 2.0));
+    bonesBodies[3]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 0.0));
+    bonesBodies[4]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 0.0));
+    bonesBodies[5]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 20.0));
+    bonesBodies[6]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 0.0));
+    bonesBodies[7]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0,20.0));
+    bonesBodies[8]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 20.0));
+    bonesBodies[9]->getRigidBody()->setLinearVelocity(btVector3(0.0, 27.0, 20.0));
+    mrstick->getInstance(0)->transformation->translate(glm::vec3(0.0, 0.0, 0.0));
     game->world->scene->addMesh3d(mrstick);
 
 }

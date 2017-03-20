@@ -40,7 +40,6 @@ layout (std430, binding = 3) buffer SkelPosBuffer
 {
     mat4[] skeletonPose;
 };
-
 vec3 applySkeletonPose(vec3 v){
     int id = gl_VertexID;
     SkeletonWeightsStruct sws = skeletonWeightsArray[id];
@@ -48,7 +47,7 @@ vec3 applySkeletonPose(vec3 v){
     vec3 result = vec3(0.0);
     for(int i=0;i<sws.weights_count;i++){
         float wei = sws.weights[i];
-        result += wei * (skeletonPose[sws.bones[i]] * vec4(v, 1.0)).xyz;
+        result += wei * ((skeletonPose[sws.bones[i]] * vec4(v, 1.0)).xyz);
         w += wei;
     }
     result /= max(0.01, w);

@@ -66,7 +66,7 @@ void Skeleton::updateBuffers(SkeletonPose* pose, bool poseOnly)
 				pointer[cursor++] = m[d].y;
 				pointer[cursor++] = m[d].z;
 				pointer[cursor++] = m[d].w;
-			}
+			} 
 		}
 		bonesSSBO->unmapBuffer();
 	}
@@ -74,9 +74,15 @@ void Skeleton::updateBuffers(SkeletonPose* pose, bool poseOnly)
 
 void Skeleton::use(SkeletonPose* pose, int weightIndex, int bonesIndex)
 {
-	if (needsUpdate) {
-		updateBuffers(pose, false);
-	}
+   // if (needsUpdate) {
+        updateBuffers(pose, false);
+    //    needsUpdate = false;
+   //     poseNeedsUpdate = false;
+    //}
+    //if (poseNeedsUpdate) {
+     //   updateBuffers(pose, true);
+    //    poseNeedsUpdate = false;
+   // }
 	weightsSSBO->use(weightIndex);
 	bonesSSBO->use(bonesIndex);
 

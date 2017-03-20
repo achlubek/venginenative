@@ -33,7 +33,7 @@ public:
     float yaw = 0.0f, pitch = 0.0f;
     double lastcx = 0.0f, lastcy = 0.0f;
     Camera* cam;
-    Mesh3d * pickedUpMesh = nullptr;
+    Mesh3d * pickedUpMesh = nullptr, *mrstick;
     Mesh3dLodLevel * pickedUpMeshLodLevel = nullptr;
     Mesh3dInstance * pickedUpMeshInstance = nullptr;
     vector<string> commandHistory;
@@ -46,6 +46,9 @@ public:
     bool isOpened2 = true;
     float tmpDayElapsed = 0.5;
     vector<Car *> car;
+    vector<glm::vec3> bonesBinds;
+    vector<PhysicalBody *> bonesBodies;
+    vector<PhysicalConstraint *> bonesConstrs;
 
     int currentMode = EDITOR_MODE_IDLE;
     int lastMode = EDITOR_MODE_IDLE;

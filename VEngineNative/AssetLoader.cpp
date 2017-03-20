@@ -51,10 +51,10 @@ Skeleton * AssetLoader::loadSkeletonString(string source)
 				}
 			}
 		}
-		if (words[0] == "matrix") {
-			if (words.size() >= 2) {
-				int current = skel->bones.size();
-				skel->bones.push_back(glm::mat4(1));
+        if (words[0] == "matrix") {
+            if (words.size() >= 2) {
+                int current = skel->bones.size();
+                skel->bones.push_back(glm::mat4(1));
                 glm::quat q = glm::quat();
                 glm::vec3 t = glm::vec3(1);
                 q.x = atof(words[1].c_str());
@@ -65,8 +65,15 @@ Skeleton * AssetLoader::loadSkeletonString(string source)
                 t.y = atof(words[6].c_str());
                 t.z = atof(words[7].c_str());
                 skel->bones[current] = glm::translate(glm::mat4_cast(q), t);
-			}
-		}
+            }
+        }
+        if (words[0] == "parent") {
+            if (words.size() == 2) {
+                int current = skel->parents.size();
+                skel->parents.push_back(-1); 
+                skel->parents[current] = atoi(words[1].c_str());
+            }
+        }
 	}
     return skel;
 }
