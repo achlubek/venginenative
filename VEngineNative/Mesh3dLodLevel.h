@@ -20,6 +20,7 @@ public:
     unsigned int id;
     bool disableFaceCulling = true;
     bool visible = true;
+    bool ignoreFrustumCulling = false;
     bool castShadow = true;
     bool selectable = true;
     void draw(const Mesh3d* mesh);

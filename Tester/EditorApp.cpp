@@ -40,11 +40,20 @@ glm::vec3 quat2vec3(glm::quat q) {
 void EditorApp::onRenderFrame(float elapsed)
 {
 
+    mrstick->getInstance(0)->transformation->setPosition(bonesBodies[0]->transformation->getPosition());
+    auto relpos = bonesBodies[0]->transformation->getPosition();
     for (int i = 0; i < bonesBodies.size(); i++) {
-        mrstick->getLodLevel(0)->skeletonPose->pose[i] = glm::translate(
-           glm::mat4(1),
-            bonesBodies[i]->getTransformationManager()->getPosition());
+
+        auto wt = bonesBodies[i]->getTransformationManager()->getWorldTransform();
+        mrstick->getLodLevel(0)->skeletonPose->pose[i] =  glm::translate(glm::mat4(), bonesBodies[i]->getTransformationManager()->getPosition() - relpos)
+        //    * glm::translate(glm::mat4(), bonesBinds[i])
+            * glm::mat4_cast(bonesBodies[i]->getTransformationManager()->getOrientation())
+            * glm::translate(glm::mat4(), -bonesBinds[i]);
+
         mrstick->getLodLevel(0)->skeleton->poseNeedsUpdate = true;
+
+        auto we = mrstick->getLodLevel(0)->skeletonPose->pose[i] * glm::vec4(bonesBinds[i], 1.0);
+        cursor3dArrow->getInstance(i)->transformation->setPosition(glm::vec3(we.x, we.y, we.z));
     }
 
     if (currentMode == EDITOR_MODE_MOVE_CAMERA) {
@@ -745,7 +754,7 @@ void EditorApp::onBind()
         auto terrashape = new btHeightfieldTerrainShape(6000, 6000, bytes2, 1.0, minh, maxh, 1, PHY_FLOAT, false);
         */
         //  auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(3000.0 - 300.0, -0.5 + maxh * 0.5, 3000.0 - 300.0), glm::quat(), glm::vec3(1.0, 1.0, 1.0)), terrashape);
-        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0f, 0.25f, 1000.0f)));
+        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
         groundpb->getCollisionObject()->setFriction(4);
         groundpb->enable();
 
@@ -795,7 +804,7 @@ void EditorApp::onBind()
 
     auto skel = game->asset->loadSkeletonFile("mrstick.skeleton");
     auto mrstickobj = game->asset->loadObject3dInfoFile("mrstick.raw");
-    mrstick = Mesh3d::create(mrstickobj, new Material());
+    mrstick = Mesh3d::create(mrstickobj, game->asset->loadMaterialFile("red.material"));
     mrstick->getLodLevel(0)->skeleton = skel;
     auto pose = new SkeletonPose();
     auto bonesposes = vector<glm::vec3>();
@@ -849,7 +858,7 @@ void EditorApp::onBind()
         else {
             sumr = 0.05f;
         }
-        cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(sum, glm::vec3(sumr))));
+        cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(sum, glm::vec3(sumr * 0.1f))));
         bonesposes.push_back(sum);
         bonessizes.push_back(sumr);
     }
