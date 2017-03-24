@@ -52,7 +52,7 @@ vec3 applySkeletonPose(vec4 v){
     }
     result /= max(0.01, w);
     float stp = step( 0.001, w);
-    return result * stp;// + v * (1.0 - stp);
+    return result * stp  + v.xyz * (1.0 - stp);
 }
 
 #include ModelBuffer.glsl

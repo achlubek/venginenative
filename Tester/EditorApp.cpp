@@ -45,15 +45,15 @@ void EditorApp::onRenderFrame(float elapsed)
     for (int i = 0; i < bonesBodies.size(); i++) {
 
         auto wt = bonesBodies[i]->getTransformationManager()->getWorldTransform();
-        mrstick->getLodLevel(0)->skeletonPose->pose[i] =  glm::translate(glm::mat4(), bonesBodies[i]->getTransformationManager()->getPosition() - relpos)
-        //    * glm::translate(glm::mat4(), bonesBinds[i])
+        mrstick->getLodLevel(0)->skeletonPose->pose[i] = glm::translate(glm::mat4(), bonesBodies[i]->getTransformationManager()->getPosition() - relpos)
+            //    * glm::translate(glm::mat4(), bonesBinds[i])
             * glm::mat4_cast(bonesBodies[i]->getTransformationManager()->getOrientation())
             * glm::translate(glm::mat4(), -bonesBinds[i]);
 
         mrstick->getLodLevel(0)->skeleton->poseNeedsUpdate = true;
 
         auto we = mrstick->getLodLevel(0)->skeletonPose->pose[i] * glm::vec4(bonesBinds[i], 1.0);
-        cursor3dArrow->getInstance(i)->transformation->setPosition(glm::vec3(we.x, we.y, we.z));
+        // cursor3dArrow->getInstance(i)->transformation->setPosition(glm::vec3(we.x, we.y, we.z));
     }
 
     if (currentMode == EDITOR_MODE_MOVE_CAMERA) {
@@ -226,7 +226,7 @@ void EditorApp::onRenderFrame(float elapsed)
                 pickedUpMeshInstance->transformation->translate(glm::vec3(axes[0], axes[2], axes[1]) * 0.01f);
             }
         }
-        
+
     }
     else if (currentMode == EDITOR_MODE_WRITING_TEXT) {
 
@@ -238,8 +238,11 @@ void EditorApp::onRenderFrame(float elapsed)
         uv.y = 1.0 - uv.y;
         glm::vec3 raycastDir = cam->cone->reconstructDirection(uv);
         physicsPickDirection = physicsPickDirection * 0.9f + raycastDir * 0.1f;
-        physicsPickedBody->transformation->setPosition(cam->transformation->getPosition() + physicsPickDirection * physicsPickDistance);
+        auto newpos = cam->transformation->getPosition() + physicsPickDirection * physicsPickDistance;
+        auto velocity = newpos - physicsPickedBody->transformation->getPosition();
+        // physicsPickedBody->transformation->setPosition(newpos);
         physicsPickedBody->readChanges();
+        physicsPickedBody->getRigidBody()->applyCentralForce(bulletify3(velocity * (100.f / physicsPickedBody->getRigidBody()->getInvMass())));
     }
     if (isConsoleWindowOpened == false && currentMode == EDITOR_MODE_WRITING_TEXT) {
         switchMode(lastMode);
@@ -379,7 +382,25 @@ void EditorApp::onRenderUIFrame(float elapsed)
         if (i->second->type == SHADER_VARIABLE_TYPE_VEC4) ImGui::SliderFloat4(i->first.c_str(), &i->second->var_vec4.x, 0.01f, 10.0f);
         if (i->second->type == SHADER_VARIABLE_TYPE_IVEC4) ImGui::SliderInt4(i->first.c_str(), &i->second->var_ivec4.x, 0.0, 20);
     }
+    for (int i = 0; i < bonesConstrs.size(); i++) {
+        auto c = bonesConstrs[i];
+        float val = 0.0;
+        btVector3 anglo, anghi;
+        ((btGeneric6DofSpring2Constraint*)(c->constraint))->getAngularLowerLimit(anglo);
+        ((btGeneric6DofSpring2Constraint*)(c->constraint))->getAngularUpperLimit(anghi);
+        glm::vec3 angloG, anghiG;
+        angloG = glmify3(anglo);
+        anghiG = glmify3(anghi);
+        ImGui::SliderFloat3("Bone LIMIT LO", &angloG.x, -1.0f, 1.0f);
+        ImGui::SliderFloat3("Bone LIMIT HI", &anghiG.x, -1.0f, 1.0f);
+        ((btGeneric6DofSpring2Constraint*)(c->constraint))->setAngularLowerLimit(bulletify3(angloG));
+        ((btGeneric6DofSpring2Constraint*)(c->constraint))->setAngularUpperLimit(bulletify3(anghiG));
+
+    }
+    
+
     ImGui::End();
+
     if (currentMode == EDITOR_MODE_WRITING_TEXT) {
         ImGui::Begin("CMD", &isConsoleWindowOpened, 0);
         ImGui::Text(currentCommandText.c_str());
@@ -703,7 +724,7 @@ void EditorApp::onBind()
 
 
 
-    auto xt = game->asset->loadMeshFile("2dplane.mesh3d"); 
+    auto xt = game->asset->loadMeshFile("2dplane.mesh3d");
     game->world->scene->addMesh3d(xt);
 
     game->invoke([&]() {
@@ -765,7 +786,7 @@ void EditorApp::onBind()
         auto terrashape = new btHeightfieldTerrainShape(6000, 6000, bytes2, 1.0, minh, maxh, 1, PHY_FLOAT, false);
         */
         //  auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(3000.0 - 300.0, -0.5 + maxh * 0.5, 3000.0 - 300.0), glm::quat(), glm::vec3(1.0, 1.0, 1.0)), terrashape);
-        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 2.0, 0.0)), new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
+        auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 1.5, 0.0)), new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
         groundpb->getCollisionObject()->setFriction(4);
         groundpb->enable();
 
@@ -813,8 +834,8 @@ void EditorApp::onBind()
 
     // SKELETON TEST
 
-    auto skel = game->asset->loadSkeletonFile("mrstick.skeleton");
-    auto mrstickobj = game->asset->loadObject3dInfoFile("mrstick.raw");
+    auto skel = game->asset->loadSkeletonFile("tree.skeleton");
+    auto mrstickobj = game->asset->loadObject3dInfoFile("tree.raw");
     mrstick = Mesh3d::create(mrstickobj, game->asset->loadMaterialFile("red.material"));
     mrstick->getLodLevel(0)->skeleton = skel;
     auto pose = new SkeletonPose();
@@ -845,7 +866,7 @@ void EditorApp::onBind()
         else {
             sum = glm::vec3(0.0);
         }
-         
+
 
         pose->pose.push_back(glm::translate(glm::mat4(1), sum));
 
@@ -873,12 +894,65 @@ void EditorApp::onBind()
         bonesposes.push_back(sum);
         bonessizes.push_back(sumr);
     }
+
+    // we have bones positions and hierachy
+    // we are able to reweight it completely
+    
+    int weightscnt = skel->weights.size();
+
+    for (int i = 0; i < weightscnt; i++) {
+        skel->weights[i].clear();
+    }
+
+    int vertid = 0;
+    for (int z = 0; z < mrstickobj->vbo.size(); z += 12) {
+        // if (skel->weights.size() <= vertid) break;
+        glm::vec3 vert = glm::vec3(mrstickobj->vbo[z], mrstickobj->vbo[z + 1], mrstickobj->vbo[z + 2]);
+        int i = -1;
+        float dst = 99999.0f;
+
+        for (int g = 0; g < bonesposes.size(); g++) {
+            glm::vec3 pos = bonesposes[g];
+            if (glm::distance(pos, vert) < dst) {
+                dst = glm::distance(pos, vert);
+                i = g;
+            }
+        }
+        int iparent = skel->parents[i];
+        int ichild1 = -1;
+        int ichild2 = -1;
+        int ichild3 = -1;
+        int ichild4 = -1;
+        for (int g = 0; g < bonesposes.size(); g++) if (skel->parents[g] == i) { 
+            if (ichild1 == -1) ichild1 = g;
+            else if (ichild2 == -1) ichild2 = g;
+            else if (ichild3 == -1) ichild3 = g;
+            else if (ichild4 == -1) ichild4 = g;
+        }
+        int tab[6] = { i, iparent , ichild1 , ichild2, ichild3, ichild4};
+        vector<SkeletonBoneWeight> ws = {};
+        for (int g = 0; g < 6; g++) {
+            int bone = tab[g];
+            if (bone < 0) continue;
+            glm::vec3 pos = bonesposes[bone];
+
+            float w = 1.0 / ((glm::distance(vert, pos) + 1.0) * 11.0f);
+
+            SkeletonBoneWeight skwk = SkeletonBoneWeight(bone, 1.0);
+            skel->weights[vertid].push_back(skwk);
+        }
+
+        vertid++;
+
+    }
+
+
     bonesBodies = vector<PhysicalBody*>{};
     bonesBinds = vector<glm::vec3>{};
     bonesConstrs = vector<PhysicalConstraint*>{};
     for (int i = 0; i < bonesposes.size(); i++) {
         auto p = bonesposes[i];
-        PhysicalBody* pb = game->world->physics->createBody(glm::min(bonessizes[i] * 0.05f, 1.0f), new TransformationManager(p + glm::vec3(0.0, 6.0, 0.0)), new btSphereShape(bonessizes[i]));
+        PhysicalBody* pb = game->world->physics->createBody(glm::min(0.05f, 1.0f), new TransformationManager(p + glm::vec3(0.0, 6.0, 0.0)), new btSphereShape(bonessizes[i]));
         bonesBodies.push_back(pb);
         bonesBinds.push_back(p);
     }
@@ -892,7 +966,7 @@ void EditorApp::onBind()
         auto closest = bonesposes[skel->parents[i]];
         auto midway = (closest + p) * 0.5f;
         auto vector1_to_midway = (midway - p);
-        auto vector2_to_midway = (midway - closest); 
+        auto vector2_to_midway = (midway - closest);
         btTransform frameInA, frameInB;
         frameInA = btTransform::getIdentity();
         frameInB = btTransform::getIdentity();
@@ -900,13 +974,20 @@ void EditorApp::onBind()
         frameInA.setOrigin(bulletify3(vector1_to_midway));
         frameInB.setOrigin(bulletify3(vector2_to_midway));
         auto ct1 = new btGeneric6DofSpring2Constraint(*(bonesBodies[i]->getRigidBody()), *(bonesBodies[closestindex]->getRigidBody()), frameInA, frameInB);
-        ct1->setAngularLowerLimit(btVector3(-0.01, -0.01, -0.01));
-        ct1->setAngularUpperLimit(btVector3(0.01, 0.01, 0.01));
-        ct1->setLinearLowerLimit(btVector3(-0.01, -0.01, -0.01));
-        ct1->setLinearUpperLimit(btVector3(0.01, 0.01, 0.01));
-
         PhysicalConstraint* pc = new PhysicalConstraint(ct1, bonesBodies[i], bonesBodies[closestindex]);
         ct1->setBreakingImpulseThreshold(999990.0f);
+        float moverange = 0.0;
+        ct1->setAngularLowerLimit(btVector3(-moverange, -moverange, -moverange));
+        ct1->setAngularUpperLimit(btVector3(moverange, moverange, moverange));
+        ct1->setLinearLowerLimit(btVector3(0, 0, 0));
+        ct1->setLinearUpperLimit(btVector3(0, 0, 0));/*
+        ct1->setBounce(0, 0);
+        ct1->setBounce(1, 0);
+        ct1->setBounce(2, 0);
+        ct1->setStiffness(0, 0);
+        ct1->setStiffness(1, 0);
+        ct1->setStiffness(2, 0);*/
+
         bonesConstrs.push_back(pc);
         bonesBodies[i]->enable();
         bonesBodies[closestindex]->enable();
@@ -917,7 +998,7 @@ void EditorApp::onBind()
             bonesBodies[i]->getRigidBody()->setIgnoreCollisionCheck(bonesBodies[g]->getRigidBody(), true);
         }
     }
-    bonesBodies[15]->getRigidBody()->setLinearVelocity(btVector3(0.0, 127.0, 120.0));
+    bonesBodies[2]->getRigidBody()->setLinearVelocity(btVector3(0.0, 1.0, 1));
     mrstick->getInstance(0)->transformation->translate(glm::vec3(0.0, 0.0, 0.0));
     game->world->scene->addMesh3d(mrstick);
 
@@ -953,7 +1034,7 @@ void EditorApp::onMouseDown(int button)
     glm::vec3 raycastDir = cam->cone->reconstructDirection(uv);
     glm::vec3 hitpos, hitnorm;
     auto body = game->world->physics->rayCast(cam->transformation->getPosition(), raycastDir, hitpos, hitnorm);
-    printf("1PICKED %f %f \n", uv.x, uv.y );
+    printf("1PICKED %f %f \n", uv.x, uv.y);
     if (body != nullptr && !body->isStatic()) {
         physicsPickedBody = body;
         physicsPickDirection = raycastDir;

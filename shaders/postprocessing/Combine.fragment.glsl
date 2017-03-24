@@ -309,11 +309,12 @@ vec4 shade(){
         color += (1.0 - coverage) * ssobj * (lenssun(dir)) * getSunColorDirectly(0.0) * 36.0 * step(0.0, dayData.sunDir.y);
         //color += monsoonconverage2 * (1.0 - coverage2) * ssobj2 *  step(0.0, dir.y) * (smoothstep(0.998, 0.9985, max(0.0, dot(dir, dayData.sunDir)))) * getSunColorDirectly(0.0) * 13.0;
 
+
 //shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * 20.0 * getSunColorDirectly(0.0))
         vec3 csum = vec3(0.0);
         vec2 suncnt = projectsunrsm(currentData.worldPos);
         for(int i=0;i<12;i++){
-            vec2 p = suncnt + 0.1 * randpoint2();
+            vec2 p = suncnt + 0.01 * randpoint2();
             vec3 albedo = textureLod(sunRSMTex, p, 5.0).rgb;
             vec3 wpos = textureLod(sunRSMWPosTex, p, 5.0).rgb;
             vec3 norm = textureLod(sunRSMNormTex, p, 5.0).rgb;
