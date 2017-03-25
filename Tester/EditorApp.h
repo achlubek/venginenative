@@ -46,7 +46,7 @@ public:
     bool isOpened2 = true;
     float tmpDayElapsed = 0.5;
     vector<Car *> car;
-    vector<glm::vec3> bonesBinds;
+    //vector<glm::vec3> bonesBinds;
     vector<PhysicalBody *> bonesBodies;
     vector<PhysicalConstraint *> bonesConstrs;
 

@@ -30,7 +30,8 @@ public:
 	Skeleton();
 	~Skeleton();
 	vector<vector<SkeletonBoneWeight>> weights; // list of "vertices" each containing a list of "weights"
-    vector<glm::mat4> bones;
+    vector<glm::vec3> positions;
+    vector<float> radiues;
     vector<int> parents; 
 	ShaderStorageBuffer* weightsSSBO;
 	ShaderStorageBuffer* bonesSSBO;

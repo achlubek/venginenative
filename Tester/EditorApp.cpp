@@ -48,11 +48,11 @@ void EditorApp::onRenderFrame(float elapsed)
         mrstick->getLodLevel(0)->skeletonPose->pose[i] = glm::translate(glm::mat4(), bonesBodies[i]->getTransformationManager()->getPosition() - relpos)
             //    * glm::translate(glm::mat4(), bonesBinds[i])
             * glm::mat4_cast(bonesBodies[i]->getTransformationManager()->getOrientation())
-            * glm::translate(glm::mat4(), -bonesBinds[i]);
+            * glm::translate(glm::mat4(), -mrstick->getLodLevel(0)->skeleton->positions[i]);
 
         mrstick->getLodLevel(0)->skeleton->poseNeedsUpdate = true;
 
-        auto we = mrstick->getLodLevel(0)->skeletonPose->pose[i] * glm::vec4(bonesBinds[i], 1.0);
+        auto we = mrstick->getLodLevel(0)->skeletonPose->pose[i] * glm::vec4(mrstick->getLodLevel(0)->skeleton->positions[i], 1.0);
         // cursor3dArrow->getInstance(i)->transformation->setPosition(glm::vec3(we.x, we.y, we.z));
     }
 
@@ -839,70 +839,26 @@ void EditorApp::onBind()
     mrstick = Mesh3d::create(mrstickobj, game->asset->loadMaterialFile("red.material"));
     mrstick->getLodLevel(0)->skeleton = skel;
     auto pose = new SkeletonPose();
-    auto bonesposes = vector<glm::vec3>();
-    auto bonessizes = vector<float>();
+   // auto bonesposes = vector<glm::vec3>();
+   // auto bonessizes = vector<float>();
     mrstick->getLodLevel(0)->skeletonPose = pose;
-    for (int i = 0; i < skel->bones.size(); i++) {
-        auto svec = (skel->bones[i] * glm::vec4(0.0, 0.0, 0.0, 1.0));
-        auto lvec = glm::vec3(svec.x, svec.y, svec.z) / svec.w;
+    for (int i = 0; i < skel->positions.size(); i++) {
 
-        glm::vec3 sum = glm::vec3(0.0);
-        float sumw = 0.0f;
-        int vertid = 0;
-        for (int z = 0; z < mrstickobj->vbo.size(); z += 12) {
-            if (skel->weights.size() <= vertid) break;
-            glm::vec3 vert = glm::vec3(mrstickobj->vbo[z], mrstickobj->vbo[z + 1], mrstickobj->vbo[z + 2]);
-            for (int a = 0; a < skel->weights[vertid].size(); a++) {
-                auto sws = skel->weights[vertid][a];
-                if (sws.bone != i) continue;
-                sum += sws.weight * vert;
-                sumw += sws.weight;
-            }
-            vertid++;
-        }
-        if (sumw > 0.0f) {
-            sum /= sumw;
-        }
-        else {
-            sum = glm::vec3(0.0);
-        }
-
+        glm::vec3 sum = skel->positions[i];
+        float sumr = skel->radiues[i];
 
         pose->pose.push_back(glm::translate(glm::mat4(1), sum));
-
-        float sumr = 0.0;
-        sumw = 0.0f;
-        vertid = 0;
-        for (int z = 0; z < mrstickobj->vbo.size(); z += 12) {
-            if (skel->weights.size() <= vertid) break;
-            glm::vec3 vert = glm::vec3(mrstickobj->vbo[z], mrstickobj->vbo[z + 1], mrstickobj->vbo[z + 2]);
-            for (int a = 0; a < skel->weights[vertid].size(); a++) {
-                auto sws = skel->weights[vertid][a];
-                if (sws.bone != i) continue;
-                sumr += sws.weight * glm::length(sum - vert);
-                sumw += sws.weight;
-            }
-            vertid++;
-        }
-        if (sumw > 0.0f) {
-            sumr /= sumw;
-        }
-        else {
-            sumr = 0.05f;
-        }
         cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(sum, glm::vec3(sumr * 1.1f))));
-        bonesposes.push_back(sum);
-        bonessizes.push_back(sumr);
     }
 
     // we have bones positions and hierachy
     // we are able to reweight it completely
-    
+    /*
     int weightscnt = skel->weights.size();
 
     for (int i = 0; i < weightscnt; i++) {
         skel->weights[i].clear();
-    }
+    }*/
 
     int vertid = 0;
     for (int z = 0; z < mrstickobj->vbo.size(); z += 12) {
@@ -911,8 +867,8 @@ void EditorApp::onBind()
         int i = -1;
         float dst = 99999.0f;
 
-        for (int g = 0; g < bonesposes.size(); g++) {
-            glm::vec3 pos = bonesposes[g];
+        for (int g = 0; g < skel->positions.size(); g++) {
+            glm::vec3 pos = skel->positions[g];
             if (glm::distance(pos, vert) < dst) {
                 dst = glm::distance(pos, vert);
                 i = g;
@@ -923,7 +879,7 @@ void EditorApp::onBind()
         int ichild2 = -1;
         int ichild3 = -1;
         int ichild4 = -1;
-        for (int g = 0; g < bonesposes.size(); g++) if (skel->parents[g] == i) { 
+        for (int g = 0; g < skel->positions.size(); g++) if (skel->parents[g] == i) {
             if (ichild1 == -1) ichild1 = g;
             else if (ichild2 == -1) ichild2 = g;
             else if (ichild3 == -1) ichild3 = g;
@@ -931,10 +887,11 @@ void EditorApp::onBind()
         }
         int tab[6] = { i, iparent , ichild1 , ichild2, ichild3, ichild4};
         vector<SkeletonBoneWeight> ws = {};
+        skel->weights.push_back({});
         for (int g = 0; g < 6; g++) {
             int bone = tab[g];
             if (bone < 0) continue;
-            glm::vec3 pos = bonesposes[bone];
+            glm::vec3 pos = skel->positions[bone];
 
             float w = 1.0 / ((glm::distance(vert, pos) + 1.0) * 11.0f);
 
@@ -948,22 +905,20 @@ void EditorApp::onBind()
 
 
     bonesBodies = vector<PhysicalBody*>{};
-    bonesBinds = vector<glm::vec3>{};
     bonesConstrs = vector<PhysicalConstraint*>{};
-    for (int i = 0; i < bonesposes.size(); i++) {
-        auto p = bonesposes[i];
-        PhysicalBody* pb = game->world->physics->createBody(glm::min(0.05f, 1.0f), new TransformationManager(p + glm::vec3(0.0, 6.0, 0.0)), new btSphereShape(bonessizes[i]));
+    for (int i = 0; i < skel->positions.size(); i++) {
+        auto p = skel->positions[i];
+        PhysicalBody* pb = game->world->physics->createBody(glm::min(0.05f, 1.0f), new TransformationManager(p + glm::vec3(0.0, 6.0, 0.0)), new btSphereShape(skel->radiues[i]));
         bonesBodies.push_back(pb);
-        bonesBinds.push_back(p);
     }
-    for (int i = 0; i < bonesposes.size(); i++) {
-        auto p = bonesposes[i];
+    for (int i = 0; i < skel->positions.size(); i++) {
+        auto p = skel->positions[i];
         int closestindex = skel->parents[i];
         if (closestindex < 0) {
             bonesBodies[i]->enable();
             continue;
         }
-        auto closest = bonesposes[skel->parents[i]];
+        auto closest = skel->positions[skel->parents[i]];
         auto midway = (closest + p) * 0.5f;
         auto vector1_to_midway = (midway - p);
         auto vector2_to_midway = (midway - closest);
@@ -976,7 +931,7 @@ void EditorApp::onBind()
         auto ct1 = new btGeneric6DofSpring2Constraint(*(bonesBodies[i]->getRigidBody()), *(bonesBodies[closestindex]->getRigidBody()), frameInA, frameInB);
         PhysicalConstraint* pc = new PhysicalConstraint(ct1, bonesBodies[i], bonesBodies[closestindex]);
         ct1->setBreakingImpulseThreshold(999990.0f);
-        float moverange = 0.0;
+        float moverange = 0.3;
         ct1->setAngularLowerLimit(btVector3(-moverange, -moverange, -moverange));
         ct1->setAngularUpperLimit(btVector3(moverange, moverange, moverange));
         ct1->setLinearLowerLimit(btVector3(0, 0, 0));
@@ -993,8 +948,8 @@ void EditorApp::onBind()
         bonesBodies[closestindex]->enable();
         pc->enable();
     }
-    for (int i = 0; i < bonesposes.size(); i++) {
-        for (int g = 0; g < bonesposes.size(); g++) {
+    for (int i = 0; i < skel->positions.size(); i++) {
+        for (int g = 0; g < skel->positions.size(); g++) {
             bonesBodies[i]->getRigidBody()->setIgnoreCollisionCheck(bonesBodies[g]->getRigidBody(), true);
         }
     }
