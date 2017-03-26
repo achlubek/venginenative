@@ -90,6 +90,12 @@ float getWaterDistance(){
     float planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
 
     float planethit2 = intersectPlane(CameraPosition, dir, vec3(0.0, WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
+
+    //float planethit = rsi2(Ray(toplanetspace(CameraPosition), dir), Sphere(vec3(0.0), planetradius + waterdepth + WaterLevel));
+    //float planethit2 =rsi2(Ray(toplanetspace(CameraPosition), dir), Sphere(vec3(0.0), planetradius + WaterLevel));
+
+//rsi2(Ray(toplanetspace(CameraPosition), dir), planet);
+
     bool hitwater = true;//(planethit > 0.0 || planethit2 > 0.0);// && (length(currentData.normal) < 0.01 || currentData.cameraDistance > planethit);
 
     isReallyUnderWater = WaterLevel + heightwaterXOLO(CameraPosition.xz, vec2(0.0), 0.0) * waterdepth > CameraPosition.y;

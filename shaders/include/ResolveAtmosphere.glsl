@@ -235,7 +235,10 @@ vec4 projectvdao2(vec3 pos){
     vec4 tmp = (VPMatrix * vec4(pos, 1.0));
     return (tmp.xyzw);
 }
-
+vec3 getScatterColor(float dist){
+	vec3 color = vec3(0.03, 0.05, 0.1) * dist * 0.00004;
+	return max(pow(color, -color)*color, 0.0);
+}
 float godrays(vec3 dir, int steps){
     if(NoiseOctave1 <= 0.011) return 1.0;
     float bias = 58.0 / float(steps);

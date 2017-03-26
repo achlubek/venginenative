@@ -4,7 +4,12 @@ struct Ray { vec3 o; vec3 d; };
 struct Sphere { vec3 pos; float rad; };
 
 float planetradius = 6378000.1;
+float atmosphereradius = 80000.0;
+vec3 world_planet_origin = vec3(0.0, planetradius, 0.0);
 Sphere planet = Sphere(vec3(0), planetradius);
+Sphere atmo_sphere = Sphere(vec3(0), planetradius + atmosphereradius);
+
+#define toplanetspace(a) (a+world_planet_origin)
 
 float minhit = 0.0;
 float maxhit = 0.0;

@@ -252,6 +252,8 @@ vec2 projectsunrsm(vec3 pos){
 }
 
 
+uniform float WaterSpeed;
+#include WaterHeight.glsl
 vec4 shade(){
     vec3 color = vec3(0);
     if(CombineStep == STEP_PREVIOUS_SUN){
@@ -330,28 +332,43 @@ vec4 shade(){
         rsmres /= 0.01 + length(rsmres) * 1.01;
         color += rsmres;
 
-        vec3 atma = textureLod(atmScattTex, dayData.sunDir, 7.0).rgb;
-        vec3 volumetrix = atma * 0.0013;
+        vec3 atma = max(textureLod(atmScattTex, dir, 0.0).rgb * 2.0, getScatterColor(10000.0) );
+        vec3 volumetrix = vec3(0.0);
+        float volumetrix2 = 0.0;
         int steps = 32;
         float stepsize = 1.0 / 32.0;
         float rd = rand2sTime(UV);
         float iter = rd * stepsize;
         vec3 start = CameraPosition;
-        vec3 realpos = mix(vec3(99999.0), currentData.worldPos, step(0.01, length(currentData.normal)));
-        float atmceil = intersectPlane(CameraPosition, dir, vec3(0.0, 1100.0, 0.0), vec3(0.0, -1.0, 0.0));
-        vec3 end = length(currentData.normal) > 0.01 ? realpos : (CameraPosition + dir * atmceil);
-        float weight = distance(start, end) * stepsize;
+        float atmceil = rsi2(Ray(toplanetspace(CameraPosition), dir), Sphere(vec3(0.0), planetradius + 16000.0));
+        float waterfloor = min(9000.0, intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0)));
+        float LN = length(currentData.normal);
+        vec3 realpos = mix(CameraPosition + dir * (waterfloor > 0.0 ? waterfloor : atmceil), currentData.worldPos, step(0.01, LN));
+        vec3 end = realpos;
+        float point_full_coverage = atmosphereradius;
+        float overall_coverage = linearstep(0.0, point_full_coverage, distance(start, end));
+        float weight = distance(start, end) * stepsize * 0.1;
         float coveragex = 0.0;
         vec3 suncol = getSunColorDirectly(0.0);
         for(int i=0;i<steps ;i++){
-            vec3 p = mix(start, end, iter);
+            vec3 p = mix(start, end, iter * iter * iter );
+            float coverage = 1.0 - linearstep(0.0, point_full_coverage, distance(start, p));
+            vec3 scatter_primary = getScatterColor(distance(start, p));
+            float atmceil2 = rsi2(Ray(toplanetspace(p), dayData.sunDir), atmo_sphere);
+            float coverage2 = 1.0 - linearstep(0.0, point_full_coverage, atmceil2);
+            float vis = (CSMQueryVisibilitySimple(p) * 0.95 + 0.05);
+            vec3 scatter_secondary = getScatterColor(atmceil2) * vis;
 
-            volumetrix += suncol * weight * stepsize * CSMQueryVisibilitySimple(p)  * max(0.0, 1.0 - coveragex);
-            coveragex += weight * 0.0001 * (1.0 - smoothstep(0.0, 1100.0, p.y));
+            volumetrix2 += vis;
+            volumetrix += suncol * 111.0 * coverage *( scatter_primary * scatter_secondary );//(CSMQueryVisibilitySimple(p) * scatter_primary  * coverage + scatter_secondary * coverage2);
+            coveragex += 1.0 - coverage;
 
             iter += stepsize;
         }
-        //color = mix(color, atma * volumetrix, min(1.0, coveragex));
+        //color = mix(color + min(coveragex, 1.0) * atma * pow(volumetrix2, 6.0), atma * volumetrix2, length(currentData.normal) > 0.01 ? min(coveragex, 1.0) : 0.0);
+        if(LN > 0.01 || waterfloor > 0.0) color = mix(color, volumetrix, overall_coverage);
+        else color *=pow( stepsize * volumetrix2, 1.0);
+        //color = mix(color, volumetrix, overall_coverage);
         //color = textureLod(sunRSMTex, UV, 0.0).rgb;
         color = tonemap( color);
     }

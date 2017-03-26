@@ -43,7 +43,7 @@ void EditorApp::onRenderFrame(float elapsed)
     mrstick->getInstance(0)->transformation->setPosition(bonesBodies[0]->transformation->getPosition());
     auto relpos = bonesBodies[0]->transformation->getPosition();
     for (int i = 0; i < bonesBodies.size(); i++) {
-
+        
         auto wt = bonesBodies[i]->getTransformationManager()->getWorldTransform();
         mrstick->getLodLevel(0)->skeletonPose->pose[i] = glm::translate(glm::mat4(), bonesBodies[i]->getTransformationManager()->getPosition() - relpos)
             //    * glm::translate(glm::mat4(), bonesBinds[i])
@@ -727,6 +727,8 @@ void EditorApp::onBind()
     auto xt = game->asset->loadMeshFile("2dplane.mesh3d");
     game->world->scene->addMesh3d(xt);
 
+    game->world->scene->addMesh3d(game->asset->loadMeshFile("gory.mesh3d"));
+
     game->invoke([&]() {
         auto phys = Game::instance->world->physics;
         /*
@@ -848,7 +850,7 @@ void EditorApp::onBind()
         float sumr = skel->radiues[i];
 
         pose->pose.push_back(glm::translate(glm::mat4(1), sum));
-        cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(sum, glm::vec3(sumr * 1.1f))));
+        cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(sum, glm::vec3(sumr * 1.0f))));
     }
 
     // we have bones positions and hierachy
@@ -893,7 +895,7 @@ void EditorApp::onBind()
             if (bone < 0) continue;
             glm::vec3 pos = skel->positions[bone];
 
-            float w = 1.0 / ((glm::distance(vert, pos) + 1.0) * 11.0f);
+            float w = 1.0 / ((glm::distance(vert, pos) + 1.0) * 1.0f);
 
             SkeletonBoneWeight skwk = SkeletonBoneWeight(bone, 1.0);
             skel->weights[vertid].push_back(skwk);
@@ -931,7 +933,7 @@ void EditorApp::onBind()
         auto ct1 = new btGeneric6DofSpring2Constraint(*(bonesBodies[i]->getRigidBody()), *(bonesBodies[closestindex]->getRigidBody()), frameInA, frameInB);
         PhysicalConstraint* pc = new PhysicalConstraint(ct1, bonesBodies[i], bonesBodies[closestindex]);
         ct1->setBreakingImpulseThreshold(999990.0f);
-        float moverange = 0.3;
+        float moverange = 0.2;
         ct1->setAngularLowerLimit(btVector3(-moverange, -moverange, -moverange));
         ct1->setAngularUpperLimit(btVector3(moverange, moverange, moverange));
         ct1->setLinearLowerLimit(btVector3(0, 0, 0));
