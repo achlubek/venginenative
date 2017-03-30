@@ -34,7 +34,7 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
     r = normalize(r);
 	float rs = rsi2(Ray(r0, r), Sphere(vec3(0), rAtmos));
 	vec3 px = r0 + r * rs;
-	shMie *= smoothstep(0.7, 1.0, MieScattCoeff) * (MieScattCoeff < 0.7 ? 1.0 : (pow(fbmHI(px  + wind(px * 0.00000669) * 40000.0) * (supernoise3dX(px* 0.00000669 + Time * 0.001)*0.5 + 0.5) * 1.3, 3.0) * 0.8 + 0.5));
+	//shMie *= smoothstep(0.7, 1.0, MieScattCoeff) * (MieScattCoeff < 0.7 ? 1.0 : (pow(fbmHI(px  + wind(px * 0.00000669) * 40000.0) * (supernoise3dX(px* 0.00000669 + Time * 0.001)*0.5 + 0.5) * 1.3, 3.0) * 0.8 + 0.5));
     float iStepSize = rs / float(iSteps);
     float iTime = 0.0;
     vec3 totalRlh = vec3(0,0,0);
