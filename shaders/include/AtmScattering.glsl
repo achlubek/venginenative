@@ -124,7 +124,7 @@ vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
 
     //dir.y = abs(dir.y);
     return// mult * 3.3 * mydumbassscatteringfunction(dir, sunpos) +
-     1.0 * atmosphere(
+     3.0 * atmosphere(
         dir,           // normalized ray direction
         vec3(0,planetradius  ,0) + origin,               // ray origin
         sunpos,                        // position of the sun

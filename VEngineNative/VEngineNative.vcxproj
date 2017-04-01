@@ -251,6 +251,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="RagdollController.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="Sound.h" />
     <ClInclude Include="AbsFramebuffer.h" />
@@ -312,6 +313,7 @@
     <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="RagdollController.cpp" />
     <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="Sound.cpp" />
     <ClCompile Include="AbsFramebuffer.cpp" />

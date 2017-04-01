@@ -14,6 +14,7 @@
 #include "../VEngineNative/SquirrelVM.h";
 #include "../VEngineNative/GLSLVM.h";
 #include "../VEngineNative/SimpleParser.h";
+#include "../VEngineNative/RagdollController.h";
 #include "../VEngineNative/imgui/imgui.h";
 
 #include "Car.h"
@@ -36,6 +37,7 @@ public:
     Mesh3d * pickedUpMesh = nullptr, *mrstick;
     Mesh3dLodLevel * pickedUpMeshLodLevel = nullptr;
     Mesh3dInstance * pickedUpMeshInstance = nullptr;
+    RagdollController * ragdoll = nullptr;
     vector<string> commandHistory;
     string currentCommandText;
     Mesh3d * cursor3dArrow;
@@ -45,10 +47,7 @@ public:
     bool isOpened = true;
     bool isOpened2 = true;
     float tmpDayElapsed = 0.5;
-    vector<Car *> car;
-    //vector<glm::vec3> bonesBinds;
-    vector<PhysicalBody *> bonesBodies;
-    vector<PhysicalConstraint *> bonesConstrs;
+    vector<Car *> car; 
 
     int currentMode = EDITOR_MODE_IDLE;
     int lastMode = EDITOR_MODE_IDLE;

@@ -175,20 +175,24 @@ vec4 getLighting(){
     float mipmap2 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 11.2467).x;
     float mipmap3 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 151.2467).x ;
     float roughness2 = clamp((pow(mipmap1/ textureQueryLevels(waterTileTex), 1.0)) , 0.0, 13.0);
-    float roughness = clamp(sqrt(hitdist) * 0.01, 0.0, 0.6);//clamp(roughness2 , 0.0, 1.0);
+    float hdstmp = hitdist * 0.0000005;
+    float roughness =  1.0 - clamp(1.0 / (sqrt(sqrt(hdstmp)) * 10.0 ), 0.0, 0.9);//clamp(roughness2 , 0.0, 1.0);
+//    roughness *= roughness;
+    float gloss = 1.0 - roughness;
+    //roughness *= 0.8;
     //return vec4(1) * roughness;
-    MIP = roughness * textureQueryLevels(waterTileTex);
+    //MIP = roughness;// * textureQueryLevels(waterTileTex);
     //mipmap1 *= 0.0;
-    float height1  = heightwater(hitpos.xz);
+    float height1  = heightwaterXOLO(hitpos.xz, vec2(0.0), 0.0);
    // float foam  = foamwater(hitpos.xz, 0);
-    float height2  = heightwaterD(hitpos.xz, 0.8 * textureQueryLevels(waterTileTex));
+    float height2  = height1;
 
     float foam = getFoam(hitpos);
 
     vec3 origdir = dir;
 
     vec3 normal = normalx(hitpos, 0.1, roughness * 0.3);
-//    normal = mix(normal, VECTOR_UP, roughness * roughness);
+    normal = mix(normal, VECTOR_UP, roughness);
    // return pow(max(0.0, dot(normal, dayData.sunDir)), 10.0) * vec4(1);
   //  return vec4(normal.xyzz * vec4(1,0.2,1,0));
 
@@ -229,7 +233,7 @@ vec4 getLighting(){
         hitpos,
         origdir * camdist,
         camdist,
-        clamp(roughness * 0.4 - 0.1, 0.0, 1.0),
+        clamp(roughness * 0.4 , 0.0, 1.0),
         1.0
     );
     //return vec4(foam);

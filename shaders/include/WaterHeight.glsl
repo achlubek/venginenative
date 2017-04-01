@@ -10,7 +10,7 @@ float maxmip = textureQueryLevels(waterTileTex);
 
 float wave(vec2 uv, vec2 emitter, float speed, float phase, float timeshift){
 	float dst = distance(uv, emitter);
-	return pow(EULER, sin(dst * phase - (Time + timeshift) * speed)) / EULER;
+	return pow(EULER, sin(dst * phase - (Time + timeshift) * speed));
 }
 vec2 wavedrag(vec2 uv, vec2 emitter){
 	return normalize(uv - emitter);
@@ -51,9 +51,9 @@ float getwaves(vec2 position, int numiters){
     float ws = 0.0;
     for(int i=0;i<numiters;i++){
         vec2 p = vec2(sin(iter), cos(iter)) * 30.0;
-        float res = wave(position, p, speed, phase, 0.0);
-        float res2 = wave(position, p, speed, phase, 0.006);
-        position -= wavedrag(position, p) * (res - res2) * weight * 1.7 ;
+        float res = wave(position, p, speed, phase, 0.0) * IEULER;
+        float res2 = wave(position, p, speed, phase, 0.006) * IEULER;
+        position -= wavedrag(position, p) * (res - res2) * weight * 4.0 ;
         w += res * weight;
         iter += 12.0;
         ws += weight;
@@ -124,7 +124,7 @@ float heightwaterHI2(vec2 pos){
     return (pow(resx / w * 2.0, 1.0));
 }
 float getwavesHI(vec2 uv, float details){
-	return (getwaves(uv, 30));// + details * 0.027 * heightwaterHI2(uv * 0.1  );
+	return (getwaves(uv, 33));// + details * 0.027 * heightwaterHI2(uv * 0.1  );
 }
 
 
