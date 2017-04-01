@@ -253,6 +253,38 @@ vec2 projectsunrsm(vec3 pos){
 
 uniform float WaterSpeed;
 #include WaterHeight.glsl
+
+vec3 applyAirLayer(vec3 dir, vec3 color, vec3 atma, float height){
+    vec3 volumetrix = vec3(0.0);
+    float volumetrix2 = 0.0;
+    int steps = 32;
+    float stepsize = 1.0 / 32.0;
+    float rd = rand2sTime(UV);
+    float iter = rd * stepsize;
+    vec3 start = CameraPosition;
+    float atmceil = rsi2(Ray(toplanetspace(CameraPosition), dir), Sphere(vec3(0.0), planetradius + min(height, 10000.0)));
+    float waterfloor = min(9000.0, intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0)));
+    float LN = length(currentData.normal);
+    vec3 realpos = mix(CameraPosition + dir * (waterfloor > 0.0 ? waterfloor : atmceil), currentData.worldPos, step(0.01, LN));
+    vec3 end = realpos;
+    float point_full_coverage = atmosphereradius * 0.5;
+    float overall_coverage = linearstep(0.0, point_full_coverage, distance(start, end));
+    for(int i=0;i<steps ;i++){
+        vec3 p = mix(start, end, iter * iter * iter );
+        float coverage = 1.0 - linearstep(0.0, point_full_coverage, distance(start, p));
+        float vis = clamp(CSMQueryVisibilitySimple(p), 0.0, 1.0);
+
+        volumetrix2 += vis;
+        volumetrix += atma * coverage * (1.0 - linearstep(0.0, height, p.y));
+
+        iter += stepsize;
+    }
+    //color = mix(color + min(coveragex, 1.0) * atma * pow(volumetrix2, 6.0), atma * volumetrix2, length(currentData.normal) > 0.01 ? min(coveragex, 1.0) : 0.0);
+    if(LN > 0.01 || waterfloor > 0.0) color = mix(clamp(color, 0.0, 10000.0), volumetrix * clamp(volumetrix2 * stepsize, 0.0, 1.0) * stepsize, overall_coverage);
+    else color *=pow( stepsize * volumetrix2, 1.0);
+    return color;
+}
+
 vec4 shade(){
     vec3 color = vec3(0);
     if(CombineStep == STEP_PREVIOUS_SUN){
@@ -332,8 +364,9 @@ vec4 shade(){
         color += rsmres;
 
         vec3 d = dayData.sunDir + vec3(dir.x, dir.y* 0.5 + 0.5, dir.z);//, vec3(dayData.sunDir.x, 0.1, dayData.sunDir.y), max(0.0, -dir.y * 0.9 + 0.1)) : dir;
+        d.y = max(0.3, d.y);
         vec2 disp = vec2(0.2, 0.0);
-        vec3 atma = textureLod(atmScattTex, d, 3.0).rgb;
+        vec3 atma = textureLod(atmScattTex, d, 3.0).rgb *4.0* (max(0.0, dayData.sunDir.y) * 0.9 + 0.1);
         /*atma += textureLod(atmScattTex, d + disp.xyy, 3.0).rgb;
         atma += textureLod(atmScattTex, d + disp.yxy, 3.0).rgb;
         atma += textureLod(atmScattTex, d + disp.yyx, 3.0).rgb;
@@ -343,37 +376,7 @@ vec4 shade(){
         atma /= 7.0;*/
         float dim = 1.0;//dir.y > 0.0 ? 1.0 : (1.0 / (-dir.y * 11.0 + 1.0));
 
-        vec3 volumetrix = vec3(0.0);
-        float volumetrix2 = 0.0;
-        int steps = 32;
-        float stepsize = 1.0 / 32.0;
-        float rd = rand2sTime(UV);
-        float iter = rd * stepsize;
-        vec3 start = CameraPosition;
-        float atmceil = rsi2(Ray(toplanetspace(CameraPosition), dir), Sphere(vec3(0.0), planetradius + 16000.0));
-        float waterfloor = min(9000.0, intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0)));
-        float LN = length(currentData.normal);
-        vec3 realpos = mix(CameraPosition + dir * (waterfloor > 0.0 ? waterfloor : atmceil), currentData.worldPos, step(0.01, LN));
-        vec3 end = realpos;
-        float point_full_coverage = atmosphereradius * 0.1;
-        float overall_coverage = linearstep(0.0, point_full_coverage, distance(start, end));
-        float weight = distance(start, end) * stepsize * 0.1;
-        float coveragex = 0.0;
-        vec3 suncol = getSunColorDirectly(0.0);
-        for(int i=0;i<steps ;i++){
-            vec3 p = mix(start, end, iter * iter * iter );
-            float coverage = 1.0 - linearstep(0.0, point_full_coverage, distance(start, p));
-            float vis = clamp(CSMQueryVisibilitySimple(p), 0.0, 1.0);
-
-            volumetrix2 += vis;
-            volumetrix += atma * coverage;
-            coveragex += 1.0 - coverage;
-
-            iter += stepsize;
-        }
-        //color = mix(color + min(coveragex, 1.0) * atma * pow(volumetrix2, 6.0), atma * volumetrix2, length(currentData.normal) > 0.01 ? min(coveragex, 1.0) : 0.0);
-        if(LN > 0.01 || waterfloor > 0.0) color = mix(clamp(color, 0.0, 10000.0), dim * volumetrix * clamp(volumetrix2 * stepsize, 0.0, 1.0) * stepsize, overall_coverage);
-        else color *=pow( stepsize * volumetrix2, 1.0);
+        color = applyAirLayer(dir, color, atma, 16000.0);
         //color = mix(color, volumetrix, overall_coverage);
         //color = textureLod(sunRSMTex, UV, 0.0).rgb;
         color = tonemap( color);

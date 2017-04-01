@@ -131,7 +131,7 @@ vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
         320.0,                           // intensity of the sun
         planetradius,                         // radius of the planet in meters
         6378000.1 + 80000.0,                         // radius of the atmosphere in meters
-        pow(vec3(50.0/255.0, 77.0/255.0, 183.0/255.0), vec3(2.4)) * 0.00005, // Rayleigh scattering coefficient
+        pow(vec3(50.0/255.0, 111.0/255.0, 183.0/255.0), vec3(2.4)) * 0.00002, // Rayleigh scattering coefficient
     //    vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
     //    vec3(0.05e-5, 0.10e-5, 0.25e-5) * 2.0, // Rayleigh scattering coefficient
       //  vec3(4.5e-6, 10.0e-6, 2.4e-6), // Rayleigh scattering coefficient

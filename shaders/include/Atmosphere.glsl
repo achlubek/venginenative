@@ -242,7 +242,7 @@ float internalmarchconservativeCoverageOnly1StepOnly(int s, vec3 p1, vec3 p2, fl
 
 vec2 internalmarchconservative(vec3 p1, vec3 p2){
     int stepsmult = int(abs(CloudsFloor - CloudsCeil) * 0.001);
-    int stepcount = 1 + stepsmult;
+    int stepcount = 21 + stepsmult;
     float stepsize = 1.0 / float(stepcount);
     float rd = fract(rand2sTime(UV)) * stepsize;
     float c = 0.0;

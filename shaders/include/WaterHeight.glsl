@@ -8,14 +8,17 @@ float maxmip = textureQueryLevels(waterTileTex);
 
 #include ProceduralValueNoise.glsl
 
-float wave(vec2 uv, vec2 emitter, float speed, float phase){
+float wave(vec2 uv, vec2 emitter, float speed, float phase, float timeshift){
 	float dst = distance(uv, emitter);
-	return pow((0.5 + 0.5 * sin(dst * phase - Time * speed * WaterSpeed)), 3.0);
+	return pow(EULER, sin(dst * phase - (Time + timeshift) * speed)) / EULER;
+}
+vec2 wavedrag(vec2 uv, vec2 emitter){
+	return normalize(uv - emitter);
 }
 
-float getwaves(vec2 position){
-	position *= 0.1;
-	float w = wave(position, vec2(70.3, 60.4), 1.0, 4.5) * 0.5;
+float getwaves(vec2 position, int numiters){
+	position *= 0.1;/*
+	float w = wave(position, vec2(70.3, 60.4), 1.0, 14.0) * 0.5;
 	w += wave(position, vec2(60.3, -55.4), 1.0, 5.0) * 0.5;
 
 	w += wave(position, vec2(-74.3, 50.4), 1.0, 4.0) * 0.5;
@@ -23,13 +26,13 @@ float getwaves(vec2 position){
 
 
 	w += wave(position, vec2(-700.3, 500.4), 2.1, 8.0) * 0.1;
-	w += wave(position, vec2(700.3, -500.4), 2.4, 8.8) * 0.1;
+	w += wave(position, vec2(30.3, -200.4), 2.4, 8.8) * 0.1;
 
-	w += wave(position, vec2(-700.3, -500.4), 2.6, 9.0) * 0.1;
-	w += wave(position, vec2(-700.3, -500.4), 2.7, 9.6) * 0.1;
+	w += wave(position, vec2(40.3, -50.4), 2.6, 9.0) * 0.1;
+	w += wave(position, vec2(70.3, 10.4), 2.7, 9.6) * 0.1;
 
-	w += wave(position, vec2(300.3, -760.4), 2.0, 12.0) * 0.08;
-	w += wave(position, vec2(-300.3, -400.4), 2.230, 13.0) * 0.08;
+	w += wave(position, vec2(30.3, -23.4), 2.0, 12.0) * 0.08;
+	w += wave(position, vec2(-20.3, -4.4), 2.230, 13.0) * 0.08;
 
 	w += wave(position, vec2(-100.3, -760.4), 2.0, 14.0) * 0.08;
 	w += wave(position, vec2(-100.3, 400.4), 2.230, 15.0) * 0.08;
@@ -39,9 +42,26 @@ float getwaves(vec2 position){
 
 	w += wave(position, vec2(-100.3, -760.4), 2.0, 24.0) * 0.08;
 	w += wave(position, vec2(-100.3, 400.4), 2.230, 22.0) * 0.08;
-
-
-    return w * 0.44;
+        return w * 0.14;*/
+    float iter = 0.0;
+    float phase = 6.0;
+    float speed = 2.0 * WaterSpeed;
+    float weight = 1.0;
+    float w = 0.0;
+    float ws = 0.0;
+    for(int i=0;i<numiters;i++){
+        vec2 p = vec2(sin(iter), cos(iter)) * 30.0;
+        float res = wave(position, p, speed, phase, 0.0);
+        float res2 = wave(position, p, speed, phase, 0.006);
+        position -= wavedrag(position, p) * (res - res2) * weight * 1.7 ;
+        w += res * weight;
+        iter += 12.0;
+        ws += weight;
+        weight = mix(weight, 0.0, 0.2);
+        phase *= 1.2;
+        speed *= 1.02;
+    }
+    return w / ws;
 }
 
 
@@ -79,38 +99,32 @@ float supernoise(vec2 x){
 #define snoisesinpow2(a,b) pow(cosinelinear(supernoise(a)), b)
 #define snoisesinpow3(a,b) pow(1.0 - abs(supernoise(a ) - 0.5) * 2.0, b)
 #define snoisesinpow4X(a,b) pow(1.0 - 2.0 * abs(supernoise(a) - 0.5), b)
-#define snoisesinpow4(a,b) pow(cosinelinear(1.0 - 2.0 * abs(supernoise(a) - 0.5)), b)
+#define snoisesinpow4(a,b) pow(supernoise3d(a), b)
 #define snoisesinpow5(a,b) pow(1.0 - abs(0.5 - supernoise3d(vec3(a, Time * 0.3 * WaterSpeed))) * 2.0, b)
 #define snoisesinpow6(a,b) pow(1.0 - abs(0.5 - supernoise3d(vec3(a, Time * 0.3 * WaterSpeed))) * 2.0, b)
 
 float heightwaterHI2(vec2 pos){
     float resx = 0.0;
-    pos *= 6.0;
+    pos *= 12.0;
     float w = 0.0;
     float wz = 1.0;
-    float chop = 6.0;
+    float chop = 3.0;
     float tmod = 810.1;
 
     for(int i=0;i<6;i++){
-        vec2 t = vec2(tmod * Time*0.00018);
-        float x1 = snoisesinpow4X(pos + t, chop);
-        float x2 = snoisesinpow4(pos + t, chop);
-        resx += wz * mix(x1 * x2, x2, supernoise(pos + t) * 0.5 + 0.5) * 2.5;
+        vec2 t = vec2(tmod * Time*0.0018);
+        float x1 = snoisesinpow4(vec3(pos + t, Time ), chop);
+        resx += wz * x1;
         w += wz * 1.0;
-        x1 = snoisesinpow4X(pos - t, chop);
-        x2 = snoisesinpow4(pos - t, chop);
-        resx += wz * mix(x1 * x2, x2, supernoise(pos - t) * 0.5 + 0.5) * 2.5;
-        w += wz * 1.0;
-        chop = mix(chop, 5.0, 0.3);
-        wz *= 0.4;
+        wz *= 0.3;
         pos *= vec2(2.1, 1.9);
-        tmod *= 0.8;
+        //tmod *= 0.8;
     }
     w *= 0.55;
     return (pow(resx / w * 2.0, 1.0));
 }
 float getwavesHI(vec2 uv, float details){
-	return (getwaves(uv)) + details * 0.09 * heightwaterHI2(uv * 0.1  );
+	return (getwaves(uv, 30));// + details * 0.027 * heightwaterHI2(uv * 0.1  );
 }
 
 
@@ -121,7 +135,7 @@ vec2 heightwaterXO(vec2 uv, vec2 offset, float mipmap){
 }
 float heightwaterXOLO(vec2 uv, vec2 offset, float mipmap){
 
-    return getwaves(uv * 0.01735 * WaterScale) * (1.0 - smoothstep(0.0, 7.0, mipmap));
+    return getwaves(uv * 0.01735 * WaterScale, 16) * (1.0 - smoothstep(0.0, 7.0, mipmap));
 
 }
 

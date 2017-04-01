@@ -727,7 +727,7 @@ void EditorApp::onBind()
     auto xt = game->asset->loadMeshFile("2dplane.mesh3d");
     game->world->scene->addMesh3d(xt);
 
-    game->world->scene->addMesh3d(game->asset->loadMeshFile("gory.mesh3d"));
+  //  game->world->scene->addMesh3d(game->asset->loadMeshFile("gory.mesh3d"));
 
     game->invoke([&]() {
         auto phys = Game::instance->world->physics;
