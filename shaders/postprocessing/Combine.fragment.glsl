@@ -6,6 +6,7 @@ layout(binding = 5) uniform sampler2D directTex;
 layout(binding = 6) uniform sampler2D alTex;
 //layout(binding = 16) uniform sampler2D aoxTex;
 //layout(binding = 20) uniform sampler2D fogTex;
+layout(binding = 15) uniform sampler2D waterFoamTex;
 layout(binding = 21) uniform sampler2D waterColorTex;
 layout(binding = 22) uniform sampler2D inputTex;
 layout(binding = 23) uniform sampler2D aboveViewDataTex;
@@ -272,9 +273,9 @@ vec3 applyAirLayer(vec3 dir, vec3 color, vec3 atma, float height){
     for(int i=0;i<steps ;i++){
         vec3 p = mix(start, end, iter * iter * iter );
         float coverage = 1.0 - linearstep(0.0, point_full_coverage, distance(start, p));
-        float vis = clamp(CSMQueryVisibilitySimple(p), 0.0, 1.0);
+        //float vis = clamp(CSMQueryVisibilitySimple(p), 0.0, 1.0);
 
-        volumetrix2 += vis;
+        volumetrix2 += 1.0;//vis;
         volumetrix += atma * coverage * (1.0 - linearstep(0.0, height, p.y));
 
         iter += stepsize;
@@ -285,13 +286,27 @@ vec3 applyAirLayer(vec3 dir, vec3 color, vec3 atma, float height){
     return color;
 }
 
+uniform float AboveSpan;
+
+vec2 project_above(vec3 pos){
+    vec2 a = ((pos - CameraPosition).xz / AboveSpan) * 0.5 + 0.5;
+    //a.y = 1.0 - a.y;
+    a.x = 1.0 - a.x;
+    return a;
+}
+
+float getFoam(vec3 pos){
+    vec2 u = project_above(pos);
+    if(u.x<=0.0 || u.y<=0.0 || u.x>=1.0 || u.y>=1.0) return 0.0;
+    return textureLod(waterFoamTex, u, 0.0).r;
+}
 vec4 shade(){
     vec3 color = vec3(0);
     if(CombineStep == STEP_PREVIOUS_SUN){
         color = integrateStepsAndSun();
     } else {
         color = integrateCloudsWater();
-
+        return vec4(tonemap(color + getFoam(currentData.worldPos)), 1.0);
 
         vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
         vec3 dirX = reconstructCameraSpaceDistance(vec2(0.5), 1.0);

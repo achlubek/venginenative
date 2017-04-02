@@ -17,32 +17,7 @@ vec2 wavedrag(vec2 uv, vec2 emitter){
 }
 
 float getwaves(vec2 position, int numiters){
-	position *= 0.1;/*
-	float w = wave(position, vec2(70.3, 60.4), 1.0, 14.0) * 0.5;
-	w += wave(position, vec2(60.3, -55.4), 1.0, 5.0) * 0.5;
-
-	w += wave(position, vec2(-74.3, 50.4), 1.0, 4.0) * 0.5;
-	w += wave(position, vec2(-60.3, -70.4), 1.0, 4.7) * 0.5;
-
-
-	w += wave(position, vec2(-700.3, 500.4), 2.1, 8.0) * 0.1;
-	w += wave(position, vec2(30.3, -200.4), 2.4, 8.8) * 0.1;
-
-	w += wave(position, vec2(40.3, -50.4), 2.6, 9.0) * 0.1;
-	w += wave(position, vec2(70.3, 10.4), 2.7, 9.6) * 0.1;
-
-	w += wave(position, vec2(30.3, -23.4), 2.0, 12.0) * 0.08;
-	w += wave(position, vec2(-20.3, -4.4), 2.230, 13.0) * 0.08;
-
-	w += wave(position, vec2(-100.3, -760.4), 2.0, 14.0) * 0.08;
-	w += wave(position, vec2(-100.3, 400.4), 2.230, 15.0) * 0.08;
-
-	w += wave(position, vec2(300.3, -760.4), 2.0, 22.0) * 0.08;
-	w += wave(position, vec2(-300.3, -400.4), 2.230, 23.0) * 0.08;
-
-	w += wave(position, vec2(-100.3, -760.4), 2.0, 24.0) * 0.08;
-	w += wave(position, vec2(-100.3, 400.4), 2.230, 22.0) * 0.08;
-        return w * 0.14;*/
+	position *= 0.1;
     float iter = 0.0;
     float phase = 6.0;
     float speed = 2.0 * WaterSpeed;
@@ -55,6 +30,29 @@ float getwaves(vec2 position, int numiters){
         float res2 = wave(position, p, speed, phase, 0.006) * IEULER;
         position -= wavedrag(position, p) * (res - res2) * weight * 4.0 ;
         w += res * weight;
+        iter += 12.0;
+        ws += weight;
+        weight = mix(weight, 0.0, 0.2);
+        phase *= 1.2;
+        speed *= 1.02;
+    }
+    return w / ws;
+}
+
+vec2 getFlow(vec2 position, int numiters){
+	position *= 0.1;
+    float iter = 0.0;
+    float phase = 6.0;
+    float speed = 2.0 * WaterSpeed;
+    float weight = 1.0;
+    vec2 w = vec2(0.0);
+    float ws = 0.0;
+    for(int i=0;i<numiters;i++){
+        vec2 p = vec2(sin(iter), cos(iter)) * 30.0;
+        float res = wave(position, p, speed, phase, 0.0) * IEULER;
+        float res2 = wave(position, p, speed, phase, 0.006) * IEULER;
+        w += -wavedrag(position, p) * (res - res2) * weight * 4.0 ;
+        //w += res * weight;
         iter += 12.0;
         ws += weight;
         weight = mix(weight, 0.0, 0.2);
@@ -136,6 +134,11 @@ vec2 heightwaterXO(vec2 uv, vec2 offset, float mipmap){
 float heightwaterXOLO(vec2 uv, vec2 offset, float mipmap){
 
     return getwaves(uv * 0.01735 * WaterScale, 16) * (1.0 - smoothstep(0.0, 7.0, mipmap));
+
+}
+vec2 heightflow(vec2 uv){
+
+    return getFlow(uv * 0.01735 * WaterScale, 16);// * (1.0 - smoothstep(0.0, 7.0, mipmap));
 
 }
 

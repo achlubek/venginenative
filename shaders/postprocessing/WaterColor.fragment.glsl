@@ -165,6 +165,7 @@ vec4 getLighting(){
     hitdst = min(hitdist, hitdst);
     vec3 hitpos = CameraPosition + reconstructCameraSpaceDistance(UV, hitdist);
 
+    float foam = getFoam(hitpos);
     float planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
 
     float planethit2 = intersectPlane(CameraPosition, dir, vec3(0.0, WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
@@ -187,7 +188,6 @@ vec4 getLighting(){
    // float foam  = foamwater(hitpos.xz, 0);
     float height2  = height1;
 
-    float foam = getFoam(hitpos);
 
     vec3 origdir = dir;
 
@@ -285,7 +285,8 @@ vec4 getLighting(){
     vec3 refr2 = normalize(refr + vec3(0.0, 0.3, 0.0));
     float superscat = pow(max(0.0, dot(refr, dayData.sunDir)), 8.0) ;//* (1.0 - fresnel);
     result += csmvis * vec3(0.5,0.9,0.8) * superscat * getSunColorDirectly(0) * 18.0 * covercloud;
-    result = mix(result, vec3(2.0 * csmvis)  * getSunColorDirectly(0.0), smoothstep(0.3, 0.9, foam) * fbmHI2(hitpos * 1.0));
+
+    result = mix(result, vec3(21.0 * csmvis)  * getSunColorDirectly(0.0), smoothstep(0.0, 1.0, foam * 0.2) * fbmHI2(hitpos * 1.0));
     return  vec4(result  , 0.0);
 }
 

@@ -163,7 +163,7 @@ float cloudsDensity3D(vec3 pos){
     vec3 p = ps * 0.005 + CloudsOffset;
     //float density = fbmLOW( p);
     float density = fbmHI( p + fbmHI(p * 0.7) * 32.5 );
-    density /= 1.0 + getFronts(pos) * 7.0;
+    //density /= 1.0 + getFronts(pos) * 7.0;
     float measurement = (CloudsCeil - CloudsFloor) * 0.5;
     float mediana = (CloudsCeil + CloudsFloor) * 0.5;
     float mlt = (( 1.0 - (abs( getHeightOverSea(pos) - mediana ) / measurement )));
@@ -228,13 +228,13 @@ float internalmarchconservativeCoverageOnly1StepOnly(int s, vec3 p1, vec3 p2, fl
     float coverageinv = 1.0;
     float linear = distance(p1, mix(p1, p2, stepsize));
     float mult = stepsize;
-    for(int i=0;i<stepcount;i++){
+    //for(int i=0;i<stepcount;i++){
         vec3 pos = mix(p1, p2, iter + rd);
         float clouds = cloudsDensity3D(pos) * weight;
         coverageinv *= 1.0 - clouds;
         iter += stepsize;
-        if(coverageinv <= 0.0) break;
-    }
+//        if(coverageinv <= 0.0) break;
+    //}
 
     return clamp(coverageinv, 0.0, 1.0);
 }
@@ -242,7 +242,7 @@ float internalmarchconservativeCoverageOnly1StepOnly(int s, vec3 p1, vec3 p2, fl
 
 vec2 internalmarchconservative(vec3 p1, vec3 p2){
     int stepsmult = int(abs(CloudsFloor - CloudsCeil) * 0.001);
-    int stepcount = 21 + stepsmult;
+    int stepcount = 5 + stepsmult;
     float stepsize = 1.0 / float(stepcount);
     float rd = fract(rand2sTime(UV)) * stepsize;
     float c = 0.0;

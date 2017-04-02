@@ -655,25 +655,25 @@ void EditorApp::onBind()
     }
     //game->world->scene->addMesh3d(s);
     */
-    /*
+    
 
     int terrainparts = 10;
-    float fullsize = 6000.0;
-    float partsize = 600.0;
+    float fullsize = 3612.0;
+    float partsize = fullsize / 10.0;
     auto tex = new Texture2d("terrain_diffuse.png");
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
             stringstream ss0;
-            ss0 << "terr_lod0_" << x << "x" << y << ".raw";
+            ss0 << "real_terr_lod0_" << x << "x" << y << ".raw";
             stringstream ss1;
-            ss1 << "terr_lod1_" << x << "x" << y << ".raw";
+            ss1 << "real_terr_lod1_" << x << "x" << y << ".raw";
             stringstream ss2;
-            ss2 << "terr_lod2_" << x << "x" << y << ".raw";
+            ss2 << "real_terr_lod2_" << x << "x" << y << ".raw";
             auto mat = new Material();
-            mat->diffuseColorTex = tex;
+         //   mat->diffuseColorTex = tex;
             Mesh3d* m = Mesh3d::create(game->asset->loadObject3dInfoFile(ss0.str()), mat);
-            m->getInstance(0)->transformation->setPosition(vec3(partsize * x * 1.0f, -0.5, partsize*y * 1.0f));
-            m->getInstance(0)->transformation->setSize(vec3(1.0f));
+            m->getInstance(0)->transformation->setPosition(vec3(partsize * x * 1.0f, -220.5, partsize*y * 1.0f));
+            m->getInstance(0)->transformation->setSize(vec3(1.0f, 20.0f, 1.0f));
             m->getLodLevel(0)->distanceStart = 0.0f;
             m->getLodLevel(0)->distanceEnd = 650.0f;
 
@@ -683,7 +683,7 @@ void EditorApp::onBind()
         }
     }
 
-    */
+    
 
     //  t->name = "flagbase";
      // game->world->scene->addMesh(t);
