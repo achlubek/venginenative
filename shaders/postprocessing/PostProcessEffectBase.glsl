@@ -59,12 +59,12 @@ void createData(){
     float dist = textureLod(mrt_Distance_Bump_Tex, UV, 0).r;
     vec3 cameraSpace = reconstructCameraSpaceDistance(UV,dist);
     vec3 worldSpace = FromCameraSpace(cameraSpace);
-        
+
     currentData = PostProcessingData(
     albedo_roughness.rgb,
     normal_metalness.rgb,
     normalize(cross(
-        dFdx(worldSpace), 
+        dFdx(worldSpace),
         dFdy(worldSpace)
     )).xyz,
     worldSpace,
@@ -80,12 +80,12 @@ PostProcessingData loadData(vec2 uv){
     float dist = textureLod(mrt_Distance_Bump_Tex, uv, 0).r;
     vec3 cameraSpace = reconstructCameraSpaceDistance(uv,dist);
     vec3 worldSpace = FromCameraSpace(cameraSpace);
-        
+
     return PostProcessingData(
     albedo_roughness.rgb,
     normal_metalness.rgb,
     normalize(cross(
-        dFdx(worldSpace), 
+        dFdx(worldSpace),
         dFdy(worldSpace)
     )).xyz,
     worldSpace,

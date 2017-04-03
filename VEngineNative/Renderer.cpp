@@ -498,8 +498,8 @@ void Renderer::pick(Camera* camera, glm::vec2 uv)
             pickingNormal.y = datan[1];
             pickingNormal.z = datan[2];
 
-            free(datawp);
-            free(datan);
+            delete[] datawp;
+            delete[] datan;
         }
 
         pickingReady = true;
@@ -614,6 +614,7 @@ void Renderer::combine(int step)
     ambientOcclusionTexture->use(16);
     fresnelTexture->use(14);
     //fogTexture->use(20);
+    waterColorTexture->generateMipMaps();
     waterColorTexture->use(21);
     starsTexture->use(24);
     moonTexture->use(28);
@@ -710,7 +711,7 @@ void Renderer::prepareSunRSM()
     shader->setUniform("sunDir", dayData.sunDir);
 
     mat4 pmat = glm::ortho(-1, 1, -1, 1, -1, 1);
-    vec3 radius = vec3(128.0f);
+    vec3 radius = vec3(28.0f);
     sunRSMCamera->transformation->setPosition(currentCamera->transformation->getPosition());
     sunRSMCamera->transformation->setOrientation(glm::inverse(glm::lookAt(vec3(0), dayData.sunDir, (dayData.sunDir == vec3(0, -1, 0) ? vec3(0, 0, 1) : vec3(0, 1, 0)))));
     sunRSMCamera->transformation->setSize(radius);

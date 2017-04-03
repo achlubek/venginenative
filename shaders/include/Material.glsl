@@ -32,6 +32,11 @@ layout (std430, binding = 1) buffer MatBuffer
 #define roughnessTexScale ScaleTex_BR.zw
 #define metalnessTexScale ScaleTex_MZeroZero.xy
 
+float bumpTexMipMap = 0.0;
+float normalTexMipMap = 0.0;
+#define material_adjusted_roughness_bump() (bumpTexMipMap / textureQueryLevels(bumpTex))
+#define material_adjusted_roughness_normal() (bumpTexMipMap / textureQueryLevels(normalTex))
+
 float ParallaxHeightMultiplier = 1.03;
 float newParallaxHeight = 0;
 float parallaxScale = 0.02 * ParallaxHeightMultiplier;
@@ -47,26 +52,26 @@ vec2 adjustParallaxUV(vec2 uv){
         dot(eyevec, -nwpos)
     ));
     vec2 T = uv;
-   const float minLayers = 6;
+   const float minLayers = 16;
    const float maxLayersAngle = 11;
-   const float maxLayersDistance = 24;
+   const float maxLayersDistance = 54;
    float numLayers = mix(minLayers, maxLayersAngle, abs(dot(nwpos, V)));
    numLayers = mix(maxLayersDistance, numLayers, clamp(distance(CameraPosition, Input.WorldPos) * 1, 0.0, 1.0)) * ParallaxHeightMultiplier;
    float layerHeight = 1.0 / numLayers;
    float curLayerHeight = 0;
    vec2 dtex = parallaxScale * V.xy / V.z / numLayers;
    vec2 currentTextureCoords = T;
-   float heightFromTexture = 1.0 - texture(bumpTex, currentTextureCoords * bumpTexScale).r;
+   float heightFromTexture = 1.0 - textureLod(bumpTex, currentTextureCoords * bumpTexScale, bumpTexMipMap).r;
    int cnt = int(numLayers);
    while(heightFromTexture > curLayerHeight && cnt-- >= 0)
    {
       curLayerHeight += layerHeight;
       currentTextureCoords -= dtex;
-      heightFromTexture = 1.0 - texture(bumpTex, currentTextureCoords * bumpTexScale).r;
+      heightFromTexture = 1.0 - textureLod(bumpTex, currentTextureCoords * bumpTexScale, bumpTexMipMap).r;
    }
    vec2 prevTCoords = currentTextureCoords + dtex;
    float nextH = heightFromTexture - curLayerHeight;
-   float prevH = 1.0 - texture(bumpTex, prevTCoords * bumpTexScale).r - curLayerHeight + layerHeight;
+   float prevH = 1.0 - textureLod(bumpTex, prevTCoords * bumpTexScale, bumpTexMipMap).r - curLayerHeight + layerHeight;
    float weight = nextH / (nextH - prevH);
    vec2 finalTexCoords = prevTCoords * weight + currentTextureCoords * (1.0-weight);
    newParallaxHeight = curLayerHeight + prevH * weight + nextH * (1.0 - weight);
@@ -74,9 +79,9 @@ vec2 adjustParallaxUV(vec2 uv){
 }
 vec3 normalxb(vec2 pos, vec2 e){
     vec3 ex = vec3(e.x, e.y, 0.0);
-    vec3 a = vec3(pos.x, textureLod(bumpTex, pos.xy, 0.0).r * parallaxScale, pos.y);
-    vec3 b = vec3(pos.x - e.x, textureLod(bumpTex, pos.xy - ex.xz, 0.0).r * parallaxScale, pos.y);
-    vec3 c = vec3(pos.x       , textureLod(bumpTex, pos.xy + ex.zy, 0.0).r * parallaxScale, pos.y + e.y);
+    vec3 a = vec3(pos.x, textureLod(bumpTex, pos.xy, bumpTexMipMap).r * parallaxScale, pos.y);
+    vec3 b = vec3(pos.x - e.x, textureLod(bumpTex, pos.xy - ex.xz, bumpTexMipMap).r * parallaxScale, pos.y);
+    vec3 c = vec3(pos.x       , textureLod(bumpTex, pos.xy + ex.zy, bumpTexMipMap).r * parallaxScale, pos.y + e.y);
     vec3 normal = (cross(normalize(a-b), normalize(a-c)));
     return normalize(normal).xyz;
 }

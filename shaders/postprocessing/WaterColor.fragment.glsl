@@ -177,7 +177,7 @@ vec4 getLighting(){
     float mipmap3 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 151.2467).x ;
     float roughness2 = clamp((pow(mipmap1/ textureQueryLevels(waterTileTex), 1.0)) , 0.0, 13.0);
     float hdstmp = hitdist * 0.0000005;
-    float roughness =  1.0 - clamp(1.0 / (sqrt(sqrt(hdstmp)) * 10.0 ), 0.0, 0.9);//clamp(roughness2 , 0.0, 1.0);
+    float roughness =  max(0.0, (1.0 - clamp((1.0 / (((hdstmp)) * 12110.0 )), 0.0, 1.0)) * (0.4+ 0.6 * (1.0 - dot(dir, -VECTOR_UP))));//clamp(roughness2 , 0.0, 1.0);
 //    roughness *= roughness;
     float gloss = 1.0 - roughness;
     //roughness *= 0.8;
@@ -192,7 +192,7 @@ vec4 getLighting(){
     vec3 origdir = dir;
 
     vec3 normal = normalx(hitpos, 0.1, roughness * 0.3);
-    normal = mix(normal, VECTOR_UP, roughness);
+    normal = mix(normal, VECTOR_UP, 0.9 * roughness * roughness);
    // return pow(max(0.0, dot(normal, dayData.sunDir)), 10.0) * vec4(1);
   //  return vec4(normal.xyzz * vec4(1,0.2,1,0));
 

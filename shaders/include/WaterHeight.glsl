@@ -122,7 +122,7 @@ float heightwaterHI2(vec2 pos){
     return (pow(resx / w * 2.0, 1.0));
 }
 float getwavesHI(vec2 uv, float details){
-	return (getwaves(uv, 33));// + details * 0.027 * heightwaterHI2(uv * 0.1  );
+	return (getwaves(uv, 44));// + details * 0.027 * heightwaterHI2(uv * 0.1  );
 }
 
 

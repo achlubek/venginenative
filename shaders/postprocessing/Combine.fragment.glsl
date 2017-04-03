@@ -154,7 +154,7 @@ vec3 BoKeH(vec2 uv){
     float amountoriginal = getAmountForDistance(focus, dist) * LensBlurSize * 21.019;
 
     float amount = clamp(amountoriginal, 0.00, 0.017);
-    float xda = amount / 0.017;
+    float xda = amount / 0.011;
     if(amount < 0.0005) return fxaa(waterColorTex, UV).rgb;
     //float amount = getAmountForDistance(focus, dist);
     //return vec3(amount / 0.005);
@@ -163,12 +163,13 @@ vec3 BoKeH(vec2 uv){
     vec3 sum = vec3(0);
     float weight = 0.001;
     vec2 ratio = vec2(Resolution.y / Resolution.x, 1.0);
+    float rd = rand2sTime(UV);
     for(float x=0.0;x<6.283185;x+=stepsize){
-        for(float y=ringsize;y<1.0;y+=ringsize){
+        for(float y=ringsize * rd;y<1.0;y+=ringsize){
             vec2 displacement = vec2(sin(x + y * 2.54), cos(x + y * 2.54)) * ratio * (y) * amount;
             float distx = textureLod(waterColorTex, uv + displacement, 2.0 * xda).a;
             vec3 c = textureLod(waterColorTex, uv + displacement, 2.0 * xda).rgb;
-            float w = (length(c) + 0.3) ;//*   mix(max(0.0, 1.0 - abs(dist - distx)), 1.0, amount * 7.0);// * pow(1.0 - y, 2.0);
+            float w = (length(c) + 0.3) * (1.0 - y);//*   mix(max(0.0, 1.0 - abs(dist - distx)), 1.0, amount * 7.0);// * pow(1.0 - y, 2.0);
             sum += w * c;
             weight += w;
         }
@@ -306,7 +307,7 @@ vec4 shade(){
         color = integrateStepsAndSun();
     } else {
         color = integrateCloudsWater();
-        return vec4(tonemap(color + getFoam(currentData.worldPos)), 1.0);
+        //return vec4(tonemap(color + getFoam(currentData.worldPos)), 1.0);
 
         vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
         vec3 dirX = reconstructCameraSpaceDistance(vec2(0.5), 1.0);
@@ -359,24 +360,29 @@ vec4 shade(){
 
 
 //shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * 20.0 * getSunColorDirectly(0.0))
+/*
         vec3 csum = vec3(0.0);
         vec2 suncnt = projectsunrsm(currentData.worldPos);
-        for(int i=0;i<12;i++){
+        for(int i=0;i<112;i++){
             vec2 p = suncnt + 0.01 * randpoint2();
             vec3 albedo = textureLod(sunRSMTex, p, 5.0).rgb;
             vec3 wpos = textureLod(sunRSMWPosTex, p, 5.0).rgb;
             vec3 norm = textureLod(sunRSMNormTex, p, 5.0).rgb;
             float dist = distance(wpos, currentData.worldPos);
-            float att = 1.0 / (1.0 + dist * dist * 11.0);//* (1.0 - smoothstep(0.0, 2.4, dist));
-
-            vec3 ray_primary = att * albedo * getSunColorDirectly(0.0);
-            vec3 ray_secondary = (0.5 + 0.5 * dot(norm, -currentData.normal)) * max(0.0, dot(-norm, normalize(wpos - currentData.worldPos))) *
-              ray_primary * mix(currentData.diffuseColor, vec3(1.0), currentData.metalness);
-            csum += ray_secondary;
-        }
-        vec3 rsmres = 15.0 * csum / 12.0;
+            float att = 1.0 / (1.0 + dist * dist * 11.0);
+*/
+    //        vec3 ray_primary = att * albedo * getSunColorDirectly(0.0);
+        //    vec3 ray_secondary =
+        //    (0.5 + 0.5 * dot(norm, -currentData.normal)) *
+            //max(0.0, dot(-norm, normalize(wpos - currentData.worldPos))) *
+             // ray_primary *
+             // mix(currentData.diffuseColor, vec3(1.0), currentData.metalness);
+            //csum += albedo * att * max(0.0, dot(-norm, currentData.normal)) * max(0.0, dot(-norm, normalize(wpos - currentData.worldPos)));
+        /*}
+        vec3 rsmres =  csum / 112.0;
         rsmres /= 0.01 + length(rsmres) * 1.01;
         color += rsmres;
+        */
 
         vec3 d = dayData.sunDir + vec3(dir.x, dir.y* 0.5 + 0.5, dir.z);//, vec3(dayData.sunDir.x, 0.1, dayData.sunDir.y), max(0.0, -dir.y * 0.9 + 0.1)) : dir;
         d.y = max(0.3, d.y);

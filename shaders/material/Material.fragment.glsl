@@ -12,6 +12,7 @@ layout(location = 2) out float outDistance;
 #include ModelBuffer.glsl
 #include Mesh3dUniforms.glsl
 
+
 #include Material.glsl
 
 void outputMaterial(){
@@ -25,25 +26,29 @@ void outputMaterial(){
     vec3 tangent = normalize(Input.Tangent.rgb);
     float tangentSign = Input.Tangent.w;
     vec3 worldPos = Input.WorldPos;
+    bumpTexMipMap = textureQueryLod(bumpTex, UV).x;
+    normalTexMipMap = textureQueryLod(normalTex, UV).x;
     mat3 TBN = inverse(mat3(
         normalize(tangent),
         normalize(cross(normal, tangent)) * tangentSign,
         normalize(normal)
     ));
-    /*if(useBumpTexInt > 0){
+    if(useBumpTexInt > 0){
         UV = adjustParallaxUV(UV);
         normalmap = examineBumpMap(UV).xzy;
         normalmap.r *= -1.0;
-        normalmap.g *= -1.0; 
-    }*/
+        normalmap.g *= -1.0;
+        roughness = roughness + (1.0 - roughness) * material_adjusted_roughness_bump();
+    }
     if(useDiffuseColorTexInt > 0){
         diffuseColor = texture(diffuseColorTex, UV * diffuseColorTexScale).rgb;
     }
     if(useNormalTexInt > 0){
-        vec3 normalmaptex = normalize(texture(normalTex, UV * normalTexScale).rgb * 2 - 1);
+        vec3 normalmaptex = normalize(textureLod(normalTex, UV * normalTexScale, normalTexMipMap).rgb * 2.0 - 11.0);
         normalmaptex.r *= -1.0;
         normalmaptex.g *= -1.0;
         normalmap *= normalmaptex;
+        roughness = roughness + (1.0 - roughness) * material_adjusted_roughness_normal();
     }
     if(useRoughnessTexInt > 0){
         roughness = texture(roughnessTex, UV * roughnessTexScale).r;
@@ -52,12 +57,13 @@ void outputMaterial(){
         metalness = texture(metalnessTex, UV * metalnessTexScale).r;
     }
     if(useNormalTexInt > 0 || useBumpTexInt > 0){
-        normal = TBN * normalmap;
+        normal = TBN * normalmap;//normalize(mix(TBN * normalmap, normal, max(material_adjusted_roughness_normal(), material_adjusted_roughness_bump())));
+
     }
     normal = quat_mul_vec(ModelInfos[Input.instanceId].Rotation, normal);
 
     outAlbedoRoughness = vec4(diffuseColor, roughness);
-    outNormalsMetalness = vec4(normal, metalness);
+    outNormalsMetalness = vec4(normalize(normal), metalness);
 
     outDistance = max(0.01, distance(CameraPosition, worldPos));
     //gl_FragDepth = toLogDepth(outDistance, 20000.0);

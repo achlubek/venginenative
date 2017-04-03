@@ -39,7 +39,7 @@ glm::vec3 quat2vec3(glm::quat q) {
 
 void EditorApp::onRenderFrame(float elapsed)
 {
-    if (ragdoll != nullptr) ragdoll->update();
+  //  if (ragdoll != nullptr) ragdoll->update();
 
     if (currentMode == EDITOR_MODE_MOVE_CAMERA) {
         float speed = 0.1f;
@@ -613,12 +613,16 @@ void EditorApp::onBind()
     game->world->mainDisplayCamera = cam;
 
     game->setCursorMode(GLFW_CURSOR_NORMAL);
-    /*
-    auto t = game->asset->loadSceneFile("oldcity.scene");
+    
+    auto t = game->asset->loadSceneFile("cryteksponza.scene");
+    auto diftex = new Texture2d("2222.jpg");
+    auto bumtex = new Texture2d("1111.jpg");
     for (int i = 0; i < t->getMesh3ds().size(); i++) {
         t->getMesh3ds()[i]->getInstance(0)->transformation->translate(vec3(0.0, 1.5, 0.0));
+        t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColorTex = diftex;
+        t->getMesh3ds()[i]->getLodLevel(0)->material->bumpTex = bumtex;
         game->world->scene->addMesh3d(t->getMesh3ds()[i]);
-    }*/
+    }
 
     /*
     auto s = game->asset->loadMeshFile("grass_base.mesh3d");
@@ -656,7 +660,7 @@ void EditorApp::onBind()
     //game->world->scene->addMesh3d(s);
     */
     
-
+    /*
     int terrainparts = 10;
     float fullsize = 3612.0;
     float partsize = fullsize / 10.0;
@@ -682,7 +686,7 @@ void EditorApp::onBind()
             game->world->scene->addMesh3d(m);
         }
     }
-
+    */
     
 
     //  t->name = "flagbase";
@@ -806,12 +810,12 @@ void EditorApp::onBind()
 
     // SKELETON TEST
 
-    auto skel = game->asset->loadSkeletonFile("tree.skeleton");
-    auto mrstickobj = game->asset->loadObject3dInfoFile("tree.raw");
-    mrstick = Mesh3d::create(mrstickobj, game->asset->loadMaterialFile("red.material"));
-    mrstick->getLodLevel(0)->skeleton = skel; 
-    ragdoll = new RagdollController(mrstick);
-    game->world->scene->addMesh3d(mrstick);
+  //  auto skel = game->asset->loadSkeletonFile("tree.skeleton");
+  //  auto mrstickobj = game->asset->loadObject3dInfoFile("tree.raw");
+  //  mrstick = Mesh3d::create(mrstickobj, game->asset->loadMaterialFile("red.material"));
+  //  mrstick->getLodLevel(0)->skeleton = skel; 
+  //  ragdoll = new RagdollController(mrstick);
+   // game->world->scene->addMesh3d(mrstick);
 
 }
 

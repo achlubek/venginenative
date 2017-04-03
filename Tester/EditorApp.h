@@ -37,7 +37,7 @@ public:
     Mesh3d * pickedUpMesh = nullptr, *mrstick;
     Mesh3dLodLevel * pickedUpMeshLodLevel = nullptr;
     Mesh3dInstance * pickedUpMeshInstance = nullptr;
-    RagdollController * ragdoll = nullptr;
+    //RagdollController * ragdoll = nullptr;
     vector<string> commandHistory;
     string currentCommandText;
     Mesh3d * cursor3dArrow;

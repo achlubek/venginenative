@@ -77,7 +77,7 @@ float raymarchwater(vec3 start, vec3 end, int stepsI){
         pos = mix(start, end, iter + rd);
         h = hlower + heightwaterXOLO(pos.xz, zer, mipmapx) * waterdepth;
         if((!isReallyUnderWater && h > pos.y) || (isReallyUnderWater && h < pos.y)) {
-            return raymarchwater2(mix(start, end, iter - stepsize + rd), mix(start, end, iter + stepsize + rd),8);
+            return raymarchwater2(mix(start, end, iter - stepsize + rd), mix(start, end, iter + stepsize + rd),18);
         //    return distance(pos, CameraPosition);
         }
         iter += stepsize;
@@ -109,7 +109,7 @@ float getWaterDistance(){
 	//	mipmapx = textureQueryLod(waterTileTex, (CameraPosition + dir * min(planethit, planethit2)).xz * WaterScale *  octavescale1).x;
         if(planethit > 0.0 && planethit2 > 0.0){
             //if(min(planethit, planethit2) < 6000.0){
-                dist = raymarchwater(CameraPosition  + dir * min(planethit, planethit2), CameraPosition + dir * max(planethit, planethit2), 48);
+                dist = raymarchwater(CameraPosition  + dir * min(planethit, planethit2), CameraPosition + dir * max(planethit, planethit2), int(17.0 * WaterWavesScale));
             //} else {
             //    dist = max(planethit, planethit2);
             //}//
