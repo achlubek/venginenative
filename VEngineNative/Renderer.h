@@ -49,6 +49,9 @@ public:
 	float noiseOctave6;
 	float noiseOctave7;
 	float noiseOctave8;
+    float fogHeight = 2000.0f;
+    float fogMaxDistance = 7000.0f;
+    glm::vec3 fogColor = glm::vec3(0.7, 0.8, 1.0);
 	float contrast;
 	float exposure;
 	float mieScattCoefficent;

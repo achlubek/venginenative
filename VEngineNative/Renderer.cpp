@@ -400,6 +400,10 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     sp->setUniform("NoiseOctave7", noiseOctave7);
     sp->setUniform("NoiseOctave8", noiseOctave8);
 
+    sp->setUniform("FogColor", fogColor);
+    sp->setUniform("FogMaxDistance", fogMaxDistance);
+    sp->setUniform("FogHeight", fogHeight);
+
 
     glm::mat4 sunRSMvpmatrix = sunRSMCamera->projectionMatrix * sunRSMCamera->transformation->getInverseWorldTransform();
     sp->setUniform("SunRSMVPMatrix", sunRSMvpmatrix);

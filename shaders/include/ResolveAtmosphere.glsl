@@ -340,7 +340,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     float rays = godrays(dir, raysteps);
 
     // hmm
-    vec3 SunC = getSunColor(roughness);// * max(0.0, dot(VECTOR_UP, dayData.sunDir));
+    vec3 SunC = getSunColorDirectly(roughness);// * max(0.0, dot(VECTOR_UP, dayData.sunDir));
     vec3 AtmDiffuse = getDiffuseAtmosphereColor();
     float Shadow = shadow;
 

@@ -319,7 +319,7 @@ void EditorApp::onRenderUIFrame(float elapsed)
     if (ImGui::SliderFloat("CloudsDensity", &Game::instance->renderer->cloudsDensityScale, 0.0f, 5.0f))reset();
     if (ImGui::SliderFloat("CloudsIntegration", &Game::instance->renderer->cloudsIntegrate, 0.3f, 0.999f))reset();
 
-    Game::instance->renderer->cloudsIntegrate = Game::instance->renderer->cloudsIntegrate * 0.997 + (0.99 * 0.003);
+    Game::instance->renderer->cloudsIntegrate = Game::instance->renderer->cloudsIntegrate * 0.97 + (0.89 * 0.03);
     Game::instance->renderer->cloudsIntegrate /= abs(Game::instance->renderer->dayElapsed - tmpDayElapsed) * 0.2 + 1.0;
 
     if (ImGui::SliderFloat3("CloudsOffset", (float*)&Game::instance->renderer->cloudsOffset, -1000.0f, 1000.0f))reset();
@@ -660,7 +660,7 @@ void EditorApp::onBind()
     //game->world->scene->addMesh3d(s);
     */
     
-    /*
+    
     int terrainparts = 10;
     float fullsize = 3612.0;
     float partsize = fullsize / 10.0;
@@ -686,7 +686,7 @@ void EditorApp::onBind()
             game->world->scene->addMesh3d(m);
         }
     }
-    */
+    
     
 
     //  t->name = "flagbase";

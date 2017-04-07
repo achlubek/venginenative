@@ -23,30 +23,21 @@ layout(binding = 29) uniform samplerCube resolvedAtmosphereTex;
 
 uniform int RenderPass;
 
-vec4 blurshadowsAOXA(vec3 dir, float roughness){
-    //if(CloudsDensityScale <= 0.010) return 0.0;
-    float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));
-    float mx = log2(roughness*1024+1)/log2(1024);
-    float mlvel = mx * levels;
-	return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
+vec4 blurshadowsAOXA(vec3 dir){
+//	return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
    // float dst = textureLod(coverageDistTex, dir, mlvel).g;
-    float aoc = 1.0;
+    float aoc = 0.0;
 
-    vec4 centerval = textureLod(cloudsCloudsTex, dir, mlvel).rgba;
-	float cluma = length(centerval);
-    float blurrange = 0.002 * dir.y;
+	vec4 cluma = vec4(0.0);
+    float blurrange = 0.001 * dir.y;
     for(int i=0;i<17;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
-        //float there = textureLod(coverageDistTex, rdp, mlvel).g;
-        //float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
-        vec4 th = textureLod(cloudsCloudsTex, rdp, mlvel).rgba;
-
-        cluma += length(textureLod(cloudsCloudsTex, rdp, mlvel).rgba);
+        cluma += textureLod(cloudsCloudsTex, rdp, 0.0).rgba;
         aoc += 1.0;
     }
     cluma /= aoc;
     //return centerval;
-    return normalize(centerval) * cluma;
+    return clamp(cluma, 0.0, 1000000.0);
 }
 
 vec4 shade(){
@@ -57,15 +48,13 @@ vec4 shade(){
     vec4 retavg = vec4(0);
 
     if(RenderPass == 0){
-        vec2 lastData = texture(cloudsCloudsTex, dir).rg;
+    vec4 lastData = blurshadowsAOXA(dir);
         vec2 val = raymarchCloudsRay();
-        retedg.rg = vec2(max(val.r, lastData.r), min(val.g, lastData.g));
+        //retedg.rg = vec2(max(val.r, lastData.r), min(val.g, lastData.g));
         retavg.rg = vec2(mix(val.r, lastData.r, CloudsIntegrate), val.g);
 	//	retavg.r = mix(retavg.r, retedg.r, 0.2);
 		//retavg.g = mix(retavg.g, retedg.g, 0.3);
     } else if(RenderPass == 1){
-        vec4 lastData = textureLod(cloudsCloudsTex, dir, 0.0).rgba;
-		vec3 AOGround = getCloudsAL(dir);
     //    AOGround += (SunC * val * SunDT);
 		/*
         retedg.g = min(AOGround, lastData.g);
@@ -82,8 +71,10 @@ vec4 shade(){
 	//	retavg.r = mix(retavg.r, retedg.r, 0.2);
 
         //vec3 blr = blurshadowsAOXA(dir, 0.0);
-        vec4 last = textureLod(cloudsCloudsTex, dir, 0.0).rgba;
-        retavg.r = mix(globalAoOutput, last.r, CloudsIntegrate);
+        vec4 last = blurshadowsAOXA(dir);
+        float shads = shadows();
+        retavg.r = mix(shads, last.r, CloudsIntegrate);
+        vec3 AOGround = getCloudsAL(dir, retavg.r);
         retavg.gba = mix(AOGround, last.gba, CloudsIntegrate);
     }
 

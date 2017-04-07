@@ -256,7 +256,7 @@ vec2 projectsunrsm(vec3 pos){
 uniform float WaterSpeed;
 #include WaterHeight.glsl
 
-vec3 applyAirLayer(vec3 dir, vec3 color, vec3 atma, float height){
+vec3 applyAirLayer(vec3 dir, vec3 color, vec3 colorLit, vec3 colorDiff, float height, float maxdist){
     vec3 volumetrix = vec3(0.0);
     float volumetrix2 = 0.0;
     int steps = 32;
@@ -264,26 +264,41 @@ vec3 applyAirLayer(vec3 dir, vec3 color, vec3 atma, float height){
     float rd = rand2sTime(UV);
     float iter = rd * stepsize;
     vec3 start = CameraPosition;
-    float atmceil = rsi2(Ray(toplanetspace(CameraPosition), dir), Sphere(vec3(0.0), planetradius + min(height, 10000.0)));
-    float waterfloor = min(9000.0, intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0)));
+    float theheight = rsi2(Ray(toplanetspace(CameraPosition), dir), Sphere(vec3(0.0), planetradius + height));
+    float atmceil = 0.0;
+    if(minhit > 0.0 && maxhit > 0.0) {
+        start += dir * theheight;
+        atmceil = rsi2(Ray(toplanetspace(CameraPosition), dir), Sphere(vec3(0.0), planetradius));
+        if(atmceil < 0.0) return color;
+    } else {
+        atmceil = theheight;
+    }
+    float waterfloor = rsi2(Ray(toplanetspace(CameraPosition), dir), Sphere(vec3(0.0), planetradius));
     float LN = length(currentData.normal);
     vec3 realpos = mix(CameraPosition + dir * (waterfloor > 0.0 ? waterfloor : atmceil), currentData.worldPos, step(0.01, LN));
     vec3 end = realpos;
-    float point_full_coverage = atmosphereradius * 0.5;
-    float overall_coverage = linearstep(0.0, point_full_coverage, distance(start, end));
+    float point_full_coverage = maxdist;
+    float overall_coverage = 0.0;
+    float coveragepart = linearstep(0.0, point_full_coverage, distance(start, end)) * stepsize * distance(start, end) * stepsize * 1.0;
+    coveragepart*=coveragepart;
+    float dirdotsun = dot(dir, dayData.sunDir) * 0.5 + 0.5;
+    float stdr = (1.0 - smart_inverse_dot(1.0 - dirdotsun, 2.0));
+    float sw = 0.0;
     for(int i=0;i<steps ;i++){
         vec3 p = mix(start, end, iter * iter * iter );
-        float coverage = 1.0 - linearstep(0.0, point_full_coverage, distance(start, p));
-        //float vis = clamp(CSMQueryVisibilitySimple(p), 0.0, 1.0);
-
-        volumetrix2 += 1.0;//vis;
-        volumetrix += atma * coverage * (1.0 - linearstep(0.0, height, p.y));
+        float coverage = coveragepart * (1.0 - linearstep(0.0, height, p.y));
+        float vis = clamp(CSMQueryVisibilitySimple(p), 0.0, 1.0);
+        volumetrix += vis * colorLit * stdr * max(0.0, 1.0 - overall_coverage) * distance(start, end) + colorDiff  * max(0.0, 1.0 - overall_coverage) * distance(start, end) ;
+        sw += max(0.0, 1.0 - overall_coverage) ;
+        overall_coverage += coverage;
 
         iter += stepsize;
     }
+    volumetrix /= sw;
     //color = mix(color + min(coveragex, 1.0) * atma * pow(volumetrix2, 6.0), atma * volumetrix2, length(currentData.normal) > 0.01 ? min(coveragex, 1.0) : 0.0);
-    if(LN > 0.01 || waterfloor > 0.0) color = mix(clamp(color, 0.0, 10000.0), volumetrix * clamp(volumetrix2 * stepsize, 0.0, 1.0) * stepsize, overall_coverage);
-    else color *=pow( stepsize * volumetrix2, 1.0);
+    //if(LN > 0.01 || waterfloor > 0.0) color = mix(clamp(color, 0.0, 10000.0), volumetrix * clamp(volumetrix2 * stepsize, 0.0, 1.0) * stepsize, overall_coverage);
+    //else color *=pow( stepsize * volumetrix2, 1.0);
+    color = mix(clamp(color, 0.0, 10000.0), volumetrix, min(1.0, overall_coverage));
     return color;
 }
 
@@ -397,7 +412,8 @@ vec4 shade(){
         atma /= 7.0;*/
         float dim = 1.0;//dir.y > 0.0 ? 1.0 : (1.0 / (-dir.y * 11.0 + 1.0));
 
-        color = applyAirLayer(dir, color, atma, 16000.0);
+        //color = applyAirLayer(dir, color, getSunColorDirectly(0.0), atma, 16000.0, 100000.0);
+        color = applyAirLayer(dir, color, getSunColorDirectly(0.0) * 0.15, vec3(0.1), 1010.0, 11111.0);
         //color = mix(color, volumetrix, overall_coverage);
         //color = textureLod(sunRSMTex, UV, 0.0).rgb;
         color = tonemap( color);
