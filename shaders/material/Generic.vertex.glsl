@@ -56,7 +56,10 @@ vec3 applySkeletonPose(vec4 v){
 }
 
 #include ModelBuffer.glsl
-
+float rand2sTime(vec2 co){
+    co *= Time;
+    return fract(sin(dot(co.xy,vec2(12.9898,78.233))) * 43758.5453);
+}
 void main(){
 
     vec4 v = vec4(in_position,1);
@@ -77,5 +80,6 @@ void main(){
     MeshID = MeshId_LodLevelId_ZeroZero.x;
     Output.Data.x = 1.0;
     Output.Data.y =  ( outpoint.z ) * 0.5 + 0.5 ;
+    //outpoint.xy += (1.0 / Resolution) * 12.0 * vec2(rand2sTime(v.zx), rand2sTime(v.xy + 1000.0));
     gl_Position = outpoint;// + vec4(0, 0.9, 0, 0);
 }

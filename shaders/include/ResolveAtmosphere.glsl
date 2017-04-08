@@ -473,7 +473,7 @@ vec3 vdao(){
 
         //p.y = abs(p.y);
         //float cx = visibility2(currentData.worldPos, currentData.worldPos + p * 1.0, currentData.cameraDistance, distance(CameraPosition, currentData.worldPos + p * 1.0));
-        c += 0.1 * shade_ray_env_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness, resolvedAtmosphereTex)).rgb, atmdiff);
+        c += 0.01 * shade_ray_env_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness, resolvedAtmosphereTex)).rgb, atmdiff);
     }
     return shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * 8.0 * getSunColorDirectly(0.0)) + c;// * ssao(currentData.worldPos);
 }

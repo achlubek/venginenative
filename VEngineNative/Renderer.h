@@ -213,9 +213,13 @@ private:
 	void cloudsResolve();
 
 	ShaderProgram *fxaaTonemapShader;
-	// Framebuffer *fxaaTonemapFbo;
-	 //Texture2d *fxaaTonemapTexture;
-	void fxaaTonemap();
+    Framebuffer *fxaaTonemapFboOdd;
+    Texture2d *fxaaTonemapTextureOdd;
+    Framebuffer *fxaaTonemapFboEven;
+    Texture2d *fxaaTonemapTextureEven;
+    bool fxaaUseOdd = false;
+	void fxaaTonemap(bool finalpass);
+    FrustumCone* lastCone = nullptr;
 
 	ShaderProgram *motionBlurShader;
 	Framebuffer *motionBlurFbo;

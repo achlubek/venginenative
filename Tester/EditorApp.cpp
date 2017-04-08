@@ -308,8 +308,17 @@ void EditorApp::onRenderUIFrame(float elapsed)
     //     ImGui::SliderFloat("metalness", &t->getLodLevel(0)->material->metalness, 0.0f, 1.0f);
     //ImGui::SliderFloat("FOV", &fovnew, 5.0f, 175.0f);
 #define reset() Game::instance->renderer->cloudsIntegrate = 0.0f;
-    if (ImGui::SliderFloat("Exposure", &Game::instance->renderer->exposure, 0.01f, 10.0f))reset();
-    if (ImGui::SliderFloat("Contrast", &Game::instance->renderer->contrast, 0.01f, 10.0f))reset();
+    ImGui::SliderFloat("Exposure", &Game::instance->renderer->exposure, 0.01f, 10.0f);
+    ImGui::SliderFloat("Contrast", &Game::instance->renderer->contrast, 0.01f, 10.0f);
+
+    if (ImGui::SliderFloat("FOV", &FOV, 15.0f, 150.0f)) {
+
+        cam->createProjectionPerspective(FOV, (float)game->width / (float)game->height, 0.01f, 10000);
+    }
+    ImGui::SliderFloat3("FogColor", &Game::instance->renderer->fogColor.x, 0.01f, 1.0f);
+    ImGui::SliderFloat("FogHeight", &Game::instance->renderer->fogHeight, 0.0f, 1000.0f);
+    ImGui::SliderFloat("FogMaxDist", &Game::instance->renderer->fogMaxDistance, 0.1f, 10000.0f);
+
     if (ImGui::SliderFloat("CloudsHeightStart", &Game::instance->renderer->cloudsFloor, 100.0f, 30000.0f))reset();
     if (ImGui::SliderFloat("CloudsHeightEnd", &Game::instance->renderer->cloudsCeil, 100.0f, 30000.0f))reset();
     if (ImGui::SliderFloat("CloudsThreshold", &Game::instance->renderer->cloudsThresholdLow, 0.0f, 1.0f))reset();
@@ -601,11 +610,10 @@ float noise3d(vec3 x) {
 void EditorApp::onBind()
 {
     cam = new Camera();
-    float fov = 85.0f;
-    float fovnew = 85.0f;
-    cam->createProjectionPerspective(fovnew, (float)game->width / (float)game->height, 0.01f, 10000);
+    FOV = 85.0f; 
+    cam->createProjectionPerspective(FOV, (float)game->width / (float)game->height, 0.01f, 10000);
     game->onWindowResize->add([&](int zero) {
-        cam->createProjectionPerspective(fovnew, (float)game->width / (float)game->height, 0.01f, 10000);
+        cam->createProjectionPerspective(FOV, (float)game->width / (float)game->height, 0.01f, 10000);
     });
     cam->transformation->translate(glm::vec3(16, 16, 16));
     glm::quat rot = glm::quat_cast(glm::lookAt(cam->transformation->getPosition(), glm::vec3(0), glm::vec3(0, 1, 0)));
@@ -619,8 +627,14 @@ void EditorApp::onBind()
     auto bumtex = new Texture2d("1111.jpg");
     for (int i = 0; i < t->getMesh3ds().size(); i++) {
         t->getMesh3ds()[i]->getInstance(0)->transformation->translate(vec3(0.0, 1.5, 0.0));
-        t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColorTex = diftex;
-        t->getMesh3ds()[i]->getLodLevel(0)->material->bumpTex = bumtex;
+        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(20.0, 0.0, 0.0))));
+        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(40.0, 0.0, 0.0))));
+        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(20.0, 0.0, 20.0))));
+        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(20.0, 0.0, 40.0))));
+        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(40.0, 0.0, 40.0))));
+        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(60.0, 0.0, 0.0))));
+      //  t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColorTex = diftex;
+       // t->getMesh3ds()[i]->getLodLevel(0)->material->bumpTex = bumtex;
         game->world->scene->addMesh3d(t->getMesh3ds()[i]);
     }
 
@@ -660,7 +674,7 @@ void EditorApp::onBind()
     //game->world->scene->addMesh3d(s);
     */
     
-    
+    /*
     int terrainparts = 10;
     float fullsize = 3612.0;
     float partsize = fullsize / 10.0;
@@ -686,7 +700,7 @@ void EditorApp::onBind()
             game->world->scene->addMesh3d(m);
         }
     }
-    
+    */
     
 
     //  t->name = "flagbase";

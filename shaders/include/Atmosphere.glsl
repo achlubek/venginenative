@@ -186,7 +186,7 @@ float cloudsDensity3D(vec3 pos){
     float h = getHeightOverSea(pos);
     float mlt = (( 1.0 - (abs( h - mediana ) / measurement )));
     float init = smoothstep(CloudsThresholdLow, CloudsThresholdHigh, density * mlt);
-    return  init * 0.5 ;
+    return  init;
 }
 
 float rand2s(vec2 co){

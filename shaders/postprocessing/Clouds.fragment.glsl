@@ -29,7 +29,7 @@ vec4 blurshadowsAOXA(vec3 dir){
     float aoc = 0.0;
 
 	vec4 cluma = vec4(0.0);
-    float blurrange = 0.001 * dir.y;
+    float blurrange = 0.001 * dir.y * dir.y;
     for(int i=0;i<17;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
         cluma += textureLod(cloudsCloudsTex, rdp, 0.0).rgba;

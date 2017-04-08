@@ -3,19 +3,19 @@
 #include PostProcessEffectBase.glsl
 
 layout(binding = 16) uniform sampler2D inputTex;
+layout(binding = 15) uniform sampler2D temporalBBTex;
 
 #include FXAA.glsl
 
 uniform float Time;
-
+uniform int IsFinalPass;
 vec4 shade(){
-    vec3 color = fxaa(inputTex, UV).rgb;
-   // vec3 t = textureLod(inputTex, UV, 1.0).rgb;
-   // float d = distance(color, t);
-  //  color = mix(color, textureLod(inputTex, UV, 2.0).rgb, smoothstep(0.0,  length(vec3(1.0)),d));
-
-   // vec3 color = textureLod(inputTex, UV, float(textureQueryLevels(inputTex) - 2.0)).rgb;
-   // vec3 color = BoKeH(UV);
-   //return vec4(vignette(UV, 1.2, 1.0));
-    return vec4((color), 1.0);
+    if(IsFinalPass == 1){
+        return textureLod(inputTex, UV, 0.0).rgba;
+    } else {
+        vec3 color = fxaa(inputTex, UV).rgb;
+        vec4 last = textureLod(temporalBBTex, UV, 0.0).rgba;
+        color = mix(color, last.rgb, 0.97);// / (1.0 + 10.0 * abs(currentData.cameraDistance - last.a)));
+        return vec4((color), currentData.cameraDistance);
+    }
 }

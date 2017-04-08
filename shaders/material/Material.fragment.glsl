@@ -14,9 +14,14 @@ layout(location = 2) out float outDistance;
 
 
 #include Material.glsl
-
+float rand2sTime(vec2 co){
+    co *= Time;
+    return fract(sin(dot(co.xy,vec2(12.9898,78.233))) * 43758.5453);
+}
 void outputMaterial(){
     vec2 UV = Input.TexCoord;
+    vec2 derivatives = vec2(dFdx(UV.x), dFdy(UV.y));
+    UV += derivatives * 1.0 * vec2(rand2sTime(UV), rand2sTime(UV + 1000.0));
     vec3 diffuseColor = DiffuseColor;
     float metalness = Metalness;
     float roughness = Roughness;
@@ -26,6 +31,7 @@ void outputMaterial(){
     vec3 tangent = normalize(Input.Tangent.rgb);
     float tangentSign = Input.Tangent.w;
     vec3 worldPos = Input.WorldPos;
+    diffuseColorTexMipMap = textureQueryLod(diffuseColorTex, UV).x;
     bumpTexMipMap = textureQueryLod(bumpTex, UV).x;
     normalTexMipMap = textureQueryLod(normalTex, UV).x;
     mat3 TBN = inverse(mat3(
@@ -41,14 +47,14 @@ void outputMaterial(){
         roughness = roughness + (1.0 - roughness) * material_adjusted_roughness_bump();
     }
     if(useDiffuseColorTexInt > 0){
-        diffuseColor = texture(diffuseColorTex, UV * diffuseColorTexScale).rgb;
+        diffuseColor = textureLod(diffuseColorTex, UV * diffuseColorTexScale, diffuseColorTexMipMap).rgb;
     }
     if(useNormalTexInt > 0){
-        vec3 normalmaptex = normalize(textureLod(normalTex, UV * normalTexScale, normalTexMipMap).rgb * 2.0 - 11.0);
+        vec3 normalmaptex = normalize(textureLod(normalTex, UV * normalTexScale, normalTexMipMap).rgb * 2.0 - 1.0);
         normalmaptex.r *= -1.0;
         normalmaptex.g *= -1.0;
         normalmap *= normalmaptex;
-        roughness = roughness + (1.0 - roughness) * material_adjusted_roughness_normal();
+    //    roughness = roughness + (1.0 - roughness) * material_adjusted_roughness_normal();
     }
     if(useRoughnessTexInt > 0){
         roughness = texture(roughnessTex, UV * roughnessTexScale).r;

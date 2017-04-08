@@ -25,6 +25,16 @@ glm::vec3 FrustumCone::reconstructDirection(glm::vec2 uv)
 
 }
 
+FrustumCone * FrustumCone::clone()
+{
+    auto f = new FrustumCone();
+    f->origin = origin;
+    f->leftBottom = leftBottom;
+    f->leftTop = leftTop;
+    f->rightBottom = rightBottom;
+    f->rightTop = rightTop;
+}
+
 vec3 FrustumCone::getDir(vec2 uv, mat4 inv)
 {
     vec4 clip = inv * vec4(uv.x, uv.y, 0.1, 1.0);

@@ -33,6 +33,7 @@ layout (std430, binding = 1) buffer MatBuffer
 #define metalnessTexScale ScaleTex_MZeroZero.xy
 
 float bumpTexMipMap = 0.0;
+float diffuseColorTexMipMap = 0.0;
 float normalTexMipMap = 0.0;
 #define material_adjusted_roughness_bump() (bumpTexMipMap / textureQueryLevels(bumpTex))
 #define material_adjusted_roughness_normal() (bumpTexMipMap / textureQueryLevels(normalTex))

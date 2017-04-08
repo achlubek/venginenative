@@ -185,7 +185,7 @@ void Renderer::initializeFbos()
     ambientOcclusionFbo = new Framebuffer();
     ambientOcclusionFbo->attachTexture(ambientOcclusionTexture, GL_COLOR_ATTACHMENT0);
 
-    fogTexture = new Texture2d(width, height, GL_RGB16F, GL_RGB, GL_HALF_FLOAT);
+    fogTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     fogFbo = new Framebuffer();
     fogFbo->attachTexture(fogTexture, GL_COLOR_ATTACHMENT0);
 
@@ -242,6 +242,14 @@ void Renderer::initializeFbos()
     combineTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     combineFbo = new Framebuffer();
     combineFbo->attachTexture(combineTexture, GL_COLOR_ATTACHMENT0);
+
+    fxaaTonemapTextureEven = new Texture2d(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT);
+    fxaaTonemapFboEven = new Framebuffer();
+    fxaaTonemapFboEven->attachTexture(fxaaTonemapTextureEven, GL_COLOR_ATTACHMENT0);
+
+    fxaaTonemapTextureOdd = new Texture2d(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT);
+    fxaaTonemapFboOdd = new Framebuffer();
+    fxaaTonemapFboOdd->attachTexture(fxaaTonemapTextureOdd, GL_COLOR_ATTACHMENT0);
 
     lensBlurTextureHorizontal = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     lensBlurFboHorizontal = new Framebuffer();
@@ -353,9 +361,15 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     sp->setUniform("MieScattCoeff", mieScattCoefficent);
     sp->setUniform("Resolution", glm::vec2(width, height));
     sp->setUniform("CameraPosition", currentCamera->transformation->getPosition());
+
     sp->setUniform("FrustumConeLeftBottom", cone->leftBottom);
     sp->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
     sp->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
+
+    sp->setUniform("Previous_rustumConeLeftBottom", lastCone->leftBottom);
+    sp->setUniform("Previous_FrustumConeBottomLeftToBottomRight", lastCone->rightBottom - lastCone->leftBottom);
+    sp->setUniform("Previous_FrustumConeBottomLeftToTopLeft", lastCone->leftTop - lastCone->leftBottom);
+
     sp->setUniform("FocalLength", currentCamera->focalLength);
     sp->setUniform("LensBlurSize", lensBlurSize);
     sp->setUniform("Time", Game::instance->time);
@@ -445,8 +459,9 @@ void Renderer::renderToFramebuffer(glm::vec3 position, CubeMapFramebuffer * fboo
         currentCamera = cam;
         cam->transformation->setPosition(position);
         draw(cam);
+        fxaaTonemap(false);
         fboout->use();
-        fxaaTonemap();
+        fxaaTonemap(true);
     }
 }
 
@@ -454,8 +469,9 @@ void Renderer::renderToFramebuffer(Camera *camera, Framebuffer * fboout)
 {
     currentCamera = camera;
     draw(camera);
+    fxaaTonemap(false);
     fboout->use(true);
-    fxaaTonemap();
+    fxaaTonemap(true);
 }
 
 void Renderer::pick(Camera* camera, glm::vec2 uv)
@@ -531,8 +547,8 @@ void Renderer::draw(Camera *camera)
         //     ambientOcclusion();
     }
     csm->map(-dayData.sunDir, currentCamera->transformation->getPosition());
-    prepareSunRSM();
-	updateAboveView();
+    //prepareSunRSM();
+	//updateAboveView();
     //mrtAlbedoRoughnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtNormalMetalnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtDistanceTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
@@ -540,7 +556,7 @@ void Renderer::draw(Camera *camera)
     //deferred();
    // ambientLight();
     //glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-    waterTile();
+    //waterTile();
 	aboveDataTex->generateMipMaps();
     sunRSMTex->generateMipMaps();
     sunRSMWPosTex->generateMipMaps();
@@ -550,7 +566,7 @@ void Renderer::draw(Camera *camera)
     mrtDistanceTexture->use(2);
     atmScatt();
     clouds();
-	waterFoam();
+	//waterFoam();
     fog();
     cloudsResolve();
     combine(0);
@@ -612,12 +628,11 @@ void Renderer::combine(int step)
   //  
     combineFbo->use(false);
     combineShader->use();
-    exposureBuffer->use(0);
     deferredTexture->use(5);
     ambientLightTexture->use(6);
     ambientOcclusionTexture->use(16);
     fresnelTexture->use(14);
-    //fogTexture->use(20);
+    fogTexture->use(20);
     waterColorTexture->generateMipMaps();
     waterColorTexture->use(21);
     starsTexture->use(24);
@@ -651,19 +666,43 @@ void Renderer::combine(int step)
     quad3dInfo->draw();
     waterColorTexture->generateMipMaps();
     waterColorTexture->use(16);
-    exposureComputeShader->dispatch(1, 1, 1);
     //combineTexture->generateMipMaps();
 }
-void Renderer::fxaaTonemap()
+void Renderer::fxaaTonemap(bool finalpass)
 {
     fxaaTonemapShader->use();
-    //lensBlurTextureVertical->use(16);
-    combineTexture->use(16);
-    setCommonUniforms(fxaaTonemapShader);
+    fxaaTonemapShader->setUniform("IsFinalPass", finalpass ? 1 : -1);
+    if (finalpass) {
+        if (fxaaUseOdd) {
+            fxaaTonemapTextureOdd->use(16);
+        }
+        else {
+            fxaaTonemapTextureEven->use(16);
+        }
+        fxaaUseOdd = !fxaaUseOdd;
+        Game::instance->firstFullDrawFinished = true;
+        quad3dInfo->draw();
+        exposureBuffer->use(0);
+        exposureComputeShader->dispatch(1, 1, 1);
+        if (lastCone != nullptr) delete lastCone;
+        lastCone = currentCamera->cone->clone();
+    }
 
-    quad3dInfo->draw();
+    else {
 
-    Game::instance->firstFullDrawFinished = true;
+        setCommonUniforms(fxaaTonemapShader);
+        if (fxaaUseOdd) {
+            fxaaTonemapFboOdd->use(false);
+            fxaaTonemapTextureEven->use(15);
+        }
+        else {
+            fxaaTonemapFboEven->use(false);
+            fxaaTonemapTextureOdd->use(15);
+        }
+        combineTexture->use(16);
+        quad3dInfo->draw();
+    }
+
 }
 
 void Renderer::lensBlur()
@@ -829,11 +868,10 @@ void Renderer::ambientOcclusion()
 void Renderer::fog()
 {
     atmScattTexture->use(19);
-    return;
     fogFbo->use(false);
     fogShader->use();
     setCommonUniforms(fogShader);
-    // csm->setUniformsAndBindSampler(fogShader, 24);
+    csm->setUniformsAndBindSampler(combineShader, 30);
     quad3dInfo->draw();
 }
 

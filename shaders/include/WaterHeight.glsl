@@ -28,7 +28,7 @@ float getwaves(vec2 position, int numiters){
         vec2 p = vec2(sin(iter), cos(iter)) * 30.0;
         float res = wave(position, p, speed, phase, 0.0) * IEULER;
         float res2 = wave(position, p, speed, phase, 0.006) * IEULER;
-        position -= wavedrag(position, p) * (res - res2) * weight * 4.0 ;
+        position -= wavedrag(position, p) * (res - res2) * weight * 2.0 ;
         w += res * weight;
         iter += 12.0;
         ws += weight;
@@ -51,7 +51,7 @@ vec2 getFlow(vec2 position, int numiters){
         vec2 p = vec2(sin(iter), cos(iter)) * 30.0;
         float res = wave(position, p, speed, phase, 0.0) * IEULER;
         float res2 = wave(position, p, speed, phase, 0.006) * IEULER;
-        w += -wavedrag(position, p) * (res - res2) * weight * 4.0 ;
+        w += -wavedrag(position, p) * (res - res2) * weight * 2.0 ;
         //w += res * weight;
         iter += 12.0;
         ws += weight;
@@ -138,7 +138,7 @@ float heightwaterXOLO(vec2 uv, vec2 offset, float mipmap){
 }
 vec2 heightflow(vec2 uv){
 
-    return getFlow(uv * 0.01735 * WaterScale, 16);// * (1.0 - smoothstep(0.0, 7.0, mipmap));
+    return getFlow(uv * 0.01735 * WaterScale, 27);// * (1.0 - smoothstep(0.0, 7.0, mipmap));
 
 }
 

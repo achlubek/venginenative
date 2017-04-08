@@ -65,22 +65,20 @@ float raymarchwater2(vec3 start, vec3 end, int stepsI){
     return -1.0;
 }
 float raymarchwater(vec3 start, vec3 end, int stepsI){
-    float stepsize = 1.0 / stepsI;
-    float iter = 0;
+
     vec3 pos = start;
     float h = 0.0;
     float hupper = waterdepth + WaterLevel;
     float hlower = WaterLevel;
-    float rd = stepsize * rand2sTimex(UV);
     vec2 zer = vec2(0.0);
-    for(int i=0;i<stepsI + 1;i++){
-        pos = mix(start, end, iter + rd);
+    vec3 dir = normalize(end - start);
+    for(int i=0;i<318;i++){
         h = hlower + heightwaterXOLO(pos.xz, zer, mipmapx) * waterdepth;
-        if((!isReallyUnderWater && h > pos.y) || (isReallyUnderWater && h < pos.y)) {
-            return raymarchwater2(mix(start, end, iter - stepsize + rd), mix(start, end, iter + stepsize + rd),18);
-        //    return distance(pos, CameraPosition);
+        if((!isReallyUnderWater && h + 0.01 > pos.y) || (isReallyUnderWater && h - 0.01 < pos.y)) {
+            //return raymarchwater2(mix(start, end, iter - stepsize + rd), mix(start, end, iter + stepsize + rd),18);
+            return distance(pos, CameraPosition);
         }
-        iter += stepsize;
+        pos += dir * (pos.y - h);
     }
     return -1.0;
 }

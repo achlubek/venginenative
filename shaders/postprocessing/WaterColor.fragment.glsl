@@ -286,7 +286,8 @@ vec4 getLighting(){
     float superscat = pow(max(0.0, dot(refr, dayData.sunDir)), 8.0) ;//* (1.0 - fresnel);
     result += csmvis * vec3(0.5,0.9,0.8) * superscat * getSunColorDirectly(0) * 18.0 * covercloud;
 
-    result = mix(result, vec3(21.0 * csmvis)  * getSunColorDirectly(0.0), smoothstep(0.0, 1.0, foam * 0.2) * fbmHI2(hitpos * 1.0));
+//    result = mix(result, vec3(21.0 * csmvis)  * getSunColorDirectly(0.0), smoothstep(0.0, 1.0, foam * 0.2) * fbmHI2(hitpos * 1.0));
+    //result += min(1.0, smoothstep(0.0, 1.0, foam) + smoothstep(0.005, 0.012, length(heightflow(hitpos.xz))) * smoothstep(0.16, 0.2, length(normal.xz * (1.0 - normal.y)))) * getSunColorDirectly(0.0) * 4.0;
     return  vec4(result  , 0.0);
 }
 
