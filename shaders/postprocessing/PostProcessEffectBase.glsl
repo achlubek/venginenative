@@ -41,7 +41,7 @@ vec3 reconstructCameraSpaceDistance(vec2 uv, float dist){
     return dir * dist;
 }
 vec3 reconstructPreviousCameraSpaceDistance(vec2 uv, float dist){
-    vec3 dir = normalize((FrustumConeLeftBottom + FrustumConeBottomLeftToBottomRight * uv.x + FrustumConeBottomLeftToTopLeft * uv.y));
+    vec3 dir = normalize((Previous_FrustumConeLeftBottom + Previous_FrustumConeBottomLeftToBottomRight * uv.x + Previous_FrustumConeBottomLeftToTopLeft * uv.y));
     return dir * dist;
 }
 

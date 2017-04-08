@@ -33,6 +33,7 @@ FrustumCone * FrustumCone::clone()
     f->leftTop = leftTop;
     f->rightBottom = rightBottom;
     f->rightTop = rightTop;
+    return f;
 }
 
 vec3 FrustumCone::getDir(vec2 uv, mat4 inv)

@@ -277,8 +277,8 @@ float fbmHId(vec3 p){
 vec4 applyAirLayer(vec3 dir, vec3 colorLit, vec3 colorDiff, float height, float maxdist){
     vec3 volumetrix = vec3(0.0);
     float volumetrix2 = 0.0;
-    int steps = 32;
-    float stepsize = 1.0 / 32.0;
+    int steps = 7;
+    float stepsize = 1.0 / 7.0;
     float rd = rand2sTime(UV);
     float iter = rd * stepsize;
     vec3 start = CameraPosition;

@@ -390,11 +390,12 @@ float ssao(vec3 p1){
     float v = 0.0;
     float v2 = 0.0;
     float iter = 0.0;
-    vec2 uv = UV + vec2(Rand1, Rand2);
-    float rd = rand2s(uv) * 12.1232343456;
-    float targetmeters = 0.3;
-    int steps = 11;
-    float stepsize = 1.0 / 11.0;
+    vec2 uv = UV ;
+    float rd = rand2s(uv * Time) * 12.1232343456 ;
+    float targetmeters = 0.7;
+    int steps = 3;
+    float twopi = 3.1415 * 2.0;
+    float stepsize = 1.0 / 3.0;
     vec3 refl = normalize(reflect(reconstructCameraSpaceDistance(UV, 1.0), currentData.normal));
     for(int i=0;i<steps;i++){
         vec3 vx = vec3(0.0);
@@ -408,20 +409,25 @@ float ssao(vec3 p1){
         rd += 1.234;
         vx = normalize(vx);
         vx *= sign(dot(vx, currentData.normal));
-        vec2 u = projectvdao(p1 + targetmeters * vx);
-        float dst = textureLod(mrt_Distance_Bump_Tex, clamp(u, 0.0, 1.0), 0.0).r;
-        vec3 pos = CameraPosition + reconstructCameraSpaceDistance(u, dst);
-        //dst = mix(99999.0, dst, step(0.1, dst));
-        float aoval = 1.0 - max(0.0, dot(currentData.normal, normalize(pos - p1)));
-        float lim1 = step(0.01, dst);
-        float lim2 =  1.0 - smoothstep(0.0, targetmeters, distance(pos, p1));
-        aoval = mix(1.0, aoval, lim1);
-        aoval = mix(1.0, aoval, lim2);
-        v += aoval;
-        v2 += max(0.02, dot(vx, dayData.sunDir));
-        iter += stepsize;
+        vx = normalize(mix(vx, refl, 1.0 - currentData.roughness));
+        vec3 ppos = p1 + targetmeters * vx;
+        vec2 u = projectvdao(ppos);
+
+        iter = 0.0 + rand2sTime(u) * 0.2;
+        float vis = 0.0;
+        for(int g=0;g<5;g++){
+            vec3 posh = mix(p1, ppos, iter);
+            float dst = textureLod(mrt_Distance_Bump_Tex, clamp(projectvdao(posh), 0.0, 1.0), 2.0).r;
+            vec3 newpos = CameraPosition + normalize(posh - CameraPosition) * dst;
+            float predicted = distance(CameraPosition, posh);
+            vis += 1.0 - (1.0 - smoothstep(0.0, targetmeters, distance(newpos, p1))) * max(0.0, dot(currentData.normal, normalize(newpos - p1)));
+            iter += 0.2;
+        }
+        vis *= 0.2;
+        v += vis;
+
     }
-    return 1.0 -  v * stepsize;
+    return pow( v * stepsize, 6.0);
 }
 
 vec2 traceReflectionX(vec3 pos, vec3 dir){
@@ -458,7 +464,7 @@ float traceReflection(vec3 pos, vec3 dir){
 
 vec3 vdao(){
     vec3 c = vec3(0.0);
-    int steps = 10;
+    int steps = 5;
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
     //float fresnel = 0.04 + 0.96 * textureLod(fresnelTex, vec2(clamp(currentData.roughness, 0.01, 0.98), 1.0 - max(0.0, dot(-dir, currentData.normal))), 0.0).r;
     vec3 refdir = reflect(dir, currentData.normal);
@@ -473,9 +479,10 @@ vec3 vdao(){
 
         //p.y = abs(p.y);
         //float cx = visibility2(currentData.worldPos, currentData.worldPos + p * 1.0, currentData.cameraDistance, distance(CameraPosition, currentData.worldPos + p * 1.0));
-        c += 0.01 * shade_ray_env_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness, resolvedAtmosphereTex)).rgb, atmdiff);
+        c += 0.02 * shade_ray_env_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness, resolvedAtmosphereTex)).rgb, atmdiff);
     }
-    return shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * 8.0 * getSunColorDirectly(0.0)) + c;// * ssao(currentData.worldPos);
+    //return vec3(1) * ssao(currentData.worldPos);
+    return shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * 8.0 * getSunColorDirectly(0.0)) + c * ssao(currentData.worldPos);
 }
 
 vec3 shadeFragment(PostProcessingData data){

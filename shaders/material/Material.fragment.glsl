@@ -31,29 +31,28 @@ void outputMaterial(){
     vec3 tangent = normalize(Input.Tangent.rgb);
     float tangentSign = Input.Tangent.w;
     vec3 worldPos = Input.WorldPos;
-    diffuseColorTexMipMap = textureQueryLod(diffuseColorTex, UV).x;
-    bumpTexMipMap = textureQueryLod(bumpTex, UV).x;
-    normalTexMipMap = textureQueryLod(normalTex, UV).x;
     mat3 TBN = inverse(mat3(
         normalize(tangent),
         normalize(cross(normal, tangent)) * tangentSign,
         normalize(normal)
     ));
+    vec3 bumpedNormal = examineBumpMap(UV * bumpTexScale).xzy;
     if(useBumpTexInt > 0){
-        UV = adjustParallaxUV(UV);
-        normalmap = examineBumpMap(UV).xzy;
+        UV = adjustParallaxUV(UV * bumpTexScale) / bumpTexScale;
+        normalmap = bumpedNormal;
         normalmap.r *= -1.0;
         normalmap.g *= -1.0;
-        roughness = roughness + (1.0 - roughness) * material_adjusted_roughness_bump();
+        //roughness = roughness + (1.0 - roughness) * material_adjusted_roughness_bump();
     }
     if(useDiffuseColorTexInt > 0){
-        diffuseColor = textureLod(diffuseColorTex, UV * diffuseColorTexScale, diffuseColorTexMipMap).rgb;
+        diffuseColor = texture(diffuseColorTex, UV * diffuseColorTexScale).rgb;
     }
     if(useNormalTexInt > 0){
-        vec3 normalmaptex = normalize(textureLod(normalTex, UV * normalTexScale, normalTexMipMap).rgb * 2.0 - 1.0);
+        vec3 normalmaptex = normalize(texture(normalTex, UV * normalTexScale).rgb * 2.0 - 1.0);
         normalmaptex.r *= -1.0;
         normalmaptex.g *= -1.0;
-        normalmap *= normalmaptex;
+        normalmap *= -normalmaptex;
+        normalmap = normalize(normalmap);
     //    roughness = roughness + (1.0 - roughness) * material_adjusted_roughness_normal();
     }
     if(useRoughnessTexInt > 0){
@@ -75,5 +74,9 @@ void outputMaterial(){
     //gl_FragDepth = toLogDepth(outDistance, 20000.0);
 }
 void main(){
+    vec2 UV = Input.TexCoord;
+    diffuseColorTexMipMap = textureQueryLod(diffuseColorTex, UV).y;
+    bumpTexMipMap = textureQueryLod(bumpTex, UV).y;
+    normalTexMipMap = textureQueryLod(normalTex, UV).y;
     outputMaterial();
 }

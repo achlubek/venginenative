@@ -62,17 +62,17 @@ vec2 adjustParallaxUV(vec2 uv){
    float curLayerHeight = 0;
    vec2 dtex = parallaxScale * V.xy / V.z / numLayers;
    vec2 currentTextureCoords = T;
-   float heightFromTexture = 1.0 - textureLod(bumpTex, currentTextureCoords * bumpTexScale, bumpTexMipMap).r;
+   float heightFromTexture = 1.0 - texture(bumpTex, currentTextureCoords).r;
    int cnt = int(numLayers);
    while(heightFromTexture > curLayerHeight && cnt-- >= 0)
    {
       curLayerHeight += layerHeight;
       currentTextureCoords -= dtex;
-      heightFromTexture = 1.0 - textureLod(bumpTex, currentTextureCoords * bumpTexScale, bumpTexMipMap).r;
+      heightFromTexture = 1.0 - texture(bumpTex, currentTextureCoords).r;
    }
    vec2 prevTCoords = currentTextureCoords + dtex;
    float nextH = heightFromTexture - curLayerHeight;
-   float prevH = 1.0 - textureLod(bumpTex, prevTCoords * bumpTexScale, bumpTexMipMap).r - curLayerHeight + layerHeight;
+   float prevH = 1.0 - texture(bumpTex, prevTCoords).r - curLayerHeight + layerHeight;
    float weight = nextH / (nextH - prevH);
    vec2 finalTexCoords = prevTCoords * weight + currentTextureCoords * (1.0-weight);
    newParallaxHeight = curLayerHeight + prevH * weight + nextH * (1.0 - weight);
@@ -80,9 +80,9 @@ vec2 adjustParallaxUV(vec2 uv){
 }
 vec3 normalxb(vec2 pos, vec2 e){
     vec3 ex = vec3(e.x, e.y, 0.0);
-    vec3 a = vec3(pos.x, textureLod(bumpTex, pos.xy, bumpTexMipMap).r * parallaxScale, pos.y);
-    vec3 b = vec3(pos.x - e.x, textureLod(bumpTex, pos.xy - ex.xz, bumpTexMipMap).r * parallaxScale, pos.y);
-    vec3 c = vec3(pos.x       , textureLod(bumpTex, pos.xy + ex.zy, bumpTexMipMap).r * parallaxScale, pos.y + e.y);
+    vec3 a = vec3(pos.x, texture(bumpTex, pos.xy).r * parallaxScale, pos.y);
+    vec3 b = vec3(pos.x - e.x, texture(bumpTex, pos.xy - ex.xz).r * parallaxScale, pos.y);
+    vec3 c = vec3(pos.x       , texture(bumpTex, pos.xy + ex.zy).r * parallaxScale, pos.y + e.y);
     vec3 normal = (cross(normalize(a-b), normalize(a-c)));
     return normalize(normal).xyz;
 }

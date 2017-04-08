@@ -243,13 +243,17 @@ void Renderer::initializeFbos()
     combineFbo = new Framebuffer();
     combineFbo->attachTexture(combineTexture, GL_COLOR_ATTACHMENT0);
 
-    fxaaTonemapTextureEven = new Texture2d(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT);
+    fxaaTonemapTextureEven = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    fxaaTonemapTextureWposEven = new Texture2d(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT);
     fxaaTonemapFboEven = new Framebuffer();
     fxaaTonemapFboEven->attachTexture(fxaaTonemapTextureEven, GL_COLOR_ATTACHMENT0);
+    fxaaTonemapFboEven->attachTexture(fxaaTonemapTextureWposEven, GL_COLOR_ATTACHMENT1);
 
-    fxaaTonemapTextureOdd = new Texture2d(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT);
+    fxaaTonemapTextureOdd = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    fxaaTonemapTextureWposOdd = new Texture2d(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT);
     fxaaTonemapFboOdd = new Framebuffer();
     fxaaTonemapFboOdd->attachTexture(fxaaTonemapTextureOdd, GL_COLOR_ATTACHMENT0);
+    fxaaTonemapFboOdd->attachTexture(fxaaTonemapTextureWposOdd, GL_COLOR_ATTACHMENT1);
 
     lensBlurTextureHorizontal = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     lensBlurFboHorizontal = new Framebuffer();
@@ -365,10 +369,16 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     sp->setUniform("FrustumConeLeftBottom", cone->leftBottom);
     sp->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
     sp->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
-
-    sp->setUniform("Previous_rustumConeLeftBottom", lastCone->leftBottom);
-    sp->setUniform("Previous_FrustumConeBottomLeftToBottomRight", lastCone->rightBottom - lastCone->leftBottom);
-    sp->setUniform("Previous_FrustumConeBottomLeftToTopLeft", lastCone->leftTop - lastCone->leftBottom);
+    if (lastCone != nullptr) {
+        sp->setUniform("Previous_FrustumConeLeftBottom", lastCone->leftBottom);
+        sp->setUniform("Previous_FrustumConeBottomLeftToBottomRight", lastCone->rightBottom - lastCone->leftBottom);
+        sp->setUniform("Previous_FrustumConeBottomLeftToTopLeft", lastCone->leftTop - lastCone->leftBottom);
+    }
+    else {
+        sp->setUniform("Previous_rustumConeLeftBottom", cone->leftBottom);
+        sp->setUniform("Previous_FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
+        sp->setUniform("Previous_FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
+    }
 
     sp->setUniform("FocalLength", currentCamera->focalLength);
     sp->setUniform("LensBlurSize", lensBlurSize);
@@ -693,10 +703,12 @@ void Renderer::fxaaTonemap(bool finalpass)
         setCommonUniforms(fxaaTonemapShader);
         if (fxaaUseOdd) {
             fxaaTonemapFboOdd->use(false);
+            fxaaTonemapTextureWposEven->use(14);
             fxaaTonemapTextureEven->use(15);
         }
         else {
             fxaaTonemapFboEven->use(false);
+            fxaaTonemapTextureWposOdd->use(14);
             fxaaTonemapTextureOdd->use(15);
         }
         combineTexture->use(16);

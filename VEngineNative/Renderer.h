@@ -215,8 +215,10 @@ private:
 	ShaderProgram *fxaaTonemapShader;
     Framebuffer *fxaaTonemapFboOdd;
     Texture2d *fxaaTonemapTextureOdd;
+    Texture2d *fxaaTonemapTextureWposOdd;
     Framebuffer *fxaaTonemapFboEven;
     Texture2d *fxaaTonemapTextureEven;
+    Texture2d *fxaaTonemapTextureWposEven;
     bool fxaaUseOdd = false;
 	void fxaaTonemap(bool finalpass);
     FrustumCone* lastCone = nullptr;
