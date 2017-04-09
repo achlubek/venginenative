@@ -213,7 +213,7 @@ float internalmarchconservativeCoverageOnly(int s, vec3 p1, vec3 p2, float weigh
     for(int i=0;i<stepcount;i++){
         vec3 pos = mix(p1, p2, iter + rd);
         float clouds = cloudsDensity3D(pos) * weight;
-        coverageinv *= 1.0 - clouds;
+        coverageinv -= clouds;
         iter += stepsize;
         if(coverageinv <= 0.0) break;
     }
@@ -221,7 +221,7 @@ float internalmarchconservativeCoverageOnly(int s, vec3 p1, vec3 p2, float weigh
     float r1 = clamp(coverageinv, 0.0, 1.0);
 
     vec3 xdir = normalize(p2 - p1);
-    vec3 xpos = p1 + xdir * 2500.0;
+    vec3 xpos = p1 + xdir * 500.0;
     //float refinedshadow = visibilityspecial(normalize(p1 - CAMERA), normalize(xpos - CAMERA), length(p1 - CAMERA), length(xpos - CAMERA));
     p2 = xpos;
 
@@ -232,7 +232,7 @@ float internalmarchconservativeCoverageOnly(int s, vec3 p1, vec3 p2, float weigh
     for(int i=0;i<stepcount;i++){
         vec3 pos = mix(p1, p2, iter + rd);
         float clouds = cloudsDensity3D(pos) * weight;
-        coverageinv *= 1.0 - clouds;
+        coverageinv -= clouds;
         iter += stepsize;
         if(coverageinv <= 0.0) break;
     }
@@ -372,11 +372,11 @@ float getAO(int s, vec3 pos, float randomization, float weight){
     float hitfloor = rsi2(r, sphere1);
     vec3 posceil = pos + dir * hitceil;
     vec3 posfloor = pos + dir * hitfloor;
-    if(hitfloor > 0.0 && hitceil > 0.0 && hitfloor < hitceil) return internalmarchconservativeCoverageOnly1StepOnly(s, pos, posceil, weight);
-    if(hitfloor > 0.0 && hitceil > 0.0 && hitfloor > hitceil) return internalmarchconservativeCoverageOnly1StepOnly(s, pos, posceil, weight);
-    if(hitfloor > 0.0 && hitceil <= 0.0) return internalmarchconservativeCoverageOnly1StepOnly(s, pos, posfloor, weight);
-    if(hitfloor <= 0.0 && hitceil > 0.0) return internalmarchconservativeCoverageOnly1StepOnly(s, pos, posceil, weight);
-    return internalmarchconservativeCoverageOnly1StepOnly(s, pos, posceil, weight);
+    if(hitfloor > 0.0 && hitceil > 0.0 && hitfloor < hitceil) return internalmarchconservativeCoverageOnly(s, pos, posceil, weight);
+    if(hitfloor > 0.0 && hitceil > 0.0 && hitfloor > hitceil) return internalmarchconservativeCoverageOnly(s, pos, posceil, weight);
+    if(hitfloor > 0.0 && hitceil <= 0.0) return internalmarchconservativeCoverageOnly(s, pos, posfloor, weight);
+    if(hitfloor <= 0.0 && hitceil > 0.0) return internalmarchconservativeCoverageOnly(s, pos, posceil, weight);
+    return internalmarchconservativeCoverageOnly(s, pos, posceil, weight);
 }
 
 
@@ -393,7 +393,7 @@ float shadows(){
     planet = Sphere(vec3(0), planetradius);
 //    float mx1  = clamp(0.0, 1.0, MieScattCoeff * 0.2) * 0.5 + 0.5;
     weightshadow = 1.0;
-    float sun = getAO(6, hitman, 0.34, CloudsDensityScale );// + (0.5 + max(0.0, (getAO(hitman, 1.0) * 2.0 - 1.0 ))) * 0.2 + getAO(hitman, 0.0);
+    float sun = getAO(6, hitman, 0.134, CloudsDensityScale );// + (0.5 + max(0.0, (getAO(hitman, 1.0) * 2.0 - 1.0 ))) * 0.2 + getAO(hitman, 0.0);
     //weightshadow  = 0.000;//1 * CloudsDensityScale;
    // float sss =  getAO(hitman, 0.6, CloudsDensityScale  );
     return sun;

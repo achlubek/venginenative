@@ -130,8 +130,8 @@ void EditorApp::onRenderFrame(float elapsed)
             if (pitch < -360.0f) pitch += 360.0f;
             if (pitch > 360.0f) pitch -= 360.0f;
             glm::quat newrot = glm::angleAxis(deg2rad(pitch), glm::vec3(0, 1, 0)) * glm::angleAxis(deg2rad(yaw), glm::vec3(1, 0, 0));
-            cam->transformation->setOrientation(newrot);
-            cam->transformation->setPosition(newpos);
+            cam->transformation->setOrientation(glm::slerp(newrot, cam->transformation->getOrientation(), 0.9f));
+            cam->transformation->setPosition(glm::mix(newpos, cam->transformation->getPosition(), 0.8f));
 
         }
 
@@ -633,6 +633,8 @@ void EditorApp::onBind()
         t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(20.0, 0.0, 40.0))));
         t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(40.0, 0.0, 40.0))));
         t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(60.0, 0.0, 0.0))));
+        t->getMesh3ds()[i]->getLodLevel(0)->material = new Material();
+        t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColor = glm::vec3(1.0);
       //  t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColorTex = diftex;
        // t->getMesh3ds()[i]->getLodLevel(0)->material->bumpTex = bumtex;
         game->world->scene->addMesh3d(t->getMesh3ds()[i]);

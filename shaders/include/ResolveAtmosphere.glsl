@@ -413,21 +413,21 @@ float ssao(vec3 p1){
         vec3 ppos = p1 + targetmeters * vx;
         vec2 u = projectvdao(ppos);
 
-        iter = 0.0 + rand2sTime(u) * 0.2;
+        iter = 0.0 + rand2sTime(u) * 0.25;
         float vis = 0.0;
-        for(int g=0;g<5;g++){
+        for(int g=0;g<4;g++){
             vec3 posh = mix(p1, ppos, iter);
             float dst = textureLod(mrt_Distance_Bump_Tex, clamp(projectvdao(posh), 0.0, 1.0), 2.0).r;
             vec3 newpos = CameraPosition + normalize(posh - CameraPosition) * dst;
             float predicted = distance(CameraPosition, posh);
-            vis += 1.0 - (1.0 - smoothstep(0.0, targetmeters, distance(newpos, p1))) * max(0.0, dot(currentData.normal, normalize(newpos - p1)));
-            iter += 0.2;
+            vis += 1.0 - (1.0 - smoothstep(0.0, targetmeters, distance(newpos, p1))) * (1.0 - smart_inverse_dot(1.0 - max(0.0, dot(currentData.normal, normalize(newpos - p1))), 11.0));
+            iter += 0.25;
         }
-        vis *= 0.2;
+        vis *= 0.25;
         v += vis;
 
     }
-    return pow( v * stepsize, 6.0);
+    return pow( v * stepsize, 4.0);
 }
 
 vec2 traceReflectionX(vec3 pos, vec3 dir){
@@ -479,7 +479,7 @@ vec3 vdao(){
 
         //p.y = abs(p.y);
         //float cx = visibility2(currentData.worldPos, currentData.worldPos + p * 1.0, currentData.cameraDistance, distance(CameraPosition, currentData.worldPos + p * 1.0));
-        c += 0.02 * shade_ray_env_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness, resolvedAtmosphereTex)).rgb, atmdiff);
+        c += 0.02 * shade_ray_env_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness * currentData.roughness * 0.3, resolvedAtmosphereTex)).rgb, atmdiff);
     }
     //return vec3(1) * ssao(currentData.worldPos);
     return shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * 8.0 * getSunColorDirectly(0.0)) + c * ssao(currentData.worldPos);

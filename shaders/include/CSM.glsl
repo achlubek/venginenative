@@ -27,7 +27,7 @@ float blurshadowabit(float blurscale, int samples, vec3 uv, float d){
     float v = 0.0;
     const float w = 1.0 / float(samples);
     for(int i=0;i<samples;i++){
-        v += smoothstep(0.0, 0.0032, d - texture(CSMTex, uv + randpointx() * 0.001 * giscale * blurscale).r);
+        v += smoothstep(0.0, 0.0032, d - texture(CSMTex, uv + randpointx() * 0.02 * giscale * blurscale).r);
         //  v += 1.0 - max(0, sign(d - texture(CSMTex, uv + randpointx() * 0.00115).r));
     }
     return v * w;
@@ -52,8 +52,8 @@ float CSMQueryVisibility(vec3 pos){
         csmuv = csmuv * 0.5 + 0.5;
         float d = csmuv.z;
         if(csmuv.x >= 0.0 && csmuv.x < 1.0 && csmuv.y >= 0.0 && csmuv.y < 1.0 && csmuv.z >= -1.0 && csmuv.z < 1.0){
-            //giscale = 1.0 / CSMRadiuses[i];
-            return 1.0 - blurshadowabit(1.0, 12, vec3(csmuv.x, csmuv.y, float(i)), d);// abs(csmuv.z - texture(CSMTex, csmuv).r) ;
+            giscale = 1.0 / CSMRadiuses[i];
+            return 1.0 - blurshadowabit(1.0, 13, vec3(csmuv.x, csmuv.y, float(i)), d);// abs(csmuv.z - texture(CSMTex, csmuv).r) ;
         }
     }
     return 1.0;
