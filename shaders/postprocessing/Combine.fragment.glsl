@@ -261,9 +261,22 @@ uniform float AboveSpan;
 
 vec2 project_above(vec3 pos){
     vec2 a = ((pos - CameraPosition).xz / AboveSpan) * 0.5 + 0.5;
-    //a.y = 1.0 - a.y;
+    a.y = 1.0 - a.y;
     a.x = 1.0 - a.x;
     return a;
+}
+
+void updateAboveAO(){
+    //AboveAO
+    vec2 aboveuv = project_above(currentData.worldPos);
+    float sum = 0.0;
+    float ws = 0.0;
+    for(int i=0;i<16;i++){
+        float v = textureLod(aboveViewDataTex, aboveuv + randpoint2() * 0.015, 0.0).r;
+        sum +=  clamp(max(0.0, v - currentData.worldPos.y), 0.0, 1.0);
+        ws += 1.0;
+    }
+    AboveAO = 1.0 - sum / ws;
 }
 
 float getFoam(vec3 pos){
@@ -339,6 +352,7 @@ float fogCoverage(vec3 dir, float height, float maxdist){
 vec4 shade(){
     vec3 color = vec3(0);
     if(CombineStep == STEP_PREVIOUS_SUN){
+        updateAboveAO();
         color = integrateStepsAndSun();
     } else {
         color = integrateCloudsWater();
@@ -453,6 +467,7 @@ vec4 shade(){
         float fogcover = fogCoverage(dir, FogHeight, FogMaxDistance);
         color = mix(vec3(color),  ( fogNoBlur.rgb), fogcover );
         color = tonemap( color);
+        //color = vec3(texture(aboveViewDataTex, UV).g);
     }
 
     return vec4( clamp(color, 0.0, 110.0), currentData.cameraDistance * 0.001);

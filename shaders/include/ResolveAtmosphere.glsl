@@ -466,7 +466,7 @@ float traceReflection(vec3 pos, vec3 dir){
 
     return textureLod(mrt_Distance_Bump_Tex, vec2(uv.x, horizon - uv.y), 0).r;
 }
-
+float AboveAO = 1.0;
 vec3 vdao(){
     vec3 c = vec3(0.0);
     int steps = 5;
@@ -480,14 +480,12 @@ vec3 vdao(){
     //    p = normalize(mix(p, refdir,  max(0.0, dot(p, refdir))));
         p = normalize(mix(refdir, p, currentData.roughness * currentData.roughness));
         vec3 x = -p;
-        float v = mix(0.1 + 0.8 * smoothstep(-0.5, 0.0, p.y), max(0.0, dot(VECTOR_UP, currentData.normal)), currentData.roughness);// visibility(currentData.worldPos, currentData.worldPos + p * 1.0);
+        float v = mix(0.1 + 0.8 * smoothstep(-0.5, 0.0, p.y), max(0.0, dot(VECTOR_UP, currentData.normal)), currentData.roughness);
 
-        //p.y = abs(p.y);
-        //float cx = visibility2(currentData.worldPos, currentData.worldPos + p * 1.0, currentData.cameraDistance, distance(CameraPosition, currentData.worldPos + p * 1.0));
         c += 0.02 * shade_ray_env_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness * currentData.roughness * 0.3, resolvedAtmosphereTex)).rgb, atmdiff);
     }
     //return vec3(1) * ssao(currentData.worldPos);
-    return shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * 8.0 * getSunColorDirectly(0.0)) + c * ssao(currentData.worldPos);
+    return shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * 8.0 * getSunColorDirectly(0.0)) + c * (0.05 + 0.95 * AboveAO) * ssao(currentData.worldPos);
 }
 
 vec3 shadeFragment(PostProcessingData data){

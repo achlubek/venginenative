@@ -27,7 +27,7 @@ float blurshadowabit(float blurscale, int samples, vec3 uv, float d){
     float v = 0.0;
     const float w = 1.0 / float(samples);
     for(int i=0;i<samples;i++){
-        v += smoothstep(0.0, 0.0032, d - texture(CSMTex, uv + randpointx() * 0.02 * giscale * blurscale).r);
+        v += smoothstep(0.0, 0.0032, d - texture(CSMTex, uv + randpointx() * 0.05 * giscale * blurscale).r);
         //  v += 1.0 - max(0, sign(d - texture(CSMTex, uv + randpointx() * 0.00115).r));
     }
     return v * w;

@@ -557,8 +557,8 @@ void Renderer::draw(Camera *camera)
         //     ambientOcclusion();
     }
     csm->map(-dayData.sunDir, currentCamera->transformation->getPosition());
-    //prepareSunRSM();
-	//updateAboveView();
+    prepareSunRSM();
+	updateAboveView();
     //mrtAlbedoRoughnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtNormalMetalnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtDistanceTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
@@ -783,7 +783,7 @@ void Renderer::updateAboveView()
 
 	vec3 radius = vec3(aboveSpan);
 	aboveCamera->transformation->setPosition(currentCamera->transformation->getPosition());
-	aboveCamera->transformation->setOrientation(glm::lookAt(vec3(0), vec3(0, -1, 0), vec3(0, 0, 1)));
+	aboveCamera->transformation->setOrientation(glm::lookAt(vec3(0), vec3(0, 1, 0.01), vec3(0, 1, 0)));
 	aboveCamera->transformation->setSize(radius);
 
 	Game::instance->world->setUniforms(shader, aboveCamera);

@@ -622,7 +622,7 @@ void EditorApp::onBind()
 
     game->setCursorMode(GLFW_CURSOR_NORMAL);
     
-    auto t = game->asset->loadSceneFile("cryteksponza.scene");
+    auto t = game->asset->loadSceneFile("castle.scene");
     auto diftex = new Texture2d("2222.jpg");
     auto bumtex = new Texture2d("1111.jpg");
     for (int i = 0; i < t->getMesh3ds().size(); i++) {
@@ -714,8 +714,8 @@ void EditorApp::onBind()
 
 
 
-    auto xt = game->asset->loadMeshFile("2dplane.mesh3d");
-    game->world->scene->addMesh3d(xt);
+   // auto xt = game->asset->loadMeshFile("2dplane.mesh3d");
+   // game->world->scene->addMesh3d(xt);
 
   //  game->world->scene->addMesh3d(game->asset->loadMeshFile("gory.mesh3d"));
 
