@@ -22,6 +22,9 @@ float rand2sTime(vec2 co){
     co *= Time;
     return fract(sin(dot(co.xy,vec2(12.9898,78.233))) * 43758.5453);
 }
+float smart_inverse_dot(float dt, float coeff){
+    return 1.0 - (1.0 / (1.0 + dt * coeff));
+}
 vec4 shade(){
     if(IsFinalPass == 1){
         vec3 pix = vec3(1.0 / Resolution.x, 1.0 / Resolution.y, 0.0);
@@ -47,13 +50,14 @@ vec4 shade(){
         blurred += textureLod(inputTex, UV - pix.zy * 2.0, 1.0);
         blurred /= 5.0;
     //    return blurred;
-        return  mix(textureLod(inputTex, UV, 0.0).rgba, fxaa(inputTex, UV).rgba, max(distance_mult, normal_mult));
+        float vignette = 1.0 -  smart_inverse_dot( 1.0 - dot(reconstructCameraSpaceDistance(UV, 1.0), reconstructCameraSpaceDistance(vec2(0.5), 1.0)), 11.0);
+        return min(1.0, 1.0 - pow(1.0 - vignette , 7.0)) * mix(textureLod(inputTex, UV, 0.0).rgba, fxaa(inputTex, UV).rgba, max(distance_mult, normal_mult));
     } else {
         vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
         float lastinter = textureLod(temporalBBTex, UV, 0.0).a;
         vec4 lastpos = textureLod(temporalWposBBTex, UV, 0.0).rgba;
         vec2 olduv = projectvdao(lastpos.xyz);
-        vec2 nuv = UV + (UV - olduv);
+        vec2 nuv = clamp(UV + (UV - olduv), 0.0, 1.0);
         float iter = rand2sTime(UV) * 0.1;
         vec4 last = textureLod(temporalBBTex, nuv, 0.0).rgba;
 
@@ -64,7 +68,6 @@ vec4 shade(){
             iter += 0.1;
         }
         color *= 0.1;
-
         float distance_fix = 1.0 - smoothstep(0.001, 0.003, distance(lastpos.xyz, currentData.worldPos));
         distance_fix *= 1.0 - smoothstep(0.001, 0.003, abs(lastpos.a - distance(lastpos.xyz, CameraPosition)));
         float procedural_fix = step(0.01, currentData.cameraDistance);
@@ -75,6 +78,6 @@ vec4 shade(){
         outWpos = vec4(currentData.worldPos, distance(currentData.worldPos, CameraPosition));
 
         if(currentData.cameraDistance < 0.01) outWpos.xyz = CameraPosition + dir * rsi2(Ray(toplanetspace(CameraPosition), dir), Sphere(vec3(0.0), planetradius + atmosphereradius));
-        return vec4(color, mix(distance_fix * procedural_fix * out_of_screen_fix * 0.98, lastinter, 0.8));
+        return vec4(clamp(color, 0.0, 2.0), mix(distance_fix * procedural_fix * out_of_screen_fix * 0.98, lastinter, 0.8));
     }
 }

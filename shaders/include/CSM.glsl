@@ -53,7 +53,7 @@ float CSMQueryVisibility(vec3 pos){
         float d = csmuv.z;
         if(csmuv.x >= 0.0 && csmuv.x < 1.0 && csmuv.y >= 0.0 && csmuv.y < 1.0 && csmuv.z >= -1.0 && csmuv.z < 1.0){
             giscale = 1.0 / CSMRadiuses[i];
-            return 1.0 - blurshadowabit(1.0, 13, vec3(csmuv.x, csmuv.y, float(i)), d);// abs(csmuv.z - texture(CSMTex, csmuv).r) ;
+            return smoothstep(0.0, 0.5, 1.0 - blurshadowabit(1.0, 13, vec3(csmuv.x, csmuv.y, float(i)), d));// abs(csmuv.z - texture(CSMTex, csmuv).r) ;
         }
     }
     return 1.0;

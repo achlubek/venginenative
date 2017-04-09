@@ -386,16 +386,17 @@ vec2 projectvdaox(vec3 pos){
     return (tmp.xy / tmp.w) * 0.5 + 0.5;
 }
 
-float ssao(vec3 p1){
-    float v = 0.0;
+layout(binding = 14) uniform sampler2D someLastPass;
+vec3 ssao(vec3 p1){
+    vec3 v = vec3(0.0);
     float v2 = 0.0;
     float iter = 0.0;
     vec2 uv = UV ;
     float rd = rand2s(uv * Time) * 12.1232343456 ;
     float targetmeters = 0.7;
-    int steps = 3;
+    int steps = 2;
     float twopi = 3.1415 * 2.0;
-    float stepsize = 1.0 / 3.0;
+    float stepsize = 1.0 / 2.0;
     vec3 refl = normalize(reflect(reconstructCameraSpaceDistance(UV, 1.0), currentData.normal));
     for(int i=0;i<steps;i++){
         vec3 vx = vec3(0.0);
@@ -414,20 +415,24 @@ float ssao(vec3 p1){
         vec2 u = projectvdao(ppos);
 
         iter = 0.0 + rand2sTime(u) * 0.25;
-        float vis = 0.0;
+        vec3 vis = vec3(0.0);
         for(int g=0;g<4;g++){
             vec3 posh = mix(p1, ppos, iter);
-            float dst = textureLod(mrt_Distance_Bump_Tex, clamp(projectvdao(posh), 0.0, 1.0), 2.0).r;
+            vec2 coords = clamp(projectvdao(posh), 0.0, 1.0);
+            float dst = textureLod(mrt_Distance_Bump_Tex, coords, 2.0).r;
             vec3 newpos = CameraPosition + normalize(posh - CameraPosition) * dst;
             float predicted = distance(CameraPosition, posh);
-            vis += 1.0 - (1.0 - smoothstep(0.0, targetmeters, distance(newpos, p1))) * (1.0 - smart_inverse_dot(1.0 - max(0.0, dot(currentData.normal, normalize(newpos - p1))), 11.0));
+            vec3 alb = textureLod(mrt_Albedo_Roughness_Tex, coords, 2.0).rgb;
+            vis += (1.0 - (1.0 - smoothstep(0.0, targetmeters, distance(newpos, p1)))
+            * (smart_inverse_dot(max(0.0, dot(currentData.normal, normalize(newpos - p1))), 11.0)))
+            * mix(alb, vec3(1.0), currentData.roughness);
             iter += 0.25;
         }
         vis *= 0.25;
         v += vis;
 
     }
-    return pow( v * stepsize, 4.0);
+    return pow(v * stepsize, vec3(1.0 + currentData.roughness * 2.0));
 }
 
 vec2 traceReflectionX(vec3 pos, vec3 dir){

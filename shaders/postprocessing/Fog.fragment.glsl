@@ -274,18 +274,20 @@ float fbmHId(vec3 p){
 	}
 	return a / wc;// + noise(p * 100.0) * 11;
 }
+
+
 vec4 applyAirLayer(vec3 dir, vec3 colorLit, vec3 colorDiff, float height, float maxdist){
     vec3 volumetrix = vec3(0.0);
     float volumetrix2 = 0.0;
-    int steps = 7;
-    float stepsize = 1.0 / 7.0;
+    int steps = 16;
+    float stepsize = 1.0 / float(steps);
     float rd = rand2sTime(UV);
     float iter = rd * stepsize;
     vec3 start = CameraPosition;
     float theheight = rsi2(Ray(toplanetspace(CameraPosition), dir), Sphere(vec3(0.0), planetradius + height));
     float atmceil = 0.0;
-    if(minhit > 0.0 && maxhit > 0.0) {
-        start += dir * theheight;
+    if(length(toplanetspace(CameraPosition)) > planetradius + height) {
+        start = CameraPosition + dir * theheight;
         atmceil = rsi2(Ray(toplanetspace(CameraPosition), dir), Sphere(vec3(0.0), planetradius));
         if(atmceil < 0.0) return vec4(0.0);
     } else {
@@ -299,28 +301,34 @@ vec4 applyAirLayer(vec3 dir, vec3 colorLit, vec3 colorDiff, float height, float 
     //end = start + dir * maxdst;
     float point_full_coverage = maxdist;
     float overall_coverage = 1.0;
-    float coveragepart = linearstep(0.0, point_full_coverage, distance(start, end)) * stepsize * 6.0;
+    float distanceweight =  distance(start, end) * 0.1;
+    float coveragepart = linearstep(0.0, point_full_coverage, distance(start, end))   ;
 //    coveragepart*=coveragepart;
     float dirdotsun = dot(dir, dayData.sunDir) * 0.5 + 0.5;
     float stdr = (1.0 - smart_inverse_dot(1.0 - dirdotsun, 2.0));
     float sw = 0.0;
     vec3 realst = start;
+    float maxdst = min(point_full_coverage, distance(start, end));
+
+//    start += dir * min(0.001 * point_full_coverage * rd, currentData.cameraDistance * 0.3 + (1.0 - step(0.01, currentData.cameraDistance)) * 100.0);
+
     for(int i=0;i<steps;i++){
-        vec3 p = mix(start, end, iter );
-        float coverage = coveragepart * (1.0 - linearstep(0.0, height, p.y));// * fbmHId(p * (0.95 + 0.05 * supernoise3dX(p * 0.006 + vec3(0.0, Time * 0.07, 0.0)))  + Time ) ;
+        vec3 p = mix(start, end, iter);
+        float coverage = linearstep(0.0, point_full_coverage, distance(start, p)) * ( 0.5 + 0.5 * linearstep(0.0, height, p.y)) ;// * fbmHId(p * (0.95 + 0.05 * supernoise3dX(p * 0.006 + vec3(0.0, Time * 0.07, 0.0)))  + Time ) ;
         float vis = clamp(CSMQueryVisibilitySimple(p), 0.0, 1.0);
-        volumetrix += (vis * colorLit  + colorDiff ) * max(0.0, 1.0 - overall_coverage) ;
-        sw += max(0.0, 1.0 - overall_coverage) ;
-        overall_coverage *= 1.0 - coverage;
+        volumetrix += (vis * colorLit  + colorDiff ) *coverage ;
+        sw += coverage;
+        overall_coverage -= coverage;
         //if(overall_coverage >= 1.0) break;
 
         iter += stepsize;
     }
-    volumetrix /= sw;
+    overall_coverage = clamp(overall_coverage, 0.0, 1.0);
+    //volumetrix /= max(0.01, sw);
     //color = mix(color + min(coveragex, 1.0) * atma * pow(volumetrix2, 6.0), atma * volumetrix2, length(currentData.normal) > 0.01 ? min(coveragex, 1.0) : 0.0);
     //if(LN > 0.01 || waterfloor > 0.0) color = mix(clamp(color, 0.0, 10000.0), volumetrix * clamp(volumetrix2 * stepsize, 0.0, 1.0) * stepsize, overall_coverage);
     //else color *=pow( stepsize * volumetrix2, 1.0);
-    return vec4(volumetrix * 1.0, sqrt(1.0 - overall_coverage));//sqrt(log2(overall_coverage + 1.0) / log2(1.0 + 13.0)));
+    return vec4(volumetrix, (1.0 - overall_coverage));//sqrt(log2(overall_coverage + 1.0) / log2(1.0 + 13.0)));
 }
 vec4 shade(){
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
@@ -328,7 +336,7 @@ vec4 shade(){
     float SDDT = 0.5 + 0.5 * dot(dayData.sunDir, dir);
     vec3 AtmDiffuse = getDiffuseAtmosphereColor();
     vec3 direct_color = getSunColorDirectly(0.0) * 6.9 * (1.0 - smart_inverse_dot(1.0 - SDDT, 12.0)) * smart_inverse_dot(SunDT, 2.0) * FogColor;
-    vec3 diffuse_color = (AtmDiffuse * 0.2 ) * 0.8 * FogColor;
+    vec3 diffuse_color = (AtmDiffuse * 0.1 ) * 0.45 * FogColor;
 
     vec4 air = applyAirLayer(dir, direct_color, diffuse_color, FogHeight, FogMaxDistance);
     return air;

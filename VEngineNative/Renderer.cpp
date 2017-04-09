@@ -185,7 +185,7 @@ void Renderer::initializeFbos()
     ambientOcclusionFbo = new Framebuffer();
     ambientOcclusionFbo->attachTexture(ambientOcclusionTexture, GL_COLOR_ATTACHMENT0);
 
-    fogTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    fogTexture = new Texture2d(width / 2, height / 2, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     fogFbo = new Framebuffer();
     fogFbo->attachTexture(fogTexture, GL_COLOR_ATTACHMENT0);
 
@@ -885,6 +885,7 @@ void Renderer::fog()
     setCommonUniforms(fogShader);
     csm->setUniformsAndBindSampler(combineShader, 30);
     quad3dInfo->draw();
+    fogTexture->generateMipMaps();
 }
 
 void Renderer::waterMesh()

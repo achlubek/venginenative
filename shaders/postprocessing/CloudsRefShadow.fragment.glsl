@@ -3,7 +3,7 @@
 #include PostProcessEffectBase.glsl
 layout(binding = 3) uniform samplerCube skyboxTex;
 layout(binding = 5) uniform sampler2D directTex;
-layout(binding = 6) uniform sampler2D alTex;
+layout(binding = 6) uniform sampler2D alTex; 
 layout(binding = 16) uniform sampler2D aoxTex;
 layout(binding = 20) uniform sampler2D fogTex;
 layout(binding = 21) uniform sampler2D waterColorTex;

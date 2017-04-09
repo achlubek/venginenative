@@ -317,7 +317,7 @@ void EditorApp::onRenderUIFrame(float elapsed)
     }
     ImGui::SliderFloat3("FogColor", &Game::instance->renderer->fogColor.x, 0.01f, 1.0f);
     ImGui::SliderFloat("FogHeight", &Game::instance->renderer->fogHeight, 0.0f, 1000.0f);
-    ImGui::SliderFloat("FogMaxDist", &Game::instance->renderer->fogMaxDistance, 0.1f, 10000.0f);
+    ImGui::SliderFloat("FogMaxDist", &Game::instance->renderer->fogMaxDistance, 0.1f, 100000.0f);
 
     if (ImGui::SliderFloat("CloudsHeightStart", &Game::instance->renderer->cloudsFloor, 100.0f, 30000.0f))reset();
     if (ImGui::SliderFloat("CloudsHeightEnd", &Game::instance->renderer->cloudsCeil, 100.0f, 30000.0f))reset();
@@ -633,8 +633,8 @@ void EditorApp::onBind()
         t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(20.0, 0.0, 40.0))));
         t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(40.0, 0.0, 40.0))));
         t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(60.0, 0.0, 0.0))));
-        t->getMesh3ds()[i]->getLodLevel(0)->material = new Material();
-        t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColor = glm::vec3(1.0);
+        //t->getMesh3ds()[i]->getLodLevel(0)->material = new Material();
+        //t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColor = glm::vec3(1.0);
       //  t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColorTex = diftex;
        // t->getMesh3ds()[i]->getLodLevel(0)->material->bumpTex = bumtex;
         game->world->scene->addMesh3d(t->getMesh3ds()[i]);

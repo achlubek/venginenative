@@ -271,6 +271,71 @@ float getFoam(vec3 pos){
     if(u.x<=0.0 || u.y<=0.0 || u.x>=1.0 || u.y>=1.0) return 0.0;
     return textureLod(waterFoamTex, u, 0.0).r;
 }
+
+
+vec4 blurtexture(sampler2D s, vec2 uv, float radius, float mipmap, out vec4 minimum, out vec4 maximum){
+    vec4 sum = vec4(0.0);
+    float w = 0.0;
+    minimum = vec4(1111110.0);
+    maximum = vec4(0.0);
+    float rd = rand2sTime(uv);
+    for(float x = rd * 0.94; x < 3.1415 * 4.0; x += 0.94){
+        for(float y = 0.33 * rd; y < 1.01; y += 0.33){
+            vec2 p = vec2(sin(x + y), cos(x + y)) * y * radius;
+            vec4 data = textureLod(s, clamp(uv + p, 0.01, 0.99), mipmap);
+            sum += data * (1.0 - y);
+            minimum = min(minimum, data);
+            maximum = max(maximum, data);
+            w += (1.0 - y);
+        }
+    }
+    return sum / w;
+}
+
+uniform vec3 FogColor;
+uniform float FogMaxDistance;
+uniform float FogHeight;
+float fogCoverage(vec3 dir, float height, float maxdist){
+    vec3 volumetrix = vec3(0.0);
+    float volumetrix2 = 0.0;
+    int steps = 7;
+    float stepsize = 1.0 / float(steps);
+    float rd = rand2sTime(UV);
+    float iter = rd * stepsize;
+    vec3 start = CameraPosition;
+    float theheight = rsi2(Ray(toplanetspace(CameraPosition), dir), Sphere(vec3(0.0), planetradius + height));
+    float atmceil = 0.0;
+    if(length(toplanetspace(CameraPosition)) > planetradius + height) {
+        start = CameraPosition + dir * theheight;
+        atmceil = rsi2(Ray(toplanetspace(CameraPosition), dir), Sphere(vec3(0.0), planetradius));
+        if(atmceil < 0.0) return 0.0;
+    } else {
+        atmceil = theheight;
+    }
+    float waterfloor = rsi2(Ray(toplanetspace(CameraPosition), dir), Sphere(vec3(0.0), planetradius));
+    float LN = length(currentData.normal);
+    vec3 realpos = mix(CameraPosition +  dir * (waterfloor > 0.0 ? waterfloor : atmceil), currentData.worldPos, step(0.01, LN));
+    vec3 end = realpos;
+    //float maxdst = min(FogMaxDistance, distance(start, end));
+    //end = start + dir * maxdst;
+    float point_full_coverage = maxdist;
+    float overall_coverage = 1.0;
+    float distanceweight =  distance(start, end)  ;
+    //return  linearstep(0.0, point_full_coverage, distance(start, end))  ;
+    float coveragepart = linearstep(0.0, point_full_coverage, distance(start, end))  ;
+    //return coveragepart * (1.0 - smart_inverse_dot(max(0.0, dot(dir, VECTOR_UP)), 11.0)) ;
+
+    for(int i=0;i<steps;i++){
+        vec3 p = mix(start, end, iter);
+        float coverage =  linearstep(0.0, point_full_coverage, distance(start, p)) * (1.0 - linearstep(0.0, height, p.y));// * (supernoise3dX(p * 0.1)* 0.5 + 0.5);
+        overall_coverage -= coverage;
+        //if(overall_coverage < 0.0) break;
+        iter += stepsize;
+    }
+    overall_coverage = clamp(overall_coverage, 0.0, 1.0) ;
+    return 1.0 - overall_coverage;
+}
+
 vec4 shade(){
     vec3 color = vec3(0);
     if(CombineStep == STEP_PREVIOUS_SUN){
@@ -325,7 +390,11 @@ vec4 shade(){
         float coverage2 = cloudsData2.r;
         float ssobj = 1.0 - smoothstep(0.0, 1.01, textureLod(mrt_Distance_Bump_Tex, ss2, 3.0).r);
         float ssobj2 = 1.0 - step(0.1, textureLod(mrt_Distance_Bump_Tex, UV, 0.0).r);
-        color += (1.0 - coverage) * ssobj * (lenssun(dir)) * getSunColorDirectly(0.0) * 36.0 * step(0.0, dayData.sunDir.y);
+
+
+        // >>>>>>  color += (1.0 - coverage) * ssobj * (lenssun(dir)) * getSunColorDirectly(0.0) * 36.0 * step(0.0, dayData.sunDir.y);
+
+
         //color += monsoonconverage2 * (1.0 - coverage2) * ssobj2 *  step(0.0, dir.y) * (smoothstep(0.998, 0.9985, max(0.0, dot(dir, dayData.sunDir)))) * getSunColorDirectly(0.0) * 13.0;
 
 
@@ -373,9 +442,16 @@ vec4 shade(){
         //color = applyAirLayer(dir, color, getSunColorDirectly(0.0) * 0.15, vec3(0.1), 1010.0, 11111.0);
         //color = mix(color, volumetrix, overall_coverage);
         //color = textureLod(sunRSMTex, UV, 0.0).rgb;
-        vec4 fog = textureLod(fogTex, UV, 0.0).rgba;
-        //return vec4(fog.a);
-        color = mix(color, fog.rgb, min(1.0, fog.a  ));
+        vec3 pix = vec3(2.0 / Resolution.x, 2.0 / Resolution.y, 0.0);
+        vec4 fogmin = vec4(0.0);
+        vec4 fogmax = vec4(0.0);
+        vec4 fogDiffuse = blurtexture(fogTex, UV, 0.05, 3.0, fogmin, fogmax);
+        vec4 fogCenter = blurtexture(fogTex, UV, 0.02, 0.0, fogmin, fogmax);
+        vec4 fogNoBlur = textureLod(fogTex, UV, 0.0);
+
+        //return vec4(fogmax.rgba);
+        float fogcover = fogCoverage(dir, FogHeight, FogMaxDistance);
+        color = mix(vec3(color),  ( fogNoBlur.rgb), fogcover );
         color = tonemap( color);
     }
 
