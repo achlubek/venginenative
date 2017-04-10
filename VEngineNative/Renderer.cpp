@@ -145,6 +145,11 @@ void Renderer::initializeFbos()
     sunRSMFbo->attachTexture(sunRSMNormTex, GL_COLOR_ATTACHMENT2);
     sunRSMFbo->attachTexture(sunRSMDepthTex, GL_DEPTH_ATTACHMENT);
 
+    lensBlurAtomicRed = new Texture2d(width, height, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT);
+    lensBlurAtomicGreen = new Texture2d(width, height, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT);
+    lensBlurAtomicBlue = new Texture2d(width, height, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT);
+    lensBlurAtomicWeight = new Texture2d(width, height, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT);
+
 	aboveCamera = new Camera();
 	aboveCameraLastPos = glm::vec3(0.0);
 	aboveCameraDelta = glm::vec3(0.0);
@@ -669,6 +674,10 @@ void Renderer::combine(int step)
     combineShader->setUniform("CombineStep", step);
     if (step == 1) {
         waterColorTexture->use(14);
+        lensBlurAtomicRed->bind(4, 0);
+        lensBlurAtomicGreen->bind(5, 0);
+        lensBlurAtomicBlue->bind(6, 0);
+        lensBlurAtomicWeight->bind(7, 0);
         combineShader->setUniform("ShowSelection", showSelection ? 1 : 0);
         if (showSelection) {
             combineShader->setUniform("SelectionPos", selectionPosition);

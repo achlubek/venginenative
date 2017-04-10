@@ -428,9 +428,9 @@ void EditorApp::onRenderUIFrame(float elapsed)
         ImGui::Begin("Selected mesh instance", &customWindowsOpened[win++], 0);
         TransformStruct tmp0 = pickedUpMeshInstance->transformation->getStruct();
         auto euler = glm::eulerAngles(tmp0.orientation);
-        ImGui::SliderFloat3("Position", &tmp0.position.x, -1000.0, 1000.0);
+        ImGui::SliderFloat3("Position", &tmp0.position.x, -50.0, 50.0);
         ImGui::SliderFloat3("Orientation", &euler.x, -3.1415, 3.1415);
-        ImGui::SliderFloat3("Size", &tmp0.size.x, -10.0, 10.0);
+        ImGui::SliderFloat3("Size", &tmp0.size.x, -3.0, 3.0);
         tmp0.orientation = glm::quat(euler);
         pickedUpMeshInstance->transformation->setPosition(tmp0.position);
         pickedUpMeshInstance->transformation->setOrientation(tmp0.orientation);
@@ -716,7 +716,7 @@ void EditorApp::onBind()
 
     auto xt = game->asset->loadMeshFile("2dplane.mesh3d");
     xt->getInstance(0)->transformation->setOrientation(glm::angleAxis(deg2rad(90.0f), glm::vec3(0.0, 0.0, 1.0)));
-   // game->world->scene->addMesh3d(xt);
+    game->world->scene->addMesh3d(xt);
 
   //  game->world->scene->addMesh3d(game->asset->loadMeshFile("gory.mesh3d"));
 

@@ -214,6 +214,12 @@ vec2 randpoint2(){
     return vec2(x, y) * 2.0 - 1.0;
 }
 
+float randpoint1(){
+    float x = rand2s(UV * rdhashx2);
+    rdhashx2 += 2.1231255;
+    return x;
+}
+
 vec2 projectsunrsm(vec3 pos){
     vec4 tmp = (SunRSMVPMatrix * vec4(pos, 1.0));
     return (tmp.xy / tmp.w) * 0.5 + 0.5;
@@ -308,6 +314,11 @@ float fogCoverage(vec3 dir, float height, float maxdist){
     overall_coverage = clamp(overall_coverage, 0.0, 1.0) ;
     return 1.0 -  overall_coverage;
 }
+
+layout (binding = 4, r32ui) coherent  uniform uimage2D lensBlurOutputRed;
+layout (binding = 5, r32ui) coherent  uniform uimage2D lensBlurOutputGreen;
+layout (binding = 6, r32ui) coherent  uniform uimage2D lensBlurOutputBlue;
+layout (binding = 7, r32ui) coherent  uniform uimage2D lensBlurOutputWeight;
 
 vec4 shade(){
     vec3 color = vec3(0);
@@ -429,6 +440,41 @@ vec4 shade(){
         color = mix(vec3(color),  ( fogNoBlur.rgb*0.1 + fogCenter.rgb*0.2 + fogDiffuse.rgb* 0.7), fogcover );
     //color /= sqrt(length(color) + 0.001);
         color = tonemap( color);
+
+
+        vec2 imagesize = vec2(imageSize(lensBlurOutputRed));
+        float focus = textureLod(waterColorTex, vec2(0.5, 0.5), 0.0).a;
+        float dist = textureLod(waterColorTex, UV, 0.0).a;
+        float bluram = 0.0;
+        for(int i=0;i<16;i++){
+            vec2 rp = normalize(randpoint2()) * randpoint1() * vec2(Resolution.y / Resolution.x, 1.0);
+            vec2 newuv = clamp(rp* 0.17 + UV, 0.001, 0.998);
+            float distnow = textureLod(waterColorTex, newuv, 1.0).a;
+            bluram += getAmountForDistance(focus, distnow);
+        }
+        bluram /= 16.0;
+        //    return dist * vec3(0.1);
+        // if(dist < focus) dist = focus + abs(dist - focus);
+        float amountoriginal = bluram;//mix(getAmountForDistance(focus, dist), bluram, step(0.0, focus - dist));
+        float maxlen = length(vec2(1.0));
+        vec3 colo = clamp(color, 0.0, 3.0);
+        for(int i=0;i<32;i++){
+            vec2 rp = normalize(randpoint2()) * randpoint1() * vec2(Resolution.y / Resolution.x, 1.0);
+            vec2 newuv = clamp(rp* amountoriginal * 200.0 + UV, 0.001, 0.998);
+            vec2 newuv2 = clamp(UV - rp* 0.01, 0.001, 0.998);
+            ivec2 newcoords = ivec2(newuv * imagesize);
+            float distnow = textureLod(waterColorTex, newuv, 0.0).a;
+            vec3 col = textureLod(waterColorTex, newuv2,20.0).rgb * 4.0;
+            //vec3 colo = clamp(color, 0.0, 22.0);
+            float amounto = getAmountForDistance(focus, distnow);
+            float w = 1.0;//( amountoriginal  * 2200.0 * step(0.0, focus - dist) ) + 1.0 ;/// (1.0 + abs(dist - distnow));
+            colo *= w;
+            imageAtomicAdd(lensBlurOutputRed, newcoords, uint(255.0*colo.x));
+            imageAtomicAdd(lensBlurOutputGreen, newcoords, uint(255.0*colo.y));
+            imageAtomicAdd(lensBlurOutputBlue, newcoords, uint(255.0*colo.z));
+            imageAtomicAdd(lensBlurOutputWeight, newcoords, uint(255.0 * w  ));
+        }
+        color = vec3(0.0);
         //color = vec3(texture(aboveViewDataTex, UV).g);
     }
 

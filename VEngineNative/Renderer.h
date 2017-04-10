@@ -243,7 +243,13 @@ private:
 	Framebuffer *lensBlurFboHorizontal;
 	Framebuffer *lensBlurFboVertical;
 	Texture2d *lensBlurTextureHorizontal;
-	Texture2d *lensBlurTextureVertical;
+    Texture2d *lensBlurTextureVertical;
+
+    Texture2d *lensBlurAtomicRed;
+    Texture2d *lensBlurAtomicGreen;
+    Texture2d *lensBlurAtomicBlue;
+    Texture2d *lensBlurAtomicWeight;
+
 	void lensBlur();
 	DayData dayData;
 	// Output to output fbo

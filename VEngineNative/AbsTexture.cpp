@@ -110,5 +110,8 @@ void AbsTexture::use(int unit)
 }
 
 void AbsTexture::bind(int unit, int level) {
-    glBindImageTexture(unit, handle, 0, false, 0, GL_WRITE_ONLY, GL_R16F);
+    if (!generated) {
+        generate();
+    }
+    glBindImageTexture(unit, handle, 0, false, 0, GL_READ_WRITE, GL_R32UI);
 }

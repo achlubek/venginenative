@@ -412,7 +412,7 @@ vec3 ssao(vec3 p1){
         vx *= sign(dot(vx, currentData.normal));
         vx = normalize(mix(vx, refl, 1.0 - currentData.roughness));
         vec3 ppos = p1 + targetmeters * vx;
-        vec3 ppos2 = p1 + targetmeters * 10.0 * vx;
+        vec3 ppos2 = p1 + targetmeters * 10.0 * vec3(vx.x, abs(vx.y), vx.z);
         vec2 u = projectvdao(ppos);
 
         iter = 0.0 + rand2sTime(u) * 0.25;
@@ -423,11 +423,12 @@ vec3 ssao(vec3 p1){
             vec2 coords = clamp(projectvdao(posh), 0.0, 1.0);
             float dst = textureLod(mrt_Distance_Bump_Tex, coords, 2.0).r;
             vec3 newpos = CameraPosition + normalize(posh - CameraPosition) * dst;
-            vis += 1.0 - (1.0 - smoothstep(0.0, targetmeters, distance(newpos, p1))) * max(0.0, dot(currentData.normal, normalize(newpos - p1)));
+            vis += 1.0;// - (1.0 - smoothstep(0.0, targetmeters, distance(newpos, p1))) * max(0.0, dot(currentData.normal, normalize(newpos - p1)));
 
             vec2 aboveuv = project_abovex(posh2);
             float v = textureLod(aboveViewDataTex, aboveuv, 0.0).r;
-            vis += 1.0 - clamp(max(0.0, v - p1.y), 0.0, 1.0);
+            float cancel =  ( 1.0 - smoothstep(0.0, 10.0, abs(v - p1.y)));
+            vis += (1.0 - clamp(max(0.0, v - p1.y) , 0.0, 1.0))  * max(0.0, vx.y);
             iter += 0.25;
         }
         vis *= 0.25  * 0.5;
