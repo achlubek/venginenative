@@ -148,7 +148,7 @@ void Renderer::initializeFbos()
 	aboveCamera = new Camera();
 	aboveCameraLastPos = glm::vec3(0.0);
 	aboveCameraDelta = glm::vec3(0.0);
-	aboveSpan = 120.0f;
+	aboveSpan = 32.0f;
 	aboveFbo = new Framebuffer();
 	aboveDataTex = new Texture2d(1024, 1024, GL_RGBA32F, GL_RGBA, GL_FLOAT);
 	aboveDepthTex = new Texture2d(1024, 1024, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
@@ -428,6 +428,7 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     sp->setUniform("FogMaxDistance", fogMaxDistance);
     sp->setUniform("FogHeight", fogHeight);
 
+    sp->setUniform("AboveSpan", aboveSpan);
 
     glm::mat4 sunRSMvpmatrix = sunRSMCamera->projectionMatrix * sunRSMCamera->transformation->getInverseWorldTransform();
     sp->setUniform("SunRSMVPMatrix", sunRSMvpmatrix);
@@ -440,9 +441,40 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     sp->setUniform("Rand1", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
     sp->setUniform("Rand2", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
     sp->setUniform("CloudsIntegrate", cloudsIntegrate);
+ 
+
     mrtAlbedoRoughnessTex->use(0);
     mrtNormalMetalnessTex->use(1);
     mrtDistanceTexture->use(2);
+    aboveDataTex->use(3);
+    atmScattTexture->use(4);
+    ambientLightTexture->use(5);
+    ambientOcclusionTexture->use(6);
+    deferredTexture->use(7);
+    fresnelTexture->use(8);
+    //FREE index 8
+    //clouds clouds as index 9
+    //clouds shadows/AL as index 10
+    // FREE index 11
+    //csm->setUniformsAndBindSampler(12); csm as 12
+    fogTexture->use(13);
+    // GENERIC 2d INPUT as index 14
+    // LAST FOAM TEMPORAL as index 15
+    // SOME HELPER FOR CLOUDS as 16
+    moonTexture->use(17);
+    cloudsResolvedTexture->use(18);
+    waterColorTexture->use(19);
+    // FOAM operational texture on 20
+    waterMeshTexture->use(21);
+    // deferred shadowmapcube on 22
+    // deferred shadowmap2d on 23
+    // FREE index 24
+    starsTexture->use(25);
+    sunRSMTex->use(26);
+    sunRSMWPosTex->use(27);
+    sunRSMNormTex->use(28);
+    // temporal aa bb on 29
+    // temporal aa wpos bb on 30
 }
 
 Renderer::~Renderer()
@@ -545,8 +577,8 @@ void Renderer::draw(Camera *camera)
         pickingResultSSBO->mapData(4 * 4 * 3, new float[4 * 4 * 3]{});
         // starsTexture->generateMipMaps();
     }
-    Game::instance->bindTexture(GL_TEXTURE_2D, 0, 0);
-    Game::instance->bindTexture(GL_TEXTURE_2D, 1, 0);
+    Game::instance->bindTexture(GL_TEXTURE0, 0, 0);
+    Game::instance->bindTexture(GL_TEXTURE0, 0, 1);
     mrtFbo->use(true);
     //Game::instance->world->setUniforms(Game::instance->shaders->materialGeometryShader, camera);
     Game::instance->world->setUniforms(Game::instance->shaders->materialShader, camera);
@@ -571,9 +603,8 @@ void Renderer::draw(Camera *camera)
     sunRSMTex->generateMipMaps();
     sunRSMWPosTex->generateMipMaps();
     sunRSMNormTex->generateMipMaps();
-    mrtAlbedoRoughnessTex->use(0);
-    mrtNormalMetalnessTex->use(1);
-    mrtDistanceTexture->use(2);
+
+
     atmScatt();
     clouds();
 	//waterFoam();
@@ -605,14 +636,7 @@ void Renderer::bloom()
 {
 }
 void Renderer::cloudsResolve()
-{
-    deferredTexture->use(5);
-    ambientLightTexture->use(6);
-    ambientOcclusionTexture->use(16);
-    //fogTexture->use(20);
-    waterColorTexture->use(21);
-    starsTexture->use(24);
-    moonTexture->use(28);
+{ 
     if (passPhrase == 3) {
         cloudsResolvedFbo->use(false);
         cloudResolveShader->use();
@@ -637,27 +661,14 @@ void Renderer::combine(int step)
 {
   //  
     combineFbo->use(false);
-    combineShader->use();
-    deferredTexture->use(5);
-    ambientLightTexture->use(6);
-    ambientOcclusionTexture->use(16);
-    fresnelTexture->use(14);
-    fogTexture->use(20);
-    waterColorTexture->generateMipMaps();
-    waterColorTexture->use(21);
-    starsTexture->use(24);
-    moonTexture->use(28);
-    cloudsResolvedTexture->use(29);
+    combineShader->use(); 
+    waterColorTexture->generateMipMaps(); 
 
 
-	combineShader->setUniform("AboveSpan", aboveSpan);
     setCommonUniforms(combineShader);
     combineShader->setUniform("CombineStep", step);
     if (step == 1) {
-        sunRSMTex->use(31);
-        sunRSMWPosTex->use(34);
-        sunRSMNormTex->use(33);
-		aboveDataTex->use(23);
+        waterColorTexture->use(14);
         combineShader->setUniform("ShowSelection", showSelection ? 1 : 0);
         if (showSelection) {
             combineShader->setUniform("SelectionPos", selectionPosition);
@@ -666,16 +677,11 @@ void Renderer::combine(int step)
     }
     if (step == 0) {
 
-        csm->setUniformsAndBindSampler(combineShader, 30);
-        sunRSMTex->use(31);
-        sunRSMWPosTex->use(34);
-		sunRSMNormTex->use(33);
-		aboveDataTex->use(23);
+        csm->setUniformsAndBindSampler(combineShader, 12); 
     }
 
     quad3dInfo->draw();
     waterColorTexture->generateMipMaps();
-    waterColorTexture->use(16);
     //combineTexture->generateMipMaps();
 }
 void Renderer::fxaaTonemap(bool finalpass)
@@ -684,10 +690,10 @@ void Renderer::fxaaTonemap(bool finalpass)
     fxaaTonemapShader->setUniform("IsFinalPass", finalpass ? 1 : -1);
     if (finalpass) {
         if (fxaaUseOdd) {
-            fxaaTonemapTextureOdd->use(16);
+            fxaaTonemapTextureOdd->use(14);
         }
         else {
-            fxaaTonemapTextureEven->use(16);
+            fxaaTonemapTextureEven->use(14);
         }
         fxaaUseOdd = !fxaaUseOdd;
         Game::instance->firstFullDrawFinished = true;
@@ -703,15 +709,15 @@ void Renderer::fxaaTonemap(bool finalpass)
         setCommonUniforms(fxaaTonemapShader);
         if (fxaaUseOdd) {
             fxaaTonemapFboOdd->use(false);
-            fxaaTonemapTextureWposEven->use(14);
-            fxaaTonemapTextureEven->use(15);
+            fxaaTonemapTextureEven->use(29);
+            fxaaTonemapTextureWposEven->use(30);
         }
         else {
             fxaaTonemapFboEven->use(false);
-            fxaaTonemapTextureWposOdd->use(14);
-            fxaaTonemapTextureOdd->use(15);
+            fxaaTonemapTextureOdd->use(29);
+            fxaaTonemapTextureWposOdd->use(30);
         }
-        combineTexture->use(16);
+        combineTexture->use(14);
         quad3dInfo->draw();
     }
 
@@ -720,9 +726,8 @@ void Renderer::fxaaTonemap(bool finalpass)
 void Renderer::lensBlur()
 {
     lensBlurFboVertical->use(false);
-    lensBlurShader->use();
-    mrtDistanceTexture->use(2);
-    combineTexture->use(16);
+    lensBlurShader->use(); 
+    combineTexture->use(14);
     setCommonUniforms(lensBlurShader);
 
     quad3dInfo->draw();
@@ -799,7 +804,7 @@ void Renderer::waterFoam()
 	setCommonUniforms(waterFoamShader);
 	waterFoamShader->setUniform("AboveSpan", aboveSpan);
 	aboveDataTex->use(23);
-	readtex->use(24);
+	readtex->use(15);
 	quad3dInfo->draw();
 
 	waterFoamRenderOdd = !waterFoamRenderOdd;
@@ -812,8 +817,7 @@ void Renderer::deferred()
 
     deferredFbo->use(false);
     deferredShader->use();
-    setCommonUniforms(deferredShader);
-    moonTexture->use(28);
+    setCommonUniforms(deferredShader); 
     glCullFace(GL_FRONT);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE);
@@ -878,12 +882,11 @@ void Renderer::ambientOcclusion()
 }
 
 void Renderer::fog()
-{
-    atmScattTexture->use(19);
+{ 
     fogFbo->use(false);
     fogShader->use();
     setCommonUniforms(fogShader);
-    csm->setUniformsAndBindSampler(combineShader, 30);
+    csm->setUniformsAndBindSampler(fogShader, 12);
     quad3dInfo->draw();
     fogTexture->generateMipMaps();
 }
@@ -892,23 +895,7 @@ void Renderer::waterMesh()
 {
     exposureBuffer->use(0);
     waterMeshFbo->use(false);
-    waterMeshShader->use();
-    mrtDistanceTexture->use(2);
-    // skyboxTexture->use(3);
-    deferredTexture->use(5);
-    ambientLightTexture->use(6);
-    ambientOcclusionTexture->use(16);
-    if (!cloudCycleUseOdd) {
-        cloudsTextureOdd->use(25);
-        cloudsShadowsTextureOdd->use(26);
-    }
-    else {
-        cloudsTextureEven->use(25);
-        cloudsShadowsTextureEven->use(26);
-    }
-    fogTexture->use(20);
-    waterMeshTexture->use(21);
-    combineTexture->use(22);
+    waterMeshShader->use();  
     setCommonUniforms(waterMeshShader);
 
     quad3dInfo->draw();
@@ -919,24 +906,22 @@ void Renderer::waterColorShaded()
 {
     waterColorFbo->use(false);
     waterColorShader->use();
-    csm->setUniformsAndBindSampler(waterColorShader, 30);
-    fogTexture->use(20);
-    combineTexture->use(22);
+    csm->setUniformsAndBindSampler(waterColorShader, 12); 
+    combineTexture->use(14);
     if (!cloudCycleUseOdd) {
-        cloudsTextureOdd->use(25);
-        cloudsShadowsTextureOdd->use(26);
+        cloudsTextureOdd->use(9);
+        cloudsShadowsTextureOdd->use(10);
     }
     else {
-        cloudsTextureEven->use(25);
-        cloudsShadowsTextureEven->use(26);
+        cloudsTextureEven->use(9);
+        cloudsShadowsTextureEven->use(10);
     }
 	if (waterFoamRenderOdd) {
-		waterFoamTexEven->use(15);
+		waterFoamTexEven->use(20);
 	}
 	else {
-		waterFoamTexOdd->use(15);
-	}
-    cloudsResolvedTexture->use(29);
+		waterFoamTexOdd->use(20);
+	} 
 
 	waterColorShader->setUniform("AboveSpan", aboveSpan);
     setCommonUniforms(waterColorShader);
@@ -981,10 +966,9 @@ void Renderer::clouds()
     else
         currentFbo = cloudsFboEven;
     if (cloudCycleUseOdd)
-        cloudsTextureEven->use(18);
+        cloudsTextureEven->use(9);
     else
-        cloudsTextureOdd->use(18);
-    atmScattTexture->use(19);
+        cloudsTextureOdd->use(9); 
     Camera* camera = nullptr;
     FrustumCone *cone = nullptr;
     glm::mat4 vpmatrix;
@@ -1027,16 +1011,15 @@ void Renderer::clouds()
         currentFbo = cloudsShadowsFboEven;
 
     if (cloudCycleUseOdd)
-        cloudsShadowsTextureEven->use(18);
+        cloudsShadowsTextureEven->use(10);
     else
-        cloudsShadowsTextureOdd->use(18);
+        cloudsShadowsTextureOdd->use(10);
 
     if (cloudCycleUseOdd)
-        cloudsTextureEven->use(29);
+        cloudsTextureEven->use(9);
     else
-        cloudsTextureOdd->use(29);
-
-    atmScattTexture->use(19);
+        cloudsTextureOdd->use(9);
+     
     if (passPhrase == 0) {
         // for (int i = 0; i < 6; i++) {
         currentFbo->use(false);

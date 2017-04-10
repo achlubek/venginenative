@@ -1,10 +1,5 @@
-
-uniform float WaterHeight;
-uniform vec3 Wind;
-uniform vec2 WaterScale;
 float octavescale1 = 0.03;
 float mipmap1 = 0.0;
-float maxmip = textureQueryLevels(waterTileTex);
 
 #include ProceduralValueNoise.glsl
 
@@ -141,14 +136,6 @@ vec2 heightflow(vec2 uv){
     return getFlow(uv * 0.01735 * WaterScale, 27);// * (1.0 - smoothstep(0.0, 7.0, mipmap));
 
 }
-
-
-vec2 heightwaterXOX(vec2 uv, vec2 offset, float mipmap){
-
-	vec2 zuv1 = (uv * WaterScale * octavescale1);
-    vec2 a = textureLod(waterTileTex, zuv1, mipmap).rg;
-	return (a);
-}
 vec2 heightwaterX(vec2 uv, float mipmap){
     return heightwaterXO(uv, vec2(0.0), mipmap);
 }
@@ -156,7 +143,7 @@ float heightwaterD(vec2 uv, float mipmap){
     return heightwaterX(uv, mipmap).r;
 }
 float heightwaterE(vec2 uv, vec2 e, float mipmap){
-    return heightwaterXO(uv, e / textureSize(waterTileTex, int(floor(mipmap))) , mipmap).r;
+    return heightwaterXO(uv, e, mipmap).r;
 }
 float heightwater(vec2 uv){
     return heightwaterD(uv, mipmap1 * 1.0).r;

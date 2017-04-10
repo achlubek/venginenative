@@ -2,7 +2,7 @@
 #define SHADEFRAMEWORK_H
 #include Constants.glsl
 
-layout(binding = 14) uniform sampler2D fresnelTex;
+layout(binding = 8) uniform sampler2D fresnelTex;
 vec3 fresnel_effect(vec3 base, float roughness, float dt){
     return base + (1.0 - base) * textureLod(fresnelTex, vec2(clamp(roughness, 0.01, 0.98), clamp(1.0 - dt, 0.01, 0.98)), 0.0).r;
 }

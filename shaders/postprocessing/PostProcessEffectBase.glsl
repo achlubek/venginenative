@@ -1,4 +1,4 @@
-uniform vec2 Resolution;
+#include PostProcessingCommonUniforms.glsl
 
 #ifdef RECREATE_UV
 vec2 UV = gl_FragCoord.xy / Resolution.xy;
@@ -6,21 +6,6 @@ vec2 UV = gl_FragCoord.xy / Resolution.xy;
 in vec2 UV;
 #endif
 layout(location = 0) out vec4 outColor;
-
-layout(binding = 0) uniform sampler2D mrt_Albedo_Roughness_Tex;
-layout(binding = 1) uniform sampler2D mrt_Normal_Metalness_Tex;
-layout(binding = 2) uniform sampler2D mrt_Distance_Bump_Tex;
-
-uniform mat4 VPMatrix;
-uniform vec3 CameraPosition;
-
-uniform vec3 FrustumConeLeftBottom;
-uniform vec3 FrustumConeBottomLeftToBottomRight;
-uniform vec3 FrustumConeBottomLeftToTopLeft;
-
-uniform vec3 Previous_FrustumConeLeftBottom;
-uniform vec3 Previous_FrustumConeBottomLeftToBottomRight;
-uniform vec3 Previous_FrustumConeBottomLeftToTopLeft;
 
 struct PostProcessingData
 {

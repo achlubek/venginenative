@@ -132,7 +132,7 @@ vec4 blurshadowsAO(vec3 dir, float roughness){
     return centerval;
 }
 vec4 smartblur(vec3 dir, float roughness){
-    float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));
+    float levels = max(0, float(textureQueryLevels(coverageDistTex)));
     float mx = log2(roughness*1024+1)/log2(1024);
     float mlvel = mx * levels;
     vec4 ret = vec4(0);
@@ -174,16 +174,10 @@ float sun(vec3 dir, vec3 sundir, float gloss, float ansiox){
    // return smoothstep(0.997, 1.0, dt);
 }
 vec3 getSunColorDirectly(float roughness){
-    vec3 sunBase = vec3(15.0);
     float dt = max(0.0, (dot(dayData.sunDir, VECTOR_UP)));
-    float dtx = smoothstep(-0.0, 0.1, dot(dayData.sunDir, VECTOR_UP));
-    float dt2 = 0.9 + 0.1 * (1.0 - max(0.0, (dot(dayData.sunDir, VECTOR_UP))));
     float st = max(0.0, 1.0 - smart_inverse_dot(dt, 11.0));
     vec3 supersundir = max(vec3(0.0),   vec3(1.0) - st * 4.0 * pow(vec3(50.0/255.0, 111.0/255.0, 153.0/255.0), vec3(2.4)));
-//    supersundir /= length(supersundir) * 1.0 + 1.0;
     return supersundir * 4.0 * smart_inverse_dot(dt, 11.0);
-    //return mix(supersundir * 1.0, sunBase, st);
-    //return  max(vec3(0.3, 0.3, 0.0), (  sunBase - vec3(5.5, 18.0, 20.4) *  pow(1.0 - dt, 8.0)));
 }
 
 float sshadow = 1.0;
@@ -358,7 +352,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     #define xA 0.5
     #define xB 0.5
     float mult = mix(sqrt(0.001 + dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, SunDT) + 0.02;
-    vec3 raycolor = (getSunColorDirectly(0.0) * 7.9 * rays + (AtmDiffuse * 0.2 ) * 0.8) + AtmDiffuse * 0.2 * rays * (1.0 + 1110.0 * (1.0 - smart_inverse_dot(1.0 - max(0.0, dot(dayData.sunDir, dir)-0.005), 2711.0)))* smart_inverse_dot(SunDT, 2.0);
+    vec3 raycolor = (getSunColorDirectly(0.0) * 4.9 * rays + (AtmDiffuse * 0.2 ) * 0.8) + AtmDiffuse * 0.2 * rays * (1.0 + 1110.0 * (1.0 - smart_inverse_dot(1.0 - max(0.0, dot(dayData.sunDir, dir)-0.005), 2711.0)))* smart_inverse_dot(SunDT, 2.0);
 
     //raycolor *= xA + xB * (pow(1.0 - DirDT, 8.0));
     float raysCoverage = clamp((1.0 / (DirDT * 61.0 / NoiseOctave1 + 1.0)), 0.0, 1.0);
@@ -467,25 +461,37 @@ float traceReflection(vec3 pos, vec3 dir){
     return textureLod(mrt_Distance_Bump_Tex, vec2(uv.x, horizon - uv.y), 0).r;
 }
 float AboveAO = 1.0;
+vec2 project_abovex(vec3 pos){
+    vec2 a = ((pos - CameraPosition).xz / AboveSpan) * 0.5 + 0.5;
+    a.y = 1.0 - a.y;
+    a.x = 1.0 - a.x;
+    return a;
+}
 vec3 vdao(){
     vec3 c = vec3(0.0);
     int steps = 5;
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
     //float fresnel = 0.04 + 0.96 * textureLod(fresnelTex, vec2(clamp(currentData.roughness, 0.01, 0.98), 1.0 - max(0.0, dot(-dir, currentData.normal))), 0.0).r;
-    vec3 refdir = reflect(dir, currentData.normal);
+    vec3 refdir = reflect(dir, currentData.normal) * (0.01 + rand2sTime(UV));
     vec3 atmdiff = textureLod(resolvedAtmosphereTex, currentData.normal, 9.0).rgb;
     for(int i=0;i<steps;i++){
         vec3 p = normalize(randpoint3());
         p *= sign(dot(p, currentData.normal));
     //    p = normalize(mix(p, refdir,  max(0.0, dot(p, refdir))));
-        p = normalize(mix(refdir, p, currentData.roughness * currentData.roughness));
-        vec3 x = -p;
-        float v = mix(0.1 + 0.8 * smoothstep(-0.5, 0.0, p.y), max(0.0, dot(VECTOR_UP, currentData.normal)), currentData.roughness);
+        p = mix(refdir, p, currentData.roughness * currentData.roughness);
+        //vec3 x = -p;
+        //float v = mix(0.1 + 0.8 * smoothstep(-0.5, 0.0, p.y), max(0.0, dot(VECTOR_UP, currentData.normal)), currentData.roughness);
 
-        c += 0.02 * shade_ray_env_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness * currentData.roughness * 0.3, resolvedAtmosphereTex)).rgb, atmdiff);
+        vec2 aboveuv = project_abovex(currentData.worldPos + p);
+        float v = textureLod(aboveViewDataTex, aboveuv, 0.0).r;
+        float ao = (0.002 + 0.998 * (1.0 - clamp(max(0.0, v - p.y), 0.0, 1.0)));
+
+        c += ao * 3.0 * shade_ray_env_data(currentData, p,  textureLod(resolvedAtmosphereTex, p, roughnessToMipmap(currentData.roughness * currentData.roughness * 0.3, resolvedAtmosphereTex)).rgb, atmdiff);
     }
+
+    //return c;
     //return vec3(1) * ssao(currentData.worldPos);
-    return shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos) * 8.0 * getSunColorDirectly(0.0)) + c * (0.05 + 0.95 * AboveAO) * ssao(currentData.worldPos);
+    return shade_ray_data(currentData, dayData.sunDir, CSMQueryVisibility(currentData.worldPos)  * getSunColorDirectly(0.0)) + c * (0.05 + 0.95 * AboveAO) * ssao(currentData.worldPos);
 }
 
 vec3 shadeFragment(PostProcessingData data){

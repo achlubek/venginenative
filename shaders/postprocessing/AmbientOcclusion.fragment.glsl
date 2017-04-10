@@ -293,9 +293,7 @@ float fastAO(float hemisphereSize, int quality){
 
     }
     return outc / (float(xsamples.length()) / (float(quality)));
-}
-uniform float Time;
-uniform vec3 SunDirection;
+} 
 float rdhash = 0.453451 + Time;
 vec2 randpoint2(){
     float x = rand2s(UV * rdhash);

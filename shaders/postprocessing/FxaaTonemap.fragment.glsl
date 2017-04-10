@@ -6,13 +6,8 @@
 
 layout(location = 1) out vec4 outWpos;
 
-layout(binding = 16) uniform sampler2D inputTex;
-layout(binding = 15) uniform sampler2D temporalBBTex;
-layout(binding = 14) uniform sampler2D temporalWposBBTex;
-
 #include FXAA.glsl
 
-uniform float Time;
 uniform int IsFinalPass;
 vec2 projectvdao(vec3 pos){
     vec4 tmp = (VPMatrix * vec4(pos, 1.0));

@@ -1,41 +1,4 @@
 
-uniform float CloudsFloor;
-uniform float CloudsCeil;
-uniform float CloudsThresholdLow;
-uniform float CloudsThresholdHigh;
-uniform float CloudsWindSpeed;
-uniform vec3 CloudsOffset;
-uniform float NoiseOctave1;
-uniform float NoiseOctave2;
-uniform float NoiseOctave3;
-uniform float NoiseOctave4;
-uniform float NoiseOctave5;
-uniform float NoiseOctave6;
-uniform float NoiseOctave7;
-uniform float NoiseOctave8;
-uniform float CloudsIntegrate;
-uniform float AtmosphereScale;
-uniform float CloudsDensityScale;
-uniform float CloudsDensityThresholdLow;
-uniform float CloudsDensityThresholdHigh;
-uniform float Time;
-uniform float WaterWavesScale;
-uniform float Rand1;
-uniform float Rand2;
-uniform float MieScattCoeff;
-
-#export float WindBigScale
-#export float WindBigPower
-//.export float FBM1
-//.export float FBM2
-#export float FBMSCALE
-
-
-layout(binding = 18) uniform samplerCube cloudsCloudsTex;
-layout(binding = 19) uniform samplerCube atmScattTex;
-layout(binding = 29) uniform samplerCube mainPassTex;
-//layout(binding = 22) uniform sampler2D atmScattTex;
-layout(binding = 20) uniform samplerCube cloudsRefShadowTex;
 
 #include Shade.glsl
 #include noise3D.glsl
@@ -174,7 +137,7 @@ float cloudsDensity3D(vec3 pos){
 
     vec3 p = ps * 0.009;
      p += CloudsOffset ;
-    p += getWind(p * WindBigScale * 0.1) * WindBigPower * 0.1;
+//    p += getWind(p * WindBigScale * 0.1) * WindBigPower * 0.1;
 
 	vec3 timev = vec3(Time*0.4, Time * 0.2, 0.0);
 	vec3 windpos = p * 0.01 + timev * 0.01;

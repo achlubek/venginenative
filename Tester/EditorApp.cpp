@@ -622,17 +622,17 @@ void EditorApp::onBind()
 
     game->setCursorMode(GLFW_CURSOR_NORMAL);
     
-    auto t = game->asset->loadSceneFile("castle.scene");
+    auto t = game->asset->loadSceneFile("cryteksponza.scene");
     auto diftex = new Texture2d("2222.jpg");
     auto bumtex = new Texture2d("1111.jpg");
     for (int i = 0; i < t->getMesh3ds().size(); i++) {
         t->getMesh3ds()[i]->getInstance(0)->transformation->translate(vec3(0.0, 1.5, 0.0));
-        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(20.0, 0.0, 0.0))));
-        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(40.0, 0.0, 0.0))));
-        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(20.0, 0.0, 20.0))));
-        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(20.0, 0.0, 40.0))));
-        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(40.0, 0.0, 40.0))));
-        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(60.0, 0.0, 0.0))));
+        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(40.0, 0.0, 23.0))));
+        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(-80.0, 0.0, -72.0))));
+        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(50.0, 0.0, -20.0))));
+        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(-70.0, 0.0, -40.0))));
+        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(90.0, 0.0, 80.0))));
+        t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(-90.0, 0.0, 0.0))));
         //t->getMesh3ds()[i]->getLodLevel(0)->material = new Material();
         //t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColor = glm::vec3(1.0);
       //  t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColorTex = diftex;
@@ -714,7 +714,8 @@ void EditorApp::onBind()
 
 
 
-   // auto xt = game->asset->loadMeshFile("2dplane.mesh3d");
+    auto xt = game->asset->loadMeshFile("2dplane.mesh3d");
+    xt->getInstance(0)->transformation->setOrientation(glm::angleAxis(deg2rad(90.0f), glm::vec3(0.0, 0.0, 1.0)));
    // game->world->scene->addMesh3d(xt);
 
   //  game->world->scene->addMesh3d(game->asset->loadMeshFile("gory.mesh3d"));

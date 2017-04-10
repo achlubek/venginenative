@@ -40,7 +40,7 @@ float normalTexMipMap = 0.0;
 
 float ParallaxHeightMultiplier = 1.03;
 float newParallaxHeight = 0;
-float parallaxScale = 0.02 * ParallaxHeightMultiplier;
+float parallaxScale = 0.04 * ParallaxHeightMultiplier;
 // modded http://sunandblackcat.com/tipFullView.php?topicid=28
 vec2 adjustParallaxUV(vec2 uv){
     vec3 twpos = quat_mul_vec(ModelInfos[Input.instanceId].Rotation, normalize(Input.Tangent.xyz));

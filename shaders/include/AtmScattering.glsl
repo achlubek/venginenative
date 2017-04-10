@@ -3,7 +3,6 @@
 
 #include ProceduralValueNoise.glsl
 
-uniform float Time;
 float fbmHI(vec3 p){
    // p *= 0.1;
     p *= 0.0000169;
@@ -124,11 +123,11 @@ vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
 
     //dir.y = abs(dir.y);
     return// mult * 3.3 * mydumbassscatteringfunction(dir, sunpos) +
-     3.0 * atmosphere(
+     atmosphere(
         dir,           // normalized ray direction
         vec3(0,planetradius  ,0) + origin,               // ray origin
         sunpos,                        // position of the sun
-        320.0,                           // intensity of the sun
+        50.0,                           // intensity of the sun
         planetradius,                         // radius of the planet in meters
         6378000.1 + 80000.0,                         // radius of the atmosphere in meters
         pow(vec3(50.0/255.0, 111.0/255.0, 183.0/255.0), vec3(2.4)) * 0.00002, // Rayleigh scattering coefficient
@@ -140,11 +139,11 @@ vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
         1.2e3  * MieScattCoeff ,                          // Mie scale height
         0.758                         // Mie preferred scattering direction
     ) +
-     2 * atmosphere(
+     atmosphere(
         dir,           // normalized ray direction
         vec3(0,planetradius  ,0) + origin,               // ray origin
         dayData.moonDir,                        // position of the sun
-        22.0 / 300.0,                           // intensity of the sun
+        2.0 / 300.0,                           // intensity of the sun
         planetradius,                         // radius of the planet in meters
         6471e3,                         // radius of the atmosphere in meters
         vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient

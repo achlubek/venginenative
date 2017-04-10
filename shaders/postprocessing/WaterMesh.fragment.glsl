@@ -1,16 +1,12 @@
 #version 430 core
 
-layout(binding = 23) uniform sampler2D waterTileTex;
 
 #include PostProcessEffectBase.glsl
 #include Constants.glsl
 #include PlanetDefinition.glsl
-uniform float Time;
-uniform float WaterSpeed;
 #include ProceduralValueNoise.glsl
 #include WaterHeight.glsl
 
-uniform float WaterWavesScale;
 
 
 
@@ -82,9 +78,14 @@ float raymarchwater(vec3 start, vec3 end, int stepsI){
     }
     return -1.0;
 }
-
+float rand2sTime(vec2 co){
+    co *= Time;
+    return fract(sin(dot(co.xy,vec2(12.9898,78.233))) * 43758.5453);
+}
 float getWaterDistance(){
-    vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
+vec2 derivatives = vec2(dFdx(UV.x), dFdy(UV.y));
+vec2 uv = UV;// + derivatives * 1.0 * vec2(rand2sTime(UV), rand2sTime(UV + 1000.0));
+    vec3 dir = reconstructCameraSpaceDistance(uv, 1.0);
 
     float planethit = intersectPlane(CameraPosition, dir, vec3(0.0, waterdepth + WaterLevel, 0.0), vec3(0.0, 1.0, 0.0));
 
@@ -119,7 +120,7 @@ float getWaterDistance(){
         if(length(currentData.normal) > 0.01){
             hitwater = currentData.cameraDistance > dist;
         }
-        return dist;
+        return max(planethit, dist);
     }
     return -1.0;
 }

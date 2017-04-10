@@ -2,37 +2,20 @@
 
 #include PostProcessEffectBase.glsl
 
-layout(binding = 3) uniform samplerCube skyboxTex;
-layout(binding = 5) uniform sampler2D directTex;
-layout(binding = 6) uniform sampler2D alTex;
-layout(binding = 16) uniform sampler2D aoxTex;
-layout(binding = 20) uniform sampler2D fogTex;
-layout(binding = 21) uniform sampler2D waterColorTex;
-layout(binding = 22) uniform sampler2D inputTex;
-
-layout(binding = 25) uniform samplerCube coverageDistTex;
-layout(binding = 26) uniform samplerCube shadowsTex;
-layout(binding = 27) uniform samplerCube skyfogTex;
-layout(binding = 28) uniform sampler2D moonTex;
-layout(binding = 23) uniform sampler2D waterTileTex;
-layout(binding = 24) uniform sampler2D starsTex;
-layout(binding = 29) uniform samplerCube resolvedAtmosphereTex;
 #define CLOUD_SAMPLES 2
 #define CLOUDCOVERAGE_DENSITY 90
 #include Atmosphere.glsl
 
 uniform int RenderPass;
 
-vec4 blurshadowsAOXA(vec3 dir){
-//	return textureLod(cloudsCloudsTex, dir, mlvel).rgba;
-   // float dst = textureLod(coverageDistTex, dir, mlvel).g;
+vec4 blurshadowsAOXA(samplerCube s, vec3 dir){
     float aoc = 0.0;
 
 	vec4 cluma = vec4(0.0);
     float blurrange = 0.001 * dir.y * dir.y;
     for(int i=0;i<17;i++){
         vec3 rdp = normalize(dir + randpoint3() * blurrange);
-        cluma += textureLod(cloudsCloudsTex, rdp, 0.0).rgba;
+        cluma += textureLod(s, rdp, 0.0).rgba;
         aoc += 1.0;
     }
     cluma /= aoc;
@@ -48,7 +31,7 @@ vec4 shade(){
     vec4 retavg = vec4(0);
 
     if(RenderPass == 0){
-    vec4 lastData = blurshadowsAOXA(dir);
+    vec4 lastData = blurshadowsAOXA(coverageDistTex, dir);
         vec2 val = raymarchCloudsRay();
         //retedg.rg = vec2(max(val.r, lastData.r), min(val.g, lastData.g));
         retavg.rg = vec2(mix(val.r, lastData.r, CloudsIntegrate), val.g);
@@ -71,7 +54,7 @@ vec4 shade(){
 	//	retavg.r = mix(retavg.r, retedg.r, 0.2);
 
         //vec3 blr = blurshadowsAOXA(dir, 0.0);
-        vec4 last = blurshadowsAOXA(dir);
+        vec4 last = blurshadowsAOXA(shadowsTex, dir);
         float shads = shadows();
         retavg.r = mix(shads, last.r, CloudsIntegrate);
         vec3 AOGround = getCloudsAL(dir, retavg.r);

@@ -1,33 +1,5 @@
 #version 430 core
 
-
-layout(binding = 3) uniform samplerCube skyboxTex;
-layout(binding = 5) uniform sampler2D directTex;
-layout(binding = 6) uniform sampler2D alTex;
-//layout(binding = 16) uniform sampler2D aoxTex;
-//layout(binding = 20) uniform sampler2D fogTex;
-layout(binding = 15) uniform sampler2D waterFoamTex;
-layout(binding = 20) uniform sampler2D fogTex;
-layout(binding = 21) uniform sampler2D waterColorTex;
-layout(binding = 22) uniform sampler2D inputTex;
-layout(binding = 23) uniform sampler2D aboveViewDataTex;
-
-layout(binding = 25) uniform samplerCube coverageDistTex;
-layout(binding = 26) uniform samplerCube shadowsTex;
-//layout(binding = 27) uniform samplerCube skyfogTex;
-layout(binding = 28) uniform sampler2D moonTex;
-layout(binding = 23) uniform sampler2D waterTileTex;
-layout(binding = 24) uniform sampler2D starsTex;
-layout(binding = 29) uniform samplerCube resolvedAtmosphereTex;
-layout(binding = 31) uniform sampler2D sunRSMTex;
-layout(binding = 34) uniform sampler2D sunRSMWPosTex;
-layout(binding = 33) uniform sampler2D sunRSMNormTex;
-
-uniform int UseAO;
-
-uniform int CombineStep;
-
-uniform mat4 SunRSMVPMatrix;
 #define STEP_PREVIOUS_SUN 0
 #define STEP_WATER_CLOUDS 1
 
@@ -72,8 +44,6 @@ layout (std430, binding = 0) buffer R1
 {
   float Luminence;
 };
-uniform float Exposure;
-uniform float Contrast;
 
 vec3 testmap(vec3 c){
     return vec3(
@@ -84,7 +54,7 @@ vec3 testmap(vec3 c){
 }
 
 vec3 tonemap(vec3 xa){
-    vec3 a = 1.0 * xa / max(0.1, Luminence * 0.5 );
+    vec3 a = xa;//1.0 * xa / max(0.1, Luminence * 0.5 );
     a *= Exposure;
     float luma = length(a);
     vec3 xa2 = xa + 0.00001;
@@ -129,8 +99,6 @@ vec3 integrateStepsAndSun(){
 }
 
 
-uniform float FocalLength;
-uniform float LensBlurSize;
 float getAmountForDistance(float focus, float dist){
 
 	float f = FocalLength * 0.1;
@@ -181,9 +149,6 @@ vec3 BoKeH(vec2 uv){
 
 #include Quaternions.glsl
 
-uniform int ShowSelection;
-uniform vec3 SelectionPos;
-uniform vec4 SelectionQuat;
 
 vec3 showSelection(vec3 dir){
     Sphere sp = Sphere(SelectionPos, 0.5);
@@ -220,7 +185,7 @@ vec3 showSelection(vec3 dir){
 }
 
 vec3 integrateCloudsWater(){
-    vec3 color = LensBlurSize > 0.11 ? BoKeH(UV) : texture(waterColorTex, UV).rgb;;
+    vec3 color = LensBlurSize > 0.11 ? BoKeH(UV) : texture(inputTex, UV).rgb;
     //vec3 c = applysimplebloom();
     return color;
 }
@@ -254,10 +219,7 @@ vec2 projectsunrsm(vec3 pos){
     return (tmp.xy / tmp.w) * 0.5 + 0.5;
 }
 
-uniform float WaterSpeed;
 #include WaterHeight.glsl
-
-uniform float AboveSpan;
 
 vec2 project_above(vec3 pos){
     vec2 a = ((pos - CameraPosition).xz / AboveSpan) * 0.5 + 0.5;
@@ -305,9 +267,6 @@ vec4 blurtexture(sampler2D s, vec2 uv, float radius, float mipmap, out vec4 mini
     return sum / w;
 }
 
-uniform vec3 FogColor;
-uniform float FogMaxDistance;
-uniform float FogHeight;
 float fogCoverage(vec3 dir, float height, float maxdist){
     vec3 volumetrix = vec3(0.0);
     float volumetrix2 = 0.0;
@@ -335,18 +294,19 @@ float fogCoverage(vec3 dir, float height, float maxdist){
     float overall_coverage = 1.0;
     float distanceweight =  distance(start, end)  ;
     //return  linearstep(0.0, point_full_coverage, distance(start, end))  ;
-    float coveragepart = linearstep(0.0, point_full_coverage, distance(start, end))  ;
+    float coveragepart = linearstep(0.0, point_full_coverage, distance(start, end)) * stepsize ;
+    float densiti =  (1.0 / (point_full_coverage * 0.001 + 1.0)) * distance(start, end) * 0.01;
     //return coveragepart * (1.0 - smart_inverse_dot(max(0.0, dot(dir, VECTOR_UP)), 11.0)) ;
 
     for(int i=0;i<steps;i++){
         vec3 p = mix(start, end, iter);
-        float coverage =  linearstep(0.0, point_full_coverage, distance(start, p)) * (1.0 - linearstep(0.0, height, p.y));// * (supernoise3dX(p * 0.1)* 0.5 + 0.5);
-        overall_coverage -= coverage;
-        //if(overall_coverage < 0.0) break;
+        float coverage = densiti * (1.0 - linearstep(0.0, height, p.y));// * (supernoise3dX(p * 0.1)* 0.5 + 0.5);
+        overall_coverage *= 1.0 - coverage;
+        if(overall_coverage < 0.0) break;
         iter += stepsize;
     }
     overall_coverage = clamp(overall_coverage, 0.0, 1.0) ;
-    return 1.0 - overall_coverage;
+    return 1.0 -  overall_coverage;
 }
 
 vec4 shade(){
@@ -406,7 +366,7 @@ vec4 shade(){
         float ssobj2 = 1.0 - step(0.1, textureLod(mrt_Distance_Bump_Tex, UV, 0.0).r);
 
 
-        // >>>>>>  color += (1.0 - coverage) * ssobj * (lenssun(dir)) * getSunColorDirectly(0.0) * 36.0 * step(0.0, dayData.sunDir.y);
+        color += (1.0 - coverage) * ssobj * (lenssun(dir)) * getSunColorDirectly(0.0) * 36.0 * step(0.0, dayData.sunDir.y);
 
 
         //color += monsoonconverage2 * (1.0 - coverage2) * ssobj2 *  step(0.0, dir.y) * (smoothstep(0.998, 0.9985, max(0.0, dot(dir, dayData.sunDir)))) * getSunColorDirectly(0.0) * 13.0;
@@ -463,9 +423,11 @@ vec4 shade(){
         vec4 fogCenter = blurtexture(fogTex, UV, 0.02, 0.0, fogmin, fogmax);
         vec4 fogNoBlur = textureLod(fogTex, UV, 0.0);
 
-        //return vec4(fogmax.rgba);
+        //return vec4(fogNoBlur.rgba);
         float fogcover = fogCoverage(dir, FogHeight, FogMaxDistance);
-        color = mix(vec3(color),  ( fogNoBlur.rgb), fogcover );
+        //return vec4(fogcover);
+        color = mix(vec3(color),  ( fogNoBlur.rgb*0.1 + fogCenter.rgb*0.2 + fogDiffuse.rgb* 0.7), fogcover );
+    //color /= sqrt(length(color) + 0.001);
         color = tonemap( color);
         //color = vec3(texture(aboveViewDataTex, UV).g);
     }

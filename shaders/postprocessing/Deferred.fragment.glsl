@@ -2,14 +2,10 @@
 #define RECREATE_UV
 #include PostProcessEffectBase.glsl
 
-layout(binding = 14) uniform sampler2DShadow shadowMapSingle;
-layout(binding = 15) uniform samplerCube shadowMapCube;
-layout(binding = 16) uniform sampler2D aoxTex;
 
-uniform int UseAO;
 
 float lookupAO(vec2 fuv, float radius){
-        
+
     if(UseAO == 0) {
         return 1.0;
     } else {
@@ -90,10 +86,10 @@ vec3 shadingMetalic(PostProcessingData data){
 
 vec3 shadingNonMetalic(PostProcessingData data){
     float fresnel = fresnel_again(vec3(0.04), data.normal, normalize(data.cameraPos), data.roughness);
-    
+
     float x = 1.0 - max(0, -dot(normalize(LightPosition), currentData.originalNormal));
-    vec3 radiance = shade(CameraPosition, vec3(fresnel), data.normal, data.worldPos, LightPosition, abs(LightColor), max(MIN_ROUGHNESS_DIRECT, data.roughness), false) * mix(x, pow(x, 8.0), 1.0 - currentData.roughness);    
-    
+    vec3 radiance = shade(CameraPosition, vec3(fresnel), data.normal, data.worldPos, LightPosition, abs(LightColor), max(MIN_ROUGHNESS_DIRECT, data.roughness), false) * mix(x, pow(x, 8.0), 1.0 - currentData.roughness);
+
     vec3 difradiance = shadeDiffuse(CameraPosition, data.diffuseColor * (1.0 - fresnel), data.normal, data.worldPos, LightPosition, abs(LightColor), data.roughness, false) * x;
  //   return vec3(0);
     return radiance + difradiance ;
@@ -111,12 +107,12 @@ vec3 ApplyLighting(PostProcessingData data)
     vec3 result = vec3(0);
     if(LightType == LIGHT_AMBIENT) data.roughness = 1.0;
     vec3 radiance = MakeShading(data);
-    
+
     if(LightUseShadowMap == 1){
         if(LightType == LIGHT_SPOT){
             vec4 lightClipSpace = LightVPMatrix * vec4(data.worldPos, 1.0);
             if(lightClipSpace.z > 0.0){
-                vec3 lightScreenSpace = (lightClipSpace.xyz / lightClipSpace.w) * 0.5 + 0.5;   
+                vec3 lightScreenSpace = (lightClipSpace.xyz / lightClipSpace.w) * 0.5 + 0.5;
 
                 float percent = 0;
                 if(lightScreenSpace.x >= 0.0 && lightScreenSpace.x <= 1.0 && lightScreenSpace.y >= 0.0 && lightScreenSpace.y <= 1.0) {
@@ -129,8 +125,8 @@ vec3 ApplyLighting(PostProcessingData data)
             float percent =  max(0, 1.0 - (texture(shadowMapCube, normalize(data.worldPos - LightPosition)).r - target) * 100);
             result += radiance * percent;
         }
-        
-    } else if(LightUseShadowMap == 0){ 
+
+    } else if(LightUseShadowMap == 0){
         result += radiance * AO;
     }
     if(LightType == LIGHT_SPOT) {
@@ -140,7 +136,7 @@ vec3 ApplyLighting(PostProcessingData data)
         float angle =  (cos(LightAngle / 1.41) * 0.5 + 0.5);
         percent = smoothstep(angle, angle + (angle * 0.006), dt);
         result *= max(percent, step(10.0, LightAngle));
-    }    
+    }
     return result * (1.0 - smoothstep(0.0, LightCutOffDistance, distance(LightPosition, data.worldPos)));
 }
 
@@ -153,6 +149,6 @@ vec4 shade(){
         AO += length(res) * step(0, -dot(res, vec3(-1)));
         c.rgb += clamp(res, 0.0, 1.0);
     }
-    c.a = clamp(AO, 0.0, 1.0); 
+    c.a = clamp(AO, 0.0, 1.0);
     return c;
 }

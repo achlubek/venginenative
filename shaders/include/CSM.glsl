@@ -1,6 +1,5 @@
 #ifndef _CSM_H_
 #define _CSM_H_
-layout(binding = 30) uniform sampler2DArray CSMTex;
 
 #define MAX_CSM_LAYERS 12
 uniform mat4 CSMVPMatrices[MAX_CSM_LAYERS];

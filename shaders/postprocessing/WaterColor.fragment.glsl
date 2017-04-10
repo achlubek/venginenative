@@ -1,20 +1,7 @@
 #version 430 core
 
-layout(binding = 15) uniform sampler2D waterFoamTex;
-layout(binding = 19) uniform sampler2D waterTileTex;
-layout(binding = 21) uniform sampler2D waterDistanceTex;
-layout(binding = 22) uniform sampler2D inputTex;
-
-layout(binding = 25) uniform samplerCube coverageDistTex;
-layout(binding = 26) uniform samplerCube shadowsTex;
-layout(binding = 27) uniform samplerCube skyfogTex;
-layout(binding = 24) uniform sampler2D starsTex;
-layout(binding = 28) uniform sampler2D moonTex;
-layout(binding = 29) uniform samplerCube resolvedAtmosphereTex;
-
 #include PostProcessEffectBase.glsl
 #include Atmosphere.glsl
-uniform float WaterSpeed;
 #include WaterHeight.glsl
 #include CSM.glsl
 
@@ -37,8 +24,6 @@ vec3 normalx(vec3 pos, float e, float roughness){
 
 
 #define WaterLevel WaterHeight
-
-uniform float AboveSpan;
 
 vec2 project_above(vec3 pos){
     vec2 a = ((pos - CameraPosition).xz / AboveSpan) * 0.5 + 0.5;
@@ -153,9 +138,11 @@ float fbmHI2(vec3 p){
 	return a / wc;
 }
 vec4 getLighting(){
-    vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
+vec2 derivatives = vec2(dFdx(UV.x), dFdy(UV.y));
+vec2 uv = UV;// + derivatives * 1.0 * vec2(rand2sTime(UV), rand2sTime(UV + 1000.0));
+    vec3 dir = reconstructCameraSpaceDistance(uv, 1.0);
 
-    float hitdist = textureLod(waterDistanceTex, UV, 0.0).r;
+    float hitdist = textureLod(waterDistanceTex, uv, 0.0).r;
 
    // return vec4(mod(hitdist, 11.0));
     hitdst = length(currentData.normal) < 0.01 ? 99999.0 : currentData.cameraDistance;
@@ -172,18 +159,10 @@ vec4 getLighting(){
 
     vec3 nearsurface = CameraPosition + reconstructCameraSpaceDistance(UV, planethit > 0.0 && planethit2 > 0.0 ? planethit : hitdist);
     vec2 px = 1.0 / Resolution;
-    mipmap1 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1).x;
-    float mipmap2 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 11.2467).x;
-    float mipmap3 = textureQueryLod(waterTileTex, nearsurface.xz * WaterScale *  octavescale1 * 151.2467).x ;
-    float roughness2 = clamp((pow(mipmap1/ textureQueryLevels(waterTileTex), 1.0)) , 0.0, 13.0);
     float hdstmp = hitdist * 0.0000005;
-    float roughness =  max(0.0, (1.0 - clamp((1.0 / (((hdstmp)) * 12110.0 )), 0.0, 1.0)) * (0.4+ 0.6 * (1.0 - dot(dir, -VECTOR_UP))));//clamp(roughness2 , 0.0, 1.0);
+    float roughness = max(0.0, (1.0 - clamp((1.0 / (((hdstmp)) * 12110.0 )), 0.0, 1.0)) * (0.4+ 0.6 * (1.0 - dot(dir, -VECTOR_UP))));//clamp(roughness2 , 0.0, 1.0);
 //    roughness *= roughness;
     float gloss = 1.0 - roughness;
-    //roughness *= 0.8;
-    //return vec4(1) * roughness;
-    //MIP = roughness;// * textureQueryLevels(waterTileTex);
-    //mipmap1 *= 0.0;
     float height1  = heightwaterXOLO(hitpos.xz, vec2(0.0), 0.0);
    // float foam  = foamwater(hitpos.xz, 0);
     float height2  = height1;
@@ -192,39 +171,23 @@ vec4 getLighting(){
     vec3 origdir = dir;
 
     vec3 normal = normalx(hitpos, 0.1, roughness * 0.3);
-    normal = mix(normal, VECTOR_UP, 0.9 * roughness * roughness);
-   // return pow(max(0.0, dot(normal, dayData.sunDir)), 10.0) * vec4(1);
-  //  return vec4(normal.xyzz * vec4(1,0.2,1,0));
+    normal = mix(normal, VECTOR_UP,  roughness * roughness);
 
-  //  normal = normalize(normal + 	normalx(hitpos * 11.2467, 3.0953, roughness) * 0.3);
-   // normal = normalize(normal + normalx(hitpos * 51.2467, 3.0953, roughness) * 0.2);
-    mipmap1 = mipmap2;
-    //normal = normalize(normal + (1.0 - roughness) * normalx(hitpos * 11.2467, 0.0953, roughness) * 0.2 * (1.0 - mipmap2/ textureQueryLevels(waterTileTex)));
-    //return normal.xyzz;
-    //normal = normalize(normal + normalx(hitpos * 151.2467, 3.0953, roughness) * 0.1 * (1.0 - mipmap3/ textureQueryLevels(waterTileTex)));
     dir = reflect(origdir, normal);
+    vec3 perfectdir = reflect(origdir, vec3(0.0, 1.0, 0.0));
      dir.y = abs(dir.y);
+     dir = mix(dir, perfectdir,  roughness * roughness);
   //  dir.y = max(0.05, dir.y);
     float fresnel  = fresnel_effect(vec3(0.02), roughness, max(0.0, dot(dir, normal))).x;
-  //  return fresnel * vec4(1);
-    //float x =  textureQueryLod(waterTileTex, hitpos.xz * WaterScale *  octavescale1).x / textureQueryLevels(waterTileTex);
-    // float h = hitwater2(hitpos, dir) * (1.0 - x) + x;
+    float multi = mix(1.0, 0.55, roughness * roughness);
 
-      //  dir = mix(normalize(VECTOR_UP * 2.0 - dir), dir, h);
-    /////    fresnel *= mix(0.9, 1.0, h);
    vec3 result = vec3(0.0);
 
-   // roughness = clamp(roughness, 0.0, 1.0);
-   // roughness = 1.0 - pow(1.0 - roughness, 2.0);
     vec3 worldpos = hitpos;
     float camdist = hitdist;
-   // roughness = 0.91;
-    //float whites = max(0.0, noise2d(hitpos.xz*0.1 + Time * 0.1) * 2.0 - 1.0) * noise2d(hitpos.xz*33.0  + Time * 0.3 + noise2d(hitpos.xz*36.0)) * pow(max(0.0, dot(Wind, normal)) * 2.0, 7.0);
-  //  whites *= 45.0;
-   // return vec4(whites );
 
     PostProcessingData dataReflection = PostProcessingData(
-        vec3(1.0),
+        vec3(1.0) * (1.0 - roughness * 0.3),
         normal,
         normalize(cross(
             dir,
@@ -233,7 +196,7 @@ vec4 getLighting(){
         hitpos,
         origdir * camdist,
         camdist,
-        clamp(roughness * 0.4 , 0.0, 1.0),
+        clamp(roughness * 0.24 , 0.0, 1.0),
         1.0
     );
     //return vec4(foam);
@@ -242,16 +205,10 @@ vec4 getLighting(){
     vec3 atm = vec3(0.0);
     //for(int i=0;i<1;i++){
         atm += textureLod(resolvedAtmosphereTex, dir, roughnessToMipmapX(roughness * (0.02 * WaterWavesScale), resolvedAtmosphereTex)).rgb;
-    //}
-    //vec3 atm =  textureLod(resolvedAtmosphereTex, dir, roughnessToMipmapX(roughness * (0.02 * WaterWavesScale), resolvedAtmosphereTex)).rgb;// * (1.0 - roughness * 0.5) * (1.0 - roughness * 0.5);
-    //atm *= 0.1;
-   // return vec4(atm, 1.0);
-  // vec2 ssr = traceReflection(hitpos, dir);
-   //ssr.x = 1.0 - step(0.0, ssr.x);
-	//float dst = traceReflection(hitpos, dir);
-	//return vec4(dst);
+
     float csmvis = CSMQueryVisibility(worldpos);
-    result +=   shadingWater(dataReflection, normal, -dayData.sunDir, getSunColorDirectly(0.0) * csmvis, atm * (0.3 + 0.7 * csmvis), csmvis) * mix(1.0, 1.0, roughness) ;
+    result +=   multi * shadingWater(dataReflection, normal, -dayData.sunDir, getSunColorDirectly(0.0) * csmvis, atm * (0.3 + 0.7 * csmvis), csmvis) * mix(1.0, 1.0, roughness) ;
+
     vec3 refr = normalize(refract(origdir, normal, 0.66));
     if(length(currentData.normal) < 0.01) currentData.cameraDistance = 299999.0;
     float hitdepth = currentData.cameraDistance - hitdist;
@@ -277,9 +234,10 @@ vec4 getLighting(){
     float covercloud = smoothstep(0.198, 0.300, (CloudsThresholdLow + CloudsThresholdHigh) * 0.5);
 
     //float ssscoeff = pow(max(0, height1 - (waterdepth*0.5)) * WaterWavesScale * 0.05 * length(WaterScale) , 2.0)  * 0.5 + 0.5;
-    vec3 waterSSScolor =  vec3(0.01, 0.33, 0.55)*  0.171 ;
+    vec3 waterSSScolor =  vec3(0.01, 0.33, 0.55)*  0.071 ;
 
-    result += csmvis * waterSSScolor * getSunColorDirectly(0) * (0.3 + height1) * waterdepth * 0.3 * covercloud * max(0.0, dot(dayData.sunDir, VECTOR_UP));
+    result += csmvis * waterSSScolor * getSunColorDirectly(0) * (0.3 + height1)
+           * waterdepth * 0.03 * covercloud * max(0.0, dot(dayData.sunDir, VECTOR_UP));
    // result += 1.0 - smoothstep(0.002, 0.003, ssscoeff2);
     //result += (pow(dot(normal,dayData.sunDir) * 0.4 + 0.6,80.0) * vec3(0.8,0.9,0.6) * 0.12) * getSunColor(0) * (1.0 - fresnel)  * 0.8069;
     vec3 refr2 = normalize(refr + vec3(0.0, 0.3, 0.0));
