@@ -21,17 +21,22 @@ float rand2sTime(vec2 co){
 void outputMaterial(){
     vec2 UV = Input.TexCoord;
     vec2 derivatives = vec2(dFdx(UV.x), dFdy(UV.y));
+    vec3 orignormal = normalize(cross(dFdx(Input.WorldPos), dFdy(Input.WorldPos)));
+    vec3 normal = normalize(Input.Normal);
+    float signer = sign(dot(normal, orignormal));
+    signer += 1.0 - step(0.001, abs(signer));
+
     UV += derivatives * 1.0 * vec2(rand2sTime(UV), rand2sTime(UV + 1000.0));
     vec3 diffuseColor = DiffuseColor;
     float metalness = Metalness;
     float roughness = Roughness;
     float normalfrequency = abs(1.0 - length(Input.Normal));
-    vec3 normal = normalize(Input.Normal);
     vec3 normalmap = vec3(1.0);
     vec3 tangent = normalize(Input.Tangent.rgb);
+
     float tangentSign = Input.Tangent.w;
     vec3 worldPos = Input.WorldPos;
-    mat3 TBN = inverse(mat3(
+    mat3 TBN = (mat3(
         normalize(tangent),
         normalize(cross(normal, tangent)) * tangentSign,
         normalize(normal)
@@ -51,7 +56,7 @@ void outputMaterial(){
         vec3 normalmaptex = normalize(texture(normalTex, UV * normalTexScale).rgb * 2.0 - 1.0);
         normalmaptex.r *= -1.0;
         normalmaptex.g *= -1.0;
-        normalmap *= -normalmaptex;
+        normalmap *= normalmaptex;
         normalmap = normalize(normalmap);
     //    roughness = roughness + (1.0 - roughness) * material_adjusted_roughness_normal();
     }

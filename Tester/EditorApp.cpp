@@ -622,7 +622,7 @@ void EditorApp::onBind()
 
     game->setCursorMode(GLFW_CURSOR_NORMAL);
     
-    auto t = game->asset->loadSceneFile("cryteksponza.scene");
+    auto t = game->asset->loadSceneFile("sp.scene");
     auto diftex = new Texture2d("2222.jpg");
     auto bumtex = new Texture2d("1111.jpg");
     for (int i = 0; i < t->getMesh3ds().size(); i++) {
