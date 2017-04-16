@@ -239,7 +239,7 @@ void updateAboveAO(){
     vec2 aboveuv = project_above(currentData.worldPos);
     float sum = 0.0;
     float ws = 0.0;
-    for(int i=0;i<16;i++){
+    for(int i=0;i<32;i++){
         float v = textureLod(aboveViewDataTex, aboveuv + randpoint2() * 0.015, 0.0).r;
         sum +=  clamp(max(0.0, v - currentData.worldPos.y), 0.0, 1.0);
         ws += 1.0;
@@ -314,16 +314,32 @@ float fogCoverage(vec3 dir, float height, float maxdist){
     overall_coverage = clamp(overall_coverage, 0.0, 1.0) ;
     return 1.0 -  overall_coverage;
 }
-
+/*
 layout (binding = 4, r32ui) coherent  uniform uimage2D lensBlurOutputRed;
 layout (binding = 5, r32ui) coherent  uniform uimage2D lensBlurOutputGreen;
 layout (binding = 6, r32ui) coherent  uniform uimage2D lensBlurOutputBlue;
-layout (binding = 7, r32ui) coherent  uniform uimage2D lensBlurOutputWeight;
+layout (binding = 7, r32ui) coherent  uniform uimage2D lensBlurOutputWeight;*/
+
+uniform vec3 BoxSize;
+uniform vec3 MapPosition;
+
+vec4 readVoxel(vec3 worldPos, float lod){
+    //return textureLod(voxelRenderedTex, vec3(0.5), lod).rgba;
+    vec3 mp = MapPosition;
+    worldPos = worldPos - mp;//fract(((worldPos - mp) * BoxSize) / BoxSize + (0.5 / BoxSize);
+    vec4 pix = vec4(1.0 / vec3(textureSize(voxelRenderedTex, 0)), 0.0);
+    vec4 a = textureLod(voxelRenderedTex, pix.www +(((worldPos) / BoxSize) * 0.5 + 0.5), lod).rgba;
+    vec4 c = textureLod(voxelRenderedTex, pix.xww +(((worldPos) / BoxSize) * 0.5 + 0.5), lod).rgba;
+    vec4 b = textureLod(voxelRenderedTex, pix.wyw +(((worldPos) / BoxSize) * 0.5 + 0.5), lod).rgba;
+    vec4 d = textureLod(voxelRenderedTex, pix.wwz +(((worldPos) / BoxSize) * 0.5 + 0.5), lod).rgba;
+    return (a);// + b + c + d) * 0.25;
+}
 
 vec4 shade(){
+    vec2 uv = UV;
     vec3 color = vec3(0);
     if(CombineStep == STEP_PREVIOUS_SUN){
-        updateAboveAO();
+        if(length(currentData.normal) > 0.01) updateAboveAO();
         color = integrateStepsAndSun();
     } else {
         color = integrateCloudsWater();
@@ -408,10 +424,10 @@ vec4 shade(){
         color += rsmres;
         */
 
-        vec3 d = dayData.sunDir + vec3(dir.x, dir.y* 0.5 + 0.5, dir.z);//, vec3(dayData.sunDir.x, 0.1, dayData.sunDir.y), max(0.0, -dir.y * 0.9 + 0.1)) : dir;
-        d.y = max(0.3, d.y);
-        vec2 disp = vec2(0.2, 0.0);
-        vec3 atma = textureLod(atmScattTex, d, 3.0).rgb *4.0* (max(0.0, dayData.sunDir.y) * 0.9 + 0.1);
+        //vec3 d = dayData.sunDir + vec3(dir.x, dir.y* 0.5 + 0.5, dir.z);//, vec3(dayData.sunDir.x, 0.1, dayData.sunDir.y), max(0.0, -dir.y * 0.9 + 0.1)) : dir;
+    //    d.y = max(0.3, d.y);
+        //vec2 disp = vec2(0.2, 0.0);
+        //vec3 atma = textureLod(atmScattTex, d, 3.0).rgb *4.0* (max(0.0, dayData.sunDir.y) * 0.9 + 0.1);
         /*atma += textureLod(atmScattTex, d + disp.xyy, 3.0).rgb;
         atma += textureLod(atmScattTex, d + disp.yxy, 3.0).rgb;
         atma += textureLod(atmScattTex, d + disp.yyx, 3.0).rgb;
@@ -419,7 +435,7 @@ vec4 shade(){
         atma += textureLod(atmScattTex, d - disp.yxy, 3.0).rgb;
         atma += textureLod(atmScattTex, d - disp.yyx, 3.0).rgb;
         atma /= 7.0;*/
-        float dim = 1.0;//dir.y > 0.0 ? 1.0 : (1.0 / (-dir.y * 11.0 + 1.0));
+        //float dim = 1.0;//dir.y > 0.0 ? 1.0 : (1.0 / (-dir.y * 11.0 + 1.0));
 
         //float foam = getFoam(currentData.worldPos);
         //color += foam * 10.0;
@@ -427,55 +443,62 @@ vec4 shade(){
         //color = applyAirLayer(dir, color, getSunColorDirectly(0.0) * 0.15, vec3(0.1), 1010.0, 11111.0);
         //color = mix(color, volumetrix, overall_coverage);
         //color = textureLod(sunRSMTex, UV, 0.0).rgb;
+        /*
         vec3 pix = vec3(2.0 / Resolution.x, 2.0 / Resolution.y, 0.0);
         vec4 fogmin = vec4(0.0);
         vec4 fogmax = vec4(0.0);
         vec4 fogDiffuse = blurtexture(fogTex, UV, 0.05, 3.0, fogmin, fogmax);
         vec4 fogCenter = blurtexture(fogTex, UV, 0.02, 0.0, fogmin, fogmax);
-        vec4 fogNoBlur = textureLod(fogTex, UV, 0.0);
+        vec4 fogNoBlur = textureLod(fogTex, UV, 0.0);*/
 
         //return vec4(fogNoBlur.rgba);
-        float fogcover = fogCoverage(dir, FogHeight, FogMaxDistance);
+        //float fogcover = fogCoverage(dir, FogHeight, FogMaxDistance);
         //return vec4(fogcover);
-        color = mix(vec3(color),  ( fogNoBlur.rgb*0.1 + fogCenter.rgb*0.2 + fogDiffuse.rgb* 0.7), fogcover );
+    //    color = mix(vec3(color),  ( fogNoBlur.rgb*0.1 + fogCenter.rgb*0.2 + fogDiffuse.rgb* 0.7), fogcover );
     //color /= sqrt(length(color) + 0.001);
         color = tonemap( color);
-
-
+        vec4 vox = readVoxel(currentData.worldPos, 0.0);
+        //color = vox.rgb / vox.a;
+/*
         vec2 imagesize = vec2(imageSize(lensBlurOutputRed));
         float focus = textureLod(waterColorTex, vec2(0.5, 0.5), 0.0).a;
         float dist = textureLod(waterColorTex, UV, 0.0).a;
         float bluram = 0.0;
+        float bluramw = 0.0;
         for(int i=0;i<16;i++){
             vec2 rp = normalize(randpoint2()) * randpoint1() * vec2(Resolution.y / Resolution.x, 1.0);
             vec2 newuv = clamp(rp* 0.17 + UV, 0.001, 0.998);
             float distnow = textureLod(waterColorTex, newuv, 1.0).a;
+            float w = step(0.0, dist - distnow);
             bluram += getAmountForDistance(focus, distnow);
+            bluramw += w;
         }
-        bluram /= 16.0;
+        bluram /= bluramw;
         //    return dist * vec3(0.1);
         // if(dist < focus) dist = focus + abs(dist - focus);
-        float amountoriginal = bluram;//mix(getAmountForDistance(focus, dist), bluram, step(0.0, focus - dist));
+        float amountoriginal = getAmountForDistance(focus, dist);//bluram;//mix(getAmountForDistance(focus, dist), bluram, step(0.0, focus - dist));
         float maxlen = length(vec2(1.0));
         vec3 colo = clamp(color, 0.0, 3.0);
-        for(int i=0;i<32;i++){
-            vec2 rp = normalize(randpoint2()) * randpoint1() * vec2(Resolution.y / Resolution.x, 1.0);
-            vec2 newuv = clamp(rp* amountoriginal * 200.0 + UV, 0.001, 0.998);
-            vec2 newuv2 = clamp(UV - rp* 0.01, 0.001, 0.998);
-            ivec2 newcoords = ivec2(newuv * imagesize);
-            float distnow = textureLod(waterColorTex, newuv, 0.0).a;
-            vec3 col = textureLod(waterColorTex, newuv2,20.0).rgb * 4.0;
-            //vec3 colo = clamp(color, 0.0, 22.0);
-            float amounto = getAmountForDistance(focus, distnow);
-            float w = 1.0;//( amountoriginal  * 2200.0 * step(0.0, focus - dist) ) + 1.0 ;/// (1.0 + abs(dist - distnow));
-            colo *= w;
-            imageAtomicAdd(lensBlurOutputRed, newcoords, uint(255.0*colo.x));
-            imageAtomicAdd(lensBlurOutputGreen, newcoords, uint(255.0*colo.y));
-            imageAtomicAdd(lensBlurOutputBlue, newcoords, uint(255.0*colo.z));
-            imageAtomicAdd(lensBlurOutputWeight, newcoords, uint(255.0 * w  ));
-        }
-        color = vec3(0.0);
+        float lencol = length(colo);
+        vec2 ratio = vec2(Resolution.y / Resolution.x, 1.0);
+        for(float x = 0.0 +  rand2sTime(UV)  * 1.2; x < 3.1415 * 4.0; x += 3.2){
+            for(float y =  rand2sTime(UV) * 0.1; y < 1.0; y += 0.1){
+                vec2 f = vec2(sin(x), cos(x)) * y * amountoriginal * 111.0;
+                vec2 rp = f * ratio;
+                float wf = y;
+                uint w = uint(wf * 255.0);
+                uvec3 coloui = uvec3(colo * wf * 255.0);
+                vec2 newuv = clamp(uv + rp , 0.001, 0.998);
+                ivec2 newcoords = ivec2(newuv * imagesize);
+                imageAtomicAdd(lensBlurOutputRed, newcoords, coloui.x);
+                imageAtomicAdd(lensBlurOutputGreen, newcoords, coloui.y);
+                imageAtomicAdd(lensBlurOutputBlue, newcoords, coloui.z);
+                imageAtomicAdd(lensBlurOutputWeight, newcoords, w);
+            }
+        }*/
+        //color = vec3(0.0);
         //color = vec3(texture(aboveViewDataTex, UV).g);
+        //  vec3 dir = FrustumConeLeftBottom + (FrustumConeBottomLeftToBottomRight * uv.x) + (FrustumConeBottomLeftToTopLeft * uv.y);
     }
 
     return vec4( clamp(color, 0.0, 110.0), currentData.cameraDistance * 0.001);

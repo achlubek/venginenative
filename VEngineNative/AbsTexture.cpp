@@ -50,6 +50,11 @@ void AbsTexture::pregenerate()
     }
 }
 
+void AbsTexture::clear()
+{
+    glClearTexImage(handle, 0, formatRequested, typeRequested, (void*)0);
+}
+
 void AbsTexture::generateMipMaps()
 {
     if (!generated) {
@@ -78,6 +83,16 @@ void * AbsTexture::read(int pixelbytecount)
     void *pixels = malloc(pixelbytecount * upper_power_of_two(width * height));
     glGetTexImage(type, 0, formatRequested, typeRequested, pixels);
     return pixels;
+}
+
+void AbsTexture::setFiltering(GLenum min, GLenum max)
+{
+    if (!generated) {
+        generate();
+    }
+    glBindTexture(type, handle);
+    glTexParameteri(type, GL_TEXTURE_MIN_FILTER, min);
+    glTexParameteri(type, GL_TEXTURE_MAG_FILTER, max);
 }
 
 void AbsTexture::setWrapModes(GLuint s, GLuint t)
@@ -109,9 +124,9 @@ void AbsTexture::use(int unit)
     Game::instance->bindTexture(type, handle, unit);
 }
 
-void AbsTexture::bind(int unit, int level) {
+void AbsTexture::bind(int unit, int level, bool layered, GLenum access, GLenum format) {
     if (!generated) {
         generate();
     }
-    glBindImageTexture(unit, handle, 0, false, 0, GL_READ_WRITE, GL_R32UI);
+    glBindImageTexture(unit, handle, 0, layered, 0, access, format);
 }

@@ -90,6 +90,7 @@ Renderer::Renderer(int iwidth, int iheight)
     waterColorShader = new ShaderProgram("PostProcess.vertex.glsl", "WaterColor.fragment.glsl");
 	cloudResolveShader = new ShaderProgram("PostProcess.vertex.glsl", "CloudResolve.fragment.glsl");
 	waterFoamShader = new ShaderProgram("PostProcess.vertex.glsl", "WaterFoam.fragment.glsl");
+    voxelResolveAtomicsShader = new ShaderProgram("VoxelsResolve.compute.glsl");
     exposureComputeShader = new ShaderProgram("CalculateExposure.compute.glsl");
     pickingReadShader = new ShaderProgram("PickerResultReader.compute.glsl");
     exposureBuffer = new ShaderStorageBuffer();
@@ -267,6 +268,16 @@ void Renderer::initializeFbos()
     lensBlurTextureVertical = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     lensBlurFboVertical = new Framebuffer();
     lensBlurFboVertical->attachTexture(lensBlurTextureVertical, GL_COLOR_ATTACHMENT0);
+
+    voxelsAtomicRTex = new Texture3d(128, 128, 128, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT); // 8 mb
+    voxelsAtomicGTex = new Texture3d(128, 128, 128, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT); // 8 mb
+    voxelsAtomicBTex = new Texture3d(128, 128, 128, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT); // 8 mb
+    voxelsAtomicWTex = new Texture3d(128, 128, 128, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT); // 8 mb
+    voxelsRenderedTex = new Texture3d(128, 128, 128, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT); // 16 mb  == total 48 mb + some mipmaps
+    voxelizerFbo = new Framebuffer();
+    voxelizerRasterizeTex = new Texture2d(1024, 1024, GL_R8, GL_RED, GL_UNSIGNED_BYTE);
+    voxelizerFbo->attachTexture(voxelizerRasterizeTex, GL_COLOR_ATTACHMENT0);
+    voxelRendererCamera = new Camera();
 }
 
 void Renderer::destroyFbos(bool onlyViewDependant)
@@ -457,10 +468,9 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     ambientOcclusionTexture->use(6);
     deferredTexture->use(7);
     fresnelTexture->use(8);
-    //FREE index 8
     //clouds clouds as index 9
     //clouds shadows/AL as index 10
-    // FREE index 11
+    voxelsRenderedTex->use(11);
     //csm->setUniformsAndBindSampler(12); csm as 12
     fogTexture->use(13);
     // GENERIC 2d INPUT as index 14
@@ -594,7 +604,7 @@ void Renderer::draw(Camera *camera)
         //     ambientOcclusion();
     }
     csm->map(-dayData.sunDir, currentCamera->transformation->getPosition());
-    prepareSunRSM();
+   // prepareSunRSM();
 	updateAboveView();
     //mrtAlbedoRoughnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtNormalMetalnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
@@ -605,9 +615,9 @@ void Renderer::draw(Camera *camera)
     //glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     //waterTile();
 	aboveDataTex->generateMipMaps();
-    sunRSMTex->generateMipMaps();
-    sunRSMWPosTex->generateMipMaps();
-    sunRSMNormTex->generateMipMaps();
+    //sunRSMTex->generateMipMaps();
+    //sunRSMWPosTex->generateMipMaps();
+   // sunRSMNormTex->generateMipMaps();
 
 
     atmScatt();
@@ -634,6 +644,7 @@ void Renderer::draw(Camera *camera)
         cloudsResolvedTexture->generateMipMaps();
         atmScattTexture->generateMipMaps();
     }
+    voxelRender();
     gpuInitialized = true;
 }
 
@@ -662,6 +673,7 @@ void Renderer::cloudsResolve()
     }
 }
 
+#define camfloor (floor(currentCamera->transformation->getPosition() * (voxelCubeSpan / 128.0f)) / (voxelCubeSpan / 128.0f) )
 void Renderer::combine(int step)
 {
   //  
@@ -673,11 +685,17 @@ void Renderer::combine(int step)
     setCommonUniforms(combineShader);
     combineShader->setUniform("CombineStep", step);
     if (step == 1) {
-        waterColorTexture->use(14);
+        waterColorTexture->use(14);/*
         lensBlurAtomicRed->bind(4, 0);
         lensBlurAtomicGreen->bind(5, 0);
         lensBlurAtomicBlue->bind(6, 0);
-        lensBlurAtomicWeight->bind(7, 0);
+        lensBlurAtomicWeight->bind(7, 0);*/
+        combineShader->setUniform("BoxSize", glm::vec3(voxelCubeSpan));
+        
+        combineShader->setUniform("MapPosition", camfloor);
+        combineShader->setUniform("GridSizeX", 128);
+        combineShader->setUniform("GridSizeY", 128);
+        combineShader->setUniform("GridSizeZ", 128);
         combineShader->setUniform("ShowSelection", showSelection ? 1 : 0);
         if (showSelection) {
             combineShader->setUniform("SelectionPos", selectionPosition);
@@ -765,11 +783,13 @@ void Renderer::recompileShaders()
     waterMeshShader->recompile();
 	cloudResolveShader->recompile();
 	waterFoamShader->recompile();
+    voxelResolveAtomicsShader->recompile();
     Game::instance->shaders->depthOnlyShader->recompile();
     Game::instance->shaders->idWriteShader->recompile();
     Game::instance->shaders->materialShader->recompile();
 	Game::instance->shaders->sunRSMWriteShader->recompile();
-	Game::instance->shaders->aboveViewShader->recompile();
+    Game::instance->shaders->aboveViewShader->recompile();
+    Game::instance->shaders->voxelWriterShader->recompile();
 }
 
 void Renderer::prepareSunRSM()
@@ -787,6 +807,65 @@ void Renderer::prepareSunRSM()
 
     Game::instance->world->setUniforms(shader, sunRSMCamera);
     Game::instance->world->draw(shader, sunRSMCamera);
+}
+
+void Renderer::voxelRender()
+{
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    voxelsAtomicRTex->clear();
+    voxelsAtomicGTex->clear();
+    voxelsAtomicBTex->clear();
+    voxelsAtomicWTex->clear();
+    voxelsRenderedTex->clear();
+    glMemoryBarrier(GL_SHADER_IMAGE_STORE);
+
+    voxelizerFbo->use(true);
+    ShaderProgram *shader = Game::instance->shaders->voxelWriterShader;
+    shader->use();
+
+    csm->setUniformsAndBindSampler(shader, 12);
+    shader->setUniform("BoxSize", glm::vec3(voxelCubeSpan));
+    shader->setUniform("MapPosition", camfloor);
+    shader->setUniform("GridSizeX", 128);
+    shader->setUniform("GridSizeY", 128);
+    shader->setUniform("GridSizeZ", 128);
+
+    vec3 radius = vec3(voxelCubeSpan);
+    voxelRendererCamera->transformation->setPosition(camfloor);
+    voxelRendererCamera->transformation->setSize(radius); 
+
+    voxelRendererCamera->transformation->setOrientation(glm::lookAt(vec3(0), vec3(0, 1, 0.01), vec3(0, 1, 0)));
+    Game::instance->world->setUniforms(shader, voxelRendererCamera);
+    Game::instance->world->draw(shader, voxelRendererCamera);
+    glMemoryBarrier(GL_SHADER_IMAGE_STORE);
+
+    voxelRendererCamera->transformation->setOrientation(glm::lookAt(vec3(0), vec3(0, 0, 1), vec3(0, 1, 0)));
+    Game::instance->world->setUniforms(shader, voxelRendererCamera);
+    Game::instance->world->draw(shader, voxelRendererCamera);
+    glMemoryBarrier(GL_SHADER_IMAGE_STORE);
+
+    voxelRendererCamera->transformation->setOrientation(glm::lookAt(vec3(0), vec3(1, 0, 0), vec3(0, 1, 0)));
+    Game::instance->world->setUniforms(shader, voxelRendererCamera);
+    Game::instance->world->draw(shader, voxelRendererCamera);
+    glMemoryBarrier(GL_SHADER_IMAGE_STORE);
+
+    voxelsAtomicRTex->bind(1, 0, true, GL_READ_WRITE, GL_R32UI);
+    voxelsAtomicGTex->bind(2, 0, true, GL_READ_WRITE, GL_R32UI);
+    voxelsAtomicBTex->bind(3, 0, true, GL_READ_WRITE, GL_R32UI);
+    voxelsAtomicWTex->bind(4, 0, true, GL_READ_WRITE, GL_R32UI);
+    voxelsRenderedTex->bind(5, 0, true, GL_READ_WRITE, GL_RGBA16F);
+    glMemoryBarrier(GL_SHADER_IMAGE_STORE);
+
+   // voxelResolveAtomicsShader->use();
+    voxelResolveAtomicsShader->dispatch(128, 128, 128);
+    voxelsAtomicRTex->bind(5, 0, true, GL_READ_WRITE, GL_R32UI); 
+    voxelsRenderedTex->setFiltering(GL_NEAREST, GL_NEAREST);
+    voxelsRenderedTex->use(11);
+    glMemoryBarrier(GL_SHADER_IMAGE_STORE);
+    //voxelsRenderedTex->generateMipMaps();
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
 }
 
 void Renderer::updateAboveView()

@@ -9,5 +9,6 @@ public:
     ShaderProgram *depthOnlyShader;
     ShaderProgram *idWriteShader;
 	ShaderProgram *sunRSMWriteShader;
-	ShaderProgram *aboveViewShader;
+    ShaderProgram *aboveViewShader;
+    ShaderProgram *voxelWriterShader;
 };

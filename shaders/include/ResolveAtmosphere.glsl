@@ -182,8 +182,8 @@ vec3 getSunColorDirectly(float roughness){
 
 float sshadow = 1.0;
 vec3 shadingWater(PostProcessingData data, vec3 n, vec3 lightDir, vec3 colorA, vec3 colorB, float shadow){
-    float fresnel  = fresneleffect(0.04, 0.0, normalize(data.cameraPos), n);
-    fresnel = mix(fresnel, 0.02, data.roughness);
+    float fresnel  = fresneleffect(0.0, 0.0, normalize(data.cameraPos), n);
+    fresnel = mix(fresnel, 0.0, data.roughness);
     return colorB * ( fresnel) + shade_ray_data(data, dayData.sunDir, shadow *  getSunColorDirectly(0.0));
    // return  colorB * (  fresnel);
 }

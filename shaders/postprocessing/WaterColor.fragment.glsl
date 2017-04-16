@@ -159,7 +159,7 @@ vec2 uv = UV;// + derivatives * 1.0 * vec2(rand2sTime(UV), rand2sTime(UV + 1000.
 
     vec3 nearsurface = CameraPosition + reconstructCameraSpaceDistance(UV, planethit > 0.0 && planethit2 > 0.0 ? planethit : hitdist);
     vec2 px = 1.0 / Resolution;
-    float hdstmp = hitdist * 0.0000005;
+    float hdstmp = hitdist * 0.000002;
     float roughness = max(0.0, (1.0 - clamp((1.0 / (((hdstmp)) * 12110.0 )), 0.0, 1.0)) * (0.4+ 0.6 * (1.0 - dot(dir, -VECTOR_UP))));//clamp(roughness2 , 0.0, 1.0);
 //    roughness *= roughness;
     float gloss = 1.0 - roughness;
@@ -170,7 +170,7 @@ vec2 uv = UV;// + derivatives * 1.0 * vec2(rand2sTime(UV), rand2sTime(UV + 1000.
 
     vec3 origdir = dir;
 
-    vec3 normal = normalx(hitpos, 0.1, roughness * 0.3);
+    vec3 normal = normalx(hitpos, roughness *1.1 + 0.02, roughness * 0.3);
     normal = mix(normal, VECTOR_UP,  roughness * roughness);
 
     dir = reflect(origdir, normal);
@@ -236,13 +236,13 @@ vec2 uv = UV;// + derivatives * 1.0 * vec2(rand2sTime(UV), rand2sTime(UV + 1000.
     //float ssscoeff = pow(max(0, height1 - (waterdepth*0.5)) * WaterWavesScale * 0.05 * length(WaterScale) , 2.0)  * 0.5 + 0.5;
     vec3 waterSSScolor =  vec3(0.01, 0.33, 0.55)*  0.071 ;
 
-    result += csmvis * waterSSScolor * getSunColorDirectly(0) * (0.3 + height1)
-           * waterdepth * 0.03 * covercloud * max(0.0, dot(dayData.sunDir, VECTOR_UP));
+    result += csmvis * waterSSScolor * getSunColorDirectly(0) * (0.6 + height1 * 0.5)
+           * waterdepth * 1.103 * max(0.0, dot(dayData.sunDir, VECTOR_UP));
    // result += 1.0 - smoothstep(0.002, 0.003, ssscoeff2);
     //result += (pow(dot(normal,dayData.sunDir) * 0.4 + 0.6,80.0) * vec3(0.8,0.9,0.6) * 0.12) * getSunColor(0) * (1.0 - fresnel)  * 0.8069;
     vec3 refr2 = normalize(refr + vec3(0.0, 0.3, 0.0));
     float superscat = pow(max(0.0, dot(refr, dayData.sunDir)), 8.0) ;//* (1.0 - fresnel);
-    result += csmvis * vec3(0.5,0.9,0.8) * superscat * getSunColorDirectly(0) * 18.0 * covercloud;
+    result += csmvis * vec3(0.5,0.9,0.8) * superscat * getSunColorDirectly(0) * 1.0 * covercloud;
 
 //    result = mix(result, vec3(21.0 * csmvis)  * getSunColorDirectly(0.0), smoothstep(0.0, 1.0, foam * 0.2) * fbmHI2(hitpos * 1.0));
     //result += min(1.0, smoothstep(0.0, 1.0, foam) + smoothstep(0.005, 0.012, length(heightflow(hitpos.xz))) * smoothstep(0.16, 0.2, length(normal.xz * (1.0 - normal.y)))) * getSunColorDirectly(0.0) * 4.0;

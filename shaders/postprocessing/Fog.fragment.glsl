@@ -42,9 +42,10 @@ float getAboveAO(vec3 p){
 }
 
 vec4 applyAirLayer(vec3 dir, vec3 colorLit, vec3 colorDiff, float height, float maxdist){
+    return vec4(0.0);
     vec3 volumetrix = vec3(0.0);
     float volumetrix2 = 0.0;
-    int steps = 16;
+    int steps = 1;
     float stepsize = 1.0 / float(steps);
     float rd = rand2sTime(UV);
     float iter = rd * stepsize;

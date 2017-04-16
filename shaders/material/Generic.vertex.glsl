@@ -80,6 +80,6 @@ void main(){
     MeshID = MeshId_LodLevelId_ZeroZero.x;
     Output.Data.x = 1.0;
     Output.Data.y =  ( outpoint.z ) * 0.5 + 0.5 ;
-    //outpoint.xy += (1.0 / Resolution) * 6.0 * vec2(rand2sTime(v.zx), rand2sTime(v.xy + 1000.0)) * outpoint.w;
+    //outpoint.xy += (1.0 / Resolution) * 4.0 * vec2(rand2sTime(v.zx), rand2sTime(v.xy + 1000.0)) * outpoint.w;
     gl_Position = outpoint;// + vec4(0, 0.9, 0, 0);
 }

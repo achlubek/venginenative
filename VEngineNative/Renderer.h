@@ -126,11 +126,23 @@ private:
 	Texture2d *sunRSMDepthTex;
 	void prepareSunRSM();
 
+    Camera* voxelRendererCamera;
+    float voxelCubeSpan = 4.0f;
+    Framebuffer *voxelizerFbo;
+    ShaderProgram *voxelResolveAtomicsShader;
+    Texture2d *voxelizerRasterizeTex;
+    Texture3d *voxelsAtomicRTex;
+    Texture3d *voxelsAtomicGTex;
+    Texture3d *voxelsAtomicBTex;
+    Texture3d *voxelsAtomicWTex;
+    Texture3d *voxelsRenderedTex;
+    void voxelRender();
+
 	// data map from above
 	Camera* aboveCamera;
 	glm::vec3 aboveCameraLastPos;
 	glm::vec3 aboveCameraDelta;
-	float aboveSpan = 100.0f;
+	float aboveSpan = 400.0f;
 	Framebuffer *aboveFbo;
 	Texture2d* aboveDataTex;
 	Texture2d* aboveDepthTex;

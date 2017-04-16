@@ -54,8 +54,8 @@ void outputMaterial(){
     }
     if(useNormalTexInt > 0){
         vec3 normalmaptex = normalize(texture(normalTex, UV * normalTexScale).rgb * 2.0 - 1.0);
-        normalmaptex.r *= -1.0;
-        normalmaptex.g *= -1.0;
+        //normalmaptex.r *= -1.0;
+        //normalmaptex.g *= -1.0;
         normalmap *= normalmaptex;
         normalmap = normalize(normalmap);
     //    roughness = roughness + (1.0 - roughness) * material_adjusted_roughness_normal();

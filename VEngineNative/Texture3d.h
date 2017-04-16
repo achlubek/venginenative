@@ -8,8 +8,7 @@ public:
     Texture3d(GLuint ihandle);
     Texture3d(int iwidth, int iheight, int idepth, GLint internalFormat, GLenum format, GLenum type);
     ~Texture3d();
-
-    GLuint handle;
+     
     int depth;
 private:
     void generate();
