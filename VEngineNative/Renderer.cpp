@@ -269,11 +269,13 @@ void Renderer::initializeFbos()
     lensBlurFboVertical = new Framebuffer();
     lensBlurFboVertical->attachTexture(lensBlurTextureVertical, GL_COLOR_ATTACHMENT0);
 
-    voxelsAtomicRTex = new Texture3d(128, 128, 128, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT); // 8 mb
-    voxelsAtomicGTex = new Texture3d(128, 128, 128, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT); // 8 mb
-    voxelsAtomicBTex = new Texture3d(128, 128, 128, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT); // 8 mb
-    voxelsAtomicWTex = new Texture3d(128, 128, 128, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT); // 8 mb
-    voxelsRenderedTex = new Texture3d(128, 128, 128, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT); // 16 mb  == total 48 mb + some mipmaps
+    voxelsAtomicRTex = new Texture3d(voxelGrid, voxelGrid, voxelGrid, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT); 
+    voxelsAtomicGTex = new Texture3d(voxelGrid, voxelGrid, voxelGrid, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT); 
+    voxelsAtomicBTex = new Texture3d(voxelGrid, voxelGrid, voxelGrid, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT); 
+    voxelsAtomicWTex = new Texture3d(voxelGrid, voxelGrid, voxelGrid, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT);  
+    voxelsRenderedLod0Tex = new Texture3d(voxelGrid, voxelGrid, voxelGrid, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);  
+    voxelsRenderedLod1Tex = new Texture3d(voxelGrid, voxelGrid, voxelGrid, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    voxelsRenderedLod2Tex = new Texture3d(voxelGrid, voxelGrid, voxelGrid, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     voxelizerFbo = new Framebuffer();
     voxelizerRasterizeTex = new Texture2d(1024, 1024, GL_R8, GL_RED, GL_UNSIGNED_BYTE);
     voxelizerFbo->attachTexture(voxelizerRasterizeTex, GL_COLOR_ATTACHMENT0);
@@ -470,7 +472,7 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     fresnelTexture->use(8);
     //clouds clouds as index 9
     //clouds shadows/AL as index 10
-    voxelsRenderedTex->use(11);
+    voxelsRenderedLod0Tex->use(11);
     //csm->setUniformsAndBindSampler(12); csm as 12
     fogTexture->use(13);
     // GENERIC 2d INPUT as index 14
@@ -482,14 +484,15 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     // FOAM operational texture on 20
     waterMeshTexture->use(21);
     // deferred shadowmapcube on 22
-    // deferred shadowmap2d on 23
-    // FREE index 24
+    // deferred shadowmap2d on 23 
+    voxelsRenderedLod1Tex->use(24);
     starsTexture->use(25);
     sunRSMTex->use(26);
     sunRSMWPosTex->use(27);
     sunRSMNormTex->use(28);
     // temporal aa bb on 29
     // temporal aa wpos bb on 30
+    voxelsRenderedLod2Tex->use(31);
 }
 
 Renderer::~Renderer()
@@ -606,6 +609,7 @@ void Renderer::draw(Camera *camera)
     csm->map(-dayData.sunDir, currentCamera->transformation->getPosition());
    // prepareSunRSM();
 	updateAboveView();
+    voxelRender();
     //mrtAlbedoRoughnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtNormalMetalnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtDistanceTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
@@ -644,7 +648,6 @@ void Renderer::draw(Camera *camera)
         cloudsResolvedTexture->generateMipMaps();
         atmScattTexture->generateMipMaps();
     }
-    voxelRender();
     gpuInitialized = true;
 }
 
@@ -673,7 +676,8 @@ void Renderer::cloudsResolve()
     }
 }
 
-#define camfloor (floor(currentCamera->transformation->getPosition() * (voxelCubeSpan / 128.0f)) / (voxelCubeSpan / 128.0f) )
+#define camfloor currentCamera->transformation->getPosition()
+//((floor((currentCamera->transformation->getPosition() + glm::vec3(99999.0f)) * (voxelCubeSpan / (float)voxelGrid)) / (voxelCubeSpan / (float)voxelGrid) ) - glm::vec3(99999.0f))
 void Renderer::combine(int step)
 {
   //  
@@ -693,9 +697,9 @@ void Renderer::combine(int step)
         combineShader->setUniform("BoxSize", glm::vec3(voxelCubeSpan));
         
         combineShader->setUniform("MapPosition", camfloor);
-        combineShader->setUniform("GridSizeX", 128);
-        combineShader->setUniform("GridSizeY", 128);
-        combineShader->setUniform("GridSizeZ", 128);
+        combineShader->setUniform("GridSizeX", voxelGrid);
+        combineShader->setUniform("GridSizeY", voxelGrid);
+        combineShader->setUniform("GridSizeZ", voxelGrid);
         combineShader->setUniform("ShowSelection", showSelection ? 1 : 0);
         if (showSelection) {
             combineShader->setUniform("SelectionPos", selectionPosition);
@@ -817,7 +821,9 @@ void Renderer::voxelRender()
     voxelsAtomicGTex->clear();
     voxelsAtomicBTex->clear();
     voxelsAtomicWTex->clear();
-    voxelsRenderedTex->clear();
+   // voxelsRenderedTex->clear();
+   // voxelsRenderedTex->clear();
+   // voxelsRenderedTex->clear();
     glMemoryBarrier(GL_SHADER_IMAGE_STORE);
 
     voxelizerFbo->use(true);
@@ -827,9 +833,9 @@ void Renderer::voxelRender()
     csm->setUniformsAndBindSampler(shader, 12);
     shader->setUniform("BoxSize", glm::vec3(voxelCubeSpan));
     shader->setUniform("MapPosition", camfloor);
-    shader->setUniform("GridSizeX", 128);
-    shader->setUniform("GridSizeY", 128);
-    shader->setUniform("GridSizeZ", 128);
+    shader->setUniform("GridSizeX", voxelGrid);
+    shader->setUniform("GridSizeY", voxelGrid);
+    shader->setUniform("GridSizeZ", voxelGrid);
 
     vec3 radius = vec3(voxelCubeSpan);
     voxelRendererCamera->transformation->setPosition(camfloor);
@@ -854,14 +860,22 @@ void Renderer::voxelRender()
     voxelsAtomicGTex->bind(2, 0, true, GL_READ_WRITE, GL_R32UI);
     voxelsAtomicBTex->bind(3, 0, true, GL_READ_WRITE, GL_R32UI);
     voxelsAtomicWTex->bind(4, 0, true, GL_READ_WRITE, GL_R32UI);
-    voxelsRenderedTex->bind(5, 0, true, GL_READ_WRITE, GL_RGBA16F);
+    voxelsRenderedLod0Tex->bind(5, 0, true, GL_READ_WRITE, GL_RGBA16F);
+    voxelsRenderedLod1Tex->bind(6, 0, true, GL_READ_WRITE, GL_RGBA16F);
+    voxelsRenderedLod2Tex->bind(7, 0, true, GL_READ_WRITE, GL_RGBA16F);
     glMemoryBarrier(GL_SHADER_IMAGE_STORE);
 
-   // voxelResolveAtomicsShader->use();
-    voxelResolveAtomicsShader->dispatch(128, 128, 128);
-    voxelsAtomicRTex->bind(5, 0, true, GL_READ_WRITE, GL_R32UI); 
-    voxelsRenderedTex->setFiltering(GL_NEAREST, GL_NEAREST);
-    voxelsRenderedTex->use(11);
+    voxelResolveAtomicsShader->use();
+    voxelResolveAtomicsShader->setUniform("mode", 0);
+    voxelResolveAtomicsShader->dispatch(voxelGrid, voxelGrid, voxelGrid);
+    voxelResolveAtomicsShader->setUniform("mode", 1);
+    voxelResolveAtomicsShader->dispatch(voxelGrid - 2, voxelGrid - 2, voxelGrid - 2);
+    voxelResolveAtomicsShader->setUniform("mode", 2);
+    voxelResolveAtomicsShader->dispatch(voxelGrid - 2, voxelGrid - 2, voxelGrid - 2);
+    voxelsAtomicRTex->bind(5, 0, true, GL_READ_WRITE, GL_R32UI);
+    voxelsRenderedLod0Tex->use(11);
+    voxelsRenderedLod1Tex->use(24);
+    voxelsRenderedLod2Tex->use(31);
     glMemoryBarrier(GL_SHADER_IMAGE_STORE);
     //voxelsRenderedTex->generateMipMaps();
     glEnable(GL_CULL_FACE);

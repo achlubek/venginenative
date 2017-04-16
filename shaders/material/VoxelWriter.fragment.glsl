@@ -51,8 +51,8 @@ void main(){
     if(useDiffuseColorTexInt > 0){
         df = texture(diffuseColorTex, Input.TexCoord * diffuseColorTexScale).rgb;
     }
-    df *= CSMQueryVisibilitySimple(Input.WorldPos);
-    vec3 mp = MapPosition;//fract(MapPosition * BoxSize) / BoxSize + (0.5 / BoxSize);
+    df *= 0.1 + 0.9 * CSMQueryVisibilitySimple(Input.WorldPos);
+    vec3 mp = floor(MapPosition * BoxSize) / BoxSize + (0.5 / BoxSize);
     vec3 hafbox = (((Input.WorldPos - mp) / BoxSize) * 0.5 + 0.5);
     if(hafbox.x > 0.0 && hafbox.x < 1.0 && hafbox.y > 0.0 && hafbox.y < 1.0 && hafbox.z > 0.0 && hafbox.z < 1.0){
         WriteData3d(hafbox, df);

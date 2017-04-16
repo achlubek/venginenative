@@ -127,7 +127,8 @@ private:
 	void prepareSunRSM();
 
     Camera* voxelRendererCamera;
-    float voxelCubeSpan = 4.0f;
+    float voxelCubeSpan = 24.0f;
+    int voxelGrid = 128;
     Framebuffer *voxelizerFbo;
     ShaderProgram *voxelResolveAtomicsShader;
     Texture2d *voxelizerRasterizeTex;
@@ -135,7 +136,9 @@ private:
     Texture3d *voxelsAtomicGTex;
     Texture3d *voxelsAtomicBTex;
     Texture3d *voxelsAtomicWTex;
-    Texture3d *voxelsRenderedTex;
+    Texture3d *voxelsRenderedLod0Tex;
+    Texture3d *voxelsRenderedLod1Tex;
+    Texture3d *voxelsRenderedLod2Tex;
     void voxelRender();
 
 	// data map from above

@@ -4,13 +4,13 @@ layout(binding = 2) uniform sampler2D mrt_Distance_Bump_Tex;
 
 layout(binding = 3) uniform sampler2D aboveViewDataTex;
 layout(binding = 4) uniform samplerCube atmScattTex;
-layout(binding = 5) uniform sampler2D alTex;
+//layout(binding = 5) uniform sampler2D alTex;
 layout(binding = 6) uniform sampler2D aoxTex;
 layout(binding = 7) uniform sampler2D directTex;
 // 8 is reserved for fresnel lut somehow
 layout(binding = 9) uniform samplerCube coverageDistTex;
 layout(binding = 10) uniform samplerCube shadowsTex;
-layout(binding = 11) uniform sampler3D voxelRenderedTex;
+layout(binding = 11) uniform sampler3D voxelRenderedLod0Tex;
 layout(binding = 12) uniform sampler2DArray CSMTex;
 layout(binding = 13) uniform sampler2D fogTex;
 layout(binding = 14) uniform sampler2D inputTex;
@@ -23,6 +23,7 @@ layout(binding = 20) uniform sampler2D waterFoamTex;
 layout(binding = 21) uniform sampler2D waterDistanceTex;
 layout(binding = 22) uniform samplerCube shadowMapCube;
 layout(binding = 23) uniform sampler2DShadow shadowMapSingle;
+layout(binding = 24) uniform sampler3D voxelRenderedLod1Tex;
 layout(binding = 25) uniform sampler2D starsTex;
 
 layout(binding = 26) uniform sampler2D sunRSMTex;
@@ -30,6 +31,7 @@ layout(binding = 27) uniform sampler2D sunRSMWPosTex;
 layout(binding = 28) uniform sampler2D sunRSMNormTex;
 layout(binding = 29) uniform sampler2D temporalBBTex;
 layout(binding = 30) uniform sampler2D temporalWposBBTex;
+layout(binding = 31) uniform sampler3D voxelRenderedLod2Tex;
 
 uniform vec2 Resolution;
 

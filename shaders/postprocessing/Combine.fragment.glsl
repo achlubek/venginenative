@@ -323,16 +323,52 @@ layout (binding = 7, r32ui) coherent  uniform uimage2D lensBlurOutputWeight;*/
 uniform vec3 BoxSize;
 uniform vec3 MapPosition;
 
+vec3 traceVoxel(vec3 o, vec3 d, float ss){
+    vec3 uv = vec3(0.5);
+    vec3 sum = vec3(0.0);
+    float sumw = 0.01;
+    float coverage = 1.0;
+    //    o += d * 0.3;
+    vec3 mp = floor(MapPosition * BoxSize) / BoxSize + (0.5 / BoxSize);
+    while(uv.x > 0.0 && uv.x < 1.0 && uv.y > 0.0 && uv.y < 1.0 && uv.z > 0.0 && uv.z < 1.0){
+        o += d * ss;
+        uv = (((o - mp) / BoxSize) * 0.5 + 0.5);
+        vec4 data = textureLod(voxelRenderedLod0Tex, uv, 0.0).rgba;
+
+        sum += coverage * data.a * (data.rgb / data.a);
+        sumw += coverage * data.a;
+        coverage -= data.a * 0.001;
+        if(coverage <= 0.0) break;
+    }
+    return sum / sumw;
+}
+
+vec3 traceVoxelDiffuse(vec3 o, vec3 d, float ss){
+    vec3 uv = vec3(0.5);
+    vec3 sum = vec3(0.0);
+    float sumw = 0.01;
+    float coverage = 1.0;
+    //    o += d * 0.3;
+    vec3 mp = floor(MapPosition * BoxSize) / BoxSize + (0.5 / BoxSize);
+    while(uv.x > 0.0 && uv.x < 1.0 && uv.y > 0.0 && uv.y < 1.0 && uv.z > 0.0 && uv.z < 1.0){
+        o += d * ss;
+        uv = (((o - mp) / BoxSize) * 0.5 + 0.5);
+        vec4 data = textureLod(voxelRenderedLod2Tex, uv, 0.0).rgba;
+
+        sum += coverage * data.a * (data.rgb / (data.a + 0.001));
+        sumw += coverage * data.a;
+        coverage *= 0.99;
+    }
+    return sum / sumw;
+}
+
 vec4 readVoxel(vec3 worldPos, float lod){
     //return textureLod(voxelRenderedTex, vec3(0.5), lod).rgba;
     vec3 mp = MapPosition;
     worldPos = worldPos - mp;//fract(((worldPos - mp) * BoxSize) / BoxSize + (0.5 / BoxSize);
-    vec4 pix = vec4(1.0 / vec3(textureSize(voxelRenderedTex, 0)), 0.0);
-    vec4 a = textureLod(voxelRenderedTex, pix.www +(((worldPos) / BoxSize) * 0.5 + 0.5), lod).rgba;
-    vec4 c = textureLod(voxelRenderedTex, pix.xww +(((worldPos) / BoxSize) * 0.5 + 0.5), lod).rgba;
-    vec4 b = textureLod(voxelRenderedTex, pix.wyw +(((worldPos) / BoxSize) * 0.5 + 0.5), lod).rgba;
-    vec4 d = textureLod(voxelRenderedTex, pix.wwz +(((worldPos) / BoxSize) * 0.5 + 0.5), lod).rgba;
-    return (a);// + b + c + d) * 0.25;
+    vec4 pix = vec4(1.0 / vec3(textureSize(voxelRenderedLod2Tex, 0)), 0.0);
+    vec4 a = textureLod(voxelRenderedLod0Tex, pix.www + ((worldPos / BoxSize) * 0.5 + 0.5), lod).rgba;
+    return (a ) * 0.25;
 }
 
 vec4 shade(){
@@ -457,8 +493,11 @@ vec4 shade(){
     //    color = mix(vec3(color),  ( fogNoBlur.rgb*0.1 + fogCenter.rgb*0.2 + fogDiffuse.rgb* 0.7), fogcover );
     //color /= sqrt(length(color) + 0.001);
         color = tonemap( color);
+        vec3 refl = reflect(dir, currentData.originalNormal);
+        //vec4 vox = traceVoxel(currentData.worldPos, refl, 0.1);
+        color = traceVoxelDiffuse(currentData.worldPos, currentData.normal, 0.1);
         vec4 vox = readVoxel(currentData.worldPos, 0.0);
-        //color = vox.rgb / vox.a;
+    //    color += vox.rgb / vox.a;
 /*
         vec2 imagesize = vec2(imageSize(lensBlurOutputRed));
         float focus = textureLod(waterColorTex, vec2(0.5, 0.5), 0.0).a;
