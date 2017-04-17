@@ -319,7 +319,7 @@ layout (binding = 4, r32ui) coherent  uniform uimage2D lensBlurOutputRed;
 layout (binding = 5, r32ui) coherent  uniform uimage2D lensBlurOutputGreen;
 layout (binding = 6, r32ui) coherent  uniform uimage2D lensBlurOutputBlue;
 layout (binding = 7, r32ui) coherent  uniform uimage2D lensBlurOutputWeight;*/
-
+/*
 uniform vec3 BoxSize;
 uniform vec3 MapPosition;
 
@@ -369,7 +369,8 @@ vec4 readVoxel(vec3 worldPos, float lod){
     vec4 pix = vec4(1.0 / vec3(textureSize(voxelRenderedLod2Tex, 0)), 0.0);
     vec4 a = textureLod(voxelRenderedLod0Tex, pix.www + ((worldPos / BoxSize) * 0.5 + 0.5), lod).rgba;
     return (a ) * 0.25;
-}
+}*/
+
 
 vec4 shade(){
     vec2 uv = UV;
@@ -403,6 +404,7 @@ vec4 shade(){
         float quad = 1.0 - smoothstep(0.06, 0.08, abs(distance(dir, sdirqua)));
 
         cloudsonsun *= 1.0 - smoothstep(0.996, 1.0, dot(dayData.sunDir, dayData.moonDir));
+        cloudsonsun *= pow(CSMQueryVisibility(CameraPosition), 4.0);
 
         color += cloudsonsun * getSunColor(0.0) * mindst * secondary * vec3(1.0, 1.0, 0.8) * 0.02;
         color += cloudsonsun * getSunColor(0.0) * mindst * third* vec3(0.6, 0.5, 0.7) * 0.03;
@@ -429,7 +431,7 @@ vec4 shade(){
         float ssobj2 = 1.0 - step(0.1, textureLod(mrt_Distance_Bump_Tex, UV, 0.0).r);
 
 
-        color += (1.0 - coverage) * ssobj * (lenssun(dir)) * getSunColorDirectly(0.0) * 36.0 * step(0.0, dayData.sunDir.y);
+        color += (1.0 - coverage)* cloudsonsun * ssobj * (lenssun(dir)) * getSunColorDirectly(0.0) * 36.0 * step(0.0, dayData.sunDir.y);
 
 
         //color += monsoonconverage2 * (1.0 - coverage2) * ssobj2 *  step(0.0, dir.y) * (smoothstep(0.998, 0.9985, max(0.0, dot(dir, dayData.sunDir)))) * getSunColorDirectly(0.0) * 13.0;
@@ -492,11 +494,15 @@ vec4 shade(){
         //return vec4(fogcover);
     //    color = mix(vec3(color),  ( fogNoBlur.rgb*0.1 + fogCenter.rgb*0.2 + fogDiffuse.rgb* 0.7), fogcover );
     //color /= sqrt(length(color) + 0.001);
+    color *= 0.05;
+    color += 10.0 * (textureLod(sunRSMResolvedTex, UV, 0.0).rgb  / textureLod(sunRSMResolvedTex, UV, 0.0).a);
         color = tonemap( color);
-        vec3 refl = reflect(dir, currentData.originalNormal);
+
+        //color = textureLod(sunRSMTex, UV, 0.0).rgb;
+        //vec3 refl = reflect(dir, currentData.originalNormal);
         //vec4 vox = traceVoxel(currentData.worldPos, refl, 0.1);
-        color = traceVoxelDiffuse(currentData.worldPos, currentData.normal, 0.1);
-        vec4 vox = readVoxel(currentData.worldPos, 0.0);
+        //color = traceVoxelDiffuse(currentData.worldPos, currentData.normal, 0.1);
+        //vec4 vox = readVoxel(currentData.worldPos, 0.0);
     //    color += vox.rgb / vox.a;
 /*
         vec2 imagesize = vec2(imageSize(lensBlurOutputRed));

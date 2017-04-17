@@ -69,7 +69,7 @@ vec4 shade(){
         vec2 imagesize = vec2(imageSize(lensBlurOutputRed));
         ivec2 UIV = ivec2((UV) * imagesize);
 
-        vec3 color =  textureLod(inputTex, UV, 0.0).rgb;
+        //vec3 color =  textureLod(inputTex, UV, 0.0).rgb;
         UIV = ivec2(UIV);
 /*
         uint rui = imageLoad(lensBlurOutputRed, UIV).r;
@@ -78,10 +78,12 @@ vec4 shade(){
         uint wui = imageLoad(lensBlurOutputWeight, UIV).r + 1;
         vec3 colorx =  vec3(rui, gui, bui)  / wui / 1.0;
         return vec4(colorx, 1.0);*/
-        //vec3 color = vec3(0.0);
-        //for(int i=0;i<10;i++){
-//            vec2 nnvv = mix(UV, nuv, iter);
-            //color += textureLod(inputTex, nnvv, 0.0).rgb;
+        vec3 color = vec3(0.0);
+        for(int i=0;i<10;i++){
+            vec2 nnvv = mix(UV, nuv, iter);
+            color += textureLod(inputTex, nnvv, 0.0).rgb;
+            iter += 0.1;
+        }
             //UIV = ivec2(clamp(nnvv, 0.0, 1.0) * imagesize);
 /*
             uint rui = imageLoad(lensBlurOutputRed, UIV).r;
@@ -91,7 +93,7 @@ vec4 shade(){
             color +=  vec3(rui, gui, bui)  / float(wui) / 1.0;*/
 //            iter += 0.1;
 //        }
-//        color *= 0.1;
+        color *= 0.1;
     //    memoryBarrier();
         float distance_fix = 1.0 - smoothstep(0.001, 0.003, distance(lastpos.xyz, currentData.worldPos));
         distance_fix *= 1.0 - smoothstep(0.001, 0.003, abs(lastpos.a - distance(lastpos.xyz, CameraPosition)));

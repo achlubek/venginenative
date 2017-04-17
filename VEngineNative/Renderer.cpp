@@ -64,16 +64,25 @@ Renderer::Renderer(int iwidth, int iheight)
     quad3dInfo = new Object3dInfo(ppvertices);
     quad3dInfo->drawMode = GL_TRIANGLE_STRIP;
 
-    /* unsigned char* bytes;
-     int bytescount = Media::readBinary("deferredsphere.raw", &bytes);
-     GLfloat * floats = (GLfloat*)bytes;
-     int floatsCount = bytescount / 4;
-     vector<GLfloat> flo(floats, floats + floatsCount);
+    unsigned char* bytes;
+    int bytescount = Media::readBinary("deferredsphere.raw", &bytes);
+    GLfloat * floats = (GLfloat*)bytes;
+    int floatsCount = bytescount / 4;
+    vector<GLfloat> flo(floats, floats + floatsCount);
 
-     sphere3dInfo = new Object3dInfo(flo);*/
+    sphere3dInfo = new Object3dInfo(flo);
+
+    unsigned char* bytes2;
+    int bytescount2 = Media::readBinary("hemisphere.raw", &bytes2);
+    GLfloat * floats2 = (GLfloat*)bytes2;
+    int floatsCount2 = bytescount2 / 4;
+    vector<GLfloat> flo2(floats2, floats2 + floatsCount2);
+
+    hemisphere3dInfo = new Object3dInfo(flo2);
 
     outputShader = new ShaderProgram("PostProcess.vertex.glsl", "Output.fragment.glsl");
     deferredShader = new ShaderProgram("PostProcessPerspective.vertex.glsl", "Deferred.fragment.glsl");
+    sunRSMSphereRendererShader = new ShaderProgram("RSMSphere.vertex.glsl", "RSMSphere.fragment.glsl");
     envProbesShader = new ShaderProgram("PostProcess.vertex.glsl", "EnvProbes.fragment.glsl");
     ambientLightShader = new ShaderProgram("PostProcess.vertex.glsl", "AmbientLight.fragment.glsl");
     ambientOcclusionShader = new ShaderProgram("PostProcess.vertex.glsl", "AmbientOcclusion.fragment.glsl");
@@ -91,6 +100,7 @@ Renderer::Renderer(int iwidth, int iheight)
 	cloudResolveShader = new ShaderProgram("PostProcess.vertex.glsl", "CloudResolve.fragment.glsl");
 	waterFoamShader = new ShaderProgram("PostProcess.vertex.glsl", "WaterFoam.fragment.glsl");
     voxelResolveAtomicsShader = new ShaderProgram("VoxelsResolve.compute.glsl");
+    sunRSMRefreshLightsShader = new ShaderProgram("SunRSMRefreshLights.compute.glsl");
     exposureComputeShader = new ShaderProgram("CalculateExposure.compute.glsl");
     pickingReadShader = new ShaderProgram("PickerResultReader.compute.glsl");
     exposureBuffer = new ShaderStorageBuffer();
@@ -139,12 +149,17 @@ void Renderer::initializeFbos()
     sunRSMFbo = new Framebuffer();
     sunRSMTex = new Texture2d(2048, 2048, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE);
     sunRSMWPosTex = new Texture2d(2048, 2048, GL_RGBA32F, GL_RGBA, GL_FLOAT);
-    sunRSMNormTex = new Texture2d(2048, 2048, GL_RGBA16F, GL_RGBA, GL_FLOAT);
+    sunRSMNormTex = new Texture2d(2048, 2048, GL_RGBA32F, GL_RGBA, GL_FLOAT);
     sunRSMDepthTex = new Texture2d(2048, 2048, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
     sunRSMFbo->attachTexture(sunRSMTex, GL_COLOR_ATTACHMENT0);
     sunRSMFbo->attachTexture(sunRSMWPosTex, GL_COLOR_ATTACHMENT1);
     sunRSMFbo->attachTexture(sunRSMNormTex, GL_COLOR_ATTACHMENT2);
     sunRSMFbo->attachTexture(sunRSMDepthTex, GL_DEPTH_ATTACHMENT);
+    SunRSMLightsSSBO = new ShaderStorageBuffer(48 * 1024 * 100);
+
+    sunRSMResolveFbo = new Framebuffer();
+    sunRSMResultTex = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    sunRSMResolveFbo->attachTexture(sunRSMResultTex, GL_COLOR_ATTACHMENT0);
 
     lensBlurAtomicRed = new Texture2d(width, height, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT);
     lensBlurAtomicGreen = new Texture2d(width, height, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT);
@@ -492,7 +507,7 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
     sunRSMNormTex->use(28);
     // temporal aa bb on 29
     // temporal aa wpos bb on 30
-    voxelsRenderedLod2Tex->use(31);
+    sunRSMResultTex->use(31);
 }
 
 Renderer::~Renderer()
@@ -607,9 +622,12 @@ void Renderer::draw(Camera *camera)
         //     ambientOcclusion();
     }
     csm->map(-dayData.sunDir, currentCamera->transformation->getPosition());
-   // prepareSunRSM();
+    prepareSunRSM();
 	updateAboveView();
-    voxelRender();
+    SunRSMLightsSSBO->use(6);
+    sunRSMRefreshLightsShader->dispatch(10, 10, 1);
+    resolveSunRSM();
+    //voxelRender();
     //mrtAlbedoRoughnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtNormalMetalnessTex->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
     //mrtDistanceTexture->setWrapModes(GL_MIRRORED_REPEAT, GL_MIRRORED_REPEAT);
@@ -788,6 +806,8 @@ void Renderer::recompileShaders()
 	cloudResolveShader->recompile();
 	waterFoamShader->recompile();
     voxelResolveAtomicsShader->recompile();
+    sunRSMRefreshLightsShader->recompile();
+    sunRSMSphereRendererShader->recompile();
     Game::instance->shaders->depthOnlyShader->recompile();
     Game::instance->shaders->idWriteShader->recompile();
     Game::instance->shaders->materialShader->recompile();
@@ -796,17 +816,47 @@ void Renderer::recompileShaders()
     Game::instance->shaders->voxelWriterShader->recompile();
 }
 
+void Renderer::resolveSunRSM() {
+    if (!gpuInitialized) return; 
+
+    sunRSMResolveFbo->use(true);
+    sunRSMSphereRendererShader->use();
+    setCommonUniforms(sunRSMSphereRendererShader);
+    glCullFace(GL_FRONT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+
+    hemisphere3dInfo->drawInstanced(1024 * 100);
+    
+
+    glCullFace(GL_BACK);
+
+    glDisable(GL_BLEND);
+}
+
 void Renderer::prepareSunRSM()
 {
+    /*
+    SUN rsm idea:
+    render from sun direction
+    run compute pass which will search for nearby light samples and will create a ssbo of lights (constant "grid" of lights, with varying Y, with very very blurred CSM value) - this is most difficult pass
+    -- anotther way is to sample from sun rsm pass data texture, reconstruct world pos and explictly place light there, should work fine too
+    samples must be constant in time and movement, bound to world frame (no move at all)
+    draw pass with deferred-like spheres - instanced - reading from samples buffer
+    noiseless indirect light is yours
+    */
     sunRSMFbo->use(true);
     ShaderProgram *shader = Game::instance->shaders->sunRSMWriteShader;
     shader->use();
     shader->setUniform("sunDir", dayData.sunDir);
 
     mat4 pmat = glm::ortho(-1, 1, -1, 1, -1, 1);
-    vec3 radius = vec3(28.0f);
-    sunRSMCamera->transformation->setPosition(currentCamera->transformation->getPosition());
-    sunRSMCamera->transformation->setOrientation(glm::inverse(glm::lookAt(vec3(0), dayData.sunDir, (dayData.sunDir == vec3(0, -1, 0) ? vec3(0, 0, 1) : vec3(0, 1, 0)))));
+    vec3 radius = vec3(26.0f);
+    sunRSMCamera->projectionMatrix = pmat;
+   // sunRSMCamera->transformation->setPosition(currentCamera->transformation->getPosition());
+    sunRSMCamera->transformation->setPosition(glm::vec3(0.0));
+    sunRSMCamera->transformation->setOrientation(glm::inverse(glm::lookAt(vec3(0), -dayData.sunDir, (-dayData.sunDir == vec3(0, -1, 0) ? vec3(0, 0, 1) : vec3(0, 1, 0)))));
     sunRSMCamera->transformation->setSize(radius);
 
     Game::instance->world->setUniforms(shader, sunRSMCamera);

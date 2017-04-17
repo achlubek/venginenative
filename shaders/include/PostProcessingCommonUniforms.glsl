@@ -31,7 +31,7 @@ layout(binding = 27) uniform sampler2D sunRSMWPosTex;
 layout(binding = 28) uniform sampler2D sunRSMNormTex;
 layout(binding = 29) uniform sampler2D temporalBBTex;
 layout(binding = 30) uniform sampler2D temporalWposBBTex;
-layout(binding = 31) uniform sampler3D voxelRenderedLod2Tex;
+layout(binding = 31) uniform sampler2D sunRSMResolvedTex;
 
 uniform vec2 Resolution;
 

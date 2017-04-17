@@ -12,6 +12,10 @@ float really_phong(float dt, float roughness){
     return pow(max(0.0, dt - 0.9), gloss * gloss * 4256.0 + 1.0);
 }
 
+float attenuate(float dist, float damping){
+    return 1.0 / (dist * dist * damping + 1.0);
+}
+
 vec3 shade_ray(vec3 albedo, vec3 normal, vec3 viewdir, float roughness, float metalness, vec3 lightdir, vec3 lightcolor){
 
     float dotNL = max(0.0, dot(normal,lightdir));

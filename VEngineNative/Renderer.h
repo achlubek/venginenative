@@ -97,7 +97,8 @@ private:
 	Texture2d *starsTexture;
 	Texture2d *moonTexture;
 	Object3dInfo *quad3dInfo;
-	Object3dInfo *sphere3dInfo;
+    Object3dInfo *sphere3dInfo;
+    Object3dInfo *hemisphere3dInfo;
 
 	//MRT Buffers
 	Framebuffer *mrtFbo;
@@ -118,13 +119,19 @@ private:
 
 	//
 	Camera* sunRSMCamera;
-	ShaderProgram *sunRSMShader;
+    ShaderProgram *sunRSMShader;
+    ShaderProgram *sunRSMRefreshLightsShader;
+    ShaderProgram *sunRSMSphereRendererShader;
 	Framebuffer *sunRSMFbo;
 	Texture2d *sunRSMTex;
 	Texture2d *sunRSMWPosTex;
 	Texture2d *sunRSMNormTex;
 	Texture2d *sunRSMDepthTex;
-	void prepareSunRSM();
+    ShaderStorageBuffer *SunRSMLightsSSBO;
+    Texture2d *sunRSMResultTex;
+    Framebuffer *sunRSMResolveFbo;
+    void prepareSunRSM();
+    void resolveSunRSM();
 
     Camera* voxelRendererCamera;
     float voxelCubeSpan = 24.0f;

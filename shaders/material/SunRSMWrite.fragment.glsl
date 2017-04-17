@@ -23,6 +23,7 @@ void main(){
     }
     Output = vec4(df, 0.0);
     WPosOutput = vec4(Input.WorldPos, 0.0);
+    vec3 orignormal = normalize(cross(dFdx(Input.WorldPos), dFdy(Input.WorldPos)));
     vec3 normal = quat_mul_vec(ModelInfos[Input.instanceId].Rotation, normalize(Input.Normal));
-    NormOutput = vec4(normalize(normal), 0.0);
+    NormOutput = vec4(orignormal,1.0);
 }
