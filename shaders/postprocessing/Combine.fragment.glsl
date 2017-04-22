@@ -494,9 +494,7 @@ vec4 shade(){
         //return vec4(fogcover);
     //    color = mix(vec3(color),  ( fogNoBlur.rgb*0.1 + fogCenter.rgb*0.2 + fogDiffuse.rgb* 0.7), fogcover );
     //color /= sqrt(length(color) + 0.001);
-    color *= 0.05;
-    color += 10.0 * (textureLod(sunRSMResolvedTex, UV, 0.0).rgb  / textureLod(sunRSMResolvedTex, UV, 0.0).a);
-        color = tonemap( color);
+        color = tonemap( color); 
 
         //color = textureLod(sunRSMTex, UV, 0.0).rgb;
         //vec3 refl = reflect(dir, currentData.originalNormal);

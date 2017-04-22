@@ -26,7 +26,7 @@ void outputMaterial(){
     float signer = sign(dot(normal, orignormal));
     signer += 1.0 - step(0.001, abs(signer));
 
-    UV += derivatives * 1.0 * vec2(rand2sTime(UV), rand2sTime(UV + 1000.0));
+//
     vec3 diffuseColor = DiffuseColor;
     float metalness = Metalness;
     float roughness = Roughness;
@@ -34,6 +34,9 @@ void outputMaterial(){
     vec3 normalmap = vec3(1.0);
     vec3 tangent = normalize(Input.Tangent.rgb);
 
+    float qr = textureQueryLod(normalTex, UV * normalTexScale).x / textureQueryLevels(normalTex);
+
+    //UV += derivatives * 1.0 * vec2(rand2sTime(UV), rand2sTime(UV + 1000.0));
     float tangentSign = Input.Tangent.w;
     vec3 worldPos = Input.WorldPos;
     mat3 TBN = (mat3(
@@ -54,7 +57,7 @@ void outputMaterial(){
     }
     if(useNormalTexInt > 0){
         vec3 normalmaptex = normalize(texture(normalTex, UV * normalTexScale).rgb * 2.0 - 1.0);
-        //normalmaptex.r *= -1.0;
+        normalmaptex.r *= -1.0;
         //normalmaptex.g *= -1.0;
         normalmap *= normalmaptex;
         normalmap = normalize(normalmap);
@@ -71,6 +74,10 @@ void outputMaterial(){
 
     }
     normal = quat_mul_vec(ModelInfos[Input.instanceId].Rotation, normal);
+
+    normal = normalize(normal);
+    roughness = min(1.0, roughness + qr * 0.5);
+    normal = mix(normal, normalize(Input.Normal), qr);
 
     outAlbedoRoughness = vec4(diffuseColor, roughness);
     outNormalsMetalness = vec4(normalize(normal), metalness);

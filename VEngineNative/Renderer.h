@@ -91,14 +91,12 @@ private:
 	bool gpuInitialized;
 	ShaderProgram * exposureComputeShader;
 	ShaderStorageBuffer * exposureBuffer;
-
-	CubeMapTexture *skyboxTexture;
+     
 	Texture2d *fresnelTexture;
 	Texture2d *starsTexture;
 	Texture2d *moonTexture;
 	Object3dInfo *quad3dInfo;
-    Object3dInfo *sphere3dInfo;
-    Object3dInfo *hemisphere3dInfo;
+    Object3dInfo *sphere3dInfo; 
 
 	//MRT Buffers
 	Framebuffer *mrtFbo;
@@ -126,28 +124,12 @@ private:
 	Texture2d *sunRSMTex;
 	Texture2d *sunRSMWPosTex;
 	Texture2d *sunRSMNormTex;
-	Texture2d *sunRSMDepthTex;
-    ShaderStorageBuffer *SunRSMLightsSSBO;
+	Texture2d *sunRSMDepthTex; 
     Texture2d *sunRSMResultTex;
     Framebuffer *sunRSMResolveFbo;
     void prepareSunRSM();
     void resolveSunRSM();
-
-    Camera* voxelRendererCamera;
-    float voxelCubeSpan = 24.0f;
-    int voxelGrid = 128;
-    Framebuffer *voxelizerFbo;
-    ShaderProgram *voxelResolveAtomicsShader;
-    Texture2d *voxelizerRasterizeTex;
-    Texture3d *voxelsAtomicRTex;
-    Texture3d *voxelsAtomicGTex;
-    Texture3d *voxelsAtomicBTex;
-    Texture3d *voxelsAtomicWTex;
-    Texture3d *voxelsRenderedLod0Tex;
-    Texture3d *voxelsRenderedLod1Tex;
-    Texture3d *voxelsRenderedLod2Tex;
-    void voxelRender();
-
+     
 	// data map from above
 	Camera* aboveCamera;
 	glm::vec3 aboveCameraLastPos;
@@ -178,15 +160,7 @@ private:
 	ShaderProgram *ambientLightShader;
 	Framebuffer *ambientLightFbo;
 	Texture2d *ambientLightTexture;
-	void ambientLight();
-
-	ShaderProgram *waterTileShader;
-	Framebuffer *waterTileFbo1;
-	Texture2d *waterTileTexture1;
-	Framebuffer *waterTileFbo2;
-	Texture2d *waterTileTexture2;
-	bool waterTileUseFBO1 = true;
-	void waterTile();
+	void ambientLight(); 
 
 	ShaderProgram *ambientOcclusionShader;
 	Framebuffer *ambientOcclusionFbo;
@@ -244,35 +218,12 @@ private:
     bool fxaaUseOdd = false;
 	void fxaaTonemap(bool finalpass);
     FrustumCone* lastCone = nullptr;
-
-	ShaderProgram *motionBlurShader;
-	Framebuffer *motionBlurFbo;
-	Texture2d *motionBlurTexture;
-	void motionBlur();
-
-	ShaderProgram *bloomShader;
-	Framebuffer *bloomFbo;
-	Texture2d *bloomXTexture;
-	Texture2d *bloomYTexture;
-	void bloom();
-
+     
 	ShaderProgram *combineShader;
 	Framebuffer *combineFbo;
 	Texture2d *combineTexture;
 	void combine(int step);
-
-	ShaderProgram *lensBlurShader;
-	Framebuffer *lensBlurFboHorizontal;
-	Framebuffer *lensBlurFboVertical;
-	Texture2d *lensBlurTextureHorizontal;
-    Texture2d *lensBlurTextureVertical;
-
-    Texture2d *lensBlurAtomicRed;
-    Texture2d *lensBlurAtomicGreen;
-    Texture2d *lensBlurAtomicBlue;
-    Texture2d *lensBlurAtomicWeight;
-
-	void lensBlur();
+     
 	DayData dayData;
 	// Output to output fbo
 	ShaderProgram *outputShader;
