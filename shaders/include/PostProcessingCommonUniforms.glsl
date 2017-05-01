@@ -10,7 +10,7 @@ layout(binding = 7) uniform sampler2D directTex;
 // 8 is reserved for fresnel lut somehow
 layout(binding = 9) uniform samplerCube coverageDistTex;
 layout(binding = 10) uniform samplerCube shadowsTex;
-layout(binding = 11) uniform sampler3D voxelRenderedLod0Tex;
+layout(binding = 11) uniform sampler2D blurTestTexture;
 layout(binding = 12) uniform sampler2DArray CSMTex;
 layout(binding = 13) uniform sampler2D fogTex;
 layout(binding = 14) uniform sampler2D inputTex;

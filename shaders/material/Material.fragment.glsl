@@ -34,7 +34,7 @@ void outputMaterial(){
     vec3 normalmap = vec3(1.0);
     vec3 tangent = normalize(Input.Tangent.rgb);
 
-    float qr = textureQueryLod(normalTex, UV * normalTexScale).x / textureQueryLevels(normalTex);
+    float qr = 0.0;//textureQueryLod(normalTex, UV * normalTexScale).x / textureQueryLevels(normalTex);
 
     //UV += derivatives * 1.0 * vec2(rand2sTime(UV), rand2sTime(UV + 1000.0));
     float tangentSign = Input.Tangent.w;
@@ -57,6 +57,7 @@ void outputMaterial(){
     }
     if(useNormalTexInt > 0){
         vec3 normalmaptex = normalize(texture(normalTex, UV * normalTexScale).rgb * 2.0 - 1.0);
+        qr = abs(length(normalmaptex) - 1.0);
         normalmaptex.r *= -1.0;
         //normalmaptex.g *= -1.0;
         normalmap *= normalmaptex;

@@ -182,7 +182,7 @@ vec3 getSunColorDirectly(float roughness){
 
 float sshadow = 1.0;
 vec3 shadingWater(PostProcessingData data, vec3 n, vec3 lightDir, vec3 colorA, vec3 colorB, float shadow){
-    float fresnel  = fresneleffect(0.0, 0.0, normalize(data.cameraPos), n);
+    float fresnel  = fresneleffect(0.04, 0.0, normalize(data.cameraPos), n);
     fresnel = mix(fresnel, 0.0, data.roughness);
     return colorB * ( fresnel) + shade_ray_data(data, dayData.sunDir, shadow *  getSunColorDirectly(0.0));
    // return  colorB * (  fresnel);
@@ -352,7 +352,7 @@ vec3 sampleAtmosphere(vec3 dir, float roughness, float sun, int raysteps){
     #define xA 0.5
     #define xB 0.5
     float mult = mix(sqrt(0.001 + dot(dayData.sunDir, dir) * 0.5 + 0.5), 1.0, SunDT) + 0.02;
-    vec3 raycolor = (getSunColorDirectly(0.0) * 4.9 * rays + (AtmDiffuse * 0.2 ) * 0.8) + AtmDiffuse * 0.2 * rays * (1.0 + 1110.0 * (1.0 - smart_inverse_dot(1.0 - max(0.0, dot(dayData.sunDir, dir)-0.005), 2711.0)))* smart_inverse_dot(SunDT, 2.0);
+    vec3 raycolor = (getSunColorDirectly(0.0) * 4.9 * rays + (AtmDiffuse * 0.2 ) * 0.8) + AtmDiffuse ;
 
     //raycolor *= xA + xB * (pow(1.0 - DirDT, 8.0));
     float raysCoverage = clamp((1.0 / (DirDT * 61.0 / NoiseOctave1 + 1.0)), 0.0, 1.0);

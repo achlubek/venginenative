@@ -246,7 +246,7 @@ vec2 uv = UV;// + derivatives * 1.0 * vec2(rand2sTime(UV), rand2sTime(UV + 1000.
 
 //    result = mix(result, vec3(21.0 * csmvis)  * getSunColorDirectly(0.0), smoothstep(0.0, 1.0, foam * 0.2) * fbmHI2(hitpos * 1.0));
     //result += min(1.0, smoothstep(0.0, 1.0, foam) + smoothstep(0.005, 0.012, length(heightflow(hitpos.xz))) * smoothstep(0.16, 0.2, length(normal.xz * (1.0 - normal.y)))) * getSunColorDirectly(0.0) * 4.0;
-    return  vec4(result  , 0.0);
+    return  vec4(clamp(result, 0.0, 110.0)  , 0.0);
 }
 
 

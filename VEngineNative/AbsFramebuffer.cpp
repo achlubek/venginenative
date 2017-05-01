@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "AbsFramebuffer.h"
-
+ 
 AbsFramebuffer::AbsFramebuffer()
 {
     attachedTextures = {};
@@ -60,6 +60,11 @@ void AbsFramebuffer::use(bool clear)
     glViewport(0, 0, width, height);
     if (clear)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+Attachment * AbsFramebuffer::getAttachment(int index)
+{
+    return attachedTextures[index];
 }
 
 void AbsFramebuffer::generateBase()

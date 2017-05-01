@@ -2,6 +2,13 @@
 #include "Texture2d.h"
 #include "CubeMapTexture.h"
 #include "Texture2dArray.h"
+class Attachment {
+public:
+    Texture2d* texture2d;
+    CubeMapTexture* textureCube;
+    Texture2dArray* texture2dArray;
+    GLenum attachment;
+};
 class AbsFramebuffer
 {
 public:
@@ -12,14 +19,8 @@ public:
     void attachTexture(CubeMapTexture *tex, GLenum attachment);
     void attachTexture(Texture2dArray *tex, GLenum attachment);
     void use(bool clear = true);
+    Attachment* getAttachment(int index);
 private:
-    class Attachment {
-    public:
-        Texture2d* texture2d;
-        CubeMapTexture* textureCube;
-        Texture2dArray* texture2dArray;
-        GLenum attachment;
-    };
     GLuint handle;
     bool generated;
     int width;

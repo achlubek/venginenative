@@ -221,8 +221,15 @@ private:
      
 	ShaderProgram *combineShader;
 	Framebuffer *combineFbo;
-	Texture2d *combineTexture;
-	void combine(int step);
+    Texture2d *combineTexture;
+    Framebuffer *blurTestFbo;
+    Texture2d *blurTestTexture;
+    Framebuffer *blurTestHelperFbo;
+    Texture2d *blurTestHelperTexture;
+	void combine(int step); 
+
+    ShaderProgram* blurShader;
+    void blur(Texture2d* source, Framebuffer* helper, Framebuffer* target, int radius, bool gaussian_like, float gaussian_strength, float gaussian_scale);
      
 	DayData dayData;
 	// Output to output fbo

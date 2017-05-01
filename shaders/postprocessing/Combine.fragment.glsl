@@ -55,15 +55,15 @@ vec3 testmap(vec3 c){
 
 vec3 tonemap(vec3 xa){
     vec3 a = xa;//1.0 * xa / max(0.1, Luminence * 0.5 );
-    a *= Exposure;
+    a *= Exposure * 10.0;
     float luma = length(a);
     vec3 xa2 = xa + 0.00001;
     vec3 coloressence = normalize(xa2);
     //a /= 1.0 + log(luma) * 1.1;
-    //a = coloressence * mix(sqrt(clamp(luma, 0.0001, 99999.0)), luma, 0.5);
+    //a = coloressence * mix(sqrt(clamp(luma, 0.0001, 99999.0)), luma, 0.1);
     //a = normalize(a) * mix(l, 0.9, 0.2);
     a = pow(a, vec3(Contrast));
-    return (rgb_to_srgb(a));
+    return (Uncharted2Tonemap(a));
 
 }
 
@@ -494,7 +494,8 @@ vec4 shade(){
         //return vec4(fogcover);
     //    color = mix(vec3(color),  ( fogNoBlur.rgb*0.1 + fogCenter.rgb*0.2 + fogDiffuse.rgb* 0.7), fogcover );
     //color /= sqrt(length(color) + 0.001);
-        color = tonemap( color); 
+        color = tonemap( color);
+        //color = texture(blurTestTexture, UV).rgb;
 
         //color = textureLod(sunRSMTex, UV, 0.0).rgb;
         //vec3 refl = reflect(dir, currentData.originalNormal);

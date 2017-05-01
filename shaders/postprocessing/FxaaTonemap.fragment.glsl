@@ -56,7 +56,11 @@ vec4 shade(){
                 imageStore(lensBlurOutputBlue, UIV, uvec4(0));
                 imageStore(lensBlurOutputWeight, UIV, uvec4(0));
         float vignette = 1.0 -  smart_inverse_dot( 1.0 - dot(reconstructCameraSpaceDistance(UV, 1.0), reconstructCameraSpaceDistance(vec2(0.5), 1.0)), 11.0);
+
+    //    return texture(blurTestTexture, UV).rgba;
+
         return min(1.0, 1.0 - pow(1.0 - vignette , 7.0)) * mix(textureLod(inputTex, UV, 0.0).rgba, fxaa(inputTex, UV).rgba, max(distance_mult, normal_mult));
+
     } else {
         vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
         float lastinter = textureLod(temporalBBTex, UV, 0.0).a;
