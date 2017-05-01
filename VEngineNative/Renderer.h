@@ -17,7 +17,8 @@ struct DayData {
 	glm::mat3 viewFrame;
 	glm::vec3 moonPos;
 	glm::vec3 earthPos;
-};
+}; 
+ 
 class Renderer
 {
 public:
@@ -222,14 +223,22 @@ private:
 	ShaderProgram *combineShader;
 	Framebuffer *combineFbo;
     Texture2d *combineTexture;
+
     Framebuffer *blurTestFbo;
     Texture2d *blurTestTexture;
+
     Framebuffer *blurTestHelperFbo;
     Texture2d *blurTestHelperTexture;
+
+    Framebuffer *blitTestFbo;
+    Texture2d *blitTestTexture;
 	void combine(int step); 
 
     ShaderProgram* blurShader;
     void blur(Texture2d* source, Framebuffer* helper, Framebuffer* target, int radius, bool gaussian_like, float gaussian_strength, float gaussian_scale);
+
+    ShaderProgram* blitShader;
+    void resample(Texture2d* source, Framebuffer* target);
      
 	DayData dayData;
 	// Output to output fbo

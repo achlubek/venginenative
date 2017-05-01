@@ -17,6 +17,62 @@ float rand2sTime(vec2 co){
     co *= Time;
     return fract(sin(dot(co.xy,vec2(12.9898,78.233))) * 43758.5453);
 }
+
+const float SRGB_ALPHA = 0.055;
+float linear_to_srgb(float channel) {
+    if(channel <= 0.0031308)
+    return 12.92 * channel;
+    else
+    return (1.0 + SRGB_ALPHA) * pow(channel, 1.0/2.4) - SRGB_ALPHA;
+}
+
+vec3 rgb_to_srgb(vec3 rgb) {
+    return vec3(
+    linear_to_srgb(rgb.r),
+    linear_to_srgb(rgb.g),
+    linear_to_srgb(rgb.b)
+    );
+}
+
+float A = 0.15;
+float B = 0.50;
+float C = 0.10;
+float D = 0.20;
+float E = 0.02;
+float F = 0.30;
+float W = 11.2;
+
+
+vec3 Uncharted2Tonemap(vec3 x)
+{
+   return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
+}
+layout (std430, binding = 0) buffer R1
+{
+  float Luminence;
+};
+
+vec3 testmap(vec3 c){
+    return vec3(
+         1.879574*c.r  -  1.03263*c.g  + 0.153055*c.b,
+         -0.21962*c.r  + 1.715146*c.g -  0.49553* c.b,
+         0.006956*c.r  -  0.51487*c.g  + 1.507914*c.b
+    );
+}
+
+vec3 tonemap(vec3 xa){
+    vec3 a = xa;//1.0 * xa / max(0.1, Luminence * 0.5 );
+    a *= Exposure * 10.0;
+    float luma = length(a);
+    vec3 xa2 = xa + 0.00001;
+    vec3 coloressence = normalize(xa2);
+    //a /= 1.0 + log(luma) * 1.1;
+    //a = coloressence * mix(sqrt(clamp(luma, 0.0001, 99999.0)), luma, 0.1);
+    //a = normalize(a) * mix(l, 0.9, 0.2);
+    a = pow(a, vec3(Contrast));
+    return (Uncharted2Tonemap(a));
+
+}
 float smart_inverse_dot(float dt, float coeff){
     return 1.0 - (1.0 / (1.0 + dt * coeff));
 }
@@ -57,9 +113,14 @@ vec4 shade(){
                 imageStore(lensBlurOutputWeight, UIV, uvec4(0));
         float vignette = 1.0 -  smart_inverse_dot( 1.0 - dot(reconstructCameraSpaceDistance(UV, 1.0), reconstructCameraSpaceDistance(vec2(0.5), 1.0)), 11.0);
 
-    //    return texture(blurTestTexture, UV).rgba;
+        vec4 bloom = texture(blurTestTexture, UV).rgba;
+        return bloom;
+        bloom *= length(bloom.xyz);
+        bloom.xyz = tonemap(bloom.xyz);
 
-        return min(1.0, 1.0 - pow(1.0 - vignette , 7.0)) * mix(textureLod(inputTex, UV, 0.0).rgba, fxaa(inputTex, UV).rgba, max(distance_mult, normal_mult));
+        bloom *= step(0.5, UV.x);
+
+        return bloom + min(1.0, 1.0 - pow(1.0 - vignette , 7.0)) * mix(textureLod(inputTex, UV, 0.0).rgba, fxaa(inputTex, UV).rgba, max(distance_mult, normal_mult));
 
     } else {
         vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);

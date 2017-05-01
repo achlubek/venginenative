@@ -49,8 +49,8 @@ vec2 adjustParallaxUV(vec2 uv){
     vec3 eyevec = ((CameraPosition - Input.WorldPos));
     vec3 V = normalize(vec3(
         dot(eyevec, twpos),
-        dot(eyevec, -bwpos),
-        dot(eyevec, -nwpos)
+        dot(eyevec, bwpos),
+        dot(eyevec, nwpos)
     ));
     vec2 T = uv;
    const float minLayers = 16;

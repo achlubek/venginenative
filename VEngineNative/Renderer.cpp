@@ -92,6 +92,7 @@ Renderer::Renderer(int iwidth, int iheight)
     pickingReadShader = new ShaderProgram("PickerResultReader.compute.glsl");
 
     blurShader = new ShaderProgram("PostProcess.vertex.glsl", "Blur.fragment.glsl");
+    blitShader = new ShaderProgram("PostProcess.vertex.glsl", "Blit.fragment.glsl");
 
     exposureBuffer = new ShaderStorageBuffer();
 
@@ -229,6 +230,10 @@ void Renderer::initializeFbos()
     combineTexture = new Texture2d(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     combineFbo = new Framebuffer();
     combineFbo->attachTexture(combineTexture, GL_COLOR_ATTACHMENT0);
+
+    blitTestTexture = new Texture2d(width / 4, height / 4, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+    blitTestFbo = new Framebuffer();
+    blitTestFbo->attachTexture(blitTestTexture, GL_COLOR_ATTACHMENT0);
 
     blurTestTexture = new Texture2d(width / 4, height / 4, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
     blurTestFbo = new Framebuffer();
@@ -667,7 +672,8 @@ void Renderer::combine(int step)
     waterColorTexture->generateMipMaps();
     //combineTexture->generateMipMaps();
     if (step == 1) {
-      //  blur(combineTexture, blurTestHelperFbo, blurTestFbo, 128, true, 2.0f, 0.1f);
+        resample(combineTexture, blitTestFbo);
+        blur(blitTestTexture, blurTestHelperFbo, blurTestFbo, 232, true, 3.0f, 0.2f);
     }
 }
 void Renderer::fxaaTonemap(bool finalpass)
@@ -710,26 +716,33 @@ void Renderer::fxaaTonemap(bool finalpass)
 }
 
 void Renderer::blur(Texture2d* source, Framebuffer* helper, Framebuffer* target, int radius, bool gaussian_like, float gaussian_strength, float gaussian_scale)
-{
-    float ratio1 = helper->getAttachment(0)->texture2d->width / source->width;
-    float ratio2 = target->getAttachment(0)->texture2d->width / helper->getAttachment(0)->texture2d->width;
+{ 
     blurShader->use();
     helper->use(false);
     source->use(14);
     float a = gaussian_strength;
     float coef1 = 1.0 / (sqrt(2.0 * 3.1415 * a * a));
     float coef2 = -1.0 / (2.0 * a * a);
+    float fradius = radius;
     blurShader->setUniform("coef1", coef1);
     blurShader->setUniform("coef2", coef2);
     blurShader->setUniform("GaussianScale", gaussian_scale);
     blurShader->setUniform("UseGaussian", gaussian_like ? 1 : 0);
-    blurShader->setUniform("Range", (int)((float)radius / ratio1));
+    blurShader->setUniform("Range", radius);
     blurShader->setUniform("Pass", (int)0);
     quad3dInfo->draw();
     target->use(false); 
     helper->getAttachment(0)->texture2d->use(14);
-    blurShader->setUniform("Range", (int)((float)radius / ratio2));
+    blurShader->setUniform("Range", radius);
     blurShader->setUniform("Pass", (int)1);
+    quad3dInfo->draw();
+}
+
+void Renderer::resample(Texture2d * source, Framebuffer * target)
+{
+    blitShader->use();
+    target->use(false);
+    source->use(14);  
     quad3dInfo->draw();
 }
 
@@ -1046,3 +1059,4 @@ void Renderer::clouds()
   //  else
    //     cloudsShadowsTextureEven->generateMipMaps();
 }
+
