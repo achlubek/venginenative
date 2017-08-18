@@ -15,10 +15,10 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial, float di
     instancesFiltered3 = 0;
     int kb1 = 1024;
     int mb1 = kb1 * 1024;
-    modelInfosBuffer1 = new ShaderStorageBuffer();
-    modelInfosBuffer2 = new ShaderStorageBuffer();
-    modelInfosBuffer3 = new ShaderStorageBuffer();
-    materialBuffer = new ShaderStorageBuffer(kb1);
+    modelInfosBuffer1 = new VulkanGenericBuffer(64 * kb1);
+    modelInfosBuffer2 = new VulkanGenericBuffer(64 * kb1);
+    modelInfosBuffer3 = new VulkanGenericBuffer(64 * kb1);
+    materialBuffer = new VulkanGenericBuffer(kb1);
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -30,8 +30,6 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial, float di
     modes = {};
     textureBinds = {};
     wrapModes = {};
-	skeleton = nullptr;
-	skeletonPose = nullptr;
     id = Game::instance->getNextId();
     Game::instance->registerId(id, this);
 }
@@ -47,10 +45,10 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial)
     instancesFiltered3 = 0;
     int kb1 = 1024;
     int mb1 = kb1 * 1024;
-    modelInfosBuffer1 = new ShaderStorageBuffer();
-    modelInfosBuffer2 = new ShaderStorageBuffer();
-    modelInfosBuffer3 = new ShaderStorageBuffer();
-    materialBuffer = new ShaderStorageBuffer(kb1);
+	modelInfosBuffer1 = new VulkanGenericBuffer(64 * kb1);
+	modelInfosBuffer2 = new VulkanGenericBuffer(64 * kb1);
+	modelInfosBuffer3 = new VulkanGenericBuffer(64 * kb1);
+	materialBuffer = new VulkanGenericBuffer(kb1);
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -62,8 +60,6 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial)
     modes = {};
     textureBinds = {};
     wrapModes = {};
-	skeleton = nullptr;
-	skeletonPose = nullptr;
     id = Game::instance->getNextId();
     Game::instance->registerId(id, this);
 }
@@ -79,10 +75,10 @@ Mesh3dLodLevel::Mesh3dLodLevel()
     instancesFiltered3 = 0;
     int kb1 = 1024;
     int mb1 = kb1 * 1024;
-    modelInfosBuffer1 = new ShaderStorageBuffer();
-    modelInfosBuffer2 = new ShaderStorageBuffer();
-    modelInfosBuffer3 = new ShaderStorageBuffer();
-    materialBuffer = new ShaderStorageBuffer(kb1);
+	modelInfosBuffer1 = new VulkanGenericBuffer(64 * kb1);
+	modelInfosBuffer2 = new VulkanGenericBuffer(64 * kb1);
+	modelInfosBuffer3 = new VulkanGenericBuffer(64 * kb1);
+	materialBuffer = new VulkanGenericBuffer(kb1);
     samplerIndices = {};
     modes = {};
     targets = {};
@@ -94,8 +90,6 @@ Mesh3dLodLevel::Mesh3dLodLevel()
     modes = {};
     textureBinds = {};
     wrapModes = {};
-	skeleton = nullptr;
-	skeletonPose = nullptr;
     id = Game::instance->getNextId();
     Game::instance->registerId(id, this);
 }
@@ -104,29 +98,21 @@ Mesh3dLodLevel::~Mesh3dLodLevel()
 {
 }
 #define vcasti(a) (*((float*)&a))
-void Mesh3dLodLevel::draw(const Mesh3d* mesh)
+void Mesh3dLodLevel::draw(VulkanCommandBuffer cb, const Mesh3d* mesh)
 {
-    ShaderProgram *shader = ShaderProgram::current;
-
     if (currentBuffer == 0 && instancesFiltered1 == 0) return;
     if (currentBuffer == 1 && instancesFiltered2 == 0) return;
     if (currentBuffer == 2 && instancesFiltered3 == 0) return;
 
-    if (shader == Game::instance->shaders->idWriteShader && !mesh->selectable) return;
-    if (shader == Game::instance->shaders->idWriteShader && !selectable) return;
-
-    if (shader == Game::instance->shaders->depthOnlyShader && !mesh->castShadow) return;
-    if (shader == Game::instance->shaders->depthOnlyShader && !castShadow) return;
-
     if (!mesh->visible) return;
     if (!visible) return;
-
+	/*
     if (material->diffuseColorTex != nullptr) material->diffuseColorTex->use(10);
     if (material->normalTex != nullptr) material->normalTex->use(11);
     if (material->bumpTex != nullptr) material->bumpTex->use(12);
     if (material->roughnessTex != nullptr) material->roughnessTex->use(13);
     if (material->metalnessTex != nullptr) material->metalnessTex->use(14);
-
+	*/
     // address 0  here
     /*
     shader->setUniform("Roughness", material->roughness);//1
@@ -147,21 +133,10 @@ void Mesh3dLodLevel::draw(const Mesh3d* mesh)
 
     shader->setUniform("MeshID", mesh->id);
     shader->setUniform("LodLevelID", id);*/
-
-	if (skeleton != nullptr) {
-		skeleton->use(skeletonPose, 2, 3);
-	}
-
-    if (currentBuffer == 0)modelInfosBuffer1->use(0);
-    if (currentBuffer == 1)modelInfosBuffer2->use(0);
-    if (currentBuffer == 2)modelInfosBuffer3->use(0);
-
-    materialBuffer->use(1);
-    if (disableFaceCulling) glDisable(GL_CULL_FACE);
-    if (currentBuffer == 0)info3d->drawInstanced(instancesFiltered1);
-    if (currentBuffer == 1)info3d->drawInstanced(instancesFiltered2);
-    if (currentBuffer == 2)info3d->drawInstanced(instancesFiltered3);
-    if (disableFaceCulling) glEnable(GL_CULL_FACE);
+	  
+    if (currentBuffer == 0)info3d->drawInstanced(cb.handle, instancesFiltered1);
+    if (currentBuffer == 1)info3d->drawInstanced(cb.handle, instancesFiltered2);
+    if (currentBuffer == 2)info3d->drawInstanced(cb.handle, instancesFiltered3);
 
 }
 
@@ -219,11 +194,11 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
         if (fint > 0) {
             void* modelbufferpt = nullptr;
             if (nextBuffer == 0)
-                modelbufferpt = modelInfosBuffer1->acquireAsynchronousPointer(0, 4 * 16 * fint);
+                modelInfosBuffer1->map(0, 4 * 16 * fint, &modelbufferpt);
             if (nextBuffer == 1)
-                modelbufferpt = modelInfosBuffer2->acquireAsynchronousPointer(0, 4 * 16 * fint);
+				modelInfosBuffer2->map(0, 4 * 16 * fint, &modelbufferpt);
             if (nextBuffer == 2)
-                modelbufferpt = modelInfosBuffer3->acquireAsynchronousPointer(0, 4 * 16 * fint);
+				modelInfosBuffer3->map(0, 4 * 16 * fint, &modelbufferpt);
             int a = 0;
             for (unsigned int i = 0; i < fint; i++) {
                 TransformationManager *mgr = filtered[i]->transformation;
@@ -252,11 +227,11 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
             }
 
             if (nextBuffer == 0)
-                modelInfosBuffer1->unmapBuffer();
+                modelInfosBuffer1->unmap();
             if (nextBuffer == 1)
-                modelInfosBuffer2->unmapBuffer();
+                modelInfosBuffer2->unmap();
             if (nextBuffer == 2)
-                modelInfosBuffer3->unmapBuffer();
+                modelInfosBuffer3->unmap();
         }
     }
 
@@ -283,7 +258,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
         floats2.push_back(vcasti((material->roughnessTex != nullptr ? one : zero)));
 
         floats2.push_back(vcasti((material->metalnessTex != nullptr ? one : zero)));
-        floats2.push_back(vcasti((skeleton != nullptr ? one : zero)));
+        floats2.push_back(0.0f);
         floats2.push_back(0.0f);
         floats2.push_back(0.0f); // amd safety 
 
@@ -307,7 +282,10 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
         floats2.push_back(0.0f);
         floats2.push_back(0.0f);
 
-        materialBuffer->mapData(4 * floats2.size(), floats2.data());
+		void* materialpointer = nullptr;
+		materialBuffer->map(0, 4 * floats2.size(), &materialpointer);
+		memcpy(materialpointer, floats2.data(), 4 * floats2.size());
+		materialBuffer->unmap();
     }
 }
 

@@ -27,7 +27,7 @@ Object3dInfo * AssetLoader::loadObject3dInfoFile(string source)
     return o;
 
 }
-
+/*
 Skeleton * AssetLoader::loadSkeletonString(string source)
 {
     vector<string> skelLines;
@@ -51,21 +51,7 @@ Skeleton * AssetLoader::loadSkeletonString(string source)
                 }
             }
         }
-        if (words[0] == "matrix") {/*
-                                   if (words.size() >= 2) {
-                                   int current = skel->bones.size();
-                                   skel->bones.push_back(glm::mat4(1));
-                                   glm::quat q = glm::quat();
-                                   glm::vec3 t = glm::vec3(1);
-                                   q.x = atof(words[1].c_str());
-                                   q.y = atof(words[2].c_str());
-                                   q.z = atof(words[3].c_str());
-                                   q.w = atof(words[4].c_str());
-                                   t.x = atof(words[5].c_str());
-                                   t.y = atof(words[6].c_str());
-                                   t.z = atof(words[7].c_str());
-                                   skel->bones[current] = glm::translate(glm::mat4_cast(q), t);
-                                   }*/
+        if (words[0] == "matrix") { 
         }
         if (words[0] == "position") {
             if (words.size() >= 2) {
@@ -97,13 +83,13 @@ Skeleton * AssetLoader::loadSkeletonString(string source)
 Skeleton * AssetLoader::loadSkeletonFile(string source)
 {
     return loadSkeletonString(Media::readString(source));
-}
+}*/
 
 Material * AssetLoader::loadMaterialString(string source)
 {
     vector<string> materialLines;
     splitByLines(materialLines, source);
-    Material *material = new Material();
+    Material *material = new Material();/*
     MaterialNode *node = nullptr;
     for (int i = 0; i < materialLines.size(); i++) {
         vector<string> words;
@@ -290,7 +276,7 @@ Material * AssetLoader::loadMaterialString(string source)
             material->metalnessTex = node->texture;
             material->metalnessTexScale = node->uvScale;
         }
-    }
+    }*/
     return material;
 }
 
@@ -433,7 +419,7 @@ Mesh3d * AssetLoader::loadMeshFile(string source)
 {
     return loadMeshString(Media::readString(source));
 }
-
+/*
 Light * AssetLoader::loadLightString(string source)
 {
     vector<string> meshLines;
@@ -553,7 +539,7 @@ Light * AssetLoader::loadLightFile(string source)
 {
     return loadLightString(Media::readString(source));
 }
-
+*/
 Scene * AssetLoader::loadSceneString(string source)
 {
     vector<string> meshLines;
@@ -568,14 +554,14 @@ Scene * AssetLoader::loadSceneString(string source)
                 for (int a = 1; a < words.size(); a++)ss << (a == 1 ? "" : " ") << words[a];
                 scene->addMesh3d(loadMeshFile(ss.str()));
             }
-        }
+        }/*
         if (words[0] == "light") {
             if (words.size() >= 2) {
                 stringstream ss;
                 for (int a = 1; a < words.size(); a++)ss << (a == 1 ? "" : " ") << words[a];
                 scene->addLight(loadLightFile(ss.str()));
             }
-        }
+        }*/
     }
     return scene;
 }
@@ -614,7 +600,7 @@ void AssetLoader::splitByChar(vector<string>& output, string src, char c)
         output.push_back(src.substr(d, i));
     }
 }
-
+/*
 int AssetLoader::replaceEnum(string enumstr)
 {
     if (enumstr == "ADD") return NODE_MODE_ADD;
@@ -648,4 +634,4 @@ int AssetLoader::replaceEnum(string enumstr)
     if (enumstr == "COLOR") return NODE_SOURCE_COLOR;
     if (enumstr == "TEXTURE") return NODE_SOURCE_TEXTURE;
     return 0;
-}
+}*/

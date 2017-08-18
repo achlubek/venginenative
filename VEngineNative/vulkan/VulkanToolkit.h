@@ -42,18 +42,14 @@ public:
     int chosenQFId = 0;
 
 	VulkanSwapChain* swapChain;
-
-	VulkanRenderStage meshRenderStage;
-	std::vector<VulkanRenderStage> postProcessRenderStages;
 	 
-    void createGraphicsPipeline();
     VkCommandPool commandPool;
 
     VkQueue mainQueue;
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-	VulkanMesh3d* mesh;
-	VulkanMesh3d* mesh2;
-	VulkanMesh3d* postprocessmesh;
+	//VulkanMesh3d* mesh;
+	//VulkanMesh3d* mesh2;
+	//VulkanMesh3d* postprocessmesh;
 
 	/*
 	Descriptor set layout:
@@ -94,20 +90,8 @@ public:
 
 		stage.compile() generates command buffer, framebuffer, pipeline and such
 	 }
-	*/
-
-	VulkanDescriptorSetsManager meshSetManager;
-	VulkanDescriptorSetsManager postProcessSetManager;
-
-	VulkanGenericBuffer uniformBuffer;
-    void createUniformBuffer();
-    void updateUniformBuffer();
-
-    void createDescriptorPool();
-
-	VulkanImage colorImage;
-	VulkanImage depthImage;
-	void createDepthBuffer();
+	*/ 
+	 
 
 	ImageData* readFileImageData(std::string path);
 	VulkanImage createTexture(std::string path);

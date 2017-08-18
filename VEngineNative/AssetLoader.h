@@ -1,11 +1,8 @@
 #pragma once
 #include "Mesh3d.h"
-#include "Light.h"
 #include "Scene.h"
 #include "Material.h"
-#include "MaterialNode.h"
 #include "Object3dInfo.h"
-#include "Skeleton.h"
 class AssetLoader
 {
 public:
@@ -13,19 +10,19 @@ public:
     ~AssetLoader();
 
     Object3dInfo *loadObject3dInfoFile(string source);
-
+	/*
 	Skeleton *loadSkeletonString(string source);
 	Skeleton *loadSkeletonFile(string source);
-
+	*/
     Material *loadMaterialString(string source);
     Material *loadMaterialFile(string source);
 
     Mesh3d *loadMeshString(string source);
     Mesh3d *loadMeshFile(string source);
-
+	/*
     Light *loadLightString(string source);
     Light *loadLightFile(string source);
-
+	*/
     Scene *loadSceneString(string source);
     Scene *loadSceneFile(string source);
 

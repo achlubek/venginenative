@@ -1,6 +1,4 @@
-#pragma once
-#include "EnvProbe.h"
-#include "Light.h"
+#pragma once 
 #include "Mesh3d.h"
 class Scene
 {
@@ -17,13 +15,10 @@ public:
     draw debug lines
     draw debug points
     */
-    void draw();
+    void draw(VulkanCommandBuffer cb);
     void prepareFrame();
     void addMesh3d(Mesh3d *item);
-    void addLight(Light *light);
     vector<Mesh3d*>& getMesh3ds();
-    vector<Light*>& getLights();
 private:
     vector<Mesh3d*> mesh3ds;
-    vector<Light*> lights;
 };

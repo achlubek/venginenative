@@ -1,6 +1,4 @@
-#pragma once
-#include "Texture2d.h";
-#include "MaterialNode.h";
+#pragma once 
 class Material
 {
 public:
@@ -10,11 +8,11 @@ public:
     glm::vec3 diffuseColor;
     float roughness;
     float metalness;
-    Texture2d* diffuseColorTex;
-    Texture2d* normalTex;
-    Texture2d* bumpTex;
-    Texture2d* roughnessTex;
-    Texture2d* metalnessTex;
+    VulkanImage* diffuseColorTex;
+	VulkanImage* normalTex;
+	VulkanImage* bumpTex;
+	VulkanImage* roughnessTex;
+	VulkanImage* metalnessTex;
     glm::vec2 diffuseColorTexScale;
     glm::vec2 normalTexScale;
     glm::vec2 bumpTexScale;

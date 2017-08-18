@@ -53,7 +53,6 @@ using namespace std;
 #include "vulkan/VulkanGenericBuffer.h"
 #include "vulkan/VulkanDescriptorSet.h"
 #include "vulkan/VulkanDescriptorSetsManager.h"
-#include "vulkan/VulkanMesh3d.h"
 #include "vulkan/VulkanRenderStage.h"
 
 #include "vulkan/VulkanSwapChain.h"

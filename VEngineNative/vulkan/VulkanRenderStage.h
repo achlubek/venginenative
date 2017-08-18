@@ -1,4 +1,5 @@
 #pragma once
+class Object3dInfo;
 class VulkanRenderStage
 {
 public:
@@ -14,7 +15,7 @@ public:
 	VkExtent2D viewport;
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
-	std::vector<VulkanMesh3d> meshes;
+	std::vector<Object3dInfo> meshes;
 
 	void addDescriptorSetLayout(VkDescriptorSetLayout lay);
 	void addOutputImage(VulkanImage lay);

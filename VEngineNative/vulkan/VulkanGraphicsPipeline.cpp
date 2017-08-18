@@ -1,10 +1,10 @@
 #include "stdafx.h" 
-
+#include "../Object3dInfo.h"
 
 VulkanGraphicsPipeline::VulkanGraphicsPipeline(int viewportwidth, int viewportheight, std::vector<VkDescriptorSetLayout> setlayouts,
 	std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass renderpass, bool enableDepthTest)
 {
-	VkPipelineVertexInputStateCreateInfo vertexInputInfo = VulkanMesh3d::getVertexInputStateCreateInfo();
+	VkPipelineVertexInputStateCreateInfo vertexInputInfo = Object3dInfo::getVertexInputStateCreateInfo();
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

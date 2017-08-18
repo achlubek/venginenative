@@ -2,7 +2,7 @@
 #include "SquirrelVM.h"
 #include "Game.h"
 #include <cstdlib>
-
+#include <stdarg.h> 
 void error_handler(HSQUIRRELVM v, const SQChar * desc, const SQChar * source,
     SQInteger line, SQInteger column) {
     cout << "Squirrel Error" << endl << desc << endl << source << ":" << line;

@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include "../stb_image.h"
+#define STB_IMAGE_IMPLEMENTATION
 
 VulkanToolkit* VulkanToolkit::singleton = nullptr;
 
@@ -74,10 +76,7 @@ void VulkanToolkit::initialize()
 
 	VkBool32 supported = false;
 	vkGetPhysicalDeviceSurfaceSupportKHR(pdevice, chosenQFId, surface, &supported);
-	swapChain = new VulkanSwapChain();
-	createDepthBuffer();
-	createDescriptorPool();
-	createUniformBuffer();
+	swapChain = new VulkanSwapChain(); 
 
 	VkCommandPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -87,8 +86,7 @@ void VulkanToolkit::initialize()
 		throw std::runtime_error("failed to create command pool!");
 	}
 
-	createGraphicsPipeline();
-
+	/*
 	mesh = new VulkanMesh3d("../shaders/mrstick.vbo", "../test.png");
 	mesh2 = new VulkanMesh3d("../shaders/lucy.vbo", "../test2.png");
 	postprocessmesh = new VulkanMesh3d("../shaders/ppplane.vbo", "../test2.png");
@@ -107,7 +105,7 @@ void VulkanToolkit::initialize()
 	for (int i = 0; i < postProcessRenderStages.size(); i++) {
 		postProcessRenderStages[i].meshes.push_back(*postprocessmesh);
 		postProcessRenderStages[i].updateCommandBuffer();
-	}
+	}*/
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
@@ -226,48 +224,6 @@ void VulkanToolkit::createLogicalDevice(VkPhysicalDevice pdevice, VkDeviceCreate
 	VkResult result = vkCreateDevice(pdevice, &cinfo, nullptr, &device);
 }
 
-
-void VulkanToolkit::createGraphicsPipeline()
-{
-
-	auto vertShaderModule = VulkanShaderModule("../shaders/triangle.vert.spv");
-	auto fragShaderModule = VulkanShaderModule("../shaders/triangle.frag.spv");
-
-	meshRenderStage = VulkanRenderStage();
-
-	meshRenderStage.setViewport(swapChain->swapChainExtent);
-	meshRenderStage.addShaderStage(vertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
-	meshRenderStage.addShaderStage(fragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
-	meshRenderStage.addDescriptorSetLayout(meshSetManager.mesh3dLayout);
-	meshRenderStage.addOutputImage(colorImage);
-	meshRenderStage.addOutputImage(depthImage);
-
-	meshRenderStage.compile();
-
-
-	auto ppvertShaderModule = VulkanShaderModule("../shaders/pp.vert.spv");
-	auto ppfragShaderModule = VulkanShaderModule("../shaders/pp.frag.spv");
-	postProcessRenderStages.resize(swapChain->swapChainImages.size());
-	for (int i = 0; i < swapChain->swapChainImages.size(); i++) {
-
-		postProcessRenderStages[i] = VulkanRenderStage();
-
-		postProcessRenderStages[i].setViewport(swapChain->swapChainExtent);
-		postProcessRenderStages[i].addShaderStage(ppvertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
-		postProcessRenderStages[i].addShaderStage(ppfragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
-		postProcessRenderStages[i].addDescriptorSetLayout(meshSetManager.mesh3dLayout);
-		VkFormat format = swapChain->swapChainImageFormat;
-		VulkanImage* img = new VulkanImage(format, swapChain->swapChainImages[i], swapChain->swapChainImageViews[i]);
-		img->format = format;
-		img->image = swapChain->swapChainImages[i];
-		img->imageView = swapChain->swapChainImageViews[i];
-		img->isPresentReady = true;
-		postProcessRenderStages[i].addOutputImage(*img);
-
-		postProcessRenderStages[i].compile();
-	}
-}
-
 uint32_t VulkanToolkit::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
 	for (uint32_t i = 0; i < physicalDevicesMemoryProps[chosenDeviceId].memoryTypeCount; i++) {
 		if ((typeFilter & (1 << i)) && (physicalDevicesMemoryProps[chosenDeviceId].memoryTypes[i].propertyFlags & properties) == properties) {
@@ -278,42 +234,6 @@ uint32_t VulkanToolkit::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlag
 	throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void VulkanToolkit::createUniformBuffer()
-{
-	uniformBuffer = VulkanGenericBuffer(sizeof(float) * 4);
-}
-
-void VulkanToolkit::updateUniformBuffer()
-{
-	VulkanBinaryBufferBuilder bb = VulkanBinaryBufferBuilder();
-	bb.emplaceFloat32((float)glfwGetTime());
-	double xpos, ypos;
-	glfwGetCursorPos(window, &xpos, &ypos);
-	bb.emplaceFloat32(0.0f);
-	bb.emplaceFloat32((float)xpos / (float)WIDTH);
-	bb.emplaceFloat32((float)ypos / (float)HEIGHT);
-
-	void* data;
-	uniformBuffer.map(0, bb.buffer.size(), &data);
-	memcpy(data, bb.getPointer(), bb.buffer.size());
-	uniformBuffer.unmap();
-}
-
-void VulkanToolkit::createDescriptorPool()
-{
-	meshSetManager = VulkanDescriptorSetsManager();
-	postProcessSetManager = VulkanDescriptorSetsManager();
-}
-
-void VulkanToolkit::createDepthBuffer()
-{
-	colorImage = VulkanImage(swapChain->swapChainExtent.width, swapChain->swapChainExtent.height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
-
-
-	depthImage = VulkanImage(swapChain->swapChainExtent.width, swapChain->swapChainExtent.height, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, true);
-}
 
 ImageData * VulkanToolkit::readFileImageData(std::string path)
 {

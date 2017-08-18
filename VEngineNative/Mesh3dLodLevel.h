@@ -1,11 +1,8 @@
 #pragma once
 class Mesh3d;
-#include "ShaderStorageBuffer.h"
 #include "Material.h"
 #include "Object3dInfo.h"
 #include "Mesh3dInstance.h"
-#include "Texture2d.h"
-#include "Skeleton.h"
 class Mesh3dLodLevel
 {
 public:
@@ -23,17 +20,17 @@ public:
     bool ignoreFrustumCulling = false;
     bool castShadow = true;
     bool selectable = true;
-    void draw(const Mesh3d* mesh);
+    void draw(VulkanCommandBuffer cb, const Mesh3d* mesh);
     void updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstance*> &instances);
     bool materialBufferNeedsUpdate = true;
-	Skeleton* skeleton;
-	SkeletonPose* skeletonPose;
+	//Skeleton* skeleton;
+	//SkeletonPose* skeletonPose;
 private:
-    ShaderStorageBuffer *modelInfosBuffer1;
-    ShaderStorageBuffer *modelInfosBuffer2;
-    ShaderStorageBuffer *modelInfosBuffer3;
+    VulkanGenericBuffer *modelInfosBuffer1;
+	VulkanGenericBuffer *modelInfosBuffer2;
+	VulkanGenericBuffer *modelInfosBuffer3;
 
-    ShaderStorageBuffer *materialBuffer;
+	VulkanGenericBuffer *materialBuffer;
     
     int currentBuffer = 0;
     int nextBuffer = 1; //smart
@@ -47,7 +44,7 @@ private:
     vector<glm::vec2> uvScales;
     vector<glm::vec4> nodesDatas;
     vector<glm::vec4> nodesColors;
-    vector<Texture2d*> textureBinds;
+    vector<VulkanImage*> textureBinds;
     size_t instancesFiltered1;
     size_t instancesFiltered2;
     size_t instancesFiltered3;

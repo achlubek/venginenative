@@ -251,63 +251,37 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RagdollController.h" />
-    <ClInclude Include="Skeleton.h" />
     <ClInclude Include="Sound.h" />
-    <ClInclude Include="AbsFramebuffer.h" />
-    <ClInclude Include="AbsTexture.h" />
     <ClInclude Include="AbsTransformable.h" />
-    <ClInclude Include="Array2dFramebuffer.h" />
     <ClInclude Include="AssetLoader.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="CascadeShadowMap.h" />
-    <ClInclude Include="CubeMapFramebuffer.h" />
-    <ClInclude Include="CubeMapTexture.h" />
-    <ClInclude Include="EnvProbe.h" />
     <ClInclude Include="EventHandler.h" />
-    <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="FrustumCone.h" />
     <ClInclude Include="Game.h" />
-    <ClInclude Include="GenericShaders.h" />
-    <ClInclude Include="glad.h" />
     <ClInclude Include="glfw.h" />
-    <ClInclude Include="GLSLVM.h" />
-    <ClInclude Include="imgui\imconfig.h" />
-    <ClInclude Include="imgui\imgui.h" />
-    <ClInclude Include="imgui\imgui_internal.h" />
     <ClInclude Include="imgui\stb_rect_pack.h" />
     <ClInclude Include="imgui\stb_textedit.h" />
     <ClInclude Include="imgui\stb_truetype.h" />
-    <ClInclude Include="imgui_impl_glfw_gl3.h" />
     <ClInclude Include="INIReader.h" />
-    <ClInclude Include="khrplatform.h" />
-    <ClInclude Include="Light.h" />
     <ClInclude Include="lupng.h" />
     <ClInclude Include="Material.h" />
-    <ClInclude Include="MaterialNode.h" />
     <ClInclude Include="Media.h" />
     <ClInclude Include="Mesh3d.h" />
     <ClInclude Include="Mesh3dInstance.h" />
     <ClInclude Include="Mesh3dLodLevel.h" />
     <ClInclude Include="miniz.h" />
     <ClInclude Include="Object3dInfo.h" />
-    <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="PhysicalBody.h" />
     <ClInclude Include="PhysicalConstraint.h" />
     <ClInclude Include="Physics.h" />
     <ClInclude Include="Sound3d.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
-    <ClInclude Include="ShaderProgram.h" />
-    <ClInclude Include="ShaderStorageBuffer.h" />
     <ClInclude Include="SimpleParser.h" />
     <ClInclude Include="SquirrelVM.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Texture2d.h" />
-    <ClInclude Include="Texture2dArray.h" />
-    <ClInclude Include="Texture3d.h" />
     <ClInclude Include="tinydir.h" />
     <ClInclude Include="TransformationManager.h" />
     <ClInclude Include="vulkan\VulkanAttachment.h" />
@@ -319,7 +293,6 @@
     <ClInclude Include="vulkan\VulkanGenericBuffer.h" />
     <ClInclude Include="vulkan\VulkanGraphicsPipeline.h" />
     <ClInclude Include="vulkan\VulkanImage.h" />
-    <ClInclude Include="vulkan\VulkanMesh3d.h" />
     <ClInclude Include="vulkan\VulkanRenderPass.h" />
     <ClInclude Include="vulkan\VulkanRenderStage.h" />
     <ClInclude Include="vulkan\VulkanShaderModule.h" />
@@ -329,54 +302,27 @@
     <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RagdollController.cpp" />
-    <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="Sound.cpp" />
-    <ClCompile Include="AbsFramebuffer.cpp" />
-    <ClCompile Include="AbsTexture.cpp" />
     <ClCompile Include="AbsTransformable.cpp" />
-    <ClCompile Include="Array2dFramebuffer.cpp" />
     <ClCompile Include="AssetLoader.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="CascadeShadowMap.cpp" />
-    <ClCompile Include="CubeMapFramebuffer.cpp" />
-    <ClCompile Include="CubeMapTexture.cpp" />
-    <ClCompile Include="EnvProbe.cpp" />
-    <ClCompile Include="Framebuffer.cpp" />
     <ClCompile Include="FrustumCone.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GenericShaders.cpp" />
-    <ClCompile Include="glad.cpp" />
-    <ClCompile Include="GLSLVM.cpp" />
-    <ClCompile Include="imgui\imgui.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NotOptimization|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_draw.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NotOptimization|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="imgui_impl_glfw_gl3.cpp" />
     <ClCompile Include="INIReader.cpp" />
-    <ClCompile Include="Light.cpp" />
     <ClCompile Include="lupng.cpp" />
     <ClCompile Include="Material.cpp" />
-    <ClCompile Include="MaterialNode.cpp" />
     <ClCompile Include="Media.cpp" />
     <ClCompile Include="Mesh3d.cpp" />
     <ClCompile Include="Mesh3dInstance.cpp" />
     <ClCompile Include="Mesh3dLodLevel.cpp" />
     <ClCompile Include="miniz.cpp" />
     <ClCompile Include="Object3dInfo.cpp" />
-    <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="PhysicalBody.cpp" />
     <ClCompile Include="PhysicalConstraint.cpp" />
     <ClCompile Include="Physics.cpp" />
     <ClCompile Include="Sound3d.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="ShaderProgram.cpp" />
-    <ClCompile Include="ShaderStorageBuffer.cpp" />
     <ClCompile Include="SimpleParser.cpp" />
     <ClCompile Include="SquirrelVM.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -387,9 +333,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NotOptimization|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Texture2d.cpp" />
-    <ClCompile Include="Texture2dArray.cpp" />
-    <ClCompile Include="Texture3d.cpp" />
     <ClCompile Include="TransformationManager.cpp" />
     <ClCompile Include="vulkan\VulkanAttachment.cpp" />
     <ClCompile Include="vulkan\VulkanBinaryBufferBuilder.cpp" />
@@ -400,7 +343,6 @@
     <ClCompile Include="vulkan\VulkanGenericBuffer.cpp" />
     <ClCompile Include="vulkan\VulkanGraphicsPipeline.cpp" />
     <ClCompile Include="vulkan\VulkanImage.cpp" />
-    <ClCompile Include="vulkan\VulkanMesh3d.cpp" />
     <ClCompile Include="vulkan\VulkanRenderPass.cpp" />
     <ClCompile Include="vulkan\VulkanRenderStage.cpp" />
     <ClCompile Include="vulkan\VulkanShaderModule.cpp" />

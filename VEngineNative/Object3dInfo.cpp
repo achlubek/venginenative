@@ -7,38 +7,44 @@ pos.xyz-uv.xy-normal.xyz-tangent.xyzw
 totals in 12 elements per vertex
 */
 
+VkVertexInputBindingDescription Object3dInfo::bindingDescription = {};
+std::array<VkVertexInputAttributeDescription, 4> Object3dInfo::attributeDescriptions = {};
 Object3dInfo::Object3dInfo(vector<GLfloat> &vboin)
 {
     vbo = move(vboin);
     generated = false;
     vertexCount = (GLsizei)(vbo.size() / 12);
     updateRadius();
-    drawMode = GL_TRIANGLES;
 }
 
 Object3dInfo::~Object3dInfo()
 {
     vbo.clear();
     if (generated) {
-        glDeleteVertexArrays(1, &vaoHandle);
-        glDeleteBuffers(1, &vboHandle);
+		//
     }
 }
 
-void Object3dInfo::draw()
+void Object3dInfo::draw(VkCommandBuffer cb)
 {
     if (!generated)
         generate();
-    glBindVertexArray(vaoHandle);
-    glDrawArrays(drawMode, 0, vertexCount);
+	VkBuffer vertexBuffers[] = { vertexBuffer };
+	VkDeviceSize offsets[] = { 0 };
+	vkCmdBindVertexBuffers(cb, 0, 1, vertexBuffers, offsets);
+
+	vkCmdDraw(cb, static_cast<uint32_t>(vertexCount), 1, 0, 0);
 }
 
-void Object3dInfo::drawInstanced(size_t instances)
+void Object3dInfo::drawInstanced(VkCommandBuffer cb, size_t instances)
 {
     if (!generated)
         generate();
-    glBindVertexArray(vaoHandle);
-    glDrawArraysInstanced(drawMode, 0, vertexCount, (GLsizei)instances);
+	VkBuffer vertexBuffers[] = { vertexBuffer };
+	VkDeviceSize offsets[] = { 0 };
+	vkCmdBindVertexBuffers(cb, 0, 1, vertexBuffers, offsets);
+
+	vkCmdDraw(cb, static_cast<uint32_t>(vertexCount), instances, 0, 0);
 }
 
 void Object3dInfo::updateRadius()
@@ -57,7 +63,7 @@ void Object3dInfo::updateRadius()
 }
 
 void Object3dInfo::rebufferVbo(vector<GLfloat> data, bool force_resize)
-{
+{/*
     if (!generated) {
         vbo = data;
         return; 
@@ -70,32 +76,40 @@ void Object3dInfo::rebufferVbo(vector<GLfloat> data, bool force_resize)
         glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * data.size(), data.data(), GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT | GL_ELEMENT_ARRAY_BARRIER_BIT);
-    }
+    }*/
 }
 
 void Object3dInfo::generate()
-{
-    if (vaoHandle > 0) glDeleteVertexArrays(1, &vaoHandle);
-    if (vboHandle > 0) glDeleteBuffers(1, &vboHandle);
-    glGenVertexArrays(1, &vaoHandle);
-    glGenBuffers(1, &vboHandle);
-    glBindVertexArray(vaoHandle);
-    glBindBuffer(GL_ARRAY_BUFFER, vboHandle);
+{ 
+	VkBufferCreateInfo bufferInfo = {};
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = sizeof(vbo[0]) * vbo.size();
+	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vbo.size(), vbo.data(), GL_STATIC_DRAW);
+	if (vkCreateBuffer(VulkanToolkit::singleton->device, &bufferInfo, nullptr, &vertexBuffer) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create vertex buffer!");
+	}
 
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    glEnableVertexAttribArray(3);
+	VkMemoryRequirements memRequirements;
+	vkGetBufferMemoryRequirements(VulkanToolkit::singleton->device, vertexBuffer, &memRequirements);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(GLfloat) * 12, (void*)(sizeof(GLfloat) * 0));
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(GLfloat) * 12, (void*)(sizeof(GLfloat) * 3));
-    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(GLfloat) * 12, (void*)(sizeof(GLfloat) * 5));
-    glVertexAttribPointer(3, 4, GL_FLOAT, false, sizeof(GLfloat) * 12, (void*)(sizeof(GLfloat) * 8));
+	VkMemoryAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memRequirements.size;
+	allocInfo.memoryTypeIndex = VulkanToolkit::singleton->findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+	if (vkAllocateMemory(VulkanToolkit::singleton->device, &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate vertex buffer memory!");
+	}
+
+	vkBindBufferMemory(VulkanToolkit::singleton->device, vertexBuffer, vertexBufferMemory, 0);
+
+	void* data;
+	vkMapMemory(VulkanToolkit::singleton->device, vertexBufferMemory, 0, bufferInfo.size, 0, &data);
+	memcpy(data, vbo.data(), (size_t)bufferInfo.size);
+	vkUnmapMemory(VulkanToolkit::singleton->device, vertexBufferMemory);
+	vertexCount = vbo.size() / 12;
 
     generated = true;
 }

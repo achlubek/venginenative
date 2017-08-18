@@ -2,24 +2,19 @@
 #include <GLFW\glfw3.h>
 #include "World.h";
 #include "Renderer.h";
-#include "GenericShaders.h";
 #include "AssetLoader.h";
 #include "EventHandler.h";
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+ 
 
 class Game
 {
 public:
 
-    GLFWwindow *window;
     World *world;
-    GenericShaders *shaders;
     Renderer *renderer;
     AssetLoader *asset;
-    Framebuffer *screenFbo;
     static Game *instance;
+	VulkanToolkit* vulkan;
 
     int width;
     int height;
@@ -49,7 +44,6 @@ public:
     EventHandler<int> *onMouseDown;
     EventHandler<int> *onMouseUp;
     EventHandler<unsigned int> *onChar;
-    void bindTexture(GLenum type, GLuint handle, int bindpoint);
     volatile bool physicsNeedsUpdate = false;
     unsigned int getNextId();
     void* getObjectById(unsigned int id);
