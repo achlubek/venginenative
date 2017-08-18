@@ -1,3 +1,6 @@
+
+### Switch to Vulkan rendering API is currently in progress!
+
 ![A screenshot](http://i.imgur.com/jPEifJr.png "The awesome logo")
 
 ### VEngine is 3D Engine designed primarily for making games.
