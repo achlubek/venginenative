@@ -31,3 +31,4 @@
 *.ipch
 *.tlog
 *.log
+/code_revisions_all

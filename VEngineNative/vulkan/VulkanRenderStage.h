@@ -1,0 +1,30 @@
+#pragma once
+class VulkanRenderStage
+{
+public:
+	VulkanRenderStage();
+	~VulkanRenderStage();
+
+	VulkanRenderPass renderPass;
+	VulkanFramebuffer framebuffer;
+	VulkanGraphicsPipeline pipeline;
+	VulkanCommandBuffer commandBuffer;
+	std::vector<VkDescriptorSetLayout> setLayouts;
+	std::vector<VulkanImage> outputImages;
+	VkExtent2D viewport;
+	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+
+	std::vector<VulkanMesh3d> meshes;
+
+	void addDescriptorSetLayout(VkDescriptorSetLayout lay);
+	void addOutputImage(VulkanImage lay);
+	void setViewport(VkExtent2D size);
+	void addShaderStage(VkPipelineShaderStageCreateInfo ss);
+
+	void updateCommandBuffer();
+	void compile();
+
+	void submit(std::vector<VkSemaphore> waitSemaphores, VkSemaphore &signalSemaphore);
+
+};
+

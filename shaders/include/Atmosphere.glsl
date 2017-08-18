@@ -139,8 +139,8 @@ float cloudsDensity3D(vec3 pos){
      p += CloudsOffset ;
 //    p += getWind(p * WindBigScale * 0.1) * WindBigPower * 0.1;
 
-	vec3 timev = vec3(Time*0.4, Time * 0.2, 0.0);
-	vec3 windpos = p  + timev * 5.0 ;
+	vec3 timev = vec3(Time*0.4, Time * 0.4, 0.0);
+	vec3 windpos = p  + timev * 2.0 ;
     //vec3 thp = p * 10.021;
     //float density = fbmHxI(thp * 0.25 + fbmHxI( thp   * 0.15 )  * 0.15 );// * smoothstep(0.3, 0.7, supernoise3d(p*0.0008 ));
     float density = fbmHI(windpos + vec3(fbmHI(p) * 110.0, 0.0, fbmHI(p + 1000.0) * 110.0)) * smoothstep(0.3, 0.7, supernoise3d(windpos*0.0008 ));
@@ -376,6 +376,7 @@ vec3 getCloudsAL(vec3 dir, float val){
     vec3 sum = vec3(0.0);
     float r = Time;
     float dsr = max(0.0, dot(dayData.sunDir, dir));
+    float dsr2 = max(0.0, 0.5 + 0.5 * dot(dayData.sunDir, dir));
     float vdt = max(0.0, dot(dayData.sunDir, VECTOR_UP));
     float vxdt = max(0.0, dot(dir, VECTOR_UP));
     float vdt2 = 1.0 - vdt;
@@ -401,7 +402,7 @@ vec3 getCloudsAL(vec3 dir, float val){
         float v = 0.5 + 0.5 * visibilityspecial(dir, newdir, distance(CAMERA, p));
         //float v = internalmarchconservativeCoverageOnly1StepOnly(22, point, p, 1.0);
         ao += v;
-        sum += normalize(textureLod(atmScattTex, px, 2.0).rgb + vec3(dsr))  * v;// * pow(vdt2, 4.0);
+        sum += normalize(textureLod(atmScattTex, px, 2.0).rgb + vec3(dsr2))  * v;// * pow(vdt2, 4.0);
     }
     ao /= 111.0;
     globalAoOutput = ao ;

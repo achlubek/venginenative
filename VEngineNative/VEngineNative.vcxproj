@@ -38,7 +38,7 @@
     <ProjectGuid>{71125D6E-F4CA-4291-911D-5FEC57635065}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>VEngineNative</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -201,7 +201,7 @@
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Code\SFML-2.4.2\include;C:\Code\squirrel3\include;C:\Code\bullet3\src;C:\Code\glfw-3.2.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.0.57.0\Include\vulkan;C:\Code\SFML-2.4.2\include;C:\Code\squirrel3\include;C:\Code\bullet3\src;C:\Code\glfw-3.2.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -310,6 +310,22 @@
     <ClInclude Include="Texture3d.h" />
     <ClInclude Include="tinydir.h" />
     <ClInclude Include="TransformationManager.h" />
+    <ClInclude Include="vulkan\VulkanAttachment.h" />
+    <ClInclude Include="vulkan\VulkanBinaryBufferBuilder.h" />
+    <ClInclude Include="vulkan\VulkanCommandBuffer.h" />
+    <ClInclude Include="vulkan\VulkanDescriptorSet.h" />
+    <ClInclude Include="vulkan\VulkanDescriptorSetsManager.h" />
+    <ClInclude Include="vulkan\VulkanFramebuffer.h" />
+    <ClInclude Include="vulkan\VulkanGenericBuffer.h" />
+    <ClInclude Include="vulkan\VulkanGraphicsPipeline.h" />
+    <ClInclude Include="vulkan\VulkanImage.h" />
+    <ClInclude Include="vulkan\VulkanMesh3d.h" />
+    <ClInclude Include="vulkan\VulkanRenderPass.h" />
+    <ClInclude Include="vulkan\VulkanRenderStage.h" />
+    <ClInclude Include="vulkan\VulkanShaderModule.h" />
+    <ClInclude Include="vulkan\VulkanSubpass.h" />
+    <ClInclude Include="vulkan\VulkanSwapChain.h" />
+    <ClInclude Include="vulkan\VulkanToolkit.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
@@ -375,6 +391,22 @@
     <ClCompile Include="Texture2dArray.cpp" />
     <ClCompile Include="Texture3d.cpp" />
     <ClCompile Include="TransformationManager.cpp" />
+    <ClCompile Include="vulkan\VulkanAttachment.cpp" />
+    <ClCompile Include="vulkan\VulkanBinaryBufferBuilder.cpp" />
+    <ClCompile Include="vulkan\VulkanCommandBuffer.cpp" />
+    <ClCompile Include="vulkan\VulkanDescriptorSet.cpp" />
+    <ClCompile Include="vulkan\VulkanDescriptorSetsManager.cpp" />
+    <ClCompile Include="vulkan\VulkanFramebuffer.cpp" />
+    <ClCompile Include="vulkan\VulkanGenericBuffer.cpp" />
+    <ClCompile Include="vulkan\VulkanGraphicsPipeline.cpp" />
+    <ClCompile Include="vulkan\VulkanImage.cpp" />
+    <ClCompile Include="vulkan\VulkanMesh3d.cpp" />
+    <ClCompile Include="vulkan\VulkanRenderPass.cpp" />
+    <ClCompile Include="vulkan\VulkanRenderStage.cpp" />
+    <ClCompile Include="vulkan\VulkanShaderModule.cpp" />
+    <ClCompile Include="vulkan\VulkanSubpass.cpp" />
+    <ClCompile Include="vulkan\VulkanSwapChain.cpp" />
+    <ClCompile Include="vulkan\VulkanToolkit.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -36,7 +36,7 @@ void outputMaterial(){
 
     float qr = 0.0;//textureQueryLod(normalTex, UV * normalTexScale).x / textureQueryLevels(normalTex);
 
-    UV += derivatives * 1.0 * vec2(rand2sTime(UV), rand2sTime(UV + 1000.0));
+    //UV += derivatives * 1.0 * vec2(rand2sTime(UV), rand2sTime(UV + 1000.0));
     float tangentSign = Input.Tangent.w;
     vec3 worldPos = Input.WorldPos;
     mat3 TBN = (mat3(

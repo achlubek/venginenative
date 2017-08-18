@@ -346,17 +346,7 @@ void Renderer::setCommonUniforms(ShaderProgram * sp)
 
     sp->setUniform("FrustumConeLeftBottom", cone->leftBottom);
     sp->setUniform("FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-    sp->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
-    if (lastCone != nullptr) {
-        sp->setUniform("Previous_FrustumConeLeftBottom", lastCone->leftBottom);
-        sp->setUniform("Previous_FrustumConeBottomLeftToBottomRight", lastCone->rightBottom - lastCone->leftBottom);
-        sp->setUniform("Previous_FrustumConeBottomLeftToTopLeft", lastCone->leftTop - lastCone->leftBottom);
-    }
-    else {
-        sp->setUniform("Previous_rustumConeLeftBottom", cone->leftBottom);
-        sp->setUniform("Previous_FrustumConeBottomLeftToBottomRight", cone->rightBottom - cone->leftBottom);
-        sp->setUniform("Previous_FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom);
-    }
+    sp->setUniform("FrustumConeBottomLeftToTopLeft", cone->leftTop - cone->leftBottom); 
 
     sp->setUniform("FocalLength", currentCamera->focalLength);
     sp->setUniform("LensBlurSize", lensBlurSize);
@@ -673,7 +663,7 @@ void Renderer::combine(int step)
     //combineTexture->generateMipMaps();
     if (step == 1) {
         resample(combineTexture, blitTestFbo);
-        blur(blitTestTexture, blurTestHelperFbo, blurTestFbo, 232, true, 3.0f, 0.2f);
+        blur(blitTestTexture, blurTestHelperFbo, blurTestFbo, 16, true, 2.0f, 0.2f);
     }
 }
 void Renderer::fxaaTonemap(bool finalpass)
@@ -692,8 +682,8 @@ void Renderer::fxaaTonemap(bool finalpass)
         quad3dInfo->draw();
         exposureBuffer->use(0);
         exposureComputeShader->dispatch(1, 1, 1);
-        if (lastCone != nullptr) delete lastCone;
-        lastCone = currentCamera->cone->clone();
+    //    if (lastCone != nullptr) delete lastCone;
+       // lastCone = currentCamera->cone->clone();
     }
 
     else {

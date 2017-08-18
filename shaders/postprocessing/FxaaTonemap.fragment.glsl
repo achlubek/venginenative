@@ -114,13 +114,14 @@ vec4 shade(){
         float vignette = 1.0 -  smart_inverse_dot( 1.0 - dot(reconstructCameraSpaceDistance(UV, 1.0), reconstructCameraSpaceDistance(vec2(0.5), 1.0)), 11.0);
 
         vec4 bloom = texture(blurTestTexture, UV).rgba;
-        return bloom;
-        bloom *= length(bloom.xyz);
+        //return bloom;
+        //bloom *= length(bloom.xyz) * 4.0;
+        bloom.xyz = pow(bloom.xyz, vec3(6.0));
+        bloom = clamp(bloom, 0.0, 11.0);
         bloom.xyz = tonemap(bloom.xyz);
+        //bloom *= step(0.5, UV.x);
 
-        bloom *= step(0.5, UV.x);
-
-        return bloom + min(1.0, 1.0 - pow(1.0 - vignette , 7.0)) * mix(textureLod(inputTex, UV, 0.0).rgba, fxaa(inputTex, UV).rgba, max(distance_mult, normal_mult));
+        return min(1.0, 1.0 - pow(1.0 - vignette , 7.0)) * mix(textureLod(inputTex, UV, 0.0).rgba, fxaa(inputTex, UV).rgba, max(distance_mult, normal_mult));
 
     } else {
         vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);

@@ -29,11 +29,37 @@
 #include <regex>
 #include <map>
 #include <unordered_map>
+#include <array>
+#include <fstream>
 using namespace std;
 
-#include "glad.h"
-#include <GLFW\glfw3.h>
+//#include "glad.h"
+//#include <GLFW\glfw3.h>
 #include <GLFW\glfw3native.h>
+
+#include "vulkan.h"
+#include <GLFW/glfw3.h>
+#include <memory>
+
+
+#include "vulkan/VulkanShaderModule.h"
+#include "vulkan/VulkanAttachment.h"
+#include "vulkan/VulkanSubpass.h"
+#include "vulkan/VulkanRenderPass.h"
+#include "vulkan/VulkanFramebuffer.h"
+#include "vulkan/VulkanGraphicsPipeline.h"
+#include "vulkan/VulkanCommandBuffer.h"
+#include "vulkan/VulkanImage.h"
+#include "vulkan/VulkanGenericBuffer.h"
+#include "vulkan/VulkanDescriptorSet.h"
+#include "vulkan/VulkanDescriptorSetsManager.h"
+#include "vulkan/VulkanMesh3d.h"
+#include "vulkan/VulkanRenderStage.h"
+
+#include "vulkan/VulkanSwapChain.h"
+#include "vulkan/VulkanToolkit.h"
+
+#include "vulkan/VulkanBinaryBufferBuilder.h"
 
 #define glAssert() {if(glGetError() != GL_NO_ERROR) printf("ERROR ON LINE [%d] %s", __LINE__, __FILE__);}
 
