@@ -70,18 +70,18 @@ using namespace std;
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#include "stb_image.h"
+//#include "stb_image.h"
 
 #define PI 3.141592f
 #define rad2deg(a) (a * (180.0f / PI))
 #define deg2rad(a) (a * (PI / 180.0f))
-
+/*
 #include "gli/gli.hpp"
 #include "gli/texture.hpp"
 #include "gli/texture2d.hpp"
 #include "gli/convert.hpp"
 #include "gli/generate_mipmaps.hpp"
-#include "gli/load.hpp"
+#include "gli/load.hpp"*/
 
 //#include "btBulletCollisionCommon.h"
 //#include "btBulletDynamicsCommon.h"

@@ -1,7 +1,8 @@
 #include "stdafx.h"
 
-#include "../stb_image.h"
 #define STB_IMAGE_IMPLEMENTATION
+#include "../stb_image.h"
+#include "../Game.h"
 
 VulkanToolkit* VulkanToolkit::singleton = nullptr;
 
@@ -67,7 +68,7 @@ void VulkanToolkit::initialize()
 	createLogicalDevice(physicalDevices[chosenDeviceId], createInfo);
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	window = glfwCreateWindow(WIDTH, HEIGHT, "VULKAN", NULL, NULL);
+	window = glfwCreateWindow(Game::instance->width, Game::instance->height, "VULKAN", NULL, NULL);
 
 	VkResult result;
 	result = glfwCreateWindowSurface(instance, window, NULL, &surface);
@@ -81,6 +82,7 @@ void VulkanToolkit::initialize()
 	VkCommandPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	poolInfo.queueFamilyIndex = 0;
+	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 	if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create command pool!");

@@ -202,7 +202,7 @@
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Code\SFML-2.4.2\include\;C:\Code\squirrel3\include;$(SolutionDir)VEngineNative;C:\Code\bullet3\src;C:\Code\glfw-3.2.1\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Code\SFML-2.4.2\include\;C:\Code\squirrel3\include;C:\Code\bullet3\src;C:\Code\glfw-3.2.1\include;C:\VulkanSDK\1.0.57.0\Include\vulkan;C:\Code\glm-0.9.9-a1</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -251,19 +251,10 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AbstractApp.h" />
-    <ClInclude Include="Car.h" />
-    <ClInclude Include="EditorApp.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="TreeGeneratorApp.h" />
-    <ClInclude Include="Utilities.h" />
-    <ClInclude Include="WeatherManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AbstractApp.cpp" />
-    <ClCompile Include="Car.cpp" />
-    <ClCompile Include="EditorApp.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -273,9 +264,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NotOptimization|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Tester.cpp" />
-    <ClCompile Include="TreeGeneratorApp.cpp" />
-    <ClCompile Include="Utilities.cpp" />
-    <ClCompile Include="WeatherManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\VEngineNative\VEngineNative.vcxproj">

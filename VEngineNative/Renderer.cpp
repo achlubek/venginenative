@@ -29,8 +29,8 @@ Renderer::Renderer(int iwidth, int iheight)
 	meshSetManager = VulkanDescriptorSetsManager();
 	postProcessSetManager = VulkanDescriptorSetsManager();
 
-	auto vertShaderModule = VulkanShaderModule("../shaders/triangle.vert.spv");
-	auto fragShaderModule = VulkanShaderModule("../shaders/triangle.frag.spv");
+	auto vertShaderModule = VulkanShaderModule("../../shaders/compiled/triangle.vert.spv");
+	auto fragShaderModule = VulkanShaderModule("../../shaders/compiled/triangle.frag.spv");
 
 	meshRenderStage = VulkanRenderStage();
 	VkExtent2D ext = VkExtent2D();
@@ -46,8 +46,8 @@ Renderer::Renderer(int iwidth, int iheight)
 	meshRenderStage.compile();
 
 
-	auto ppvertShaderModule = VulkanShaderModule("../shaders/pp.vert.spv");
-	auto ppfragShaderModule = VulkanShaderModule("../shaders/pp.frag.spv");
+	auto ppvertShaderModule = VulkanShaderModule("../../shaders/compiled/pp.vert.spv");
+	auto ppfragShaderModule = VulkanShaderModule("../../shaders/compiled/pp.frag.spv");
 	postProcessRenderStages.resize(VulkanToolkit::singleton->swapChain->swapChainImages.size());
 	for (int i = 0; i < VulkanToolkit::singleton->swapChain->swapChainImages.size(); i++) {
 
@@ -68,12 +68,12 @@ Renderer::Renderer(int iwidth, int iheight)
 		postProcessRenderStages[i].compile();
 	}
 
-	postprocessmesh = Game::instance->asset->loadObject3dInfoFile("../shaders/ppplane.vbo");
+	postprocessmesh = Game::instance->asset->loadObject3dInfoFile("ppplane.vbo");
 	postprocessmesh->texture = colorImage;
-	postprocessmesh->descriptorSet = meshSetManager.generateMesh3dDescriptorSet();
-	postprocessmesh->descriptorSet.bindUniformBuffer(0, uniformBuffer);
-	postprocessmesh->descriptorSet.bindImageViewSampler(1, colorImage);
-	postprocessmesh->descriptorSet.update();
+	//postprocessmesh->descriptorSet = meshSetManager.generateMesh3dDescriptorSet();
+	//postprocessmesh->descriptorSet.bindUniformBuffer(0, uniformBuffer);
+	//postprocessmesh->descriptorSet.bindImageViewSampler(1, colorImage);
+	//postprocessmesh->descriptorSet.update();
 }
 
 Renderer::~Renderer()
@@ -101,12 +101,34 @@ void Renderer::renderToSwapChain(Camera *camera)
 
 	uint32_t imageIndex;
 	// GET IMAGE 
+	Game::instance->world->setUniforms(camera);
+	Game::instance->world->setSceneUniforms();
 	vkAcquireNextImageKHR(VulkanToolkit::singleton->device, VulkanToolkit::singleton->swapChain->swapChain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
+	meshRenderStage.beginDrawing();
+	Game::instance->world->draw(&meshRenderStage, camera);
+	meshRenderStage.endDrawing();
+	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
+
 	meshRenderStage.submit({ imageAvailableSemaphore }, renderFinishedSemaphore1);
+	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 	//###########
+	//if (!ppRecorded) {
+
+		//for (int i = 0; i < VulkanToolkit::singleton->swapChain->swapChainImages.size(); i++) {
+			postProcessRenderStages[imageIndex].beginDrawing();
+			postProcessRenderStages[imageIndex].drawMesh(postprocessmesh, 1);
+			postProcessRenderStages[imageIndex].endDrawing();
+		//}
+		vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
+		ppRecorded = true;
+//	}
+
+	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 	postProcessRenderStages[imageIndex].submit({ renderFinishedSemaphore1 }, renderFinishedSemaphore2);
 
+	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 	VulkanToolkit::singleton->swapChain->present({ renderFinishedSemaphore2 }, imageIndex);
 
+	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 }

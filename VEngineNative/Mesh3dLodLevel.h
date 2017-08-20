@@ -20,7 +20,7 @@ public:
     bool ignoreFrustumCulling = false;
     bool castShadow = true;
     bool selectable = true;
-    void draw(VulkanCommandBuffer cb, const Mesh3d* mesh);
+    void draw(VulkanRenderStage* stage, const Mesh3d* mesh);
     void updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstance*> &instances);
     bool materialBufferNeedsUpdate = true;
 	//Skeleton* skeleton;

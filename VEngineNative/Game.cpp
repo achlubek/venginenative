@@ -15,7 +15,6 @@ Game::Game(int windowwidth, int windowheight)
 	onRenderFrame = {};
 	asset = new AssetLoader();
 	world = new World();
-	renderer = new Renderer(width, height);
 	onRenderFrame = new EventHandler<int>();
 	onRenderUIFrame = new EventHandler<int>();
 	onWindowResize = new EventHandler<int>();
@@ -35,6 +34,9 @@ Game::~Game()
 
 void Game::start()
 {
+	vulkan = new VulkanToolkit();
+	vulkan->initialize();
+	renderer = new Renderer(width, height);
 	thread renderthread(bind(&Game::renderThread, this));
 	renderthread.detach();
 }
@@ -122,8 +124,6 @@ void mousebuttoncallback(GLFWwindow * window, int button, int action, int mods) 
 
 void Game::renderThread()
 {
-	vulkan = new VulkanToolkit();
-	vulkan->initialize();
 
 	glfwSetMouseButtonCallback(vulkan->window, mousebuttoncallback);
 
@@ -141,8 +141,8 @@ void Game::renderThread()
 	shouldClose = false;
 	int frames = 0;
 	double lastTime = 0.0;
-	std::thread ptask(physicsThread);
-	ptask.detach();
+	//std::thread ptask(physicsThread);
+	//ptask.detach();
 	while (!glfwWindowShouldClose(vulkan->window) && !shouldClose)
 	{
 		frames++;

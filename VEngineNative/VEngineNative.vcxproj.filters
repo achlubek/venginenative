@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\glfw">
-      <UniqueIdentifier>{150d9001-c425-4ae9-a283-255bf6acc5cf}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -77,9 +74,6 @@
     </ClInclude>
     <ClInclude Include="EventHandler.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="glfw.h">
-      <Filter>Header Files\glfw</Filter>
     </ClInclude>
     <ClInclude Include="AssetLoader.h">
       <Filter>Header Files</Filter>

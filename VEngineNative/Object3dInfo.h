@@ -1,14 +1,14 @@
 #pragma once
-
+class VulkanGraphicsPipeline;
 class Object3dInfo
 {
 public:
     Object3dInfo(vector<float> &vbo);
     ~Object3dInfo();
-	 
+	VulkanImage texture;
 
-    void draw(VkCommandBuffer cb);
-    void drawInstanced(VkCommandBuffer cb, size_t instances);
+    void draw(VulkanGraphicsPipeline p, VkCommandBuffer cb);
+    void drawInstanced(VulkanGraphicsPipeline p, VkCommandBuffer cb, size_t instances);
     void updateRadius();
     float radius = 0.0f;
     vector<float> vbo;
@@ -18,7 +18,7 @@ public:
 	VkDeviceMemory vertexBufferMemory;
 	int vertexCount = 0;
 
-	VulkanImage texture;
+	//VulkanImage texture;
 	VulkanDescriptorSet descriptorSet;
 
 	static VkVertexInputBindingDescription bindingDescription;

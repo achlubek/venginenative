@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #include "Object3dInfo.h"
 
+#include "Media.h"
+#include "Game.h"
+#include "vulkan/VulkanGraphicsPipeline.h"
+
 /*
 This class expected interleaved buffer in format
 pos.xyz-uv.xy-normal.xyz-tangent.xyzw
@@ -15,6 +19,7 @@ Object3dInfo::Object3dInfo(vector<GLfloat> &vboin)
     generated = false;
     vertexCount = (GLsizei)(vbo.size() / 12);
     updateRadius();
+	texture = VulkanToolkit::singleton->createTexture(Media::getPath("redbricks2b-albedo.png"));
 }
 
 Object3dInfo::~Object3dInfo()
@@ -25,10 +30,12 @@ Object3dInfo::~Object3dInfo()
     }
 }
 
-void Object3dInfo::draw(VkCommandBuffer cb)
+void Object3dInfo::draw(VulkanGraphicsPipeline p, VkCommandBuffer cb)
 {
     if (!generated)
         generate();
+
+	vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, p.pipelineLayout, 0, 1, &descriptorSet.set, 0, nullptr);
 	VkBuffer vertexBuffers[] = { vertexBuffer };
 	VkDeviceSize offsets[] = { 0 };
 	vkCmdBindVertexBuffers(cb, 0, 1, vertexBuffers, offsets);
@@ -36,10 +43,13 @@ void Object3dInfo::draw(VkCommandBuffer cb)
 	vkCmdDraw(cb, static_cast<uint32_t>(vertexCount), 1, 0, 0);
 }
 
-void Object3dInfo::drawInstanced(VkCommandBuffer cb, size_t instances)
+void Object3dInfo::drawInstanced(VulkanGraphicsPipeline p, VkCommandBuffer cb, size_t instances)
 {
-    if (!generated)
-        generate();
+	if (!generated) {
+		generate(); 
+	}
+
+	vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, p.pipelineLayout, 0, 1, &descriptorSet.set, 0, nullptr);
 	VkBuffer vertexBuffers[] = { vertexBuffer };
 	VkDeviceSize offsets[] = { 0 };
 	vkCmdBindVertexBuffers(cb, 0, 1, vertexBuffers, offsets);
@@ -110,6 +120,12 @@ void Object3dInfo::generate()
 	memcpy(data, vbo.data(), (size_t)bufferInfo.size);
 	vkUnmapMemory(VulkanToolkit::singleton->device, vertexBufferMemory);
 	vertexCount = vbo.size() / 12;
+
+
+	descriptorSet = Game::instance->renderer->meshSetManager.generateMesh3dDescriptorSet();
+	descriptorSet.bindUniformBuffer(0, Game::instance->renderer->uniformBuffer);
+	descriptorSet.bindImageViewSampler(1, texture);
+	descriptorSet.update();
 
     generated = true;
 }

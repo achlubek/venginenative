@@ -9,20 +9,21 @@ public:
 	VulkanRenderPass renderPass;
 	VulkanFramebuffer framebuffer;
 	VulkanGraphicsPipeline pipeline;
-	VulkanCommandBuffer commandBuffer;
+	std::vector<VulkanCommandBuffer> commandBuffers;
 	std::vector<VkDescriptorSetLayout> setLayouts;
 	std::vector<VulkanImage> outputImages;
 	VkExtent2D viewport;
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-
-	std::vector<Object3dInfo> meshes;
-
+	
 	void addDescriptorSetLayout(VkDescriptorSetLayout lay);
 	void addOutputImage(VulkanImage lay);
 	void setViewport(VkExtent2D size);
 	void addShaderStage(VkPipelineShaderStageCreateInfo ss);
 
-	void updateCommandBuffer();
+	int cmdBufferIndex = 0;
+	void beginDrawing();
+	void endDrawing();
+	void drawMesh(Object3dInfo *info, size_t instances);
 	void compile();
 
 	void submit(std::vector<VkSemaphore> waitSemaphores, VkSemaphore &signalSemaphore);

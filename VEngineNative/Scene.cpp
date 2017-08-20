@@ -11,11 +11,11 @@ Scene::~Scene()
 {
 }
 
-void Scene::draw(VulkanCommandBuffer cb)
+void Scene::draw(VulkanRenderStage* stage)
 {
     int x = mesh3ds.size();
     for (int i = 0; i < x; i++) {
-        mesh3ds[i]->draw(cb);
+        mesh3ds[i]->draw(stage);
     }
 }
 

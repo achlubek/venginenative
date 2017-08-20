@@ -98,7 +98,7 @@ Mesh3dLodLevel::~Mesh3dLodLevel()
 {
 }
 #define vcasti(a) (*((float*)&a))
-void Mesh3dLodLevel::draw(VulkanCommandBuffer cb, const Mesh3d* mesh)
+void Mesh3dLodLevel::draw(VulkanRenderStage* stage, const Mesh3d* mesh)
 {
     if (currentBuffer == 0 && instancesFiltered1 == 0) return;
     if (currentBuffer == 1 && instancesFiltered2 == 0) return;
@@ -134,9 +134,9 @@ void Mesh3dLodLevel::draw(VulkanCommandBuffer cb, const Mesh3d* mesh)
     shader->setUniform("MeshID", mesh->id);
     shader->setUniform("LodLevelID", id);*/
 	  
-    if (currentBuffer == 0)info3d->drawInstanced(cb.handle, instancesFiltered1);
-    if (currentBuffer == 1)info3d->drawInstanced(cb.handle, instancesFiltered2);
-    if (currentBuffer == 2)info3d->drawInstanced(cb.handle, instancesFiltered3);
+    if (currentBuffer == 0)stage->drawMesh(info3d, instancesFiltered1);
+    if (currentBuffer == 1)stage->drawMesh(info3d, instancesFiltered2);
+    if (currentBuffer == 2)stage->drawMesh(info3d, instancesFiltered3);
 
 }
 
@@ -305,6 +305,7 @@ vec4 projectvdao2(mat4 mat, vec3 pos) {
 
 bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
 {
+	return true;//debug
     if (ignoreFrustumCulling) return true;
     auto size = instance->transformation->getSize();
     float radius = info3d->radius * glm::max(glm::max(size.x, size.y), size.z);

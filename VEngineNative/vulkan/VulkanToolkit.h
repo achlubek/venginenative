@@ -34,10 +34,6 @@ public:
         "VK_LAYER_LUNARG_standard_validation",
         //"VK_LAYER_LUNARG_api_dump"
     };
-
-    const int WIDTH = 1020;
-    const int HEIGHT = 1020;
-
     int chosenDeviceId = 0;
     int chosenQFId = 0;
 

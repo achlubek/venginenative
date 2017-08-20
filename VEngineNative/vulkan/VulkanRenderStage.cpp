@@ -5,8 +5,7 @@ VulkanRenderStage::VulkanRenderStage()
 {
 	setLayouts = {};
 	outputImages = {};
-	shaderStages = {};
-	meshes = {};
+	shaderStages = {}; 
 }
 
 
@@ -34,9 +33,16 @@ void VulkanRenderStage::addShaderStage(VkPipelineShaderStageCreateInfo ss)
 	shaderStages.push_back(ss);
 }
 
-void VulkanRenderStage::updateCommandBuffer()
+// limit eg 2 so values 0 1 2
+int getLastIndex(int current, int limit) {
+	return current == 0 ? limit : current - 1;
+}
+
+void VulkanRenderStage::beginDrawing()
 {
-	commandBuffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+	cmdBufferIndex++;
+	if (cmdBufferIndex > 2) cmdBufferIndex = 0;
+	commandBuffers[cmdBufferIndex].begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
 	VkRenderPassBeginInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -52,23 +58,30 @@ void VulkanRenderStage::updateCommandBuffer()
 	renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 	renderPassInfo.pClearValues = clearValues.data();
 
-	vkCmdBeginRenderPass(commandBuffer.handle, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBeginRenderPass(commandBuffers[cmdBufferIndex].handle, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	vkCmdBindPipeline(commandBuffer.handle, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.graphicsPipeline);
+	vkCmdBindPipeline(commandBuffers[cmdBufferIndex].handle, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.graphicsPipeline);
+	  
+}
+void VulkanRenderStage::endDrawing()
+{
+ 
 
-	for (int i = 0; i < meshes.size(); i++) {
-		vkCmdBindDescriptorSets(commandBuffer.handle, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &meshes[i].descriptorSet.set, 0, nullptr);
-		meshes[i].draw(commandBuffer.handle);
-	}
+	vkCmdEndRenderPass(commandBuffers[cmdBufferIndex].handle);
 
-	vkCmdEndRenderPass(commandBuffer.handle);
+	commandBuffers[cmdBufferIndex].end();
+}
 
-	commandBuffer.end();
+void VulkanRenderStage::drawMesh(Object3dInfo * info, size_t instances)
+{
+	info->drawInstanced(pipeline, commandBuffers[cmdBufferIndex].handle, instances);
 }
 
 void VulkanRenderStage::compile()
 {
-	commandBuffer = VulkanCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	for (int i = 0; i < 3; i++) {
+		commandBuffers.push_back(VulkanCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY));
+	}
 
 
 	std::vector<VulkanAttachment> attachments = {};
@@ -116,7 +129,7 @@ void VulkanRenderStage::submit(std::vector<VkSemaphore> waitSemaphores, VkSemaph
 	submitInfo.pWaitDstStageMask = waitStages2;
 
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffer.handle;
+	submitInfo.pCommandBuffers = &commandBuffers[getLastIndex(getLastIndex(cmdBufferIndex, 2), 2)].handle;
 
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = &signalSemaphore;

@@ -17,7 +17,7 @@ World::~World()
 
 void World::draw(VulkanRenderStage *stage, Camera *camera)
 {
-    scene->draw(stage->commandBuffer);
+    scene->draw(stage);
 }
 
 void World::setUniforms( Camera *camera)

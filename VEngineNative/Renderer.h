@@ -27,4 +27,5 @@ public:
 	void renderToSwapChain(Camera *camera);
 	int width;
 	int height;
+	bool ppRecorded = false;
 };

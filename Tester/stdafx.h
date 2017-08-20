@@ -29,6 +29,12 @@
 
 using namespace std;
 
+#define PI 3.141592f
+#define rad2deg(a) (a * (180.0f / PI))
+#define deg2rad(a) (a * (PI / 180.0f))
+
+// TODO: reference additional headers your program requires here
+
 #include "glm/vec3.hpp" // glm::vec3
 #include "glm/vec4.hpp" // glm::vec4
 #include "glm/mat4x4.hpp" // glm::mat4
@@ -37,31 +43,8 @@ using namespace std;
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#include "Media.h";
-
-#include "Game.h";
-
-#include "gli/gli.hpp"
-#include "gli/texture.hpp"
-#include "gli/texture2d.hpp"
-#include "gli/convert.hpp"
-#include "gli/generate_mipmaps.hpp"
-#include "gli/load.hpp"
 
 #define PI 3.141592f
 #define rad2deg(a) (a * (180.0f / PI))
 #define deg2rad(a) (a * (PI / 180.0f))
-
-// TODO: reference additional headers your program requires here
-
-#include "btBulletCollisionCommon.h"
-#include "btBulletDynamicsCommon.h"
-
-#ifndef bullettools
-#define bullettools
-
-btVector3 bulletify3(glm::vec3 v);
-glm::vec3 glmify3(btVector3 v);
-btQuaternion bulletifyq(glm::quat v);
-glm::quat glmifyq(btQuaternion v);
-#endif
+  

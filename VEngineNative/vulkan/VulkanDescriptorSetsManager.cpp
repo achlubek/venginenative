@@ -2,7 +2,7 @@
 
 VulkanDescriptorSetsManager::VulkanDescriptorSetsManager()
 {
-	if (VulkanToolkit::singleton == nullptr)return;
+	//if (VulkanToolkit::singleton == nullptr)return;
 
 	VkDescriptorSetLayoutBinding uboLayoutBinding = {};
 	uboLayoutBinding.binding = 0;

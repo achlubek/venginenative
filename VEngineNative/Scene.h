@@ -15,7 +15,7 @@ public:
     draw debug lines
     draw debug points
     */
-    void draw(VulkanCommandBuffer cb);
+    void draw(VulkanRenderStage *stage);
     void prepareFrame();
     void addMesh3d(Mesh3d *item);
     vector<Mesh3d*>& getMesh3ds();

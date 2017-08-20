@@ -90,10 +90,10 @@ void Mesh3d::updateBuffers()
     }
 }
 
-void Mesh3d::draw(VulkanCommandBuffer cb)
+void Mesh3d::draw(VulkanRenderStage* stage)
 {
     for (int i = 0; i < lodLevels.size(); i++) {
-        lodLevels[i]->draw(cb, this);
+        lodLevels[i]->draw(stage, this);
     }
 }
 

@@ -20,7 +20,7 @@ public:
     void removeInstance(Mesh3dInstance* instance);
     void removeLodLevel(Mesh3dLodLevel* level);
     void updateBuffers();
-    void draw(VulkanCommandBuffer cb);
+    void draw(VulkanRenderStage* stage);
     void setUniforms();
     unsigned int id;
     string name = "";
