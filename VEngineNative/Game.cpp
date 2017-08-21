@@ -27,6 +27,10 @@ Game::Game(int windowwidth, int windowheight)
 	onChar = new EventHandler<unsigned int>();
 	idMap = unordered_map<int, void*>();
 	hasExited = false;
+	vulkan = new VulkanToolkit();
+	vulkan->initialize();
+	dummyTexture = vulkan->createTexture(Media::getPath("dummy_texture.png"));
+	renderer = new Renderer(width, height);
 }
 
 Game::~Game()
@@ -35,12 +39,9 @@ Game::~Game()
 
 void Game::start()
 {
-	vulkan = new VulkanToolkit();
-	vulkan->initialize();
-	dummyTexture = vulkan->createTexture(Media::getPath("dummy_texture.png"));
-	renderer = new Renderer(width, height);
-	thread renderthread(bind(&Game::renderThread, this));
-	renderthread.detach();
+	renderThread();
+	//thread renderthread(bind(&Game::renderThread, this));
+	//renderthread.detach();
 }
 
 unsigned int Game::getNextId()
@@ -127,16 +128,16 @@ void mousebuttoncallback(GLFWwindow * window, int button, int action, int mods) 
 void Game::renderThread()
 {
 
-	glfwSetMouseButtonCallback(vulkan->window, mousebuttoncallback);
+	//glfwSetMouseButtonCallback(vulkan->window, mousebuttoncallback);
 
-	glfwSetWindowSizeCallback(vulkan->window, [](GLFWwindow* window, int width, int height) -> void {
-		instance->glfwWindowSizeCallback(window, width, height);
-		instance->onWindowResize->invoke(0);
-	});
+	//glfwSetWindowSizeCallback(vulkan->window, [](GLFWwindow* window, int width, int height) -> void {
+	//	instance->glfwWindowSizeCallback(window, width, height);
+	//	instance->onWindowResize->invoke(0);
+	//});
 
-	glfwSetCharCallback(vulkan->window, [](GLFWwindow* window, unsigned int key) -> void {
-		instance->onChar->invoke(key);
-	});
+	//glfwSetCharCallback(vulkan->window, [](GLFWwindow* window, unsigned int key) -> void {
+	//	instance->onChar->invoke(key);
+	//});
 
 
 

@@ -15,7 +15,7 @@ public:
     AssetLoader *asset;
     static Game *instance;
 	VulkanToolkit* vulkan;
-	VulkanImage dummyTexture;
+	VulkanImage* dummyTexture;
 
     int width;
     int height;

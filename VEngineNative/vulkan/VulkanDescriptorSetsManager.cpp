@@ -18,15 +18,15 @@ void VulkanDescriptorSetsManager::generateNewPool()
 	VkDescriptorPool pool;
 	std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = 100;
+	poolSizes[0].descriptorCount = 1000;
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[1].descriptorCount = 100;
+	poolSizes[1].descriptorCount = 1000;
 
 	VkDescriptorPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = 10;
+	poolInfo.maxSets = 100;
 	vkCreateDescriptorPool(VulkanToolkit::singleton->device, &poolInfo, nullptr, &pool);
 
 	descriptorPools.push_back(pool);

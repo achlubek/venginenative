@@ -244,7 +244,7 @@ ImageData * VulkanToolkit::readFileImageData(std::string path)
 	return d;
 }
 
-VulkanImage VulkanToolkit::createTexture(std::string path)
+VulkanImage* VulkanToolkit::createTexture(std::string path)
 {
 	ImageData * img = readFileImageData(path);
 	VulkanGenericBuffer stagingBuffer = VulkanGenericBuffer(img->width * img->height * 4); //  always rgba for now
@@ -254,12 +254,12 @@ VulkanImage VulkanToolkit::createTexture(std::string path)
 	stagingBuffer.unmap();
 	stbi_image_free(img->data);
 
-	VulkanImage res = VulkanImage(img->width, img->height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
+	VulkanImage* res = new VulkanImage(img->width, img->height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, false);
 
-	transitionImageLayout(res.image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-	copyBufferToImage(stagingBuffer.buffer, res.image, static_cast<uint32_t>(img->width), static_cast<uint32_t>(img->height));
-	transitionImageLayout(res.image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	transitionImageLayout(res->image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	copyBufferToImage(stagingBuffer.buffer, res->image, static_cast<uint32_t>(img->width), static_cast<uint32_t>(img->height));
+	transitionImageLayout(res->image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	return res;
 }

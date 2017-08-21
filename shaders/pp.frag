@@ -21,5 +21,5 @@ layout(set = 0, binding = 1) uniform UniformBufferObject2 {
 
 
 void main() {
-    outColor = vec4(texture(texSampler, inTexCoord).rgb * hiFreq.Mouse.x * (sin(hiFreq.Time) * 0.5 + 0.5), 1.0);
+    outColor = vec4(texture(texSampler, inTexCoord).rgb, 1.0);
 }

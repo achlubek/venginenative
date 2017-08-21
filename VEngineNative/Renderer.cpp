@@ -24,8 +24,8 @@ Renderer::Renderer(int iwidth, int iheight)
 	depthImage = VulkanImage(width, height, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, true);
 
-	uboHighFrequencyBuffer = VulkanGenericBuffer(sizeof(float) * 4);
-	uboLowFrequencyBuffer = VulkanGenericBuffer(sizeof(float) * 4);
+	uboHighFrequencyBuffer = VulkanGenericBuffer(sizeof(float) * 20);
+	uboLowFrequencyBuffer = VulkanGenericBuffer(sizeof(float) * 20);
 
 	//setManager = VulkanDescriptorSetsManager();
 
@@ -96,10 +96,13 @@ void Renderer::renderToSwapChain(Camera *camera)
 	double xpos, ypos;
 	glfwGetCursorPos(VulkanToolkit::singleton->window, &xpos, &ypos);
 
+	glm::mat4 vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
+
 	bb.emplaceFloat32((float)glfwGetTime());
 	bb.emplaceFloat32(0.0f);
 	bb.emplaceFloat32((float)xpos / (float)width);
 	bb.emplaceFloat32((float)ypos / (float)height);
+	bb.emplaceMat4(vpmatrix);
 
 	void* data;
 	uboHighFrequencyBuffer.map(0, bb.buffer.size(), &data);

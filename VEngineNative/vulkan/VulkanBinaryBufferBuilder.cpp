@@ -1,5 +1,5 @@
 #include "stdafx.h"
-
+#include "glm/glm.hpp"
 
 VulkanBinaryBufferBuilder::VulkanBinaryBufferBuilder()
 {
@@ -32,4 +32,10 @@ void VulkanBinaryBufferBuilder::emplaceFloat32(float d)
 {
 	unsigned char* data = (unsigned char*)&d;
 	for (int i = 0; i < 4; i++) emplaceByte(*(data + i));
+}
+
+void VulkanBinaryBufferBuilder::emplaceMat4(glm::mat4 m)
+{
+	unsigned char* data = (unsigned char*)&m;
+	for (int i = 0; i < sizeof(m); i++) emplaceByte(*(data + i));
 }

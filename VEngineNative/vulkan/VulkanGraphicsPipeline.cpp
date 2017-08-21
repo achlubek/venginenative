@@ -38,8 +38,8 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(int viewportwidth, int viewporthe
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
 	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterizer.lineWidth = 1.0f;
-	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-	rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	rasterizer.cullMode = 0;
+	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 
 	VkPipelineMultisampleStateCreateInfo multisampling = {};
@@ -51,7 +51,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(int viewportwidth, int viewporthe
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencil.depthTestEnable = enableDepthTest ? VK_TRUE : VK_FALSE;
 	depthStencil.depthWriteEnable = enableDepthTest ? VK_TRUE : VK_FALSE;
-	depthStencil.depthCompareOp = enableDepthTest ? VK_COMPARE_OP_GREATER : VK_COMPARE_OP_ALWAYS;
+	depthStencil.depthCompareOp = enableDepthTest ? VK_COMPARE_OP_LESS : VK_COMPARE_OP_ALWAYS;
 	depthStencil.depthBoundsTestEnable = VK_FALSE;
 	depthStencil.stencilTestEnable = VK_FALSE;
 

@@ -9,11 +9,13 @@ layout(set = 0, binding = 0) uniform UniformBufferObject1 {
     float Time;
     float Zero;
     vec2 Mouse;
+    mat4 VPMatrix;
 } hiFreq;
 layout(set = 0, binding = 1) uniform UniformBufferObject2 {
     float Time;
     float Zero;
     vec2 Mouse;
+    mat4 VPMatrix;
 } lowFreq;
 
 struct ModelInfo{
@@ -47,9 +49,10 @@ vec3 quat_mul_vec( vec4 q, vec3 v ){
 
 vec3 transform_vertex(int info, vec3 vertex){
     vec3 result = vertex;
-    result *= modelData1.ModelInfos[0].Scale.xyz;
-    result = quat_mul_vec(modelData1.ModelInfos[0].Rotation, result);
-    result += modelData1.ModelInfos[0].Translation.xyz;
+    ModelInfo o = modelData1.ModelInfos[0]; // TO DO!!!!!!!!!
+    result *= o.Scale.xyz;
+    result = quat_mul_vec(o.Rotation, result);
+    result += o.Translation.xyz;
     return result;
 }
 
@@ -67,6 +70,7 @@ layout(location = 3) in vec4 inTangent;
 
 layout(location = 0) out vec3 outNormal;
 layout(location = 1) out vec2 outTexCoord;
+layout(location = 2) out float outDepth;
 
 mat3 rotationMatrix(vec3 axis, float angle)
 {
@@ -81,11 +85,13 @@ mat3 rotationMatrix(vec3 axis, float angle)
 }
 
 void main() {
-	uint instance = gl_InstanceIndex;
-
+    uint instance = gl_InstanceIndex;
     vec3 WorldPos = transform_vertex(int(instance), inPosition.xyz);
+    vec4 opo = (hiFreq.VPMatrix) * vec4(inPosition.xyz, 1.0);
     vec3 Normal = normalize(transform_normal(int(instance), normalize(inNormal)));
-    gl_Position = vec4( (inPosition * 0.05) + vec3(0.0, 0.0, 0.5), 1.0  );
+    opo.y *= -1.0;
+    gl_Position = opo;
     outNormal = Normal;
-	outTexCoord = inTexCoord;
+    outTexCoord = inTexCoord;
+    outDepth = 1.0 - ((opo.z/opo.w) * 0.5 + 0.5);
 }

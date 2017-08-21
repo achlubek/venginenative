@@ -3,6 +3,7 @@
 
 layout(location = 0) in vec3 inNormal;
 layout(location = 1) in vec2 inTexCoord;
+layout(location = 2) in float inDepth;
 
 layout(location = 0) out vec4 outColor;
 
@@ -11,5 +12,8 @@ layout(binding = 7) uniform sampler2D normalTexture;
 
 void main() {
 //	float dt = max(0.0, dot(normalize(inNormal), normalize(vec3(1.0, -1.0, 0.0)))) *0.99 + 0.01;
-    outColor = vec4(pow(texture(diffuseTexture, inTexCoord).rgb , vec3(1.0 / 2.2)), 1.0);
+vec3 result = pow(texture(diffuseTexture, inTexCoord).rgb , vec3(2.2));
+result = pow(result, vec3(1.0/ 2.2));
+    outColor = vec4(result, 1.0);
+//    gl_FragDepth = 1.0 - inDepth;
 }

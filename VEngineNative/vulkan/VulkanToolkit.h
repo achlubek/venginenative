@@ -90,7 +90,7 @@ public:
 	 
 
 	ImageData* readFileImageData(std::string path);
-	VulkanImage createTexture(std::string path);
+	VulkanImage* createTexture(std::string path);
 	//Image textureImage;
 
 	VkCommandBuffer beginSingleTimeCommands();

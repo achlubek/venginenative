@@ -66,8 +66,8 @@ void Mesh3dLodLevel::initialize()
 	descriptorSet.bindUniformBuffer(i++, *modelInfosBuffer3);
 	descriptorSet.bindUniformBuffer(i++, *materialBuffer);
 
-	descriptorSet.bindImageViewSampler(i++, Game::instance->dummyTexture);
-	descriptorSet.bindImageViewSampler(i++, Game::instance->dummyTexture);
+	descriptorSet.bindImageViewSampler(i++, *Game::instance->dummyTexture);
+	descriptorSet.bindImageViewSampler(i++, *Game::instance->dummyTexture);
 
 	descriptorSet.update();
 }
@@ -214,6 +214,15 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
     }
 
     if (materialBufferNeedsUpdate) {
+
+
+		if (material->diffuseColorTex != nullptr) {
+			descriptorSet.bindImageViewSampler(6, *material->diffuseColorTex);
+		//	descriptorSet.bindImageViewSampler(i++, Game::instance->dummyTexture);
+
+			descriptorSet.update();
+		}
+
         materialBufferNeedsUpdate = false;
         vector<float> floats2;
         floats2.reserve(32);

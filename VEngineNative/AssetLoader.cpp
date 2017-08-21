@@ -85,11 +85,198 @@ Skeleton * AssetLoader::loadSkeletonFile(string source)
     return loadSkeletonString(Media::readString(source));
 }*/
 
+
+#define NODE_MODE_ADD 0
+#define NODE_MODE_MUL 1
+#define NODE_MODE_AVERAGE 2
+#define NODE_MODE_SUB 3
+#define NODE_MODE_ALPHA 4
+#define NODE_MODE_ONE_MINUS_ALPHA 5
+#define NODE_MODE_REPLACE 6
+#define NODE_MODE_MAX 7
+#define NODE_MODE_MIN 8
+#define NODE_MODE_DISTANCE 9
+
+#define NODE_MODIFIER_ORIGINAL 0
+#define NODE_MODIFIER_NEGATIVE 1
+#define NODE_MODIFIER_LINEARIZE 2
+#define NODE_MODIFIER_SATURATE 4
+#define NODE_MODIFIER_HUE 8
+#define NODE_MODIFIER_BRIGHTNESS 16
+#define NODE_MODIFIER_POWER 32
+#define NODE_MODIFIER_HSV 64
+
+#define NODE_TARGET_DIFFUSE 0
+#define NODE_TARGET_NORMAL 1
+#define NODE_TARGET_ROUGHNESS 2
+#define NODE_TARGET_METALNESS 3
+#define NODE_TARGET_BUMP 4
+#define NODE_TARGET_BUMP_AS_NORMAL 5
+#define NODE_TARGET_DISPLACEMENT 6
+
+#define NODE_SOURCE_COLOR 0
+#define NODE_SOURCE_TEXTURE 1
+
+#define NODE_WRAP_REPEAT 0
+#define NODE_WRAP_MIRRORED 1
+#define NODE_WRAP_BORDER 2
+
+
+class MaterialNode
+{
+public:
+	MaterialNode(glm::vec4 icolor, glm::vec2 uvScaling, int mixMode, int nodeTarget);
+	MaterialNode(VulkanImage *tex, glm::vec2 uvScaling, int mixMode, int nodeTarget);
+
+	MaterialNode(glm::vec4 icolor, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier);
+	MaterialNode(VulkanImage *tex, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier);
+
+	MaterialNode(glm::vec4 icolor, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier, float idata);
+	MaterialNode(VulkanImage *tex, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier, float idata);
+
+	MaterialNode(glm::vec4 icolor, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier, glm::vec4 idata);
+	MaterialNode(VulkanImage *tex, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier, glm::vec4 idata);
+
+	MaterialNode();
+	~MaterialNode();
+	VulkanImage *texture;
+	glm::vec2 uvScale;
+	glm::vec4 color;
+	glm::vec4 data;
+	int mixingMode;
+	int target;
+	int modifierflags;
+	int source;
+	int wrap;
+};
+
+
+MaterialNode::MaterialNode(glm::vec4 icolor, glm::vec2 uvScaling, int mixMode, int nodeTarget)
+{
+	source = NODE_SOURCE_COLOR;
+	modifierflags = NODE_MODIFIER_ORIGINAL;
+	color = icolor;
+	data = glm::vec4(1);
+	texture = nullptr;
+	uvScale = uvScaling;
+	mixingMode = mixMode;
+	target = nodeTarget;
+	wrap = NODE_WRAP_REPEAT;
+}
+
+MaterialNode::MaterialNode(VulkanImage * tex, glm::vec2 uvScaling, int mixMode, int nodeTarget)
+{
+	source = NODE_SOURCE_TEXTURE;
+	modifierflags = NODE_MODIFIER_ORIGINAL;
+	color = glm::vec4(1);
+	data = glm::vec4(1);
+	texture = tex;
+	uvScale = uvScaling;
+	mixingMode = mixMode;
+	target = nodeTarget;
+	wrap = NODE_WRAP_REPEAT;
+}
+
+MaterialNode::MaterialNode(glm::vec4 icolor, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier)
+{
+	source = NODE_SOURCE_COLOR;
+	modifierflags = modifier;
+	color = icolor;
+	data = glm::vec4(1);
+	texture = nullptr;
+	uvScale = uvScaling;
+	mixingMode = mixMode;
+	target = nodeTarget;
+	wrap = NODE_WRAP_REPEAT;
+}
+
+MaterialNode::MaterialNode(VulkanImage * tex, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier)
+{
+	source = NODE_SOURCE_TEXTURE;
+	modifierflags = modifier;
+	color = glm::vec4(1);
+	data = glm::vec4(1);
+	texture = tex;
+	uvScale = uvScaling;
+	mixingMode = mixMode;
+	target = nodeTarget;
+	wrap = NODE_WRAP_REPEAT;
+}
+
+MaterialNode::MaterialNode(glm::vec4 icolor, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier, float idata)
+{
+	source = NODE_SOURCE_COLOR;
+	modifierflags = modifier;
+	color = icolor;
+	data = glm::vec4(idata);
+	texture = nullptr;
+	uvScale = uvScaling;
+	mixingMode = mixMode;
+	target = nodeTarget;
+	wrap = NODE_WRAP_REPEAT;
+}
+
+MaterialNode::MaterialNode(VulkanImage * tex, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier, float idata)
+{
+	source = NODE_SOURCE_TEXTURE;
+	modifierflags = modifier;
+	color = glm::vec4(1);
+	data = glm::vec4(idata);
+	texture = tex;
+	uvScale = uvScaling;
+	mixingMode = mixMode;
+	target = nodeTarget;
+	wrap = NODE_WRAP_REPEAT;
+}
+
+MaterialNode::MaterialNode(glm::vec4 icolor, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier, glm::vec4 idata)
+{
+	source = NODE_SOURCE_COLOR;
+	modifierflags = modifier;
+	color = icolor;
+	data = idata;
+	texture = nullptr;
+	uvScale = uvScaling;
+	mixingMode = mixMode;
+	target = nodeTarget;
+	wrap = NODE_WRAP_REPEAT;
+}
+
+MaterialNode::MaterialNode(VulkanImage * tex, glm::vec2 uvScaling, int mixMode, int nodeTarget, int modifier, glm::vec4 idata)
+{
+	source = NODE_SOURCE_TEXTURE;
+	modifierflags = modifier;
+	color = glm::vec4(1);
+	data = idata;
+	texture = tex;
+	uvScale = uvScaling;
+	mixingMode = mixMode;
+	target = nodeTarget;
+	wrap = NODE_WRAP_REPEAT;
+}
+
+MaterialNode::MaterialNode()
+{
+	source = NODE_SOURCE_TEXTURE;
+	modifierflags = NODE_MODIFIER_ORIGINAL;
+	color = glm::vec4(1);
+	data = glm::vec4(1);
+	texture = nullptr;
+	uvScale = glm::vec2(1);
+	mixingMode = NODE_MODE_REPLACE;
+	target = NODE_TARGET_DIFFUSE;
+	wrap = NODE_WRAP_REPEAT;
+}
+
+MaterialNode::~MaterialNode()
+{
+	delete texture;
+}
 Material * AssetLoader::loadMaterialString(string source)
 {
     vector<string> materialLines;
     splitByLines(materialLines, source);
-    Material *material = new Material();/*
+    Material *material = new Material();
     MaterialNode *node = nullptr;
     for (int i = 0; i < materialLines.size(); i++) {
         vector<string> words;
@@ -217,10 +404,10 @@ Material * AssetLoader::loadMaterialString(string source)
                     for (int a = 1; a < words.size(); a++)ss << (a == 1 ? "" : " ") << words[a];
                     void * cached = Media::checkCache(ss.str());
                     if (cached != nullptr) {
-                        node->texture = (Texture2d*)cached;
+                        node->texture = (VulkanImage*)cached;
                     }
                     else {
-                        node->texture = new Texture2d(ss.str());
+                        node->texture = VulkanToolkit::singleton->createTexture(Media::getPath(ss.str()));
                         Media::saveCache(ss.str(), node->texture);
                     }
                 }
@@ -255,28 +442,6 @@ Material * AssetLoader::loadMaterialString(string source)
             }
         }
     }
-    if (node != nullptr) {
-        if (node->target == NODE_TARGET_DIFFUSE) {
-            material->diffuseColorTex = node->texture;
-            material->diffuseColorTexScale = node->uvScale;
-        }
-        if (node->target == NODE_TARGET_NORMAL) {
-            material->normalTex = node->texture;
-            material->normalTexScale = node->uvScale;
-        }
-        if (node->target == NODE_TARGET_BUMP) {
-            material->bumpTex = node->texture;
-            material->bumpTexScale = node->uvScale;
-        }
-        if (node->target == NODE_TARGET_ROUGHNESS) {
-            material->roughnessTex = node->texture;
-            material->roughnessTexScale = node->uvScale;
-        }
-        if (node->target == NODE_TARGET_METALNESS) {
-            material->metalnessTex = node->texture;
-            material->metalnessTexScale = node->uvScale;
-        }
-    }*/
     return material;
 }
 
@@ -600,38 +765,37 @@ void AssetLoader::splitByChar(vector<string>& output, string src, char c)
         output.push_back(src.substr(d, i));
     }
 }
-/*
 int AssetLoader::replaceEnum(string enumstr)
 {
-    if (enumstr == "ADD") return NODE_MODE_ADD;
-    if (enumstr == "MUL") return NODE_MODE_MUL;
-    if (enumstr == "AVERAGE") return NODE_MODE_AVERAGE;
-    if (enumstr == "SUB") return NODE_MODE_SUB;
-    if (enumstr == "ALPHA") return NODE_MODE_ALPHA;
-    if (enumstr == "ONE_MINUS_ALPHA") return NODE_MODE_ONE_MINUS_ALPHA;
-    if (enumstr == "REPLACE") return NODE_MODE_REPLACE;
-    if (enumstr == "MAX") return NODE_MODE_MAX;
-    if (enumstr == "MIN") return NODE_MODE_MIN;
-    if (enumstr == "DISTANCE") return NODE_MODE_DISTANCE;
+	if (enumstr == "ADD") return NODE_MODE_ADD;
+	if (enumstr == "MUL") return NODE_MODE_MUL;
+	if (enumstr == "AVERAGE") return NODE_MODE_AVERAGE;
+	if (enumstr == "SUB") return NODE_MODE_SUB;
+	if (enumstr == "ALPHA") return NODE_MODE_ALPHA;
+	if (enumstr == "ONE_MINUS_ALPHA") return NODE_MODE_ONE_MINUS_ALPHA;
+	if (enumstr == "REPLACE") return NODE_MODE_REPLACE;
+	if (enumstr == "MAX") return NODE_MODE_MAX;
+	if (enumstr == "MIN") return NODE_MODE_MIN;
+	if (enumstr == "DISTANCE") return NODE_MODE_DISTANCE;
 
-    if (enumstr == "ORIGINAL") return NODE_MODIFIER_ORIGINAL;
-    if (enumstr == "NEGATIVE") return NODE_MODIFIER_NEGATIVE;
-    if (enumstr == "LINEARIZE") return NODE_MODIFIER_LINEARIZE;
-    if (enumstr == "SATURATE") return NODE_MODIFIER_SATURATE;
-    if (enumstr == "HUE") return NODE_MODIFIER_HUE;
-    if (enumstr == "BRIGHTNESS") return NODE_MODIFIER_BRIGHTNESS;
-    if (enumstr == "POWER") return NODE_MODIFIER_POWER;
-    if (enumstr == "HSV") return NODE_MODIFIER_HSV;
+	if (enumstr == "ORIGINAL") return NODE_MODIFIER_ORIGINAL;
+	if (enumstr == "NEGATIVE") return NODE_MODIFIER_NEGATIVE;
+	if (enumstr == "LINEARIZE") return NODE_MODIFIER_LINEARIZE;
+	if (enumstr == "SATURATE") return NODE_MODIFIER_SATURATE;
+	if (enumstr == "HUE") return NODE_MODIFIER_HUE;
+	if (enumstr == "BRIGHTNESS") return NODE_MODIFIER_BRIGHTNESS;
+	if (enumstr == "POWER") return NODE_MODIFIER_POWER;
+	if (enumstr == "HSV") return NODE_MODIFIER_HSV;
 
-    if (enumstr == "DIFFUSE") return NODE_TARGET_DIFFUSE;
-    if (enumstr == "NORMAL") return NODE_TARGET_NORMAL;
-    if (enumstr == "ROUGHNESS") return NODE_TARGET_ROUGHNESS;
-    if (enumstr == "METALNESS") return NODE_TARGET_METALNESS;
-    if (enumstr == "BUMP") return NODE_TARGET_BUMP;
-    if (enumstr == "BUMP_NORMAL") return NODE_TARGET_BUMP_AS_NORMAL;
-    if (enumstr == "DISPLACEMENT") return NODE_TARGET_DISPLACEMENT;
+	if (enumstr == "DIFFUSE") return NODE_TARGET_DIFFUSE;
+	if (enumstr == "NORMAL") return NODE_TARGET_NORMAL;
+	if (enumstr == "ROUGHNESS") return NODE_TARGET_ROUGHNESS;
+	if (enumstr == "METALNESS") return NODE_TARGET_METALNESS;
+	if (enumstr == "BUMP") return NODE_TARGET_BUMP;
+	if (enumstr == "BUMP_NORMAL") return NODE_TARGET_BUMP_AS_NORMAL;
+	if (enumstr == "DISPLACEMENT") return NODE_TARGET_DISPLACEMENT;
 
-    if (enumstr == "COLOR") return NODE_SOURCE_COLOR;
-    if (enumstr == "TEXTURE") return NODE_SOURCE_TEXTURE;
-    return 0;
-}*/
+	if (enumstr == "COLOR") return NODE_SOURCE_COLOR;
+	if (enumstr == "TEXTURE") return NODE_SOURCE_TEXTURE;
+	return 0;
+}
