@@ -4,11 +4,17 @@
 out gl_PerVertex {
     vec4 gl_Position;
 };
-layout(set = 0, binding = 0) uniform UniformBufferObject {
+layout(set = 0, binding = 0) uniform UniformBufferObject1 {
     float Time;
     float Zero;
     vec2 Mouse;
-} ubo;
+} hiFreq;
+layout(set = 0, binding = 1) uniform UniformBufferObject2 {
+    float Time;
+    float Zero;
+    vec2 Mouse;
+} lowFreq;
+
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec2 inTexCoord;
@@ -20,7 +26,7 @@ layout(location = 1) out vec2 outTexCoord;
 
 
 void main() {
-    gl_Position = vec4(inPosition.xyz, 1.0 + ubo.Zero);
+    gl_Position = vec4(inPosition.xyz, 1.0);
     outNormal = inNormal;
 	outTexCoord = inTexCoord;
 }

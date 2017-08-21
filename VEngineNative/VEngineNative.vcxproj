@@ -201,7 +201,7 @@
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.0.57.0\Include\vulkan;C:\Code\SFML-2.4.2\include;C:\Code\squirrel3\include;C:\Code\bullet3\src;C:\Code\glfw-3.2.1\include;C:\Code\glm-0.9.9-a1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Code\stb;C:\VulkanSDK\1.0.57.0\Include\vulkan;C:\Code\SFML-2.4.2\include;C:\Code\squirrel3\include;C:\Code\bullet3\src;C:\Code\glfw-3.2.1\include;C:\Code\glm-0.9.9-a1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -258,17 +258,12 @@
     <ClInclude Include="EventHandler.h" />
     <ClInclude Include="FrustumCone.h" />
     <ClInclude Include="Game.h" />
-    <ClInclude Include="imgui\stb_rect_pack.h" />
-    <ClInclude Include="imgui\stb_textedit.h" />
-    <ClInclude Include="imgui\stb_truetype.h" />
     <ClInclude Include="INIReader.h" />
-    <ClInclude Include="lupng.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Media.h" />
     <ClInclude Include="Mesh3d.h" />
     <ClInclude Include="Mesh3dInstance.h" />
     <ClInclude Include="Mesh3dLodLevel.h" />
-    <ClInclude Include="miniz.h" />
     <ClInclude Include="Object3dInfo.h" />
     <ClInclude Include="PhysicalBody.h" />
     <ClInclude Include="PhysicalConstraint.h" />
@@ -278,7 +273,6 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SimpleParser.h" />
     <ClInclude Include="SquirrelVM.h" />
-    <ClInclude Include="stb_image.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="tinydir.h" />
@@ -308,13 +302,11 @@
     <ClCompile Include="FrustumCone.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="INIReader.cpp" />
-    <ClCompile Include="lupng.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Media.cpp" />
     <ClCompile Include="Mesh3d.cpp" />
     <ClCompile Include="Mesh3dInstance.cpp" />
     <ClCompile Include="Mesh3dLodLevel.cpp" />
-    <ClCompile Include="miniz.cpp" />
     <ClCompile Include="Object3dInfo.cpp" />
     <ClCompile Include="PhysicalBody.cpp" />
     <ClCompile Include="PhysicalConstraint.cpp" />

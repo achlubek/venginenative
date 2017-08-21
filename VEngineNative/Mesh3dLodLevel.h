@@ -23,6 +23,8 @@ public:
     void draw(VulkanRenderStage* stage, const Mesh3d* mesh);
     void updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstance*> &instances);
     bool materialBufferNeedsUpdate = true;
+	VulkanDescriptorSet descriptorSet;
+	void initialize();
 	//Skeleton* skeleton;
 	//SkeletonPose* skeletonPose;
 private:

@@ -10,28 +10,7 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial, float di
     material = imaterial;
     distanceStart = distancestart;
     distanceEnd = distanceend;
-    instancesFiltered1 = 0;
-    instancesFiltered2 = 0;
-    instancesFiltered3 = 0;
-    int kb1 = 1024;
-    int mb1 = kb1 * 1024;
-    modelInfosBuffer1 = new VulkanGenericBuffer(64 * kb1);
-    modelInfosBuffer2 = new VulkanGenericBuffer(64 * kb1);
-    modelInfosBuffer3 = new VulkanGenericBuffer(64 * kb1);
-    materialBuffer = new VulkanGenericBuffer(kb1);
-    samplerIndices = {};
-    modes = {};
-    targets = {};
-    sources = {};
-    modifiers = {};
-    uvScales = {};
-    nodesDatas = {};
-    nodesColors = {};
-    modes = {};
-    textureBinds = {};
-    wrapModes = {};
-    id = Game::instance->getNextId();
-    Game::instance->registerId(id, this);
+	initialize();
 }
 
 Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial)
@@ -40,28 +19,7 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial)
     material = imaterial;
     distanceStart = 0;
     distanceEnd = 99999.0;
-    instancesFiltered1 = 0;
-    instancesFiltered2 = 0;
-    instancesFiltered3 = 0;
-    int kb1 = 1024;
-    int mb1 = kb1 * 1024;
-	modelInfosBuffer1 = new VulkanGenericBuffer(64 * kb1);
-	modelInfosBuffer2 = new VulkanGenericBuffer(64 * kb1);
-	modelInfosBuffer3 = new VulkanGenericBuffer(64 * kb1);
-	materialBuffer = new VulkanGenericBuffer(kb1);
-    samplerIndices = {};
-    modes = {};
-    targets = {};
-    sources = {};
-    modifiers = {};
-    uvScales = {};
-    nodesDatas = {};
-    nodesColors = {};
-    modes = {};
-    textureBinds = {};
-    wrapModes = {};
-    id = Game::instance->getNextId();
-    Game::instance->registerId(id, this);
+	initialize();
 }
 
 Mesh3dLodLevel::Mesh3dLodLevel()
@@ -70,28 +28,48 @@ Mesh3dLodLevel::Mesh3dLodLevel()
     material = nullptr;
     distanceStart = 0;
     distanceEnd = 99999.0;
-    instancesFiltered1 = 0;
-    instancesFiltered2 = 0;
-    instancesFiltered3 = 0;
-    int kb1 = 1024;
-    int mb1 = kb1 * 1024;
+	initialize();
+}
+
+void Mesh3dLodLevel::initialize()
+{
+
+	instancesFiltered1 = 0;
+	instancesFiltered2 = 0;
+	instancesFiltered3 = 0;
+	int kb1 = 1024;
+	int mb1 = kb1 * 1024;
 	modelInfosBuffer1 = new VulkanGenericBuffer(64 * kb1);
 	modelInfosBuffer2 = new VulkanGenericBuffer(64 * kb1);
 	modelInfosBuffer3 = new VulkanGenericBuffer(64 * kb1);
 	materialBuffer = new VulkanGenericBuffer(kb1);
-    samplerIndices = {};
-    modes = {};
-    targets = {};
-    sources = {};
-    modifiers = {};
-    uvScales = {};
-    nodesDatas = {};
-    nodesColors = {};
-    modes = {};
-    textureBinds = {};
-    wrapModes = {};
-    id = Game::instance->getNextId();
-    Game::instance->registerId(id, this);
+	samplerIndices = {};
+	modes = {};
+	targets = {};
+	sources = {};
+	modifiers = {};
+	uvScales = {};
+	nodesDatas = {};
+	nodesColors = {};
+	modes = {};
+	textureBinds = {};
+	wrapModes = {};
+	id = Game::instance->getNextId();
+	Game::instance->registerId(id, this);
+	descriptorSet = Game::instance->renderer->setManager.generateMesh3dDescriptorSet();
+	int i = 0;
+	descriptorSet.bindUniformBuffer(i++, Game::instance->renderer->uboHighFrequencyBuffer);
+	descriptorSet.bindUniformBuffer(i++, Game::instance->renderer->uboLowFrequencyBuffer);
+
+	descriptorSet.bindUniformBuffer(i++, *modelInfosBuffer1);
+	descriptorSet.bindUniformBuffer(i++, *modelInfosBuffer2);
+	descriptorSet.bindUniformBuffer(i++, *modelInfosBuffer3);
+	descriptorSet.bindUniformBuffer(i++, *materialBuffer);
+
+	descriptorSet.bindImageViewSampler(i++, Game::instance->dummyTexture);
+	descriptorSet.bindImageViewSampler(i++, Game::instance->dummyTexture);
+
+	descriptorSet.update();
 }
 
 Mesh3dLodLevel::~Mesh3dLodLevel()
@@ -134,9 +112,9 @@ void Mesh3dLodLevel::draw(VulkanRenderStage* stage, const Mesh3d* mesh)
     shader->setUniform("MeshID", mesh->id);
     shader->setUniform("LodLevelID", id);*/
 	  
-    if (currentBuffer == 0)stage->drawMesh(info3d, instancesFiltered1);
-    if (currentBuffer == 1)stage->drawMesh(info3d, instancesFiltered2);
-    if (currentBuffer == 2)stage->drawMesh(info3d, instancesFiltered3);
+    if (currentBuffer == 0)stage->drawMesh(info3d, descriptorSet, instancesFiltered1);
+    if (currentBuffer == 1)stage->drawMesh(info3d, descriptorSet, instancesFiltered2);
+    if (currentBuffer == 2)stage->drawMesh(info3d, descriptorSet, instancesFiltered3);
 
 }
 

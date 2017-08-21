@@ -5,10 +5,9 @@ class Object3dInfo
 public:
     Object3dInfo(vector<float> &vbo);
     ~Object3dInfo();
-	VulkanImage texture;
 
-    void draw(VulkanGraphicsPipeline p, VkCommandBuffer cb);
-    void drawInstanced(VulkanGraphicsPipeline p, VkCommandBuffer cb, size_t instances);
+    void draw(VulkanGraphicsPipeline p, VulkanDescriptorSet &set, VkCommandBuffer cb);
+    void drawInstanced(VulkanGraphicsPipeline p, VulkanDescriptorSet &set, VkCommandBuffer cb, size_t instances);
     void updateRadius();
     float radius = 0.0f;
     vector<float> vbo;
@@ -19,7 +18,6 @@ public:
 	int vertexCount = 0;
 
 	//VulkanImage texture;
-	VulkanDescriptorSet descriptorSet;
 
 	static VkVertexInputBindingDescription bindingDescription;
 	static void getBindingDescription() {

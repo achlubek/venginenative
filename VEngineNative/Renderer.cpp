@@ -17,17 +17,17 @@ Renderer::Renderer(int iwidth, int iheight)
 		throw std::runtime_error("failed to create semaphores!");
 	}
 
-	colorImage = VulkanImage(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
+	diffuseImage = VulkanImage(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
 
 	depthImage = VulkanImage(width, height, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, true);
 
-	uniformBuffer = VulkanGenericBuffer(sizeof(float) * 4);
+	uboHighFrequencyBuffer = VulkanGenericBuffer(sizeof(float) * 4);
+	uboLowFrequencyBuffer = VulkanGenericBuffer(sizeof(float) * 4);
 
-	meshSetManager = VulkanDescriptorSetsManager();
-	postProcessSetManager = VulkanDescriptorSetsManager();
+	//setManager = VulkanDescriptorSetsManager();
 
 	auto vertShaderModule = VulkanShaderModule("../../shaders/compiled/triangle.vert.spv");
 	auto fragShaderModule = VulkanShaderModule("../../shaders/compiled/triangle.frag.spv");
@@ -39,8 +39,8 @@ Renderer::Renderer(int iwidth, int iheight)
 	meshRenderStage.setViewport(ext);
 	meshRenderStage.addShaderStage(vertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
 	meshRenderStage.addShaderStage(fragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
-	meshRenderStage.addDescriptorSetLayout(meshSetManager.mesh3dLayout);
-	meshRenderStage.addOutputImage(colorImage);
+	meshRenderStage.addDescriptorSetLayout(setManager.mesh3dLayout);
+	meshRenderStage.addOutputImage(diffuseImage);
 	meshRenderStage.addOutputImage(depthImage);
 
 	meshRenderStage.compile();
@@ -56,7 +56,7 @@ Renderer::Renderer(int iwidth, int iheight)
 		postProcessRenderStages[i].setViewport(ext);
 		postProcessRenderStages[i].addShaderStage(ppvertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
 		postProcessRenderStages[i].addShaderStage(ppfragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
-		postProcessRenderStages[i].addDescriptorSetLayout(meshSetManager.mesh3dLayout);
+		postProcessRenderStages[i].addDescriptorSetLayout(setManager.ppLayout);
 		VkFormat format = VulkanToolkit::singleton->swapChain->swapChainImageFormat;
 		VulkanImage* img = new VulkanImage(format, VulkanToolkit::singleton->swapChain->swapChainImages[i], VulkanToolkit::singleton->swapChain->swapChainImageViews[i]);
 		img->format = format;
@@ -69,7 +69,12 @@ Renderer::Renderer(int iwidth, int iheight)
 	}
 
 	postprocessmesh = Game::instance->asset->loadObject3dInfoFile("ppplane.vbo");
-	postprocessmesh->texture = colorImage;
+	postProcessSet = setManager.generatePostProcessingDescriptorSet();
+	postProcessSet.bindUniformBuffer(0, uboHighFrequencyBuffer);
+	postProcessSet.bindUniformBuffer(1, uboLowFrequencyBuffer);
+	postProcessSet.bindImageViewSampler(2, diffuseImage);
+	postProcessSet.update();
+
 	//postprocessmesh->descriptorSet = meshSetManager.generateMesh3dDescriptorSet();
 	//postprocessmesh->descriptorSet.bindUniformBuffer(0, uniformBuffer);
 	//postprocessmesh->descriptorSet.bindImageViewSampler(1, colorImage);
@@ -86,30 +91,38 @@ Renderer::~Renderer()
 void Renderer::renderToSwapChain(Camera *camera)
 {
 
+	if (Game::instance->world->scene->getMesh3ds().size() == 0) return;
 	VulkanBinaryBufferBuilder bb = VulkanBinaryBufferBuilder();
-	bb.emplaceFloat32((float)glfwGetTime());
 	double xpos, ypos;
 	glfwGetCursorPos(VulkanToolkit::singleton->window, &xpos, &ypos);
+
+	bb.emplaceFloat32((float)glfwGetTime());
 	bb.emplaceFloat32(0.0f);
 	bb.emplaceFloat32((float)xpos / (float)width);
 	bb.emplaceFloat32((float)ypos / (float)height);
 
 	void* data;
-	uniformBuffer.map(0, bb.buffer.size(), &data);
+	uboHighFrequencyBuffer.map(0, bb.buffer.size(), &data);
 	memcpy(data, bb.getPointer(), bb.buffer.size());
-	uniformBuffer.unmap();
+	uboHighFrequencyBuffer.unmap();
+
+	uboLowFrequencyBuffer.map(0, bb.buffer.size(), &data);
+	memcpy(data, bb.getPointer(), bb.buffer.size());
+	uboLowFrequencyBuffer.unmap();
 
 	uint32_t imageIndex;
 	// GET IMAGE 
 	Game::instance->world->setUniforms(camera);
 	Game::instance->world->setSceneUniforms();
-	vkAcquireNextImageKHR(VulkanToolkit::singleton->device, VulkanToolkit::singleton->swapChain->swapChain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
-
 	meshRenderStage.beginDrawing();
 	Game::instance->world->draw(&meshRenderStage, camera);
 	meshRenderStage.endDrawing();
+	if (meshRenderStage.cmdMeshesCounts == 0) return;
 	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 
+	vkAcquireNextImageKHR(VulkanToolkit::singleton->device, VulkanToolkit::singleton->swapChain->swapChain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
+	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 	meshRenderStage.submit({ imageAvailableSemaphore }, renderFinishedSemaphore1);
 	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 	//###########
@@ -117,7 +130,7 @@ void Renderer::renderToSwapChain(Camera *camera)
 
 		//for (int i = 0; i < VulkanToolkit::singleton->swapChain->swapChainImages.size(); i++) {
 			postProcessRenderStages[imageIndex].beginDrawing();
-			postProcessRenderStages[imageIndex].drawMesh(postprocessmesh, 1);
+			postProcessRenderStages[imageIndex].drawMesh(postprocessmesh, postProcessSet, 1);
 			postProcessRenderStages[imageIndex].endDrawing();
 		//}
 		vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);

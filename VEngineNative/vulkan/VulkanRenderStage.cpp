@@ -5,7 +5,7 @@ VulkanRenderStage::VulkanRenderStage()
 {
 	setLayouts = {};
 	outputImages = {};
-	shaderStages = {}; 
+	shaderStages = {};
 }
 
 
@@ -40,9 +40,8 @@ int getLastIndex(int current, int limit) {
 
 void VulkanRenderStage::beginDrawing()
 {
-	cmdBufferIndex++;
-	if (cmdBufferIndex > 2) cmdBufferIndex = 0;
-	commandBuffers[cmdBufferIndex].begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+	cmdMeshesCounts = 0;
+	commandBuffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
 	VkRenderPassBeginInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -58,30 +57,29 @@ void VulkanRenderStage::beginDrawing()
 	renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 	renderPassInfo.pClearValues = clearValues.data();
 
-	vkCmdBeginRenderPass(commandBuffers[cmdBufferIndex].handle, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBeginRenderPass(commandBuffer.handle, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	vkCmdBindPipeline(commandBuffers[cmdBufferIndex].handle, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.graphicsPipeline);
-	  
+	vkCmdBindPipeline(commandBuffer.handle, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.graphicsPipeline);
+
 }
 void VulkanRenderStage::endDrawing()
 {
- 
 
-	vkCmdEndRenderPass(commandBuffers[cmdBufferIndex].handle);
 
-	commandBuffers[cmdBufferIndex].end();
+	vkCmdEndRenderPass(commandBuffer.handle);
+
+	commandBuffer.end();
 }
 
-void VulkanRenderStage::drawMesh(Object3dInfo * info, size_t instances)
+void VulkanRenderStage::drawMesh(Object3dInfo * info, VulkanDescriptorSet &set, size_t instances)
 {
-	info->drawInstanced(pipeline, commandBuffers[cmdBufferIndex].handle, instances);
+	info->drawInstanced(pipeline, set, commandBuffer.handle, instances);
+	cmdMeshesCounts++;
 }
 
 void VulkanRenderStage::compile()
 {
-	for (int i = 0; i < 3; i++) {
-		commandBuffers.push_back(VulkanCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY));
-	}
+	commandBuffer = VulkanCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 
 	std::vector<VulkanAttachment> attachments = {};
@@ -106,9 +104,9 @@ void VulkanRenderStage::compile()
 	}
 
 	VulkanSubpass subpass;
-	if(foundDepthBuffer ) subpass = VulkanSubpass(colorAttachments, colorattachmentsLayouts, depthAttachment, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+	if (foundDepthBuffer) subpass = VulkanSubpass(colorAttachments, colorattachmentsLayouts, depthAttachment, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 	else  subpass = VulkanSubpass(colorAttachments, colorattachmentsLayouts);
-	 
+
 	std::vector<VulkanSubpass> subpasses = { subpass };
 
 	renderPass = VulkanRenderPass(attachments, subpasses);
@@ -129,7 +127,7 @@ void VulkanRenderStage::submit(std::vector<VkSemaphore> waitSemaphores, VkSemaph
 	submitInfo.pWaitDstStageMask = waitStages2;
 
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffers[getLastIndex(getLastIndex(cmdBufferIndex, 2), 2)].handle;
+	submitInfo.pCommandBuffers = &commandBuffer.handle;
 
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = &signalSemaphore;

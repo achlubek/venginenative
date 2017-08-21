@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Game.h"
+#include "Media.h"
 
 Game * Game::instance = nullptr;
 
@@ -36,6 +37,7 @@ void Game::start()
 {
 	vulkan = new VulkanToolkit();
 	vulkan->initialize();
+	dummyTexture = vulkan->createTexture(Media::getPath("dummy_texture.png"));
 	renderer = new Renderer(width, height);
 	thread renderthread(bind(&Game::renderThread, this));
 	renderthread.detach();

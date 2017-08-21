@@ -16,11 +16,14 @@ public:
 	VulkanRenderStage meshRenderStage;
 	std::vector<VulkanRenderStage> postProcessRenderStages;
 
-	VulkanDescriptorSetsManager meshSetManager;
-	VulkanDescriptorSetsManager postProcessSetManager;
+	VulkanDescriptorSetsManager setManager; 
+	VulkanDescriptorSet postProcessSet;
 
-	VulkanGenericBuffer uniformBuffer;
-	VulkanImage colorImage;
+	VulkanGenericBuffer uboHighFrequencyBuffer;
+	VulkanGenericBuffer uboLowFrequencyBuffer;
+	VulkanImage diffuseImage;
+	VulkanImage normalImage;
+	VulkanImage distanceImage;
 	VulkanImage depthImage;
 
 	Object3dInfo* postprocessmesh;

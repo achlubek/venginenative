@@ -4,11 +4,61 @@
 out gl_PerVertex {
     vec4 gl_Position;
 };
-layout(set = 0, binding = 0) uniform UniformBufferObject {
+
+layout(set = 0, binding = 0) uniform UniformBufferObject1 {
     float Time;
     float Zero;
     vec2 Mouse;
-} ubo;
+} hiFreq;
+layout(set = 0, binding = 1) uniform UniformBufferObject2 {
+    float Time;
+    float Zero;
+    vec2 Mouse;
+} lowFreq;
+
+struct ModelInfo{
+    vec4 Rotation;
+    vec4 Translation;
+    vec4 Scale;
+    uvec4 idAnd4Empty;
+};
+layout(set = 0, binding = 2) uniform UniformBufferObject3 {
+    ModelInfo ModelInfos[];
+} modelData1;
+layout(set = 0, binding = 3) uniform UniformBufferObject4 {
+    ModelInfo ModelInfos[];
+} modelData2;
+layout(set = 0, binding = 4) uniform UniformBufferObject5 {
+    ModelInfo ModelInfos[];
+} modelData3;
+layout(set = 0, binding = 5) uniform UniformBufferObject6 {
+    vec4 RoughnessMetalness_ZeroZero;
+    vec4 DiffuseColor_Zero;
+    ivec4 UseTex_DNBR;
+    ivec4 UseTex_M_UseSkeleton_Zero_Zero;
+    vec4 ScaleTex_DN;
+    vec4 ScaleTex_BR;
+    vec4 ScaleTex_MZeroZero;
+    uvec4 MeshId_LodLevelId_ZeroZero;
+} materialData;
+vec3 quat_mul_vec( vec4 q, vec3 v ){
+    return v + 2.0*cross(cross(v, q.xyz ) + q.w*v, q.xyz);
+}
+
+vec3 transform_vertex(int info, vec3 vertex){
+    vec3 result = vertex;
+    result *= modelData1.ModelInfos[0].Scale.xyz;
+    result = quat_mul_vec(modelData1.ModelInfos[0].Rotation, result);
+    result += modelData1.ModelInfos[0].Translation.xyz;
+    return result;
+}
+
+vec3 transform_normal(int info, vec3 normal){
+    vec3 result = normal;
+    result *= 1.0 / modelData1.ModelInfos[0].Scale.xyz;
+    return result;
+}
+
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec2 inTexCoord;
@@ -24,18 +74,18 @@ mat3 rotationMatrix(vec3 axis, float angle)
 	float s = sin(angle);
 	float c = cos(angle);
 	float oc = 1.0 - c;
-	
-	return mat3(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s, 
-	oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s, 
+
+	return mat3(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,
+	oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,
 	oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c);
 }
 
-void main() { 
+void main() {
 	uint instance = gl_InstanceIndex;
-		mat3 rotmat = rotationMatrix(vec3(0,1,0), ubo.Time * 0.1);
-	rotmat = rotmat * rotationMatrix(vec3(1,0,0), ubo.Mouse.x * 4.0);
-	rotmat = rotmat * rotationMatrix(vec3(0,0,1), ubo.Mouse.y * 4.0);
-    gl_Position = vec4(rotmat * (inPosition * 0.05) + vec3(0.0, 0.0, 0.5), 1.0 + ubo.Zero);
-    outNormal = rotmat * inNormal;
+
+    vec3 WorldPos = transform_vertex(int(instance), inPosition.xyz);
+    vec3 Normal = normalize(transform_normal(int(instance), normalize(inNormal)));
+    gl_Position = vec4( (inPosition * 0.05) + vec3(0.0, 0.0, 0.5), 1.0  );
+    outNormal = Normal;
 	outTexCoord = inTexCoord;
 }

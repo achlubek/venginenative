@@ -70,4 +70,6 @@ void VulkanDescriptorSet::bindUniformBuffer(int binding, VulkanGenericBuffer buf
 void VulkanDescriptorSet::update()
 {
 	vkUpdateDescriptorSets(VulkanToolkit::singleton->device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+	writes.clear();
+	writes = {};
 }
