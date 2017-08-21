@@ -28,14 +28,10 @@ public:
 	//Skeleton* skeleton;
 	//SkeletonPose* skeletonPose;
 private:
-    VulkanGenericBuffer *modelInfosBuffer1;
-	VulkanGenericBuffer *modelInfosBuffer2;
-	VulkanGenericBuffer *modelInfosBuffer3;
+    VulkanGenericBuffer *modelInfosBuffer;
 
 	VulkanGenericBuffer *materialBuffer;
     
-    int currentBuffer = 0;
-    int nextBuffer = 1; //smart
     bool checkIntersection(Mesh3dInstance* instance);
     vector<int> samplerIndices;
     vector<int> modes;
@@ -47,9 +43,6 @@ private:
     vector<glm::vec4> nodesDatas;
     vector<glm::vec4> nodesColors;
     vector<VulkanImage*> textureBinds;
-    size_t instancesFiltered1;
-    size_t instancesFiltered2;
-    size_t instancesFiltered3;
-    vector<int> lastIdMap = vector<int>{};
-    int pendingUpdates = 0;
+    size_t instancesFiltered;
+    vector<int> lastIdMap = vector<int>{}; 
 };

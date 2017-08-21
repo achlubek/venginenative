@@ -4,17 +4,17 @@ VulkanGenericBuffer::VulkanGenericBuffer()
 {
 
 }
-VulkanGenericBuffer::VulkanGenericBuffer(VkDeviceSize s)
+VulkanGenericBuffer::VulkanGenericBuffer(VkBufferUsageFlags usage, VkDeviceSize s)
 {
 	size = s;
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = size;
-    bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
     if (vkCreateBuffer(VulkanToolkit::singleton->device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create vertex buffer!");
+        throw std::runtime_error("failed to create buffer!");
     }
 
     VkMemoryRequirements memRequirements;
@@ -26,7 +26,7 @@ VulkanGenericBuffer::VulkanGenericBuffer(VkDeviceSize s)
     allocInfo.memoryTypeIndex = VulkanToolkit::singleton->findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
     if (vkAllocateMemory(VulkanToolkit::singleton->device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate vertex buffer memory!");
+        throw std::runtime_error("failed to allocate buffer memory!");
     }
 
     vkBindBufferMemory(VulkanToolkit::singleton->device, buffer, bufferMemory, 0);

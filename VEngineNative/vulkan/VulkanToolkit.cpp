@@ -247,7 +247,7 @@ ImageData * VulkanToolkit::readFileImageData(std::string path)
 VulkanImage* VulkanToolkit::createTexture(std::string path)
 {
 	ImageData * img = readFileImageData(path);
-	VulkanGenericBuffer stagingBuffer = VulkanGenericBuffer(img->width * img->height * 4); //  always rgba for now
+	VulkanGenericBuffer stagingBuffer = VulkanGenericBuffer(VK_IMAGE_USAGE_TRANSFER_SRC_BIT, img->width * img->height * 4); //  always rgba for now
 	void* mappoint;
 	stagingBuffer.map(0, img->width * img->height * 4, &mappoint);
 	memcpy(mappoint, img->data, static_cast<size_t>(img->width * img->height * 4));
@@ -323,13 +323,23 @@ void VulkanToolkit::transitionImageLayout(VkImage image, VkFormat format, VkImag
 	barrier.subresourceRange.baseArrayLayer = 0;
 	barrier.subresourceRange.layerCount = 1;
 
+
+	VkPipelineStageFlags sourceStage;
+	VkPipelineStageFlags destinationStage;
+
 	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
 		barrier.srcAccessMask = 0;
 		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 	}
 	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 	}
 	else {
 		throw std::invalid_argument("unsupported layout transition!");
@@ -337,7 +347,7 @@ void VulkanToolkit::transitionImageLayout(VkImage image, VkFormat format, VkImag
 
 	vkCmdPipelineBarrier(
 		commandBuffer,
-		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+		sourceStage, destinationStage,
 		0,
 		0, nullptr,
 		0, nullptr,

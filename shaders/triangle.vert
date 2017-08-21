@@ -24,16 +24,10 @@ struct ModelInfo{
     vec4 Scale;
     uvec4 idAnd4Empty;
 };
-layout(set = 0, binding = 2) uniform UniformBufferObject3 {
+layout(set = 0, binding = 2) buffer UniformBufferObject3 {
     ModelInfo ModelInfos[];
-} modelData1;
-layout(set = 0, binding = 3) uniform UniformBufferObject4 {
-    ModelInfo ModelInfos[];
-} modelData2;
-layout(set = 0, binding = 4) uniform UniformBufferObject5 {
-    ModelInfo ModelInfos[];
-} modelData3;
-layout(set = 0, binding = 5) uniform UniformBufferObject6 {
+} modelData;
+layout(set = 0, binding = 3) uniform UniformBufferObject6 {
     vec4 RoughnessMetalness_ZeroZero;
     vec4 DiffuseColor_Zero;
     ivec4 UseTex_DNBR;
@@ -49,7 +43,7 @@ vec3 quat_mul_vec( vec4 q, vec3 v ){
 
 vec3 transform_vertex(int info, vec3 vertex){
     vec3 result = vertex;
-    ModelInfo o = modelData1.ModelInfos[0]; // TO DO!!!!!!!!!
+    ModelInfo o = modelData.ModelInfos[gl_InstanceIndex];
     result *= o.Scale.xyz;
     result = quat_mul_vec(o.Rotation, result);
     result += o.Translation.xyz;
@@ -58,7 +52,9 @@ vec3 transform_vertex(int info, vec3 vertex){
 
 vec3 transform_normal(int info, vec3 normal){
     vec3 result = normal;
-    result *= 1.0 / modelData1.ModelInfos[0].Scale.xyz;
+    ModelInfo o = modelData.ModelInfos[gl_InstanceIndex];
+    result = quat_mul_vec(o.Rotation, result);
+    result *= 1.0 / o.Scale.xyz;
     return result;
 }
 

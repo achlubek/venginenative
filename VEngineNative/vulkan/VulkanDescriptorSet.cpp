@@ -67,6 +67,26 @@ void VulkanDescriptorSet::bindUniformBuffer(int binding, VulkanGenericBuffer buf
 	writes[i].pBufferInfo = bufferInfo;
 }
 
+void VulkanDescriptorSet::bindStorageBuffer(int binding, VulkanGenericBuffer buffer)
+{
+	VkDescriptorBufferInfo* bufferInfo = new VkDescriptorBufferInfo();
+	bufferInfo->buffer = buffer.buffer;
+	bufferInfo->offset = 0;
+	bufferInfo->range = buffer.size;
+
+	writes.resize(writes.size() + 1);
+
+	int i = writes.size() - 1;
+
+	writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writes[i].dstSet = set;
+	writes[i].dstBinding = binding;
+	writes[i].dstArrayElement = 0;
+	writes[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	writes[i].descriptorCount = 1;
+	writes[i].pBufferInfo = bufferInfo;
+}
+
 void VulkanDescriptorSet::update()
 {
 	vkUpdateDescriptorSets(VulkanToolkit::singleton->device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);

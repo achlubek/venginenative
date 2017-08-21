@@ -4,6 +4,7 @@
 #include "FrustumCone.h"
 #include "vulkan/VulkanRenderStage.h"
 #include "INIReader.h"
+#include "Mesh3d.h"
 
 class Renderer
 {
@@ -13,11 +14,15 @@ public:
 	VkSemaphore imageAvailableSemaphore;
 	VkSemaphore renderFinishedSemaphore1;
 	VkSemaphore renderFinishedSemaphore2;
+
+	VkSemaphore renderFinishedSemaphoreAlternate1;
+	VkSemaphore renderFinishedSemaphoreAlternate2;
 	VulkanRenderStage meshRenderStage;
 	std::vector<VulkanRenderStage> postProcessRenderStages;
 
-	VulkanDescriptorSetsManager setManager; 
+	VulkanDescriptorSetsManager setManager;
 	VulkanDescriptorSet postProcessSet;
+	Mesh3d* dummyMesh;
 
 	VulkanGenericBuffer uboHighFrequencyBuffer;
 	VulkanGenericBuffer uboLowFrequencyBuffer;

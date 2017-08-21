@@ -7,7 +7,7 @@ public:
 
 	int allocationCounter = 0;
 
-	std::vector<VkDescriptorPool> descriptorPools;
+	std::vector<VkDescriptorPool> descriptorPools = {};
 	VkDescriptorSetLayout mesh3dLayout;
 	VkDescriptorSetLayout ppLayout;
 

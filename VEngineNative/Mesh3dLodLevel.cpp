@@ -33,16 +33,10 @@ Mesh3dLodLevel::Mesh3dLodLevel()
 
 void Mesh3dLodLevel::initialize()
 {
-
-	instancesFiltered1 = 0;
-	instancesFiltered2 = 0;
-	instancesFiltered3 = 0;
 	int kb1 = 1024;
 	int mb1 = kb1 * 1024;
-	modelInfosBuffer1 = new VulkanGenericBuffer(64 * kb1);
-	modelInfosBuffer2 = new VulkanGenericBuffer(64 * kb1);
-	modelInfosBuffer3 = new VulkanGenericBuffer(64 * kb1);
-	materialBuffer = new VulkanGenericBuffer(kb1);
+	modelInfosBuffer = new VulkanGenericBuffer(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, 64 * kb1);
+	materialBuffer = new VulkanGenericBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, kb1);
 	samplerIndices = {};
 	modes = {};
 	targets = {};
@@ -61,9 +55,7 @@ void Mesh3dLodLevel::initialize()
 	descriptorSet.bindUniformBuffer(i++, Game::instance->renderer->uboHighFrequencyBuffer);
 	descriptorSet.bindUniformBuffer(i++, Game::instance->renderer->uboLowFrequencyBuffer);
 
-	descriptorSet.bindUniformBuffer(i++, *modelInfosBuffer1);
-	descriptorSet.bindUniformBuffer(i++, *modelInfosBuffer2);
-	descriptorSet.bindUniformBuffer(i++, *modelInfosBuffer3);
+	descriptorSet.bindStorageBuffer(i++, *modelInfosBuffer);
 	descriptorSet.bindUniformBuffer(i++, *materialBuffer);
 
 	descriptorSet.bindImageViewSampler(i++, *Game::instance->dummyTexture);
@@ -78,9 +70,7 @@ Mesh3dLodLevel::~Mesh3dLodLevel()
 #define vcasti(a) (*((float*)&a))
 void Mesh3dLodLevel::draw(VulkanRenderStage* stage, const Mesh3d* mesh)
 {
-    if (currentBuffer == 0 && instancesFiltered1 == 0) return;
-    if (currentBuffer == 1 && instancesFiltered2 == 0) return;
-    if (currentBuffer == 2 && instancesFiltered3 == 0) return;
+   // if (instancesFiltered == 0) return;
 
     if (!mesh->visible) return;
     if (!visible) return;
@@ -112,9 +102,7 @@ void Mesh3dLodLevel::draw(VulkanRenderStage* stage, const Mesh3d* mesh)
     shader->setUniform("MeshID", mesh->id);
     shader->setUniform("LodLevelID", id);*/
 	  
-    if (currentBuffer == 0)stage->drawMesh(info3d, descriptorSet, instancesFiltered1);
-    if (currentBuffer == 1)stage->drawMesh(info3d, descriptorSet, instancesFiltered2);
-    if (currentBuffer == 2)stage->drawMesh(info3d, descriptorSet, instancesFiltered3);
+    stage->drawMesh(info3d, descriptorSet, instancesFiltered);
 
 }
 
@@ -148,35 +136,19 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
     }
     lastIdMap.clear();
     lastIdMap = newids;
-    
-    if (changed) pendingUpdates = 3;
-
+     
     /*layout rotation f4 translation f3+1 scale f3+1 =>> 12 floats*/
     // Urgently transfrom it into permament mapped buffer 
 
     int fint = filtered.size();
 
-    if (pendingUpdates-- > 0) {
+    if (changed) {
 
-        currentBuffer++;
-        if (currentBuffer > 2) currentBuffer = 0;
-
-        if (currentBuffer == 0) nextBuffer = 2;
-        if (currentBuffer == 1) nextBuffer = 0;
-        if (currentBuffer == 2) nextBuffer = 1;
-
-        if (nextBuffer == 0)instancesFiltered1 = fint;
-        if (nextBuffer == 1)instancesFiltered2 = fint;
-        if (nextBuffer == 2)instancesFiltered3 = fint;
+        instancesFiltered = fint;
 
         if (fint > 0) {
             void* modelbufferpt = nullptr;
-            if (nextBuffer == 0)
-                modelInfosBuffer1->map(0, 4 * 16 * fint, &modelbufferpt);
-            if (nextBuffer == 1)
-				modelInfosBuffer2->map(0, 4 * 16 * fint, &modelbufferpt);
-            if (nextBuffer == 2)
-				modelInfosBuffer3->map(0, 4 * 16 * fint, &modelbufferpt);
+            modelInfosBuffer->map(0, 4 * 16 * fint, &modelbufferpt);
             int a = 0;
             for (unsigned int i = 0; i < fint; i++) {
                 TransformationManager *mgr = filtered[i]->transformation;
@@ -204,12 +176,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
                 ((int*)modelbufferpt)[a++] = filtered[i]->id;
             }
 
-            if (nextBuffer == 0)
-                modelInfosBuffer1->unmap();
-            if (nextBuffer == 1)
-                modelInfosBuffer2->unmap();
-            if (nextBuffer == 2)
-                modelInfosBuffer3->unmap();
+            modelInfosBuffer->unmap();
         }
     }
 
@@ -217,9 +184,14 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
 
 
 		if (material->diffuseColorTex != nullptr) {
-			descriptorSet.bindImageViewSampler(6, *material->diffuseColorTex);
-		//	descriptorSet.bindImageViewSampler(i++, Game::instance->dummyTexture);
+			descriptorSet.bindImageViewSampler(4, *material->diffuseColorTex);
+		}
 
+		if (material->normalTex != nullptr) {
+			descriptorSet.bindImageViewSampler(5, *material->normalTex);
+		}
+
+		if (material->diffuseColorTex != nullptr || material->normalTex != nullptr) {
 			descriptorSet.update();
 		}
 

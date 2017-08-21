@@ -6,7 +6,7 @@ public:
     VkDeviceMemory bufferMemory;
 	VkDeviceSize size;
 	VulkanGenericBuffer();
-	VulkanGenericBuffer(VkDeviceSize s);
+	VulkanGenericBuffer(VkBufferUsageFlags usage, VkDeviceSize s);
     ~VulkanGenericBuffer();
     void map(VkDeviceSize offset, VkDeviceSize size, void** data);
     void unmap();

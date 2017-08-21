@@ -64,6 +64,7 @@ int main(int argc, char* argv[])
 	//game->world->scene->addMesh3d(game->asset->loadMeshFile("lucy.mesh3d"));
 	auto sponza = game->asset->loadSceneFile("sp.scene");
 	game->world->scene = sponza;
+	game->world->scene->getMesh3ds()[0]->getLodLevel(0)->ignoreFrustumCulling = true;
 	// app->bind(game);
 
 	game->onRenderFrame->add([&](int zero) {

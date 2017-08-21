@@ -7,13 +7,15 @@
 
 Renderer::Renderer(int iwidth, int iheight)
 {
-    width = iwidth;
-    height = iheight;
+	width = iwidth;
+	height = iheight;
 	VkSemaphoreCreateInfo semaphoreInfo = {};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 	if (vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
 		vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &renderFinishedSemaphore1) != VK_SUCCESS ||
-		vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &renderFinishedSemaphore2) != VK_SUCCESS) {
+		vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &renderFinishedSemaphore2) != VK_SUCCESS ||
+		vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &renderFinishedSemaphoreAlternate1) != VK_SUCCESS ||
+		vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &renderFinishedSemaphoreAlternate2) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create semaphores!");
 	}
 
@@ -24,8 +26,8 @@ Renderer::Renderer(int iwidth, int iheight)
 	depthImage = VulkanImage(width, height, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, true);
 
-	uboHighFrequencyBuffer = VulkanGenericBuffer(sizeof(float) * 20);
-	uboLowFrequencyBuffer = VulkanGenericBuffer(sizeof(float) * 20);
+	uboHighFrequencyBuffer = VulkanGenericBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
+	uboLowFrequencyBuffer = VulkanGenericBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
 
 	//setManager = VulkanDescriptorSetsManager();
 
@@ -75,6 +77,7 @@ Renderer::Renderer(int iwidth, int iheight)
 	postProcessSet.bindImageViewSampler(2, diffuseImage);
 	postProcessSet.update();
 
+
 	//postprocessmesh->descriptorSet = meshSetManager.generateMesh3dDescriptorSet();
 	//postprocessmesh->descriptorSet.bindUniformBuffer(0, uniformBuffer);
 	//postprocessmesh->descriptorSet.bindImageViewSampler(1, colorImage);
@@ -85,13 +88,15 @@ Renderer::~Renderer()
 {
 	vkDestroySemaphore(VulkanToolkit::singleton->device, renderFinishedSemaphore1, nullptr);
 	vkDestroySemaphore(VulkanToolkit::singleton->device, renderFinishedSemaphore2, nullptr);
+	vkDestroySemaphore(VulkanToolkit::singleton->device, renderFinishedSemaphoreAlternate1, nullptr);
+	vkDestroySemaphore(VulkanToolkit::singleton->device, renderFinishedSemaphoreAlternate2, nullptr);
 	vkDestroySemaphore(VulkanToolkit::singleton->device, imageAvailableSemaphore, nullptr);
 }
 
 void Renderer::renderToSwapChain(Camera *camera)
 {
 
-	if (Game::instance->world->scene->getMesh3ds().size() == 0) return;
+	//if (Game::instance->world->scene->getMesh3ds().size() == 0) return;
 	VulkanBinaryBufferBuilder bb = VulkanBinaryBufferBuilder();
 	double xpos, ypos;
 	glfwGetCursorPos(VulkanToolkit::singleton->window, &xpos, &ypos);
@@ -114,37 +119,39 @@ void Renderer::renderToSwapChain(Camera *camera)
 	uboLowFrequencyBuffer.unmap();
 
 	uint32_t imageIndex;
-	// GET IMAGE 
+
 	Game::instance->world->setUniforms(camera);
 	Game::instance->world->setSceneUniforms();
-	meshRenderStage.beginDrawing();
+	meshRenderStage.beginDrawing(); 
 	Game::instance->world->draw(&meshRenderStage, camera);
 	meshRenderStage.endDrawing();
-	if (meshRenderStage.cmdMeshesCounts == 0) return;
-	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 
-	vkAcquireNextImageKHR(VulkanToolkit::singleton->device, VulkanToolkit::singleton->swapChain->swapChain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+	if (!ppRecorded) {
 
-	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
-	meshRenderStage.submit({ imageAvailableSemaphore }, renderFinishedSemaphore1);
-	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
-	//###########
-	//if (!ppRecorded) {
-
-		//for (int i = 0; i < VulkanToolkit::singleton->swapChain->swapChainImages.size(); i++) {
-			postProcessRenderStages[imageIndex].beginDrawing();
-			postProcessRenderStages[imageIndex].drawMesh(postprocessmesh, postProcessSet, 1);
-			postProcessRenderStages[imageIndex].endDrawing();
-		//}
-		vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
+		for (int i = 0; i < VulkanToolkit::singleton->swapChain->swapChainImages.size(); i++) {
+			postProcessRenderStages[i].beginDrawing();
+			postProcessRenderStages[i].drawMesh(postprocessmesh, postProcessSet, 1);
+			postProcessRenderStages[i].endDrawing();
+		}
+		//vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 		ppRecorded = true;
-//	}
+	}
 
 	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
-	postProcessRenderStages[imageIndex].submit({ renderFinishedSemaphore1 }, renderFinishedSemaphore2);
 
-	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
-	VulkanToolkit::singleton->swapChain->present({ renderFinishedSemaphore2 }, imageIndex);
+	//vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
+	vkAcquireNextImageKHR(VulkanToolkit::singleton->device, VulkanToolkit::singleton->swapChain->swapChain,
+		std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+	if (meshRenderStage.cmdMeshesCounts == 0) {
+		meshRenderStage.submit({ imageAvailableSemaphore }, renderFinishedSemaphoreAlternate1);
+		postProcessRenderStages[imageIndex].submit({ renderFinishedSemaphoreAlternate1 }, renderFinishedSemaphoreAlternate2);
+		VulkanToolkit::singleton->swapChain->present({ renderFinishedSemaphoreAlternate2 }, imageIndex);
+	}
+	else {
+		meshRenderStage.submit({ imageAvailableSemaphore }, renderFinishedSemaphore1);
+		postProcessRenderStages[imageIndex].submit({ renderFinishedSemaphore1 }, renderFinishedSemaphore2);
+		VulkanToolkit::singleton->swapChain->present({ renderFinishedSemaphore2 }, imageIndex);
+	}
 
 	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 }
