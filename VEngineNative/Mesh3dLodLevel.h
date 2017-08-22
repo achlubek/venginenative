@@ -44,5 +44,6 @@ private:
     vector<glm::vec4> nodesColors;
     vector<VulkanImage*> textureBinds;
     size_t instancesFiltered;
-    vector<int> lastIdMap = vector<int>{}; 
+    vector<unsigned int> lastIdMap = vector<unsigned int>{};
+	vector<unsigned int> newids = vector<unsigned int>{};
 };

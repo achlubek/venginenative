@@ -23,8 +23,8 @@ void Camera::createProjectionPerspective(float ifov, float aspectRatio, float ne
 {
     fov = ifov;
     updateFocalLength();
-    farplane = farpl;
-    projectionMatrix = perspective(deg2rad(fov), aspectRatio, nearpl, farpl);
+    farplane = farpl; 
+    projectionMatrix = perspectiveRH(deg2rad(fov), aspectRatio, nearpl, farpl);
 }
 
 void Camera::makeCurrent()

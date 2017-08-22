@@ -70,7 +70,7 @@ Mesh3dLodLevel::~Mesh3dLodLevel()
 #define vcasti(a) (*((float*)&a))
 void Mesh3dLodLevel::draw(VulkanRenderStage* stage, const Mesh3d* mesh)
 {
-   // if (instancesFiltered == 0) return;
+    if (instancesFiltered == 0) return;
 
     if (!mesh->visible) return;
     if (!visible) return;
@@ -113,7 +113,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
     // buffers into nextbuffer, draws current
     vec3 cameraPos = Game::instance->world->mainDisplayCamera->transformation->getPosition();
     vector<Mesh3dInstance*> filtered;
-    vector<int> newids;
+	newids.clear();
     bool changed = false;
     for (int i = 0; i < instances.size(); i++) {
         float dst = distance(cameraPos, instances[i]->transformation->getPosition());
@@ -141,10 +141,10 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
     // Urgently transfrom it into permament mapped buffer 
 
     int fint = filtered.size();
+	instancesFiltered = fint;
 
     if (changed) {
 
-        instancesFiltered = fint;
 
         if (fint > 0) {
             void* modelbufferpt = nullptr;
@@ -264,7 +264,7 @@ vec4 projectvdao2(mat4 mat, vec3 pos) {
 
 bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
 {
-	return true;//debug
+	//return true;//debug
     if (ignoreFrustumCulling) return true;
     auto size = instance->transformation->getSize();
     float radius = info3d->radius * glm::max(glm::max(size.x, size.y), size.z);

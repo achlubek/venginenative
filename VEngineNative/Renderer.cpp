@@ -100,8 +100,12 @@ void Renderer::renderToSwapChain(Camera *camera)
 	VulkanBinaryBufferBuilder bb = VulkanBinaryBufferBuilder();
 	double xpos, ypos;
 	glfwGetCursorPos(VulkanToolkit::singleton->window, &xpos, &ypos);
-
-	glm::mat4 vpmatrix = camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
+	 
+	glm::mat4 clip(1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, -1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.5f, 0.0f,
+		0.0f, 0.0f, 0.5f, 1.0f);
+	glm::mat4 vpmatrix = clip * camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
 
 	bb.emplaceFloat32((float)glfwGetTime());
 	bb.emplaceFloat32(0.0f);

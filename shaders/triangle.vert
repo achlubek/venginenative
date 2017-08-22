@@ -68,26 +68,15 @@ layout(location = 0) out vec3 outNormal;
 layout(location = 1) out vec2 outTexCoord;
 layout(location = 2) out float outDepth;
 
-mat3 rotationMatrix(vec3 axis, float angle)
-{
-	axis = normalize(axis);
-	float s = sin(angle);
-	float c = cos(angle);
-	float oc = 1.0 - c;
-
-	return mat3(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,
-	oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,
-	oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c);
-}
 
 void main() {
     uint instance = gl_InstanceIndex;
     vec3 WorldPos = transform_vertex(int(instance), inPosition.xyz);
     vec4 opo = (hiFreq.VPMatrix) * vec4(inPosition.xyz, 1.0);
     vec3 Normal = normalize(transform_normal(int(instance), normalize(inNormal)));
-    opo.y *= -1.0;
+    //opo.y *= -1.0;
     gl_Position = opo;
     outNormal = Normal;
     outTexCoord = inTexCoord;
-    outDepth = 1.0 - ((opo.z/opo.w) * 0.5 + 0.5);
+    //outDepth = 1.0 - ((opo.z/opo.w) * 0.5 + 0.5);
 }

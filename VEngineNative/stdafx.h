@@ -40,7 +40,7 @@ using namespace std;
 #include "vulkan.h"
 #include <GLFW/glfw3.h>
 #include <memory>
-
+//#define GLM_FORCE_DEPTH_ZERO_TO_ONE 1
 #include "glm/vec3.hpp" // glm::vec3
 #include "glm/vec4.hpp" // glm::vec4
 #include "glm/mat4x4.hpp" // glm::mat4
