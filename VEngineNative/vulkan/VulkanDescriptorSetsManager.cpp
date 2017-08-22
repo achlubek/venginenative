@@ -105,15 +105,22 @@ void VulkanDescriptorSetsManager::createLayoutPostProcessing()
 	globalLowFrequencyUBO.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
 	globalLowFrequencyUBO.pImmutableSamplers = nullptr; // Optional
 
-	VkDescriptorSetLayoutBinding inputTextureBinding = {};
-	inputTextureBinding.binding = 2;
-	inputTextureBinding.descriptorCount = 1;
-	inputTextureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	inputTextureBinding.pImmutableSamplers = nullptr;
-	inputTextureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	VkDescriptorSetLayoutBinding diffuseTextureBinding = {};
+	diffuseTextureBinding.binding = 2;
+	diffuseTextureBinding.descriptorCount = 1;
+	diffuseTextureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	diffuseTextureBinding.pImmutableSamplers = nullptr;
+	diffuseTextureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	VkDescriptorSetLayoutBinding normalTextureBinding = {};
+	normalTextureBinding.binding = 3;
+	normalTextureBinding.descriptorCount = 1;
+	normalTextureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	normalTextureBinding.pImmutableSamplers = nullptr;
+	normalTextureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
 	std::vector<VkDescriptorSetLayoutBinding> bindings = {
-		globalHighFrequencyUBO, globalLowFrequencyUBO, inputTextureBinding };
+		globalHighFrequencyUBO, globalLowFrequencyUBO, diffuseTextureBinding, normalTextureBinding };
 	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());

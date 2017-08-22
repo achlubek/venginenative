@@ -10,7 +10,17 @@ layout(set = 0, binding = 0) uniform UniformBufferObject1 {
     float Zero;
     vec2 Mouse;
     mat4 VPMatrix;
+    vec4 inCameraPos;
+    vec4 inFrustumConeLeftBottom;
+    vec4 inFrustumConeBottomLeftToBottomRight;
+    vec4 inFrustumConeBottomLeftToTopLeft;
 } hiFreq;
+
+#define CameraPosition (hiFreq.inCameraPos.xyz)
+#define FrustumConeLeftBottom (hiFreq.inFrustumConeLeftBottom.xyz)
+#define FrustumConeBottomLeftToBottomRight (hiFreq.inFrustumConeBottomLeftToBottomRight.xyz)
+#define FrustumConeBottomLeftToTopLeft (hiFreq.inFrustumConeBottomLeftToTopLeft.xyz)
+
 layout(set = 0, binding = 1) uniform UniformBufferObject2 {
     float Time;
     float Zero;
@@ -66,17 +76,18 @@ layout(location = 3) in vec4 inTangent;
 
 layout(location = 0) out vec3 outNormal;
 layout(location = 1) out vec2 outTexCoord;
-layout(location = 2) out float outDepth;
+layout(location = 2) out flat uint inInstanceId;
 
 
 void main() {
     uint instance = gl_InstanceIndex;
     vec3 WorldPos = transform_vertex(int(instance), inPosition.xyz);
     vec4 opo = (hiFreq.VPMatrix) * vec4(inPosition.xyz, 1.0);
-    vec3 Normal = normalize(transform_normal(int(instance), normalize(inNormal)));
-    //opo.y *= -1.0;
-    gl_Position = opo;
+    vec3 Normal = normalize((int(instance), normalize(inNormal)));
     outNormal = Normal;
     outTexCoord = inTexCoord;
+    inInstanceId = gl_InstanceIndex;
+    //opo.y *= -1.0;
+    gl_Position = opo;
     //outDepth = 1.0 - ((opo.z/opo.w) * 0.5 + 0.5);
 }

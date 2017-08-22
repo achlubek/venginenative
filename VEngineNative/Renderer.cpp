@@ -23,6 +23,10 @@ Renderer::Renderer(int iwidth, int iheight)
 		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
 
+	normalImage = VulkanImage(width, height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
+
+
 	depthImage = VulkanImage(width, height, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, true);
 
@@ -43,6 +47,7 @@ Renderer::Renderer(int iwidth, int iheight)
 	meshRenderStage.addShaderStage(fragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
 	meshRenderStage.addDescriptorSetLayout(setManager.mesh3dLayout);
 	meshRenderStage.addOutputImage(diffuseImage);
+	meshRenderStage.addOutputImage(normalImage);
 	meshRenderStage.addOutputImage(depthImage);
 
 	meshRenderStage.compile();
@@ -75,6 +80,7 @@ Renderer::Renderer(int iwidth, int iheight)
 	postProcessSet.bindUniformBuffer(0, uboHighFrequencyBuffer);
 	postProcessSet.bindUniformBuffer(1, uboLowFrequencyBuffer);
 	postProcessSet.bindImageViewSampler(2, diffuseImage);
+	postProcessSet.bindImageViewSampler(3, normalImage);
 	postProcessSet.update();
 
 
@@ -112,6 +118,16 @@ void Renderer::renderToSwapChain(Camera *camera)
 	bb.emplaceFloat32((float)xpos / (float)width);
 	bb.emplaceFloat32((float)ypos / (float)height);
 	bb.emplaceMat4(vpmatrix);
+
+	bb.emplaceVec3(camera->transformation->getPosition());
+	bb.emplaceFloat32(0.0f);
+
+	bb.emplaceVec3(camera->cone->leftBottom);
+	bb.emplaceFloat32(0.0f);
+	bb.emplaceVec3(camera->cone->rightBottom - camera->cone->leftBottom);
+	bb.emplaceFloat32(0.0f);
+	bb.emplaceVec3(camera->cone->leftTop - camera->cone->leftBottom);
+	bb.emplaceFloat32(0.0f);
 
 	void* data;
 	uboHighFrequencyBuffer.map(0, bb.buffer.size(), &data);
