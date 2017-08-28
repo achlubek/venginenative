@@ -8,6 +8,7 @@
 #include "../VEngineNative/stdafx.h"
 #include "../VEngineNative/Game.h"
 #include "../VEngineNative/Media.h"
+#include "EditorApp.h"
 
 /*
 Mesh3d * loadRawMesh(string file) {
@@ -42,6 +43,8 @@ int main(int argc, char* argv[])
 	Media::loadFileMap("../../media");
 	Media::loadFileMap("../../shaders");
 	Game *game = new Game(1920, 1010);
+	
+	/*
  
 
 	auto cam = new Camera();
@@ -78,11 +81,7 @@ int main(int argc, char* argv[])
 		}
 		if (game->getKeyStatus(GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
 			speed *= 30.1f;
-		}/*
-		 if (game->getKeyStatus(GLFW_KEY_F1) == GLFW_PRESS) {
-		 light->transformation->position = cam->transformation->position;
-		 light->transformation->orientation = cam->transformation->orientation;
-		 }*/
+		}
 		glm::vec3 dw = glm::vec3(0);
 		float w = 0.0;
 		if (game->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
@@ -131,9 +130,13 @@ int main(int argc, char* argv[])
 		glm::quat newrot = glm::angleAxis(deg2rad(*pitch), glm::vec3(0, 1, 0)) * glm::angleAxis(deg2rad(*yaw), glm::vec3(1, 0, 0));
 		cam->transformation->setOrientation(glm::slerp(newrot, cam->transformation->getOrientation(), 0.9f));
 		cam->transformation->setPosition(glm::mix(newpos, cam->transformation->getPosition(), 0.8f));
-	});
+	});*/
 
+	EditorApp* app = new EditorApp();
+	app->initialize();
+	app->bind(game);
 	game->start();
+
 	while (!game->hasExited) {
 		Sleep(100);
 	}

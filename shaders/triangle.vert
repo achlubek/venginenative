@@ -53,7 +53,7 @@ vec3 quat_mul_vec( vec4 q, vec3 v ){
 
 vec3 transform_vertex(int info, vec3 vertex){
     vec3 result = vertex;
-    ModelInfo o = modelData.ModelInfos[gl_InstanceIndex];
+    ModelInfo o = modelData.ModelInfos[info];
     result *= o.Scale.xyz;
     result = quat_mul_vec(o.Rotation, result);
     result += o.Translation.xyz;
@@ -62,7 +62,7 @@ vec3 transform_vertex(int info, vec3 vertex){
 
 vec3 transform_normal(int info, vec3 normal){
     vec3 result = normal;
-    ModelInfo o = modelData.ModelInfos[gl_InstanceIndex];
+    ModelInfo o = modelData.ModelInfos[info];
     result = quat_mul_vec(o.Rotation, result);
     result *= 1.0 / o.Scale.xyz;
     return result;
@@ -80,10 +80,10 @@ layout(location = 2) out flat uint inInstanceId;
 
 
 void main() {
-    uint instance = gl_InstanceIndex;
-    vec3 WorldPos = transform_vertex(int(instance), inPosition.xyz);
-    vec4 opo = (hiFreq.VPMatrix) * vec4(inPosition.xyz, 1.0);
-    vec3 Normal = normalize((int(instance), normalize(inNormal)));
+
+    vec3 WorldPos = transform_vertex(int(gl_InstanceIndex), inPosition.xyz);
+    vec4 opo = (hiFreq.VPMatrix) * vec4(WorldPos, 1.0);
+    vec3 Normal = normalize((int(gl_InstanceIndex), normalize(inNormal)));
     outNormal = Normal;
     outTexCoord = inTexCoord;
     inInstanceId = gl_InstanceIndex;

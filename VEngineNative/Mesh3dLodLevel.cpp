@@ -143,6 +143,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
     int fint = filtered.size();
 	instancesFiltered = fint;
 
+	changed = true;
     if (changed) {
 
 
@@ -152,7 +153,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
             int a = 0;
             for (unsigned int i = 0; i < fint; i++) {
                 TransformationManager *mgr = filtered[i]->transformation;
-                quat q = glm::inverse(mgr->getOrientation());
+                quat q = mgr->getOrientation();
                 vec3 p = mgr->getPosition();
                 vec3 s = mgr->getSize();
                 ((float*)modelbufferpt)[a++] = q.x;
@@ -169,7 +170,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
                 ((float*)modelbufferpt)[a++] = s.y;
                 ((float*)modelbufferpt)[a++] = s.z;
                 ((float*)modelbufferpt)[a++] = 1.0f;
-
+				
                 ((int*)modelbufferpt)[a++] = filtered[i]->id;
                 ((int*)modelbufferpt)[a++] = filtered[i]->id;
                 ((int*)modelbufferpt)[a++] = filtered[i]->id;
@@ -264,7 +265,7 @@ vec4 projectvdao2(mat4 mat, vec3 pos) {
 
 bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
 {
-	//return true;//debug
+	return true;//debug
     if (ignoreFrustumCulling) return true;
     auto size = instance->transformation->getSize();
     float radius = info3d->radius * glm::max(glm::max(size.x, size.y), size.z);

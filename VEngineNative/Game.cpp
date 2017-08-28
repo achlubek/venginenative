@@ -37,8 +37,41 @@ Game::~Game()
 {
 }
 
+void mousebuttoncallback(GLFWwindow * window, int button, int action, int mods) {
+
+	int id = 0;
+	if (button == GLFW_MOUSE_BUTTON_LEFT) id = 0;
+	if (button == GLFW_MOUSE_BUTTON_RIGHT) id = 1;
+	if (button == GLFW_MOUSE_BUTTON_MIDDLE) id = 2;
+	if (action == GLFW_PRESS) Game::instance->onMouseDown->invoke(id);
+	if (action == GLFW_RELEASE) Game::instance->onMouseUp->invoke(id);
+	//  ImGui_ImplGlfwGL3_MouseButtonCallback(window, button, action, mods);
+}
+
 void Game::start()
 {
+	glfwSetMouseButtonCallback(vulkan->window, mousebuttoncallback);
+
+	glfwSetWindowSizeCallback(vulkan->window, [](GLFWwindow* window, int width, int height) -> void {
+		instance->glfwWindowSizeCallback(window, width, height);
+		instance->onWindowResize->invoke(0);
+	});
+
+	glfwSetCharCallback(vulkan->window, [](GLFWwindow* window, unsigned int key) -> void {
+		instance->onChar->invoke(key);
+	});
+
+	glfwSetKeyCallback(vulkan->window, [](GLFWwindow* window, int key, int, int action, int mods) -> void {
+		if (action == GLFW_PRESS)
+			Game::instance->onKeyPress->invoke(key);
+		if (action == GLFW_RELEASE)
+			Game::instance->onKeyRelease->invoke(key);
+		if (action == GLFW_REPEAT)
+			Game::instance->onKeyRepeat->invoke(key);
+	});
+
+	//    glfwSetKeyCallback(window, glfwKeyCallback);
+
 	renderThread();
 	//thread renderthread(bind(&Game::renderThread, this));
 	//renderthread.detach();
@@ -96,51 +129,27 @@ void Game::glfwWindowSizeCallback(GLFWwindow* window, int w, int h)
 void Game::physicsThread()
 {
 	double time = glfwGetTime();
-	while (true)
-	{
+	//while (true)
+	//{
 		while (Game::instance->physicsInvokeQueue.size() > 0) {
 			Game::instance->physicsInvokeQueue.front()();
 			Game::instance->physicsInvokeQueue.pop();
 		}
-		if (!Game::instance->physicsNeedsUpdate) {
+		//if (!Game::instance->physicsNeedsUpdate) {
 			//    Sleep(4);
-			continue;
-		}
+		//	continue;
+		//}
 
 		double now = glfwGetTime();
 		Game::instance->world->physics->simulationStep((float)((now - time)));
 		time = now;
 		Game::instance->physicsNeedsUpdate = false;
-	}
+	//}
 }
 
-void mousebuttoncallback(GLFWwindow * window, int button, int action, int mods) {
-
-	int id = 0;
-	if (button == GLFW_MOUSE_BUTTON_LEFT) id = 0;
-	if (button == GLFW_MOUSE_BUTTON_RIGHT) id = 1;
-	if (button == GLFW_MOUSE_BUTTON_MIDDLE) id = 2;
-	if (action == GLFW_PRESS) Game::instance->onMouseDown->invoke(id);
-	if (action == GLFW_RELEASE) Game::instance->onMouseUp->invoke(id);
-	//  ImGui_ImplGlfwGL3_MouseButtonCallback(window, button, action, mods);
-}
 
 void Game::renderThread()
-{
-
-	//glfwSetMouseButtonCallback(vulkan->window, mousebuttoncallback);
-
-	//glfwSetWindowSizeCallback(vulkan->window, [](GLFWwindow* window, int width, int height) -> void {
-	//	instance->glfwWindowSizeCallback(window, width, height);
-	//	instance->onWindowResize->invoke(0);
-	//});
-
-	//glfwSetCharCallback(vulkan->window, [](GLFWwindow* window, unsigned int key) -> void {
-	//	instance->onChar->invoke(key);
-	//});
-
-
-
+{ 
 	shouldClose = false;
 	int frames = 0;
 	double lastTime = 0.0;
@@ -160,6 +169,7 @@ void Game::renderThread()
 		onRenderFrameFunc();
 
 		glfwPollEvents();
+		physicsThread();
 	}
 	delete vulkan;
 	glfwTerminate();
