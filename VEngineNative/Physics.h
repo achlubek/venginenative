@@ -25,7 +25,7 @@ private:
     std::vector<btCollisionShape*> collisionShapes;
     btCollisionDispatcher* dispatcher;
     btDiscreteDynamicsWorld* world;
-    std::set<PhysicalBody*> activeBodies;
+    std::vector<PhysicalBody*> activeBodies;
     std::vector<PhysicalBody*> addBodyQueue;
     std::vector<PhysicalBody*> removeBodyQueue;
     std::vector<PhysicalConstraint*> addConstraintQueue;

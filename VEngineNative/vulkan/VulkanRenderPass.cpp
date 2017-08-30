@@ -1,8 +1,9 @@
 #include "stdafx.h" 
 
 
-VulkanRenderPass::VulkanRenderPass(std::vector<VulkanAttachment> attachments, std::vector<VulkanSubpass> subpasses)
+VulkanRenderPass::VulkanRenderPass(std::vector<VulkanAttachment> iattachments, std::vector<VulkanSubpass> subpasses)
 {
+	attachments = iattachments;
 	std::vector<VkAttachmentDescription> descs = {};
 	descs.resize(attachments.size());
 	for (int i = 0; i < attachments.size(); i++)descs[i] = attachments[i].description;

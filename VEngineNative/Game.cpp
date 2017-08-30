@@ -129,22 +129,22 @@ void Game::glfwWindowSizeCallback(GLFWwindow* window, int w, int h)
 void Game::physicsThread()
 {
 	double time = glfwGetTime();
-	//while (true)
-	//{
+	while (true)
+	{
 		while (Game::instance->physicsInvokeQueue.size() > 0) {
 			Game::instance->physicsInvokeQueue.front()();
 			Game::instance->physicsInvokeQueue.pop();
 		}
-		//if (!Game::instance->physicsNeedsUpdate) {
-			//    Sleep(4);
-		//	continue;
-		//}
+		if (!Game::instance->physicsNeedsUpdate) {
+			   // Sleep(4);
+			continue;
+		}
 
 		double now = glfwGetTime();
-		Game::instance->world->physics->simulationStep((float)((now - time)));
+		Game::instance->world->physics->simulationStep((now-time));
 		time = now;
 		Game::instance->physicsNeedsUpdate = false;
-	//}
+	}
 }
 
 
@@ -153,8 +153,8 @@ void Game::renderThread()
 	shouldClose = false;
 	int frames = 0;
 	double lastTime = 0.0;
-	//std::thread ptask(physicsThread);
-	//ptask.detach();
+	std::thread ptask(physicsThread);
+	ptask.detach();
 	while (!glfwWindowShouldClose(vulkan->window) && !shouldClose)
 	{
 		frames++;
@@ -169,7 +169,8 @@ void Game::renderThread()
 		onRenderFrameFunc();
 
 		glfwPollEvents();
-		physicsThread();
+		physicsNeedsUpdate = true;
+		//physicsThread();
 	}
 	delete vulkan;
 	glfwTerminate();
@@ -180,7 +181,8 @@ void Game::renderThread()
 
 void Game::onRenderFrameFunc()
 {
-	firstFullDrawFinished = false;
+	time = glfwGetTime();
+	//firstFullDrawFinished = false;
 	while (invokeQueue.size() > 0) {
 		invokeQueue.front()();
 		invokeQueue.pop();

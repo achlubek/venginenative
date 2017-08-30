@@ -90,6 +90,8 @@ using namespace std;
 #include "BulletDynamics/ConstraintSolver/btNNCGConstraintSolver.h"
 #include "LinearMath/btAlignedObjectArray.h"
 #include "BulletCollision/CollisionShapes/btConvexShape.h"
+#include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
+#include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
 btVector3 bulletify3(glm::vec3 v);
 glm::vec3 glmify3(btVector3 v);
 btQuaternion bulletifyq(glm::quat v);

@@ -26,6 +26,9 @@ Renderer::Renderer(int iwidth, int iheight)
 	normalImage = VulkanImage(width, height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
+	distanceImage = VulkanImage(width, height, VK_FORMAT_R32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
+
 
 	depthImage = VulkanImage(width, height, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, true);
@@ -48,6 +51,7 @@ Renderer::Renderer(int iwidth, int iheight)
 	meshRenderStage.addDescriptorSetLayout(setManager.mesh3dLayout);
 	meshRenderStage.addOutputImage(diffuseImage);
 	meshRenderStage.addOutputImage(normalImage);
+	meshRenderStage.addOutputImage(distanceImage);
 	meshRenderStage.addOutputImage(depthImage);
 
 	meshRenderStage.compile();
@@ -81,6 +85,7 @@ Renderer::Renderer(int iwidth, int iheight)
 	postProcessSet.bindUniformBuffer(1, uboLowFrequencyBuffer);
 	postProcessSet.bindImageViewSampler(2, diffuseImage);
 	postProcessSet.bindImageViewSampler(3, normalImage);
+	postProcessSet.bindImageViewSampler(4, distanceImage);
 	postProcessSet.update();
 
 

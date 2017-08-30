@@ -199,7 +199,7 @@ void Car::initialize(TransformStruct spawn)
 			// btTransform cmasstrs = body->body->getCenterOfMassTransform();
 			// cmasstrs.setOrigin(cmasstrs.getOrigin() + btVector3(0.0,  2.0, 0.0));
 			// body->body->setCenterOfMassTransform(cmasstrs);
-
+			
 			tyreLF->getRigidBody()->setFriction(definitionReader->getf("tyre_friction"));
 			tyreRF->getRigidBody()->setFriction(definitionReader->getf("tyre_friction"));
 			tyreLR->getRigidBody()->setFriction(definitionReader->getf("tyre_friction"));
@@ -299,18 +299,18 @@ void Car::initialize(TransformStruct spawn)
 			m->m_maxMotorForce = maxMotorForce;
 			m->m_loLimit = loLimit;
 			m->m_hiLimit = hiLimit;
-
+			
 			body->enable();
 			tyreLF->enable();
 			tyreRF->enable();
 			tyreLR->enable();
 			tyreRR->enable();
-
+			
 			tyreLFCon->enable();
 			tyreRFCon->enable();
 			tyreLRCon->enable();
 			tyreRRCon->enable();
-
+			
 
 			body->getRigidBody()->setLinearVelocity(btVector3(0.0, 0.0, 0.0));
 			body->getRigidBody()->setAngularVelocity(btVector3(0.0, 0.0, 0.0));

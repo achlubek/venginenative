@@ -1,22 +1,24 @@
 #include "stdafx.h"
 #include "Physics.h"
+#include "Game.h"
 
 
 Physics::Physics()
 {
-    activeBodies = std::set<PhysicalBody*>();
+    activeBodies = std::vector<PhysicalBody*>();
     addBodyQueue = std::vector<PhysicalBody*>();
     removeBodyQueue = std::vector<PhysicalBody*>();
     addBodyQueue = std::vector<PhysicalBody*>();
     removeBodyQueue = std::vector<PhysicalBody*>();
 
-    collisionConf = new btDefaultCollisionConfiguration();
-    dispatcher = new btCollisionDispatcher(collisionConf);
-    broadphase = new btDbvtBroadphase();
-    auto w = new btDiscreteDynamicsWorld(dispatcher, broadphase, new btSequentialImpulseConstraintSolver(), collisionConf);
-    w->getDispatchInfo().m_useContinuous = true;
-    w->setGravity(btVector3(gravity.x, gravity.y, gravity.z));
-    world = w;
+	collisionConf = new btDefaultCollisionConfiguration();
+	dispatcher = new btCollisionDispatcher(collisionConf);
+	broadphase = new btDbvtBroadphase();
+	auto w = new btDiscreteDynamicsWorld(dispatcher, broadphase, new btSequentialImpulseConstraintSolver(), collisionConf);
+	//w->getDispatchInfo().m_useContinuous = true;
+	w->setGravity(btVector3(gravity.x, gravity.y, gravity.z));
+	world = w;
+ 
 }
 
 
@@ -31,14 +33,18 @@ void Physics::simulationStep(float elapsedTime)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         return;
     }
-    world->stepSimulation(elapsedTime, 1);
-    for (auto b : activeBodies)
-    {
-        if (b != nullptr && b->getCollisionObject() != nullptr && b->getCollisionObject()->getActivationState() != ISLAND_SLEEPING)
-        {
-            b->applyChanges();
-        }
-    }
+	if (Game::instance->time > 2.0f)world->stepSimulation(elapsedTime);
+	if (activeBodies.size() > 0)
+	{
+		auto lst = std::vector<PhysicalBody*>(activeBodies); 
+		for (int i = 0; i < lst.size(); i++) {
+			auto b = activeBodies[i];
+			if (b != nullptr && b->getCollisionObject() != nullptr && b->getCollisionObject()->getActivationState() != ISLAND_SLEEPING)
+			{
+				b->applyChanges();
+			}
+		}
+	}
     if (addBodyQueue.size() > 0)
     {
         auto lst = std::vector<PhysicalBody*>(addBodyQueue);
@@ -85,14 +91,16 @@ void Physics::simulationStep(float elapsedTime)
 
 void Physics::removeBody(PhysicalBody * body)
 {
-    removeBodyQueue.push_back(body);
-    activeBodies.erase(body);
+    removeBodyQueue.push_back(body); 
+	auto position = std::find(activeBodies.begin(), activeBodies.end(), body);
+	if (position != activeBodies.end()) 
+		activeBodies.erase(position); 
 }
 
 void Physics::addBody(PhysicalBody * body)
 {
-    addBodyQueue.push_back(body);
-    activeBodies.emplace(body);
+    addBodyQueue.push_back(body); 
+    activeBodies.push_back(body);
 }
 
 void Physics::removeConstraint(PhysicalConstraint * c)

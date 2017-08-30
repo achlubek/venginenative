@@ -75,18 +75,22 @@ layout(location = 2) in vec3 inNormal;
 layout(location = 3) in vec4 inTangent;
 
 layout(location = 0) out vec3 outNormal;
-layout(location = 1) out vec2 outTexCoord;
-layout(location = 2) out flat uint inInstanceId;
+layout(location = 1) out vec4 outTangent;
+layout(location = 2) out vec2 outTexCoord;
+layout(location = 3) out flat uint inInstanceId;
+layout(location = 4) out vec3 outWorldPos;
 
 
 void main() {
 
     vec3 WorldPos = transform_vertex(int(gl_InstanceIndex), inPosition.xyz);
     vec4 opo = (hiFreq.VPMatrix) * vec4(WorldPos, 1.0);
-    vec3 Normal = normalize((int(gl_InstanceIndex), normalize(inNormal)));
+    vec3 Normal = normalize((int(gl_InstanceIndex), (inNormal)));
     outNormal = Normal;
+    outTangent = clamp(vec4(normalize(transform_normal(int(gl_InstanceIndex), inTangent.xyz)), inTangent.w), -1.0, 1.0);
     outTexCoord = inTexCoord;
     inInstanceId = gl_InstanceIndex;
+    outWorldPos = WorldPos;
     //opo.y *= -1.0;
     gl_Position = opo;
     //outDepth = 1.0 - ((opo.z/opo.w) * 0.5 + 0.5);

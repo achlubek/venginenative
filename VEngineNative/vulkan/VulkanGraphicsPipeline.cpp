@@ -54,20 +54,25 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(int viewportwidth, int viewporthe
 	depthStencil.depthCompareOp = enableDepthTest ? VK_COMPARE_OP_LESS : VK_COMPARE_OP_ALWAYS;
 	depthStencil.depthBoundsTestEnable = VK_FALSE;
 	depthStencil.stencilTestEnable = VK_FALSE;
+	 
+	std::vector<VkPipelineColorBlendAttachmentState> atts = {  };
 
-	VkPipelineColorBlendAttachmentState colorBlendAttachment1 = {};
-	colorBlendAttachment1.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	colorBlendAttachment1.blendEnable = VK_FALSE;
-	VkPipelineColorBlendAttachmentState colorBlendAttachment2 = {};
-	colorBlendAttachment2.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	colorBlendAttachment2.blendEnable = VK_FALSE;
-	std::vector<VkPipelineColorBlendAttachmentState> atts = { colorBlendAttachment1, colorBlendAttachment2 };
+
+	for (int i = 0; i < renderpass.attachments.size(); i++) {
+		if (!renderpass.attachments[i].image->isDepthBuffer) {
+			VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
+			colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			colorBlendAttachment.blendEnable = VK_FALSE;
+			atts.push_back(colorBlendAttachment);
+		}
+	}
+
 
 	VkPipelineColorBlendStateCreateInfo colorBlending = {};
 	colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	colorBlending.logicOpEnable = VK_FALSE;
 	colorBlending.logicOp = VK_LOGIC_OP_COPY;
-	colorBlending.attachmentCount = 2;
+	colorBlending.attachmentCount = atts.size();
 	colorBlending.pAttachments = atts.data();
 	colorBlending.blendConstants[0] = 0.0f;
 	colorBlending.blendConstants[1] = 0.0f;

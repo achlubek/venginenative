@@ -8,6 +8,7 @@ layout(location = 0) out vec4 outColor;
 
 layout(binding = 2) uniform sampler2D texDiffuse;
 layout(binding = 3) uniform sampler2D texNormal;
+layout(binding = 4) uniform sampler2D texDistance;
 
 layout(set = 0, binding = 0) uniform UniformBufferObject1 {
     float Time;
@@ -54,8 +55,9 @@ void main() {
     vec3 normal = normalize(texture(texNormal, inTexCoord).rgb);//normalize(bb.rgb);
     vec3 dir = reconstructCameraSpaceDistance(inTexCoord, 1.0);
     float fresnel = 0.04 + 0.96 * fresnelf(dir, normal);
-    vec3 atm = getAtmosphereForDirectionReal(VECTOR_UP * 200.0, dir, normalize(vec3(1.0)));
-    vec3 reflected = 0.04 * bb.rgb * (1.0 - fresnel) + bb.rgb * fresnel * getAtmosphereForDirectionReal(VECTOR_UP * 200.0, reflect(dir, normal), normalize(vec3(1.0)));
-    vec3 res = mix(atm, reflected, bb.a);
+    //vec3 atm = getAtmosphereForDirectionReal(VECTOR_UP * 200.0, dir, normalize(vec3(1.0)));
+    //vec3 reflected = 0.04 * bb.rgb * (1.0 - fresnel) + bb.rgb * fresnel * getAtmosphereForDirectionReal(VECTOR_UP * 200.0, reflect(dir, normal), normalize(vec3(1.0)));
+    //vec3 res = mix(atm, reflected, step(0.001, texture(texDistance, inTexCoord).r));
+    vec3 res = mix(vec3(0.5), bb.rgb, step(0.001, texture(texDistance, inTexCoord).r));
     outColor = vec4(pow(res, vec3(1.0 / 2.2)), 1.0);
 }

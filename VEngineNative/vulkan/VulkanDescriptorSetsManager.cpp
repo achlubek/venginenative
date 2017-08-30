@@ -78,9 +78,32 @@ void VulkanDescriptorSetsManager::createLayoutMesh3d()
 	normalTextureBinding.pImmutableSamplers = nullptr;
 	normalTextureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
+	VkDescriptorSetLayoutBinding bumpTextureBinding = {};
+	bumpTextureBinding.binding = 6;
+	bumpTextureBinding.descriptorCount = 1;
+	bumpTextureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	bumpTextureBinding.pImmutableSamplers = nullptr;
+	bumpTextureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	VkDescriptorSetLayoutBinding roughnessTextureBinding = {};
+	roughnessTextureBinding.binding = 7;
+	roughnessTextureBinding.descriptorCount = 1;
+	roughnessTextureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	roughnessTextureBinding.pImmutableSamplers = nullptr;
+	roughnessTextureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	VkDescriptorSetLayoutBinding metalnessTextureBinding = {};
+	metalnessTextureBinding.binding = 8;
+	metalnessTextureBinding.descriptorCount = 1;
+	metalnessTextureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	metalnessTextureBinding.pImmutableSamplers = nullptr;
+	metalnessTextureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+
 	std::vector<VkDescriptorSetLayoutBinding> bindings = {
 		globalHighFrequencyUBO, globalLowFrequencyUBO, meshInstanceDataUBO,
-		materialDataUBO, diffuseTextureBinding , normalTextureBinding };
+		materialDataUBO, diffuseTextureBinding , normalTextureBinding,
+		bumpTextureBinding, roughnessTextureBinding, metalnessTextureBinding };
 	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -119,8 +142,16 @@ void VulkanDescriptorSetsManager::createLayoutPostProcessing()
 	normalTextureBinding.pImmutableSamplers = nullptr;
 	normalTextureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
+	VkDescriptorSetLayoutBinding distanceTextureBinding = {};
+	distanceTextureBinding.binding = 4;
+	distanceTextureBinding.descriptorCount = 1;
+	distanceTextureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	distanceTextureBinding.pImmutableSamplers = nullptr;
+	distanceTextureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
 	std::vector<VkDescriptorSetLayoutBinding> bindings = {
-		globalHighFrequencyUBO, globalLowFrequencyUBO, diffuseTextureBinding, normalTextureBinding };
+		globalHighFrequencyUBO, globalLowFrequencyUBO, diffuseTextureBinding, normalTextureBinding, distanceTextureBinding
+	};
 	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());

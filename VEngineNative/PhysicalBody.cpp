@@ -27,21 +27,22 @@ PhysicalBody::~PhysicalBody()
 
 void PhysicalBody::applyChanges()
 {
-    if (!isStaticObject) {
-        auto xyz = ((btRigidBody*)body)->getCenterOfMassPosition();
+	auto xyz = ((btRigidBody*)body)->getCenterOfMassPosition();
+	if (isnan(xyz.x())) {
+		readChanges();
+		return;
+	}
+   // if (!isStaticObject) {
         auto quat = ((btRigidBody*)body)->getOrientation();
         transformation->setPosition(glm::vec3(xyz.x(), xyz.y(), xyz.z()));
+		printf("%f\n", quat.y());
         float X = quat.getX();
         float Y = quat.getY();
         float Z = quat.getZ();
         float W = quat.getW();
-        glm::quat qt = glm::quat(X, Y, Z, W);
-        qt.x = X;
-        qt.y = Y;
-        qt.z = Z;
-        qt.w = W; // fuck you glm::quat
-        transformation->setOrientation(qt);
-    }
+        glm::quat qt = glm::quat(W, X, Y, Z);
+         transformation->setOrientation(glm::inverse(qt));
+    //}
 }
 
 void PhysicalBody::disable()
@@ -85,11 +86,12 @@ void PhysicalBody::readChanges()
     glm::vec3 s = transformation->getSize();
     auto q = btQuaternion(o.x, o.y, o.z, o.w);
     auto v = btVector3(p.x, p.y, p.z);
+	printf("FAIL %f\n", p.y);
 
     auto bt = btTransform();
     bt.setOrigin(v);
     bt.setRotation(q);
-    body->setWorldTransform(bt);
+    body->setWorldTransform(bt); 
     shape->setLocalScaling(btVector3(s.x, s.y, s.z));
 }
 

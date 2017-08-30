@@ -60,6 +60,9 @@ void Mesh3dLodLevel::initialize()
 
 	descriptorSet.bindImageViewSampler(i++, *Game::instance->dummyTexture);
 	descriptorSet.bindImageViewSampler(i++, *Game::instance->dummyTexture);
+	descriptorSet.bindImageViewSampler(i++, *Game::instance->dummyTexture);
+	descriptorSet.bindImageViewSampler(i++, *Game::instance->dummyTexture);
+	descriptorSet.bindImageViewSampler(i++, *Game::instance->dummyTexture);
 
 	descriptorSet.update();
 }
@@ -156,6 +159,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
                 quat q = mgr->getOrientation();
                 vec3 p = mgr->getPosition();
                 vec3 s = mgr->getSize();
+
                 ((float*)modelbufferpt)[a++] = q.x;
                 ((float*)modelbufferpt)[a++] = q.y;
                 ((float*)modelbufferpt)[a++] = q.z;
@@ -191,8 +195,19 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
 		if (material->normalTex != nullptr) {
 			descriptorSet.bindImageViewSampler(5, *material->normalTex);
 		}
+		if (material->bumpTex != nullptr) {
+			descriptorSet.bindImageViewSampler(6, *material->bumpTex);
+		}
+		if (material->roughnessTex != nullptr) {
+			descriptorSet.bindImageViewSampler(7, *material->roughnessTex);
+		}
+		if (material->metalnessTex != nullptr) {
+			descriptorSet.bindImageViewSampler(8, *material->metalnessTex);
+		}
 
-		if (material->diffuseColorTex != nullptr || material->normalTex != nullptr) {
+		if (material->diffuseColorTex != nullptr || material->normalTex != nullptr
+			|| material->bumpTex != nullptr || material->roughnessTex != nullptr
+			|| material->metalnessTex != nullptr) {
 			descriptorSet.update();
 		}
 

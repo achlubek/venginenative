@@ -1,3 +1,3 @@
 <?php
 chdir(__DIR__);
-passthru('gfind . | grep "\.cpp$\|\.hpp$\|\.h$\|\.c$\|\.glsl$" | tar -T - -czf code_revisions_all/backup'.count(scandir('code_revisions_all')).'.tar.gz');
+passthru('"C:\Program Files\Git\usr\bin\find" . | "C:\Program Files\Git\usr\bin\grep" "\.cpp$\|\.hpp$\|\.h$\|\.c$\|\.vert$\|\.frag$\|\.glsl$" | "C:\Program Files\Git\usr\bin\tar" -T - -cf code_revisions_all/backup'.count(scandir('code_revisions_all')).'.tar');
