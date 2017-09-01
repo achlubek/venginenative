@@ -1,13 +1,13 @@
 #include "stdafx.h"
 #include "Mesh3d.h"
-#include "Game.h"
+#include "Application.h"
 
 Mesh3d::Mesh3d()
 {
     instances = {};
     lodLevels = {};
-    id = Game::instance->getNextId();
-    Game::instance->registerId(id, this);
+    id = Application::instance->getNextId();
+    Application::instance->registerId(id, this);
     lastUpdateFrameId = -1;
 }
 
@@ -99,8 +99,8 @@ void Mesh3d::draw(VulkanRenderStage* stage)
 
 void Mesh3d::setUniforms()
 {
-    if (lastUpdateFrameId != Game::instance->frame) {
+    if (lastUpdateFrameId != Application::instance->frame) {
         updateBuffers();
-        lastUpdateFrameId = Game::instance->frame;
+        lastUpdateFrameId = Application::instance->frame;
     }
 }

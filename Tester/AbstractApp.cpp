@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "AbstractApp.h"
 #include "../VEngineNative/stdafx.h"
-#include "../VEngineNative/Game.h"
+#include "../VEngineNative/Application.h"
+#include "Keyboard.h"
+#include "Mouse.h"
 
 
 AbstractApp::AbstractApp()
@@ -9,37 +11,43 @@ AbstractApp::AbstractApp()
 }
 
 
-void AbstractApp::bind(Game * igame)
+void AbstractApp::bind(Application * iapp)
 {
-	game = igame;
+	app = iapp;
+	keyboard = new Keyboard(app->vulkan->window);
+	mouse = new Mouse(app->vulkan->window);
 	onBind();
-	game->onRenderFrame->add([&](int zero) {
-		onRenderFrame(game->time - lastTime);
-		lastTime = game->time;
+
+	app->onRenderFrame.add([&](int zero) {
+		onRenderFrame(app->time - lastTime);
+		lastTime = app->time;
 	});
-	game->onRenderUIFrame->add([&](int zero) {
-		onRenderUIFrame(game->time - lastTimeUI);
-		lastTimeUI = game->time;
-	});
-	game->onKeyPress->add([&](int key) {
+
+	keyboard->onKeyPress.add([&](int key) {
 		onKeyPress(key);
 	});
-	game->onKeyRelease->add([&](int key) {
+
+	keyboard->onKeyRelease.add([&](int key) {
 		onKeyRelease(key);
 	});
-	game->onKeyRepeat->add([&](int key) {
+
+	keyboard->onKeyRepeat.add([&](int key) {
 		onKeyRepeat(key);
 	});
-	game->onChar->add([&](unsigned int c) {
+
+	keyboard->onChar.add([&](unsigned int c) {
 		onChar(c);
 	});
-	game->onWindowResize->add([&](int zero) {
-		onWindowResize(game->width, game->height);
+
+	app->onWindowResize.add([&](int zero) {
+		onWindowResize(app->width, app->height);
 	});
-	game->onMouseDown->add([&](int id) {
+
+	mouse->onMouseDown.add([&](int id) {
 		onMouseDown(id);
 	});
-	game->onMouseUp->add([&](int id) {
+
+	mouse->onMouseUp.add([&](int id) {
 		onMouseUp(id);
 	});
 }

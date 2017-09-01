@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "../Game.h"
+#include "../Application.h"
 
 void VulkanSwapChain::present(std::vector<VkSemaphore> waitSemaphores, const uint32_t imageIndex)
 {
@@ -76,7 +76,7 @@ VkExtent2D VulkanSwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& cap
 		return capabilities.currentExtent;
 	}
 	else {
-		VkExtent2D actualExtent = { Game::instance->width, Game::instance->height };
+		VkExtent2D actualExtent = { Application::instance->width, Application::instance->height };
 
 		actualExtent.width = vmax(capabilities.minImageExtent.width, vmin(capabilities.maxImageExtent.width, actualExtent.width));
 		actualExtent.height = vmax(capabilities.minImageExtent.height, vmin(capabilities.maxImageExtent.height, actualExtent.height));

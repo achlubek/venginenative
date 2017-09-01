@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Renderer.h"
-#include "Game.h"
+#include "Application.h"
 #include "Camera.h"
 #include "FrustumCone.h"
 #include "Media.h"
@@ -75,7 +75,7 @@ Renderer::Renderer(int iwidth, int iheight)
 		postProcessRenderStages[i].compile();
 	}
 
-	postprocessmesh = Game::instance->asset->loadObject3dInfoFile("ppplane.vbo");
+	postprocessmesh = Application::instance->asset->loadObject3dInfoFile("ppplane.vbo");
 	postProcessSet = setManager.generatePostProcessingDescriptorSet();
 	postProcessSet.bindUniformBuffer(0, uboHighFrequencyBuffer);
 	postProcessSet.bindUniformBuffer(1, uboLowFrequencyBuffer);
@@ -137,10 +137,10 @@ void Renderer::renderToSwapChain(Camera *camera)
 
 	uint32_t imageIndex;
 
-	Game::instance->world->setUniforms(camera);
-	Game::instance->world->setSceneUniforms();
+	Application::instance->world->setUniforms(camera);
+	Application::instance->world->setSceneUniforms();
 	meshRenderStage.beginDrawing(); 
-	Game::instance->world->draw(&meshRenderStage, camera);
+	Application::instance->world->draw(&meshRenderStage, camera);
 	meshRenderStage.endDrawing();
 
 	if (!ppRecorded) {

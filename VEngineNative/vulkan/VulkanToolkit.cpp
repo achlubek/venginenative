@@ -2,7 +2,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include "../Game.h"
+#include "../Application.h"
 
 VulkanToolkit* VulkanToolkit::singleton = nullptr;
 
@@ -68,7 +68,7 @@ void VulkanToolkit::initialize()
 	createLogicalDevice(physicalDevices[chosenDeviceId], createInfo);
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	window = glfwCreateWindow(Game::instance->width, Game::instance->height, "VULKAN", NULL, NULL);
+	window = glfwCreateWindow(Application::instance->width, Application::instance->height, "VULKAN", NULL, NULL);
 
 	VkResult result;
 	result = glfwCreateWindowSurface(instance, window, NULL, &surface);

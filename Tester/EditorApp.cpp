@@ -2,6 +2,8 @@
 #include "EditorApp.h"
 #include "../VEngineNative/stdafx.h" 
 #include "Physics.h"
+#include "Keyboard.h"
+#include "Mouse.h"
 
 
 EditorApp::EditorApp()
@@ -21,39 +23,39 @@ void EditorApp::initialize()
 void EditorApp::onRenderFrame(float elapsed)
 {
 	physics->simulationStep(1.0 / 60.0);
-	//game->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setPosition(glm::vec3(sin(game->time), cos(game->time * 1.2), sin(game->time * 1.6)));
-	//game->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setSize(glm::vec3(sin(game->time) * 0.5 + 1.5));
+	//app->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setPosition(glm::vec3(sin(app->time), cos(app->time * 1.2), sin(app->time * 1.6)));
+	//app->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setSize(glm::vec3(sin(app->time) * 0.5 + 1.5));
 
 	if (currentMode == EDITOR_MODE_MOVE_CAMERA) {
 		float speed = 0.1f;
-		if (game->getKeyStatus(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		if (keyboard->getKeyStatus(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 			speed *= 0.1f;
 		}
-		if (game->getKeyStatus(GLFW_KEY_LEFT_ALT) == GLFW_PRESS) {
+		if (keyboard->getKeyStatus(GLFW_KEY_LEFT_ALT) == GLFW_PRESS) {
 			speed *= 10;
 		}
-		if (game->getKeyStatus(GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+		if (keyboard->getKeyStatus(GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
 			speed *= 30.1f;
 		}/*
-		 if (game->getKeyStatus(GLFW_KEY_F1) == GLFW_PRESS) {
+		 if (app->getKeyStatus(GLFW_KEY_F1) == GLFW_PRESS) {
 		 light->transformation->position = cam->transformation->position;
 		 light->transformation->orientation = cam->transformation->orientation;
 		 }*/
 		glm::vec3 dw = glm::vec3(0);
 		float w = 0.0;
-		if (game->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
+		if (keyboard->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
 			dw += cam->transformation->getOrientation() * glm::vec3(0, 0, -1);
 			w += 1.0;
 		}
-		if (game->getKeyStatus(GLFW_KEY_S) == GLFW_PRESS) {
+		if (keyboard->getKeyStatus(GLFW_KEY_S) == GLFW_PRESS) {
 			dw += cam->transformation->getOrientation() * glm::vec3(0, 0, 1);
 			w += 1.0;
 		}
-		if (game->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS) {
+		if (keyboard->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS) {
 			dw += cam->transformation->getOrientation() * glm::vec3(-1, 0, 0);
 			w += 1.0;
 		}
-		if (game->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS) {
+		if (keyboard->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS) {
 			dw += cam->transformation->getOrientation() * glm::vec3(1, 0, 0);
 			w += 1.0;
 		}
@@ -64,8 +66,8 @@ void EditorApp::onRenderFrame(float elapsed)
 		glm::vec3 newpos = cam->transformation->getPosition();
 		newpos += length(dir) > 0.0 ? (normalize(dir) * speed) : (glm::vec3(0.0));
 
-		//if (game->getKeyStatus(GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		//    game->shouldClose = true;
+		//if (app->getKeyStatus(GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+		//    app->shouldClose = true;
 		//}
 		if (cameraFollowCar) {
 			int acnt = 0;
@@ -92,7 +94,10 @@ void EditorApp::onRenderFrame(float elapsed)
 
 		}
 		else {
-			glm::dvec2 cursor = game->getCursorPosition();
+			glm::dvec2 cursor;
+			auto tup = mouse->getCursorPosition();
+			cursor.x = get<0>(tup);
+			cursor.y = get<1>(tup);
 
 			//int acnt = 0;
 			//const float * axes = glfwGetJoystickAxes(0, &acnt);
@@ -128,7 +133,7 @@ void EditorApp::onRenderFrame(float elapsed)
 
 		auto campos = cam->transformation->getPosition();
 
-		auto rot = glm::angleAxis(game->time * 0.4f, glm::vec3(0.0, 1.0, 0.0));
+		auto rot = glm::angleAxis(app->time * 0.4f, glm::vec3(0.0, 1.0, 0.0));
 
 		ocean1->transformation->setPosition(campos + rot * glm::vec3(4.0, 0.0, 0.0));
 		ocean1->update(cam->transformation);
@@ -202,10 +207,6 @@ std::string join(std::vector<std::string> elems, int offset) {
 	return ss.str();
 }
 
-void EditorApp::onRenderUIFrame(float elapsed)
-{
-}
-
 void EditorApp::onWindowResize(int width, int height)
 {
 }
@@ -227,7 +228,7 @@ void EditorApp::onKeyPress(int key)
 		return;
 	}
 	else if (key == GLFW_KEY_PAUSE) {
-		//	game->renderer->recompileShaders();
+		//	app->renderer->recompileShaders();
 		return;
 	}
 	else if (key == GLFW_KEY_T && currentMode != EDITOR_MODE_WRITING_TEXT) {
@@ -240,8 +241,8 @@ void EditorApp::onKeyPress(int key)
 
 	if (key == GLFW_KEY_F9) {
 		glm::vec3 hitpos, hitnorm;
-		auto res = physics->rayCast(game->world->mainDisplayCamera->transformation->getPosition(),
-			game->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.5)), hitpos, hitnorm);
+		auto res = physics->rayCast(app->world->mainDisplayCamera->transformation->getPosition(),
+			app->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.5)), hitpos, hitnorm);
 		if (res != nullptr) {
 			car[0]->body->transformation->setOrientation(glm::quat());
 			car[0]->body->transformation->setPosition(hitpos + glm::vec3(0.0, 3.0, 0.0));
@@ -342,18 +343,18 @@ void EditorApp::onBind()
 	car = {};
 	cam = new Camera();
 	FOV = 85.0f;
-	cam->createProjectionPerspective(FOV, (float)game->width / (float)game->height, 0.01f, 10000);
-	game->onWindowResize->add([&](int zero) {
-		cam->createProjectionPerspective(FOV, (float)game->width / (float)game->height, 0.01f, 10000);
+	cam->createProjectionPerspective(FOV, (float)app->width / (float)app->height, 0.01f, 10000);
+	app->onWindowResize.add([&](int zero) {
+		cam->createProjectionPerspective(FOV, (float)app->width / (float)app->height, 0.01f, 10000);
 	});
 	cam->transformation->translate(glm::vec3(16, 16, 16));
 	glm::quat rot = glm::quat_cast(glm::lookAt(cam->transformation->getPosition(), glm::vec3(0), glm::vec3(0, 1, 0)));
 	cam->transformation->setOrientation(rot);
-	game->world->mainDisplayCamera = cam;
+	app->world->mainDisplayCamera = cam;
 
-	game->setCursorMode(GLFW_CURSOR_NORMAL);
+	mouse->setCursorMode(GLFW_CURSOR_NORMAL);
 
-	auto t = game->asset->loadSceneFile("sp.scene");
+	auto t = app->asset->loadSceneFile("sp.scene");
 	//auto diftex = new Texture2d("2222.jpg");
 	//auto bumtex = new Texture2d("1111.jpg");
 	for (int i = 0; i < t->getMesh3ds().size(); i++) {
@@ -369,11 +370,11 @@ void EditorApp::onBind()
 			//t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColor = glm::vec3(1.0);
 			//  t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColorTex = diftex;
 			/// t->getMesh3ds()[i]->getLodLevel(0)->material->bumpTex = bumtex;
-		//	game->world->scene->addMesh3d(t->getMesh3ds()[i]);
+		//	app->world->scene->addMesh3d(t->getMesh3ds()[i]);
 	}
 
 	/*
-	auto s = game->asset->loadMeshFile("grass_base.mesh3d");
+	auto s = app->asset->loadMeshFile("grass_base.mesh3d");
 	s->getLodLevel(0)->disableFaceCulling = true;
 	s->getLodLevel(1)->disableFaceCulling = true;
 	s->getLodLevel(2)->disableFaceCulling = true;
@@ -395,9 +396,9 @@ void EditorApp::onBind()
 	fy += 0.1f;
 	fx = 0.0f;
 	}
-	game->world->scene->addMesh3d(s);*/
+	app->world->scene->addMesh3d(s);*/
 	/*
-	auto s = game->asset->loadMeshFile("terr_grass.mesh3d");
+	auto s = app->asset->loadMeshFile("terr_grass.mesh3d");
 	auto grasses = s->getInstances();
 	int grassess = grasses.size();
 	for (int i = 0; i < grassess; i++) {
@@ -405,7 +406,7 @@ void EditorApp::onBind()
 	grasses[i]->transformation->setSize(glm::vec3(1.0f));
 	grasses[i]->transformation->setPosition(glm::vec3(pos.x * 1.0f + 500.0f, pos.y * 4.0f - 10.0f, pos.z * 1.0f + 500.0f));
 	}
-	//game->world->scene->addMesh3d(s);
+	//app->world->scene->addMesh3d(s);
 	*/
 
 
@@ -423,21 +424,21 @@ void EditorApp::onBind()
 			ss2 << "real_terr_lod2_" << x << "x" << y << ".raw";
 			auto mat = new Material();
 			//   mat->diffuseColorTex = tex;
-			Mesh3d* m = Mesh3d::create(game->asset->loadObject3dInfoFile(ss0.str()), mat);
+			Mesh3d* m = Mesh3d::create(app->asset->loadObject3dInfoFile(ss0.str()), mat);
 			m->getInstance(0)->transformation->setPosition(vec3(partsize * x * 1.0f, -220.5, partsize*y * 1.0f));
 			m->getInstance(0)->transformation->setSize(vec3(1.0f, 20.0f, 1.0f));
 			m->getLodLevel(0)->distanceStart = 0.0f;
 			m->getLodLevel(0)->distanceEnd = 650.0f;
-			m->addLodLevel(new Mesh3dLodLevel(game->asset->loadObject3dInfoFile(ss1.str()), mat, 650.0f, 3350.0f));
-			m->addLodLevel(new Mesh3dLodLevel(game->asset->loadObject3dInfoFile(ss2.str()), mat, 3350.0f, 11150.0f));
-			game->world->scene->addMesh3d(m);
+			m->addLodLevel(new Mesh3dLodLevel(app->asset->loadObject3dInfoFile(ss1.str()), mat, 650.0f, 3350.0f));
+			m->addLodLevel(new Mesh3dLodLevel(app->asset->loadObject3dInfoFile(ss2.str()), mat, 3350.0f, 11150.0f));
+			app->world->scene->addMesh3d(m);
 		}
 	}
 
 
 
 	//  t->name = "flagbase";
-	// game->world->scene->addMesh(t);
+	// app->world->scene->addMesh(t);
 	//auto t1 = new TransformationManager(glm::vec3(8.0, 6.0, 8.0));
 	// car.push_back(new Car(t1));
 	//  auto t2 = new TransformationManager(glm::vec3(-8.0, 6.0, -8.0));
@@ -445,27 +446,27 @@ void EditorApp::onBind()
 
 
 
-	auto xt = game->asset->loadMeshFile("icosphere.mesh3d");
+	auto xt = app->asset->loadMeshFile("icosphere.mesh3d");
 	xt->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, 10.0, 0.0))));
 	xt->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, -10.0, 0.0))));
 	auto abody = physics->createBody(0.1f, xt->getInstance(0)->transformation, new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
 
-	game->world->scene->addMesh3d(xt);
+	app->world->scene->addMesh3d(xt);
 	physics->addBody(abody);
 	//auto abody2 = Game::instance->world->physics->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btStaticPlaneShape(btVector3(0.0, 1.0, 0.0), 5.0));
 	//abody2->enable();
-   //  game->world-->scene->addMesh3d(game->asset->loadMeshFile("gory.mesh3d"));
+   //  app->world-->scene->addMesh3d(app->asset->loadMeshFile("gory.mesh3d"));
 	auto groundpb = physics->createBody(0.0f, xt->getInstance(1)->transformation, new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
 	// groundpb->getCollisionObject()->setFriction(4);
 	physics->addBody(groundpb);
-	game->invoke([&]() {/*
+	app->invoke([&]() {/*
 		auto phys = Game::instance->world->physics;
 
 		vector<float> vertices = {};
 		vector<int> indices = {};
-		auto wterrobj = game->asset->loadObject3dInfoFile("weirdterrain.raw");
+		auto wterrobj = app->asset->loadObject3dInfoFile("weirdterrain.raw");
 		auto wterr3d = Mesh3d::create(wterrobj, new Material());
-		//game->world->scene->addMesh3d(wterr3d);
+		//app->world->scene->addMesh3d(wterr3d);
 		int ix = 0;
 		auto str = new btTriangleMesh();
 		for (int i = 0; i < wterrobj->vbo.size(); i += 12 * 3) {
@@ -518,7 +519,7 @@ void EditorApp::onBind()
 
 	});
 
-	// virtualbox = game->world->physics->createBody(0.0f, new TransformationManager(), new btBoxShape(btVector3(6.0, 6.0, 6.0)));
+	// virtualbox = app->world->physics->createBody(0.0f, new TransformationManager(), new btBoxShape(btVector3(6.0, 6.0, 6.0)));
 	// virtualbox->enable();
 
 	testsound = new Sound3d("engine.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
@@ -546,7 +547,7 @@ void EditorApp::onBind()
 	ocean3->play();
 	ocean4->play();
 
-	//cursor3dArrow = Mesh3d::create(game->asset->loadObject3dInfoFile("deferredsphere.raw"), new Material());
+	//cursor3dArrow = Mesh3d::create(app->asset->loadObject3dInfoFile("deferredsphere.raw"), new Material());
 	//cursor3dArrow->clearInstances();
 	// cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0), glm::quat(), glm::vec3(7.0))));
 	car.push_back(new Car(physics, "fiesta.car", new TransformationManager(glm::vec3(0.0))));
@@ -556,10 +557,10 @@ void EditorApp::switchMode(int mode)
 {
 	// EDITOR_MODE_MOVE_CAMERA needs cursor hidden, everything else needs free cursor
 	if (mode == EDITOR_MODE_MOVE_CAMERA && currentMode != EDITOR_MODE_MOVE_CAMERA) {
-		game->setCursorMode(GLFW_CURSOR_DISABLED);
+		mouse->setCursorMode(GLFW_CURSOR_DISABLED);
 	}
 	else if (currentMode == EDITOR_MODE_MOVE_CAMERA && mode != EDITOR_MODE_MOVE_CAMERA) {
-		game->setCursorMode(GLFW_CURSOR_NORMAL);
+		mouse->setCursorMode(GLFW_CURSOR_NORMAL);
 	}
 	lastMode = currentMode;
 	currentMode = mode;

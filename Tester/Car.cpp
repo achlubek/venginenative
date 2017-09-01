@@ -161,10 +161,10 @@ void Car::updateTyreForce(PhysicalConstraint * tyrec, bool enableMotor, float ta
 void Car::initialize(TransformStruct spawn)
 {
 	if (bodyMesh == nullptr) {
-		bodyMesh = Game::instance->asset->loadMeshFile(definitionReader->gets("body_mesh"));
-		tiresMesh = Game::instance->asset->loadMeshFile(definitionReader->gets("tyre_mesh"));
-		Game::instance->world->scene->addMesh3d(bodyMesh);
-		Game::instance->world->scene->addMesh3d(tiresMesh);
+		bodyMesh = Application::instance->asset->loadMeshFile(definitionReader->gets("body_mesh"));
+		tiresMesh = Application::instance->asset->loadMeshFile(definitionReader->gets("tyre_mesh"));
+		Application::instance->world->scene->addMesh3d(bodyMesh);
+		Application::instance->world->scene->addMesh3d(tiresMesh);
 	}
 	int carsCount = bodyMesh->getInstances().size();
 
@@ -176,7 +176,7 @@ void Car::initialize(TransformStruct spawn)
 	tiresMesh->addInstance(new Mesh3dInstance(new TransformationManager(spawn.position + definitionReader->getv3("wheel_rear_right"), glm::angleAxis(deg2rad(0.0f), glm::vec3(0.0, 1.0, 0.0)))));
 
 
-	Game::instance->invoke([&, carsCount]() {
+	Application::instance->invoke([&, carsCount]() {
 
 			auto conx = new btConvexHullShape();
 			for (int i = 0; i < bodyMesh->getLodLevel(0)->info3d->vbo.size(); i += 12) {
@@ -315,7 +315,7 @@ void Car::initialize(TransformStruct spawn)
 			body->getRigidBody()->setLinearVelocity(btVector3(0.0, 0.0, 0.0));
 			body->getRigidBody()->setAngularVelocity(btVector3(0.0, 0.0, 0.0));
 
-			Game::instance->invoke([&]() {
+			Application::instance->invoke([&]() {
 				initialized = true;
 			});
 	});

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Game.h"
+#include "Application.h"
 #include "Mesh3dLodLevel.h"
 
 using namespace glm;
@@ -48,21 +48,21 @@ void Mesh3dLodLevel::initialize()
 	modes = {};
 	textureBinds = {};
 	wrapModes = {};
-	id = Game::instance->getNextId();
-	Game::instance->registerId(id, this);
-	descriptorSet = Game::instance->renderer->setManager.generateMesh3dDescriptorSet();
+	id = Application::instance->getNextId();
+	Application::instance->registerId(id, this);
+	descriptorSet = Application::instance->renderer->setManager.generateMesh3dDescriptorSet();
 	int i = 0;
-	descriptorSet.bindUniformBuffer(i++, Game::instance->renderer->uboHighFrequencyBuffer);
-	descriptorSet.bindUniformBuffer(i++, Game::instance->renderer->uboLowFrequencyBuffer);
+	descriptorSet.bindUniformBuffer(i++, Application::instance->renderer->uboHighFrequencyBuffer);
+	descriptorSet.bindUniformBuffer(i++, Application::instance->renderer->uboLowFrequencyBuffer);
 
 	descriptorSet.bindStorageBuffer(i++, *modelInfosBuffer);
 	descriptorSet.bindUniformBuffer(i++, *materialBuffer);
 
-	descriptorSet.bindImageViewSampler(i++, *Game::instance->dummyTexture);
-	descriptorSet.bindImageViewSampler(i++, *Game::instance->dummyTexture);
-	descriptorSet.bindImageViewSampler(i++, *Game::instance->dummyTexture);
-	descriptorSet.bindImageViewSampler(i++, *Game::instance->dummyTexture);
-	descriptorSet.bindImageViewSampler(i++, *Game::instance->dummyTexture);
+	descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
+	descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
+	descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
+	descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
+	descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
 
 	descriptorSet.update();
 }
@@ -87,7 +87,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
     // next frame it runs current buffer to 1, next buffer will be 
 
     // buffers into nextbuffer, draws current
-    vec3 cameraPos = Game::instance->world->mainDisplayCamera->transformation->getPosition();
+    vec3 cameraPos = Application::instance->world->mainDisplayCamera->transformation->getPosition();
     vector<Mesh3dInstance*> filtered;
 	newids.clear();
     bool changed = false;
@@ -259,7 +259,7 @@ bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
     float radius = info3d->radius * glm::max(glm::max(size.x, size.y), size.z);
 
     vec3 center = instance->transformation->getPosition();// +0.5f * (info3d->aabbmax + info3d->aabbmin);
-    vec3 camerapos = Game::instance->world->mainDisplayCamera->transformation->getPosition();
+    vec3 camerapos = Application::instance->world->mainDisplayCamera->transformation->getPosition();
 
     float dst = distance(camerapos, center);
 
@@ -270,12 +270,12 @@ bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
 
     // i cannot find it on net so i craft my own cone/sphere test
 
-    vec3 rdirC = Game::instance->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.5));
+    vec3 rdirC = Application::instance->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.5));
     vec3 helper = camerapos + rdirC * dst;
     vec3 helpdir = normalize(helper - center);
     vec3 newpos = center + helpdir * radius;
 
-    vec4 prraw = projectvdao2(Game::instance->viewProjMatrix, newpos);
+    vec4 prraw = projectvdao2(Application::instance->viewProjMatrix, newpos);
     vec2 pr = (vec2(prraw.x, prraw.y) / prraw.w) * 0.5f + 0.5f;
     bool sphereintersect = true;
     if (pr.x < 0.0 || pr.x > 1.0 || pr.y < 0.0 || pr.y > 1.0) sphereintersect = false;

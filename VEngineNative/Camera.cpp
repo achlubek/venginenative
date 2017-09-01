@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Camera.h"
-#include "Game.h"
+#include "Application.h"
 
 using namespace glm;
 
@@ -25,11 +25,6 @@ void Camera::createProjectionPerspective(float ifov, float aspectRatio, float ne
     updateFocalLength();
     farplane = farpl; 
     projectionMatrix = perspectiveRH(deg2rad(fov), aspectRatio, nearpl, farpl);
-}
-
-void Camera::makeCurrent()
-{
-    Game::instance->world->mainDisplayCamera = this;
 }
 
 void Camera::updateFocalLength()

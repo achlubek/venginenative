@@ -1,7 +1,7 @@
 #pragma once
 #include "AbstractApp.h"
 #include "../VEngineNative/stdafx.h"
-#include "../VEngineNative/Game.h"
+#include "../VEngineNative/Application.h"
 #include "Media.h"
 #include "../VEngineNative/Camera.h";
 #include "../VEngineNative/Object3dInfo.h";
@@ -11,7 +11,6 @@
 #include "Sound.h"; 
 #include "Sound3d.h";
 #include "../VEngineNative/Mesh3d.h";
-#include "../VEngineNative/SquirrelVM.h";
 #include "SimpleParser.h";
 
 #include "Car.h";
@@ -30,7 +29,6 @@ public:
 	 
 	virtual void initialize() override;
 	virtual void onRenderFrame(float elapsed) override;
-	virtual void onRenderUIFrame(float elapsed) override;
 	virtual void onWindowResize(int width, int height) override;
 	virtual void onKeyPress(int key) override;
 	virtual void onKeyRelease(int key) override;

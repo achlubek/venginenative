@@ -251,7 +251,7 @@
     <ClInclude Include="AssetLoader.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="FrustumCone.h" />
-    <ClInclude Include="Game.h" />
+    <ClInclude Include="Application.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh3d.h" />
     <ClInclude Include="Mesh3dInstance.h" />
@@ -259,7 +259,6 @@
     <ClInclude Include="Object3dInfo.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
-    <ClInclude Include="SquirrelVM.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="vulkan\VulkanAttachment.h" />
@@ -283,7 +282,7 @@
     <ClCompile Include="AssetLoader.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="FrustumCone.cpp" />
-    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Application.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh3d.cpp" />
     <ClCompile Include="Mesh3dInstance.cpp" />
@@ -291,7 +290,6 @@
     <ClCompile Include="Object3dInfo.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="SquirrelVM.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

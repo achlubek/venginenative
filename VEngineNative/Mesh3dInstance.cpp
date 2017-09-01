@@ -1,19 +1,19 @@
 #include "stdafx.h"
-#include "Game.h"
+#include "Application.h"
 #include "Mesh3dInstance.h"
 
 Mesh3dInstance::Mesh3dInstance()
 {
     initTransformation();
-    id = Game::instance->getNextId();
-    Game::instance->registerId(id, this);
+    id = Application::instance->getNextId();
+    Application::instance->registerId(id, this);
 }
 
 Mesh3dInstance::Mesh3dInstance(TransformationManager * transmgr)
 {
     transformation = transmgr;
-    id = Game::instance->getNextId();
-    Game::instance->registerId(id, this);
+    id = Application::instance->getNextId();
+    Application::instance->registerId(id, this);
 }
 
 Mesh3dInstance::~Mesh3dInstance()

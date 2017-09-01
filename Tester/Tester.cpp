@@ -6,7 +6,7 @@
 #include "windows.h"
 
 #include "../VEngineNative/stdafx.h"
-#include "../VEngineNative/Game.h"
+#include "../VEngineNative/Application.h"
 #include "Media.h"
 #include "EditorApp.h"
 
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
    // app->initialize();
 	Media::loadFileMap("../../media");
 	Media::loadFileMap("../../shaders");
-	Game *game = new Game(1920, 1010);
+	Application *game = new Application(1920, 1010);
 	
 	/*
  
@@ -136,10 +136,6 @@ int main(int argc, char* argv[])
 	app->initialize();
 	app->bind(game);
 	game->start();
-
-	while (!game->hasExited) {
-		Sleep(100);
-	}
-
+	
 	return 0;
 }
