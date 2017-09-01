@@ -6,9 +6,6 @@ VulkanRenderStage::VulkanRenderStage()
 	setLayouts = {};
 	outputImages = {};
 	shaderStages = {};
-	VkSemaphoreCreateInfo semaphoreInfo = {};
-	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &signalSemaphore);
 }
 
 
@@ -91,8 +88,11 @@ void VulkanRenderStage::drawMesh(Object3dInfo * info, VulkanDescriptorSet &set, 
 
 void VulkanRenderStage::compile()
 {
-	commandBuffer = VulkanCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	VkSemaphoreCreateInfo semaphoreInfo = {};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &signalSemaphore);
 
+	commandBuffer = VulkanCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 	std::vector<VulkanAttachment> attachments = {};
 	std::vector<VkImageView> attachmentsViews = {};
@@ -127,6 +127,16 @@ void VulkanRenderStage::compile()
 
 	pipeline = VulkanGraphicsPipeline(viewport.width, viewport.height,
 		setLayouts, shaderStages, renderPass, foundDepthBuffer);
+}
+
+VulkanRenderStage VulkanRenderStage::copy()
+{
+	auto v = VulkanRenderStage();
+	v.setLayouts = setLayouts;
+	v.outputImages = outputImages;
+	v.shaderStages = shaderStages;
+	v.viewport = viewport;
+	return v;
 }
 
 void VulkanRenderStage::submit(std::vector<VkSemaphore> waitSemaphores)

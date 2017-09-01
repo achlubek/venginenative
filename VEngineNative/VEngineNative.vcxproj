@@ -276,7 +276,6 @@
     <ClInclude Include="vulkan\VulkanSubpass.h" />
     <ClInclude Include="vulkan\VulkanSwapChain.h" />
     <ClInclude Include="vulkan\VulkanToolkit.h" />
-    <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssetLoader.cpp" />
@@ -313,7 +312,6 @@
     <ClCompile Include="vulkan\VulkanSubpass.cpp" />
     <ClCompile Include="vulkan\VulkanSwapChain.cpp" />
     <ClCompile Include="vulkan\VulkanToolkit.cpp" />
-    <ClCompile Include="World.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

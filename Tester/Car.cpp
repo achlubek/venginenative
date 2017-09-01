@@ -163,8 +163,8 @@ void Car::initialize(TransformStruct spawn)
 	if (bodyMesh == nullptr) {
 		bodyMesh = Application::instance->asset->loadMeshFile(definitionReader->gets("body_mesh"));
 		tiresMesh = Application::instance->asset->loadMeshFile(definitionReader->gets("tyre_mesh"));
-		Application::instance->world->scene->addMesh3d(bodyMesh);
-		Application::instance->world->scene->addMesh3d(tiresMesh);
+		Application::instance->scene->addMesh3d(bodyMesh);
+		Application::instance->scene->addMesh3d(tiresMesh);
 	}
 	int carsCount = bodyMesh->getInstances().size();
 

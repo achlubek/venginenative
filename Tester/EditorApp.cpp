@@ -241,8 +241,8 @@ void EditorApp::onKeyPress(int key)
 
 	if (key == GLFW_KEY_F9) {
 		glm::vec3 hitpos, hitnorm;
-		auto res = physics->rayCast(app->world->mainDisplayCamera->transformation->getPosition(),
-			app->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.5)), hitpos, hitnorm);
+		auto res = physics->rayCast(app->mainDisplayCamera->transformation->getPosition(),
+			app->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.5)), hitpos, hitnorm);
 		if (res != nullptr) {
 			car[0]->body->transformation->setOrientation(glm::quat());
 			car[0]->body->transformation->setPosition(hitpos + glm::vec3(0.0, 3.0, 0.0));
@@ -350,7 +350,7 @@ void EditorApp::onBind()
 	cam->transformation->translate(glm::vec3(16, 16, 16));
 	glm::quat rot = glm::quat_cast(glm::lookAt(cam->transformation->getPosition(), glm::vec3(0), glm::vec3(0, 1, 0)));
 	cam->transformation->setOrientation(rot);
-	app->world->mainDisplayCamera = cam;
+	app->mainDisplayCamera = cam;
 
 	mouse->setCursorMode(GLFW_CURSOR_NORMAL);
 
@@ -431,7 +431,7 @@ void EditorApp::onBind()
 			m->getLodLevel(0)->distanceEnd = 650.0f;
 			m->addLodLevel(new Mesh3dLodLevel(app->asset->loadObject3dInfoFile(ss1.str()), mat, 650.0f, 3350.0f));
 			m->addLodLevel(new Mesh3dLodLevel(app->asset->loadObject3dInfoFile(ss2.str()), mat, 3350.0f, 11150.0f));
-			app->world->scene->addMesh3d(m);
+			app->scene->addMesh3d(m);
 		}
 	}
 
@@ -451,7 +451,7 @@ void EditorApp::onBind()
 	xt->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, -10.0, 0.0))));
 	auto abody = physics->createBody(0.1f, xt->getInstance(0)->transformation, new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
 
-	app->world->scene->addMesh3d(xt);
+	app->scene->addMesh3d(xt);
 	physics->addBody(abody);
 	//auto abody2 = Game::instance->world->physics->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btStaticPlaneShape(btVector3(0.0, 1.0, 0.0), 5.0));
 	//abody2->enable();

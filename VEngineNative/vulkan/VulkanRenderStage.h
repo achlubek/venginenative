@@ -1,5 +1,6 @@
 #pragma once
 class Object3dInfo;
+class VulkanRenderStage;
 class VulkanRenderStage
 {
 public:
@@ -26,6 +27,7 @@ public:
 	void endDrawing();
 	void drawMesh(Object3dInfo *info, VulkanDescriptorSet &set, size_t instances);
 	void compile();
+	VulkanRenderStage copy();
 
 	void submit(std::vector<VkSemaphore> waitSemaphores);
 

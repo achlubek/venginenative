@@ -4,7 +4,6 @@
 #include "Media.h"
 #include "../VEngineNative/Camera.h";
 #include "../VEngineNative/Object3dInfo.h";
-#include "../VEngineNative/World.h";
 #include "../VEngineNative/Scene.h";
 #include "../VEngineNative/Material.h";
 #include "Sound.h";

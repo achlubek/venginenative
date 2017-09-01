@@ -13,7 +13,7 @@ Application::Application(int windowwidth, int windowheight)
 	invokeQueue = queue<function<void(void)>>(); 
 	onRenderFrame = {};
 	asset = new AssetLoader();
-	world = new World();
+	scene = new Scene();
 	onRenderFrame = EventHandler<int>(); 
 	onWindowResize = EventHandler<int>(); 
 	idMap = unordered_map<int, void*>();
@@ -89,12 +89,12 @@ void Application::onRenderFrameFunc()
 	}
 	onRenderFrame.invoke(0);
 
-	if (world->mainDisplayCamera != nullptr) {
+	if (mainDisplayCamera != nullptr) {
 		if (vpmatrixUpdateFrameId != frame) {
-			viewProjMatrix = world->mainDisplayCamera->projectionMatrix * world->mainDisplayCamera->transformation->getInverseWorldTransform();
+			viewProjMatrix = mainDisplayCamera->projectionMatrix * mainDisplayCamera->transformation->getInverseWorldTransform();
 			vpmatrixUpdateFrameId = frame;
 		}
-		renderer->renderToSwapChain(world->mainDisplayCamera);
+		renderer->renderToSwapChain(mainDisplayCamera);
 	} 
 	frame++;
 }

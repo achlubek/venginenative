@@ -1,6 +1,5 @@
 #pragma once
 #include <GLFW\glfw3.h>
-#include "World.h";
 #include "Renderer.h";
 #include "AssetLoader.h";
 #include "EventHandler.h";
@@ -11,11 +10,13 @@ class Application
 public:
 	static Application *instance;
 
-    World *world;
+    Scene *scene;
     Renderer *renderer;
     AssetLoader *asset;
 	VulkanToolkit* vulkan;
 	VulkanImage* dummyTexture;
+
+	Camera * mainDisplayCamera = nullptr;
 
 	int frame;
 	int width;

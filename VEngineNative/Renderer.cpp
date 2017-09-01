@@ -55,16 +55,20 @@ Renderer::Renderer(int iwidth, int iheight)
 
 	auto ppvertShaderModule = VulkanShaderModule("../../shaders/compiled/pp.vert.spv");
 	auto ppfragShaderModule = VulkanShaderModule("../../shaders/compiled/pp.frag.spv");
+
 	postProcessRenderStages.resize(VulkanToolkit::singleton->swapChain->swapChainImages.size());
+
+	auto post_process_zygote = VulkanRenderStage();
+
+	post_process_zygote.setViewport(ext);
+	post_process_zygote.addShaderStage(ppvertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
+	post_process_zygote.addShaderStage(ppfragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
+	post_process_zygote.addDescriptorSetLayout(setManager.ppLayout);
+	VkFormat format = VulkanToolkit::singleton->swapChain->swapChainImageFormat;
 	for (int i = 0; i < VulkanToolkit::singleton->swapChain->swapChainImages.size(); i++) {
 
-		postProcessRenderStages[i] = VulkanRenderStage();
+		postProcessRenderStages[i] = post_process_zygote.copy(); 
 
-		postProcessRenderStages[i].setViewport(ext);
-		postProcessRenderStages[i].addShaderStage(ppvertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
-		postProcessRenderStages[i].addShaderStage(ppfragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
-		postProcessRenderStages[i].addDescriptorSetLayout(setManager.ppLayout);
-		VkFormat format = VulkanToolkit::singleton->swapChain->swapChainImageFormat;
 		VulkanImage* img = new VulkanImage(format, VulkanToolkit::singleton->swapChain->swapChainImages[i], VulkanToolkit::singleton->swapChain->swapChainImageViews[i]);
 		img->format = format;
 		img->image = VulkanToolkit::singleton->swapChain->swapChainImages[i];
@@ -137,10 +141,13 @@ void Renderer::renderToSwapChain(Camera *camera)
 
 	uint32_t imageIndex;
 
-	Application::instance->world->setUniforms(camera);
-	Application::instance->world->setSceneUniforms();
+	glm::mat4 cameraViewMatrix = camera->transformation->getInverseWorldTransform(); 
+	glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
+	glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
+	camera->cone->update(inverse(rpmatrix));
+	Application::instance->scene->prepareFrame();
 	meshRenderStage.beginDrawing(); 
-	Application::instance->world->draw(&meshRenderStage, camera);
+	Application::instance->scene->draw(&meshRenderStage);
 	meshRenderStage.endDrawing();
 
 	if (!ppRecorded) {
@@ -154,11 +161,12 @@ void Renderer::renderToSwapChain(Camera *camera)
 		ppRecorded = true;
 	}
 
+	vkAcquireNextImageKHR(VulkanToolkit::singleton->device, VulkanToolkit::singleton->swapChain->swapChain,
+		std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
 	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 
 
-	vkAcquireNextImageKHR(VulkanToolkit::singleton->device, VulkanToolkit::singleton->swapChain->swapChain,
-		std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
 	meshRenderStage.submit({ imageAvailableSemaphore });
 	postProcessRenderStages[imageIndex].submit({ meshRenderStage.signalSemaphore });
