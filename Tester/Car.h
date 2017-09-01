@@ -1,18 +1,18 @@
 #pragma once
 #include "../VEngineNative/stdafx.h"
 #include "../VEngineNative/Game.h"
-#include "../VEngineNative/Media.h"
+#include "Media.h"
 #include "../VEngineNative/Camera.h";
 #include "../VEngineNative/Object3dInfo.h";
 #include "../VEngineNative/World.h";
 #include "../VEngineNative/Scene.h";
 #include "../VEngineNative/Material.h";
-#include "../VEngineNative/Sound.h";
-#include "../VEngineNative/Sound3d.h";
+#include "Sound.h";
+#include "Sound3d.h";
 #include "../VEngineNative/Mesh3d.h";
 #include "../VEngineNative/SquirrelVM.h";
-#include "../VEngineNative/SimpleParser.h";
-#include "../VEngineNative/INIReader.h"
+#include "SimpleParser.h";
+#include "INIReader.h"
 class Car
 {
 public:

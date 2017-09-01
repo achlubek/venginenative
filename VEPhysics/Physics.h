@@ -2,8 +2,13 @@
 
 #include "PhysicalBody.h"
 #include "PhysicalConstraint.h"
-#include "btBulletCollisionCommon.h"
-#include "btBulletDynamicsCommon.h"
+class btBroadphaseInterface;
+class btCollisionConfiguration;
+class btCollisionShape;
+class btCollisionDispatcher;
+class btDiscreteDynamicsWorld;
+class btRigidBody;
+class btCollisionObject;
 
 class Physics
 {

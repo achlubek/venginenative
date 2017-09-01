@@ -125,9 +125,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="PhysicalBody.h" />
     <ClInclude Include="PhysicalConstraint.h" />
     <ClInclude Include="Physics.h" />

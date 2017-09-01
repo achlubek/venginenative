@@ -1,9 +1,10 @@
 #pragma once
 #include "AbsTransformable.h"
 #include "TransformationManager.h"
-#include "btBulletCollisionCommon.h"
-#include "btBulletDynamicsCommon.h"
 class PhysicalConstraint;
+class btCollisionObject;
+class btRigidBody;
+class btCollisionShape;
 class PhysicalBody : public AbsTransformable
 {
 public:

@@ -189,11 +189,11 @@ void Car::initialize(TransformStruct spawn)
 			btScalar margin = conx->getMargin();
 			hull->buildHull(margin);
 			btConvexHullShape* simplifiedConvexShape = new btConvexHullShape((btScalar*)hull->getVertexPointer(), hull->numVertices());
-			body = Game::instance->world->physics->createBody(definitionReader->getf("body_mass"), bodyMesh->getInstance(carsCount), simplifiedConvexShape);
-			tyreLF = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4), new btSphereShape(definitionReader->getf("tyre_radius")));
-			tyreRF = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4 + 1), new btSphereShape(definitionReader->getf("tyre_radius")));
-			tyreLR = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4 + 2), new btSphereShape(definitionReader->getf("tyre_radius")));
-			tyreRR = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4 + 3), new btSphereShape(definitionReader->getf("tyre_radius")));
+			body = Game::instance->world->physics->createBody(definitionReader->getf("body_mass"), bodyMesh->getInstance(carsCount)->transformation, simplifiedConvexShape);
+			tyreLF = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4)->transformation, new btSphereShape(definitionReader->getf("tyre_radius")));
+			tyreRF = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4 + 1)->transformation, new btSphereShape(definitionReader->getf("tyre_radius")));
+			tyreLR = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4 + 2)->transformation, new btSphereShape(definitionReader->getf("tyre_radius")));
+			tyreRR = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4 + 3)->transformation, new btSphereShape(definitionReader->getf("tyre_radius")));
 
 			// body->body->setDamping(0.0017, 0.006);
 			// btTransform cmasstrs = body->body->getCenterOfMassTransform();
@@ -299,17 +299,18 @@ void Car::initialize(TransformStruct spawn)
 			m->m_maxMotorForce = maxMotorForce;
 			m->m_loLimit = loLimit;
 			m->m_hiLimit = hiLimit;
+			 
+
+			Game::instance->world->physics->addBody(body);
+			Game::instance->world->physics->addBody(tyreLF);
+			Game::instance->world->physics->addBody(tyreRF);
+			Game::instance->world->physics->addBody(tyreLR);
+			Game::instance->world->physics->addBody(tyreRR);
 			
-			body->enable();
-			tyreLF->enable();
-			tyreRF->enable();
-			tyreLR->enable();
-			tyreRR->enable();
-			
-			tyreLFCon->enable();
-			tyreRFCon->enable();
-			tyreLRCon->enable();
-			tyreRRCon->enable();
+			Game::instance->world->physics->addConstraint(tyreLFCon);
+			Game::instance->world->physics->addConstraint(tyreRFCon);
+			Game::instance->world->physics->addConstraint(tyreLRCon);
+			Game::instance->world->physics->addConstraint(tyreRRCon);
 			
 
 			body->getRigidBody()->setLinearVelocity(btVector3(0.0, 0.0, 0.0));

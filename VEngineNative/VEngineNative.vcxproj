@@ -201,7 +201,7 @@
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Code\stb;C:\VulkanSDK\1.0.57.0\Include\vulkan;C:\Code\SFML-2.4.2\include;C:\Code\squirrel3\include;C:\Code\glfw-3.2.1\include;C:\Code\glm-0.9.9-a1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Code\stb;C:\VulkanSDK\1.0.57.0\Include\vulkan;C:\Code\squirrel3\include;C:\Code\glfw-3.2.1\include;C:\Code\glm-0.9.9-a1;C:\Code\VEngineNative\VECommon;C:\Code\VEngineNative\VEPhysics;C:\Code\VEngineNative\VESound;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -248,10 +248,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Sound.h" />
     <ClInclude Include="AssetLoader.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="FrustumCone.h" />
@@ -261,7 +257,6 @@
     <ClInclude Include="Mesh3dInstance.h" />
     <ClInclude Include="Mesh3dLodLevel.h" />
     <ClInclude Include="Object3dInfo.h" />
-    <ClInclude Include="Sound3d.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SquirrelVM.h" />
@@ -285,7 +280,6 @@
     <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Sound.cpp" />
     <ClCompile Include="AssetLoader.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="FrustumCone.cpp" />
@@ -295,7 +289,6 @@
     <ClCompile Include="Mesh3dInstance.cpp" />
     <ClCompile Include="Mesh3dLodLevel.cpp" />
     <ClCompile Include="Object3dInfo.cpp" />
-    <ClCompile Include="Sound3d.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SquirrelVM.cpp" />

@@ -12,11 +12,11 @@ Sound3d::~Sound3d()
 {
 }
 
-void Sound3d::update(Camera * listener)
+void Sound3d::update(TransformationManager * listener)
 {
     sound.setMinDistance(1.f);
     sound.setAttenuation(1.0f);
-    auto lispos = listener->transformation->getPosition();
+    auto lispos = listener->getPosition();
     auto lisdir = listener->cone->reconstructDirection(glm::vec2(0.5));
     auto lisdir2 = listener->cone->reconstructDirection(glm::vec2(0.0));
     auto crs = glm::normalize(glm::cross(lisdir, lisdir2));

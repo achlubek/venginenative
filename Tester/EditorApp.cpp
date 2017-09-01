@@ -116,25 +116,25 @@ void EditorApp::onRenderFrame(float elapsed)
 		}
 
 		testsound->transformation->setPosition(car[0]->getTransformation()->getPosition());
-		testsound->update(cam);
+		testsound->update(cam->transformation);
 		testsound2->transformation->setPosition(car[0]->getTransformation()->getPosition());
-		testsound2->update(cam);
+		testsound2->update(cam->transformation);
 
 		wind->transformation->setPosition(car[0]->getTransformation()->getPosition());
-		wind->update(cam);
+		wind->update(cam->transformation);
 
 		auto campos = cam->transformation->getPosition();
 
 		auto rot = glm::angleAxis(game->time * 0.4f, glm::vec3(0.0, 1.0, 0.0));
 
 		ocean1->transformation->setPosition(campos + rot * glm::vec3(4.0, 0.0, 0.0));
-		ocean1->update(cam);
+		ocean1->update(cam->transformation);
 		ocean2->transformation->setPosition(campos + rot * glm::vec3(0.0, 0.0, 4.0));
-		ocean2->update(cam);
+		ocean2->update(cam->transformation);
 		ocean3->transformation->setPosition(campos + rot * glm::vec3(-4.0, 0.0, 0.0));
-		ocean3->update(cam);
+		ocean3->update(cam->transformation);
 		ocean4->transformation->setPosition(campos + rot * glm::vec3(0.0, 0.0, -4.0));
-		ocean4->update(cam);
+		ocean4->update(cam->transformation);
 
 		float oceanvol = (1.0f / (1.0 + 0.005 * glm::max(0.0f, campos.y * campos.y))) * 100.0;
 		ocean1->setVolume(oceanvol);
@@ -445,16 +445,16 @@ void EditorApp::onBind()
 	auto xt = game->asset->loadMeshFile("icosphere.mesh3d");
 	xt->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, 10.0, 0.0))));
 	xt->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, -10.0, 0.0))));
-	auto abody = Game::instance->world->physics->createBody(0.1f, xt->getInstance(0), new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
+	auto abody = Game::instance->world->physics->createBody(0.1f, xt->getInstance(0)->transformation, new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
 
 	game->world->scene->addMesh3d(xt);
-	abody->enable();
+	Game::instance->world->physics->addBody(abody);
 	//auto abody2 = Game::instance->world->physics->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btStaticPlaneShape(btVector3(0.0, 1.0, 0.0), 5.0));
 	//abody2->enable();
    //  game->world-->scene->addMesh3d(game->asset->loadMeshFile("gory.mesh3d"));
-	auto groundpb = Game::instance->world->physics->createBody(0.0f, xt->getInstance(1), new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
+	auto groundpb = Game::instance->world->physics->createBody(0.0f, xt->getInstance(1)->transformation, new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
 	// groundpb->getCollisionObject()->setFriction(4);
-	groundpb->enable();
+	Game::instance->world->physics->addBody(groundpb);
 	game->invoke([&]() {/*
 		auto phys = Game::instance->world->physics;
 

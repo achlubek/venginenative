@@ -1,6 +1,6 @@
 #pragma once
-
 #include "PhysicalBody.h"
+class btTypedConstraint;
 class PhysicalConstraint
 {
 public:

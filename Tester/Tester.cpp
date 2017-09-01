@@ -7,7 +7,7 @@
 
 #include "../VEngineNative/stdafx.h"
 #include "../VEngineNative/Game.h"
-#include "../VEngineNative/Media.h"
+#include "Media.h"
 #include "EditorApp.h"
 
 /*
