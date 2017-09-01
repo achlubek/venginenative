@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "PhysicalConstraint.h"
-#include "Game.h"
 
 PhysicalConstraint::PhysicalConstraint(btTypedConstraint * iconstraint, PhysicalBody * A, PhysicalBody * B)
 {
@@ -9,23 +8,9 @@ PhysicalConstraint::PhysicalConstraint(btTypedConstraint * iconstraint, Physical
     bodyB = B;
     bodyA->addConstraint(this);
     bodyB->addConstraint(this);
-    enabled = false;
 }
 
 PhysicalConstraint::~PhysicalConstraint()
 {
 }
-
-void PhysicalConstraint::enable()
-{
-    if (enabled) return;
-    Game::instance->world->physics->addConstraint(this);
-    enabled = true;
-}
-
-void PhysicalConstraint::disable()
-{
-    if (!enabled) return;
-    Game::instance->world->physics->removeConstraint(this);
-    enabled = false;
-}
+ 

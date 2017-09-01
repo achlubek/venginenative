@@ -10,13 +10,10 @@ public:
     PhysicalBody(btCollisionObject* rigidBody, btCollisionShape* ishape, TransformationManager* manager);
     PhysicalBody(btRigidBody* rigidBody, btCollisionShape* ishape, TransformationManager* manager);
     ~PhysicalBody();
-    void applyChanges();
-    void disable();
-    void enable();
+    void applyChanges(); 
     void addConstraint(PhysicalConstraint* c);
     void removeConstraint(PhysicalConstraint* c);
-    TransformationManager* getTransformationManager();
-    bool isEnabled();
+    TransformationManager* getTransformationManager(); 
     void readChanges();
     bool isStatic();
     btRigidBody* getRigidBody();
@@ -24,7 +21,6 @@ public:
 private:
     btCollisionObject* body;
     btCollisionShape* shape;
-    bool enabled = false;
     bool isStaticObject = false;
     std::set<PhysicalConstraint*> constraints;
 };

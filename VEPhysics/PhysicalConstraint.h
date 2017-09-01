@@ -6,11 +6,8 @@ class PhysicalConstraint
 public:
     PhysicalConstraint(btTypedConstraint* iconstraint, PhysicalBody* A, PhysicalBody* B);
     ~PhysicalConstraint();
-    btTypedConstraint* constraint;
-    void enable();
-    void disable();
+    btTypedConstraint* constraint; 
 private:
-    bool enabled;
     PhysicalBody* bodyA;
     PhysicalBody* bodyB;
 };

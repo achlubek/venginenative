@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Physics.h"
-#include "Game.h"
 
 
 Physics::Physics()
@@ -33,7 +32,7 @@ void Physics::simulationStep(float elapsedTime)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         return;
     }
-	if (Game::instance->time > 2.0f)world->stepSimulation(elapsedTime);
+	world->stepSimulation(elapsedTime);
 	if (activeBodies.size() > 0)
 	{
 		auto lst = std::vector<PhysicalBody*>(activeBodies); 
@@ -131,11 +130,6 @@ PhysicalBody * Physics::createBody(float mass, TransformationManager * startTran
         rb->setUserPointer(pb);
         return pb;
     }
-}
-
-PhysicalBody * Physics::createBody(float mass, Mesh3dInstance * mesh, btCollisionShape * shape)
-{
-    return createBody(mass, mesh->transformation, shape);
 }
 
 btVector3 vbulletify3(glm::vec3 v) {

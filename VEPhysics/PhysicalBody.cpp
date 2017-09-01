@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "PhysicalBody.h"
-#include "Game.h"
 
 PhysicalBody::PhysicalBody(btRigidBody * rigidBody, btCollisionShape * ishape, TransformationManager * manager)
 {
@@ -44,21 +43,7 @@ void PhysicalBody::applyChanges()
          transformation->setOrientation(glm::inverse(qt));
     //}
 }
-
-void PhysicalBody::disable()
-{
-    if (!enabled) return;
-    enabled = false;
-    Game::instance->world->physics->removeBody(this);
-}
-
-void PhysicalBody::enable()
-{
-    if (enabled) return;
-    enabled = true;
-    Game::instance->world->physics->addBody(this);
-}
-
+ 
 void PhysicalBody::addConstraint(PhysicalConstraint * c)
 {
     constraints.emplace(c);
@@ -73,12 +58,7 @@ TransformationManager * PhysicalBody::getTransformationManager()
 {
     return transformation;
 }
-
-bool PhysicalBody::isEnabled()
-{
-    return enabled;
-}
-
+ 
 void PhysicalBody::readChanges()
 {
     glm::quat o = transformation->getOrientation();

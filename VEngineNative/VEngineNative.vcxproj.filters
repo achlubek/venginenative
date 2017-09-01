@@ -30,22 +30,10 @@
     <ClInclude Include="Object3dInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Media.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tinydir.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="World.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TransformationManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AbsTransformable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FrustumCone.h">
@@ -69,28 +57,10 @@
     <ClInclude Include="Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EventHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="AssetLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SquirrelVM.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="INIReader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Physics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PhysicalBody.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PhysicalConstraint.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SimpleParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Sound.h">
@@ -155,19 +125,10 @@
     <ClCompile Include="Object3dInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Media.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="World.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TransformationManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AbsTransformable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FrustumCone.cpp">
@@ -195,21 +156,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SquirrelVM.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="INIReader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Physics.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PhysicalBody.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PhysicalConstraint.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SimpleParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sound.cpp">
