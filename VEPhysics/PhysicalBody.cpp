@@ -34,7 +34,6 @@ void PhysicalBody::applyChanges()
    // if (!isStaticObject) {
         auto quat = ((btRigidBody*)body)->getOrientation();
         transformation->setPosition(glm::vec3(xyz.x(), xyz.y(), xyz.z()));
-		printf("%f\n", quat.y());
         float X = quat.getX();
         float Y = quat.getY();
         float Z = quat.getZ();
@@ -66,7 +65,6 @@ void PhysicalBody::readChanges()
     glm::vec3 s = transformation->getSize();
     auto q = btQuaternion(o.x, o.y, o.z, o.w);
     auto v = btVector3(p.x, p.y, p.z);
-	printf("FAIL %f\n", p.y);
 
     auto bt = btTransform();
     bt.setOrigin(v);

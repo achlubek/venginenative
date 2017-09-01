@@ -6,6 +6,9 @@ VulkanRenderStage::VulkanRenderStage()
 	setLayouts = {};
 	outputImages = {};
 	shaderStages = {};
+	VkSemaphoreCreateInfo semaphoreInfo = {};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &signalSemaphore);
 }
 
 
@@ -126,7 +129,7 @@ void VulkanRenderStage::compile()
 		setLayouts, shaderStages, renderPass, foundDepthBuffer);
 }
 
-void VulkanRenderStage::submit(std::vector<VkSemaphore> waitSemaphores, VkSemaphore &signalSemaphore)
+void VulkanRenderStage::submit(std::vector<VkSemaphore> waitSemaphores)
 {
 	VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 	VkSubmitInfo submitInfo = {};

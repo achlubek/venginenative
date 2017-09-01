@@ -1,7 +1,6 @@
 #pragma once
 #include "Camera.h"
 #include "Scene.h"
-#include "Physics.h"
 class World
 {
 public:
@@ -9,7 +8,6 @@ public:
     ~World();
     Camera *mainDisplayCamera;
     Scene *scene;
-    Physics *physics;
     void draw(VulkanRenderStage *stage, Camera *camera);
     void setUniforms(Camera *camera);
     void setSceneUniforms();

@@ -1,10 +1,12 @@
 #include "stdafx.h"
 #include "EditorApp.h"
 #include "../VEngineNative/stdafx.h" 
+#include "Physics.h"
 
 
 EditorApp::EditorApp()
 {
+	physics = new Physics();
 }
 
 
@@ -18,6 +20,7 @@ void EditorApp::initialize()
 
 void EditorApp::onRenderFrame(float elapsed)
 {
+	physics->simulationStep(1.0 / 60.0);
 	//game->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setPosition(glm::vec3(sin(game->time), cos(game->time * 1.2), sin(game->time * 1.6)));
 	//game->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setSize(glm::vec3(sin(game->time) * 0.5 + 1.5));
 
@@ -237,7 +240,7 @@ void EditorApp::onKeyPress(int key)
 
 	if (key == GLFW_KEY_F9) {
 		glm::vec3 hitpos, hitnorm;
-		auto res = game->world->physics->rayCast(game->world->mainDisplayCamera->transformation->getPosition(),
+		auto res = physics->rayCast(game->world->mainDisplayCamera->transformation->getPosition(),
 			game->world->mainDisplayCamera->cone->reconstructDirection(glm::vec2(0.5)), hitpos, hitnorm);
 		if (res != nullptr) {
 			car[0]->body->transformation->setOrientation(glm::quat());
@@ -445,16 +448,16 @@ void EditorApp::onBind()
 	auto xt = game->asset->loadMeshFile("icosphere.mesh3d");
 	xt->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, 10.0, 0.0))));
 	xt->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, -10.0, 0.0))));
-	auto abody = Game::instance->world->physics->createBody(0.1f, xt->getInstance(0)->transformation, new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
+	auto abody = physics->createBody(0.1f, xt->getInstance(0)->transformation, new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
 
 	game->world->scene->addMesh3d(xt);
-	Game::instance->world->physics->addBody(abody);
+	physics->addBody(abody);
 	//auto abody2 = Game::instance->world->physics->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btStaticPlaneShape(btVector3(0.0, 1.0, 0.0), 5.0));
 	//abody2->enable();
    //  game->world-->scene->addMesh3d(game->asset->loadMeshFile("gory.mesh3d"));
-	auto groundpb = Game::instance->world->physics->createBody(0.0f, xt->getInstance(1)->transformation, new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
+	auto groundpb = physics->createBody(0.0f, xt->getInstance(1)->transformation, new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
 	// groundpb->getCollisionObject()->setFriction(4);
-	Game::instance->world->physics->addBody(groundpb);
+	physics->addBody(groundpb);
 	game->invoke([&]() {/*
 		auto phys = Game::instance->world->physics;
 
@@ -546,7 +549,7 @@ void EditorApp::onBind()
 	//cursor3dArrow = Mesh3d::create(game->asset->loadObject3dInfoFile("deferredsphere.raw"), new Material());
 	//cursor3dArrow->clearInstances();
 	// cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0), glm::quat(), glm::vec3(7.0))));
-	car.push_back(new Car("fiesta.car", new TransformationManager(glm::vec3(0.0))));
+	car.push_back(new Car(physics, "fiesta.car", new TransformationManager(glm::vec3(0.0))));
 }
 
 void EditorApp::switchMode(int mode)

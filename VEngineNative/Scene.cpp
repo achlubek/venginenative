@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "Scene.h"
-#include "Game.h"
+#include "Scene.h" 
+#include "Mesh3d.h" 
 
 Scene::Scene()
 {

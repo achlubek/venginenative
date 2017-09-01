@@ -24,8 +24,7 @@ public:
     Game(int windowwidth, int windowheight);
     ~Game();
     void start();
-    void invoke(const function<void(void)> &func);
-    void physicsInvoke(const function<void(void)> &func);
+    void invoke(const function<void(void)> &func); 
     volatile bool shouldClose;
     volatile bool hasExited;
     volatile bool firstFullDrawFinished;
@@ -44,8 +43,7 @@ public:
     EventHandler<int> *onKeyRepeat;
     EventHandler<int> *onMouseDown;
     EventHandler<int> *onMouseUp;
-    EventHandler<unsigned int> *onChar;
-    volatile bool physicsNeedsUpdate = false;
+    EventHandler<unsigned int> *onChar; 
     unsigned int getNextId();
     void* getObjectById(unsigned int id);
     void registerId(unsigned int id, void* p);
@@ -55,11 +53,9 @@ private:
     unsigned int lastId = 1;
     int vpmatrixUpdateFrameId = -1;
 
-    queue<function<void(void)>> invokeQueue;
-    queue<function<void(void)>> physicsInvokeQueue;
+    queue<function<void(void)>> invokeQueue; 
     map<int, GLint> textureMap;
     void renderThread();
-    void onRenderFrameFunc();
-    static void physicsThread();
+    void onRenderFrameFunc(); 
     unordered_map<int, void*> idMap;
 };

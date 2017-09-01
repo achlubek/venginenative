@@ -3,10 +3,11 @@
 #include "LinearMath/btAlignedObjectArray.h"
 #include "BulletCollision/CollisionShapes/btShapeHull.h"
 
-Car::Car(string definitionkey, TransformationManager * spawn)
+Car::Car(Physics* iphysics, string definitionkey, TransformationManager * spawn)
 {
 	definitionReader = new INIReader(definitionkey);
 	initialize(spawn->getStruct());
+	physics = iphysics;
 }
 
 Mesh3d* Car::bodyMesh = nullptr;
@@ -177,8 +178,6 @@ void Car::initialize(TransformStruct spawn)
 
 	Game::instance->invoke([&, carsCount]() {
 
-		Game::instance->physicsInvoke([&, carsCount]() {
-
 			auto conx = new btConvexHullShape();
 			for (int i = 0; i < bodyMesh->getLodLevel(0)->info3d->vbo.size(); i += 12) {
 				conx->addPoint(btVector3(bodyMesh->getLodLevel(0)->info3d->vbo[i],
@@ -189,11 +188,11 @@ void Car::initialize(TransformStruct spawn)
 			btScalar margin = conx->getMargin();
 			hull->buildHull(margin);
 			btConvexHullShape* simplifiedConvexShape = new btConvexHullShape((btScalar*)hull->getVertexPointer(), hull->numVertices());
-			body = Game::instance->world->physics->createBody(definitionReader->getf("body_mass"), bodyMesh->getInstance(carsCount)->transformation, simplifiedConvexShape);
-			tyreLF = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4)->transformation, new btSphereShape(definitionReader->getf("tyre_radius")));
-			tyreRF = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4 + 1)->transformation, new btSphereShape(definitionReader->getf("tyre_radius")));
-			tyreLR = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4 + 2)->transformation, new btSphereShape(definitionReader->getf("tyre_radius")));
-			tyreRR = Game::instance->world->physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4 + 3)->transformation, new btSphereShape(definitionReader->getf("tyre_radius")));
+			body = physics->createBody(definitionReader->getf("body_mass"), bodyMesh->getInstance(carsCount)->transformation, simplifiedConvexShape);
+			tyreLF = physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4)->transformation, new btSphereShape(definitionReader->getf("tyre_radius")));
+			tyreRF = physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4 + 1)->transformation, new btSphereShape(definitionReader->getf("tyre_radius")));
+			tyreLR = physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4 + 2)->transformation, new btSphereShape(definitionReader->getf("tyre_radius")));
+			tyreRR = physics->createBody(definitionReader->getf("tyre_mass"), tiresMesh->getInstance(carsCount * 4 + 3)->transformation, new btSphereShape(definitionReader->getf("tyre_radius")));
 
 			// body->body->setDamping(0.0017, 0.006);
 			// btTransform cmasstrs = body->body->getCenterOfMassTransform();
@@ -301,16 +300,16 @@ void Car::initialize(TransformStruct spawn)
 			m->m_hiLimit = hiLimit;
 			 
 
-			Game::instance->world->physics->addBody(body);
-			Game::instance->world->physics->addBody(tyreLF);
-			Game::instance->world->physics->addBody(tyreRF);
-			Game::instance->world->physics->addBody(tyreLR);
-			Game::instance->world->physics->addBody(tyreRR);
+			physics->addBody(body);
+			physics->addBody(tyreLF);
+			physics->addBody(tyreRF);
+			physics->addBody(tyreLR);
+			physics->addBody(tyreRR);
 			
-			Game::instance->world->physics->addConstraint(tyreLFCon);
-			Game::instance->world->physics->addConstraint(tyreRFCon);
-			Game::instance->world->physics->addConstraint(tyreLRCon);
-			Game::instance->world->physics->addConstraint(tyreRRCon);
+			physics->addConstraint(tyreLFCon);
+			physics->addConstraint(tyreRFCon);
+			physics->addConstraint(tyreLRCon);
+			physics->addConstraint(tyreRRCon);
 			
 
 			body->getRigidBody()->setLinearVelocity(btVector3(0.0, 0.0, 0.0));
@@ -319,7 +318,6 @@ void Car::initialize(TransformStruct spawn)
 			Game::instance->invoke([&]() {
 				initialized = true;
 			});
-		});
 	});
 }
 

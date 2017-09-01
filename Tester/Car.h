@@ -13,11 +13,13 @@
 #include "../VEngineNative/SquirrelVM.h";
 #include "SimpleParser.h";
 #include "INIReader.h"
+#include "Physics.h"
 class Car
 {
 public:
-	Car(string definitionkey, TransformationManager * spawn);
+	Car(Physics* physics, string definitionkey, TransformationManager * spawn);
 	~Car();
+	Physics* physics;
 	void draw();
 	void setAcceleration(float acc);
 	void setWheelsAngle(float angleInRadians);

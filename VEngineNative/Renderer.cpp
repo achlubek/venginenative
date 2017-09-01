@@ -11,11 +11,7 @@ Renderer::Renderer(int iwidth, int iheight)
 	height = iheight;
 	VkSemaphoreCreateInfo semaphoreInfo = {};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	if (vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
-		vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &renderFinishedSemaphore1) != VK_SUCCESS ||
-		vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &renderFinishedSemaphore2) != VK_SUCCESS ||
-		vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &renderFinishedSemaphoreAlternate1) != VK_SUCCESS ||
-		vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &renderFinishedSemaphoreAlternate2) != VK_SUCCESS) {
+	if (vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create semaphores!");
 	}
 
@@ -96,11 +92,7 @@ Renderer::Renderer(int iwidth, int iheight)
 }
 
 Renderer::~Renderer()
-{
-	vkDestroySemaphore(VulkanToolkit::singleton->device, renderFinishedSemaphore1, nullptr);
-	vkDestroySemaphore(VulkanToolkit::singleton->device, renderFinishedSemaphore2, nullptr);
-	vkDestroySemaphore(VulkanToolkit::singleton->device, renderFinishedSemaphoreAlternate1, nullptr);
-	vkDestroySemaphore(VulkanToolkit::singleton->device, renderFinishedSemaphoreAlternate2, nullptr);
+{ 
 	vkDestroySemaphore(VulkanToolkit::singleton->device, imageAvailableSemaphore, nullptr);
 }
 
@@ -158,25 +150,19 @@ void Renderer::renderToSwapChain(Camera *camera)
 			postProcessRenderStages[i].drawMesh(postprocessmesh, postProcessSet, 1);
 			postProcessRenderStages[i].endDrawing();
 		}
-		//vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
+
 		ppRecorded = true;
 	}
 
 	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 
-	//vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
+
 	vkAcquireNextImageKHR(VulkanToolkit::singleton->device, VulkanToolkit::singleton->swapChain->swapChain,
 		std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
-	if (meshRenderStage.cmdMeshesCounts == 0) {
-		meshRenderStage.submit({ imageAvailableSemaphore }, renderFinishedSemaphoreAlternate1);
-		postProcessRenderStages[imageIndex].submit({ renderFinishedSemaphoreAlternate1 }, renderFinishedSemaphoreAlternate2);
-		VulkanToolkit::singleton->swapChain->present({ renderFinishedSemaphoreAlternate2 }, imageIndex);
-	}
-	else {
-		meshRenderStage.submit({ imageAvailableSemaphore }, renderFinishedSemaphore1);
-		postProcessRenderStages[imageIndex].submit({ renderFinishedSemaphore1 }, renderFinishedSemaphore2);
-		VulkanToolkit::singleton->swapChain->present({ renderFinishedSemaphore2 }, imageIndex);
-	}
+
+	meshRenderStage.submit({ imageAvailableSemaphore });
+	postProcessRenderStages[imageIndex].submit({ meshRenderStage.signalSemaphore });
+	VulkanToolkit::singleton->swapChain->present({ postProcessRenderStages[imageIndex].signalSemaphore }, imageIndex);
 
 	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 }

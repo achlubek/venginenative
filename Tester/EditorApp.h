@@ -42,6 +42,7 @@ public:
 
 	void switchMode(int mode);
 
+	Physics* physics;
 
 	int currentMode = EDITOR_MODE_IDLE;
 	int lastMode = EDITOR_MODE_IDLE;

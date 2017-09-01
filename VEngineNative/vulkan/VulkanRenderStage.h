@@ -6,6 +6,7 @@ public:
 	VulkanRenderStage();
 	~VulkanRenderStage();
 
+	VkSemaphore signalSemaphore;
 	VulkanRenderPass renderPass;
 	VulkanFramebuffer framebuffer;
 	VulkanGraphicsPipeline pipeline;
@@ -26,7 +27,7 @@ public:
 	void drawMesh(Object3dInfo *info, VulkanDescriptorSet &set, size_t instances);
 	void compile();
 
-	void submit(std::vector<VkSemaphore> waitSemaphores, VkSemaphore &signalSemaphore);
+	void submit(std::vector<VkSemaphore> waitSemaphores);
 
 };
 

@@ -11,12 +11,7 @@ class Renderer
 public:
 	Renderer(int iwidth, int iheight);
 	~Renderer();
-	VkSemaphore imageAvailableSemaphore;
-	VkSemaphore renderFinishedSemaphore1;
-	VkSemaphore renderFinishedSemaphore2;
-
-	VkSemaphore renderFinishedSemaphoreAlternate1;
-	VkSemaphore renderFinishedSemaphoreAlternate2;
+	VkSemaphore imageAvailableSemaphore; 
 	VulkanRenderStage meshRenderStage;
 	std::vector<VulkanRenderStage> postProcessRenderStages;
 

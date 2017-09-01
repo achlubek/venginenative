@@ -11,7 +11,6 @@ Game::Game(int windowwidth, int windowheight)
 	width = windowwidth;
 	height = windowheight;
 	invokeQueue = queue<function<void(void)>>();
-	physicsInvokeQueue = queue<function<void(void)>>();
 	textureMap = {};
 	onRenderFrame = {};
 	asset = new AssetLoader();
@@ -95,12 +94,7 @@ void Game::invoke(const function<void(void)> &func)
 {
 	invokeQueue.push(func);
 }
-
-void Game::physicsInvoke(const function<void(void)>& func)
-{
-	physicsInvokeQueue.push(func);
-}
-
+ 
 int Game::getKeyStatus(int key)
 {
 	return glfwGetKey(vulkan->window, key);
@@ -126,35 +120,12 @@ void Game::glfwWindowSizeCallback(GLFWwindow* window, int w, int h)
 //	renderer->resize(w, h);
 }
 
-void Game::physicsThread()
-{
-	double time = glfwGetTime();
-	while (true)
-	{
-		while (Game::instance->physicsInvokeQueue.size() > 0) {
-			Game::instance->physicsInvokeQueue.front()();
-			Game::instance->physicsInvokeQueue.pop();
-		}
-		if (!Game::instance->physicsNeedsUpdate) {
-			   // Sleep(4);
-			continue;
-		}
-
-		double now = glfwGetTime();
-		Game::instance->world->physics->simulationStep((now-time));
-		time = now;
-		Game::instance->physicsNeedsUpdate = false;
-	}
-}
-
 
 void Game::renderThread()
 { 
 	shouldClose = false;
 	int frames = 0;
-	double lastTime = 0.0;
-	std::thread ptask(physicsThread);
-	ptask.detach();
+	double lastTime = 0.0; 
 	while (!glfwWindowShouldClose(vulkan->window) && !shouldClose)
 	{
 		frames++;
@@ -168,9 +139,7 @@ void Game::renderThread()
 		if (shouldClose) break;
 		onRenderFrameFunc();
 
-		glfwPollEvents();
-		physicsNeedsUpdate = true;
-		//physicsThread();
+		glfwPollEvents();  
 	}
 	delete vulkan;
 	glfwTerminate();
@@ -196,7 +165,6 @@ void Game::onRenderFrameFunc()
 		}
 		renderer->renderToSwapChain(world->mainDisplayCamera);
 	}
-	onRenderUIFrame->invoke(0);
-	physicsNeedsUpdate = true;
+	onRenderUIFrame->invoke(0); 
 	frame++;
 }

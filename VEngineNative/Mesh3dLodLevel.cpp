@@ -77,34 +77,7 @@ void Mesh3dLodLevel::draw(VulkanRenderStage* stage, const Mesh3d* mesh)
 
     if (!mesh->visible) return;
     if (!visible) return;
-	/*
-    if (material->diffuseColorTex != nullptr) material->diffuseColorTex->use(10);
-    if (material->normalTex != nullptr) material->normalTex->use(11);
-    if (material->bumpTex != nullptr) material->bumpTex->use(12);
-    if (material->roughnessTex != nullptr) material->roughnessTex->use(13);
-    if (material->metalnessTex != nullptr) material->metalnessTex->use(14);
-	*/
-    // address 0  here
-    /*
-    shader->setUniform("Roughness", material->roughness);//1
-    shader->setUniform("Metalness", material->metalness);//2
-    shader->setUniform("DiffuseColor", material->diffuseColor);//2 + 4 rgba = 6
 
-    shader->setUniform("useDiffuseColorTexInt", material->diffuseColorTex != nullptr ? 1 : 0);
-    shader->setUniform("useNormalTexInt", material->normalTex != nullptr ? 1 : 0);
-    shader->setUniform("useBumpTexInt", material->bumpTex != nullptr ? 1 : 0);
-    shader->setUniform("useRoughnessTexInt", material->roughnessTex != nullptr ? 1 : 0);
-    shader->setUniform("useMetalnessTexInt", material->metalnessTex != nullptr ? 1 : 0);
-
-    shader->setUniform("diffuseColorTexScale", material->diffuseColorTexScale);
-    shader->setUniform("normalTexScale", material->normalTexScale);
-    shader->setUniform("bumpTexScale", material->bumpTexScale);
-    shader->setUniform("roughnessTexScale", material->roughnessTexScale);
-    shader->setUniform("metalnessTexScale", material->metalnessTexScale);
-
-    shader->setUniform("MeshID", mesh->id);
-    shader->setUniform("LodLevelID", id);*/
-	  
     stage->drawMesh(info3d, descriptorSet, instancesFiltered);
 
 }
@@ -146,7 +119,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
     int fint = filtered.size();
 	instancesFiltered = fint;
 
-	changed = true;
+	//changed = true;
     if (changed) {
 
 
@@ -280,7 +253,7 @@ vec4 projectvdao2(mat4 mat, vec3 pos) {
 
 bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
 {
-	return true;//debug
+	//return true;//debug
     if (ignoreFrustumCulling) return true;
     auto size = instance->transformation->getSize();
     float radius = info3d->radius * glm::max(glm::max(size.x, size.y), size.z);
