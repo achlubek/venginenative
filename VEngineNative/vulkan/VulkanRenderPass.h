@@ -2,10 +2,10 @@
 class VulkanRenderPass
 {
 public:
-	VulkanRenderPass() {}
-	VulkanRenderPass(std::vector<VulkanAttachment> iattachments, std::vector<VulkanSubpass> subpasses);
+    VulkanRenderPass() {}
+    VulkanRenderPass(std::vector<VulkanAttachment> iattachments, std::vector<VulkanSubpass> subpasses);
     ~VulkanRenderPass();
     VkRenderPass handle;
-	std::vector<VulkanAttachment> attachments;
+    std::vector<VulkanAttachment> attachments;
 };
 

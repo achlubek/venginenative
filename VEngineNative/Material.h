@@ -9,10 +9,10 @@ public:
     float roughness;
     float metalness;
     VulkanImage* diffuseColorTex;
-	VulkanImage* normalTex;
-	VulkanImage* bumpTex;
-	VulkanImage* roughnessTex;
-	VulkanImage* metalnessTex;
+    VulkanImage* normalTex;
+    VulkanImage* bumpTex;
+    VulkanImage* roughnessTex;
+    VulkanImage* metalnessTex;
     glm::vec2 diffuseColorTexScale;
     glm::vec2 normalTexScale;
     glm::vec2 bumpTexScale;

@@ -9,19 +9,19 @@
 class Application
 {
 public:
-	static Application *instance;
+    static Application *instance;
 
     Scene *scene;
-	AssetLoader *asset;
-	Renderer *renderer;
-	VulkanToolkit* vulkan;
-	VulkanImage* dummyTexture;
+    AssetLoader *asset;
+    Renderer *renderer;
+    VulkanToolkit* vulkan;
+    VulkanImage* dummyTexture;
 
-	Camera * mainDisplayCamera = nullptr;
+    Camera * mainDisplayCamera = nullptr;
 
-	int frame;
-	int width;
-	int height;
+    int frame;
+    int width;
+    int height;
 
     Application(int windowwidth, int windowheight);
     ~Application();
@@ -31,8 +31,8 @@ public:
     volatile bool hasExited; 
     float time;
 
-	EventHandler<int> onRenderFrame;
-	EventHandler<int> onWindowResize;
+    EventHandler<int> onRenderFrame;
+    EventHandler<int> onWindowResize;
     unsigned int getNextId();
     void* getObjectById(unsigned int id);
     void registerId(unsigned int id, void* p);

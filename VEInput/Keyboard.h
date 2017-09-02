@@ -3,15 +3,15 @@
 class Keyboard
 {
 public:
-	Keyboard(GLFWwindow* win);
-	~Keyboard();
+    Keyboard(GLFWwindow* win);
+    ~Keyboard();
     EventHandler<int> onKeyPress;
     EventHandler<int> onKeyRelease;
     EventHandler<int> onKeyRepeat; 
     EventHandler<unsigned int> onChar;  
-	int getKeyStatus(int key);
+    int getKeyStatus(int key);
 private:
-	static Keyboard * instance;
-	GLFWwindow* window;
+    static Keyboard * instance;
+    GLFWwindow* window;
 };
 

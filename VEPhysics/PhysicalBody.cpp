@@ -26,11 +26,11 @@ PhysicalBody::~PhysicalBody()
 
 void PhysicalBody::applyChanges()
 {
-	auto xyz = ((btRigidBody*)body)->getCenterOfMassPosition();
-	if (isnan(xyz.x())) {
-		readChanges();
-		return;
-	}
+    auto xyz = ((btRigidBody*)body)->getCenterOfMassPosition();
+    if (isnan(xyz.x())) {
+        readChanges();
+        return;
+    }
    // if (!isStaticObject) {
         auto quat = ((btRigidBody*)body)->getOrientation();
         transformation->setPosition(glm::vec3(xyz.x(), xyz.y(), xyz.z()));

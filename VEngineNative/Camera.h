@@ -15,7 +15,7 @@ public:
     glm::mat4 projectionMatrix;
     
     void createProjectionPerspective(float fov, float aspectRatio, float nearpl, float farpl);
-	 
+     
 private:
     void updateFocalLength();
 };

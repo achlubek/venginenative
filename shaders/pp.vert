@@ -40,5 +40,5 @@ layout(location = 1) out vec2 outTexCoord;
 void main() {
     gl_Position = vec4(inPosition.xyz, 1.0);
     outNormal = inNormal;
-	outTexCoord = inTexCoord;
+    outTexCoord = inTexCoord;
 }

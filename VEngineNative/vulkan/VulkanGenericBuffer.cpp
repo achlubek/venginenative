@@ -6,7 +6,7 @@ VulkanGenericBuffer::VulkanGenericBuffer()
 }
 VulkanGenericBuffer::VulkanGenericBuffer(VkBufferUsageFlags usage, VkDeviceSize s)
 {
-	size = s;
+    size = s;
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = size;

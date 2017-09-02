@@ -10,23 +10,23 @@
 class Renderer
 {
 public:
-	Renderer(int iwidth, int iheight);
-	~Renderer(); 
+    Renderer(int iwidth, int iheight);
+    ~Renderer(); 
 
-	VulkanDescriptorSetsManager setManager;
-	VulkanDescriptorSet postProcessSet;
-	Mesh3d* dummyMesh;
+    VulkanDescriptorSetsManager setManager;
+    VulkanDescriptorSet postProcessSet;
+    Mesh3d* dummyMesh;
 
-	VulkanGenericBuffer uboHighFrequencyBuffer;
-	VulkanGenericBuffer uboLowFrequencyBuffer;
-	VulkanImage diffuseImage;
-	VulkanImage normalImage;
-	VulkanImage distanceImage;
-	VulkanImage depthImage;
+    VulkanGenericBuffer uboHighFrequencyBuffer;
+    VulkanGenericBuffer uboLowFrequencyBuffer;
+    VulkanImage diffuseImage;
+    VulkanImage normalImage;
+    VulkanImage distanceImage;
+    VulkanImage depthImage;
 
-	VulkanRenderer* renderer;
-	 
-	void renderToSwapChain(Camera *camera);
-	int width;
-	int height; 
+    VulkanRenderer* renderer;
+     
+    void renderToSwapChain(Camera *camera);
+    int width;
+    int height; 
 };

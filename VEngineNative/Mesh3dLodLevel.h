@@ -23,14 +23,14 @@ public:
     void draw(VulkanRenderStage* stage, const Mesh3d* mesh);
     void updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstance*> &instances);
     bool materialBufferNeedsUpdate = true;
-	VulkanDescriptorSet descriptorSet;
-	void initialize();
-	//Skeleton* skeleton;
-	//SkeletonPose* skeletonPose;
+    VulkanDescriptorSet descriptorSet;
+    void initialize();
+    //Skeleton* skeleton;
+    //SkeletonPose* skeletonPose;
 private:
     VulkanGenericBuffer *modelInfosBuffer;
 
-	VulkanGenericBuffer *materialBuffer;
+    VulkanGenericBuffer *materialBuffer;
     
     bool checkIntersection(Mesh3dInstance* instance);
     vector<int> samplerIndices;
@@ -45,5 +45,5 @@ private:
     vector<VulkanImage*> textureBinds;
     size_t instancesFiltered;
     vector<unsigned int> lastIdMap = vector<unsigned int>{};
-	vector<unsigned int> newids = vector<unsigned int>{};
+    vector<unsigned int> newids = vector<unsigned int>{};
 };

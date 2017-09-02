@@ -3,14 +3,14 @@
 
 struct ImageData {
 public:
-	int width, height, channelCount;
-	void* data;
+    int width, height, channelCount;
+    void* data;
 };
 
 class VulkanToolkit
 {
 public:
-	
+    
     static VulkanToolkit* singleton;
     VulkanToolkit();
     ~VulkanToolkit();
@@ -22,9 +22,9 @@ public:
     VkDevice device;
     VkPhysicalDevice pdevice;
     GLFWwindow *window;
-	VkSurfaceKHR surface;
-	VkDebugReportCallbackEXT callback;
-	void initialize();
+    VkSurfaceKHR surface;
+    VkDebugReportCallbackEXT callback;
+    void initialize();
     void createInstance(std::string appname, std::string enginename);
     void setupDebugCallback();
     void loadPhysicalDevices();
@@ -37,19 +37,19 @@ public:
     int chosenDeviceId = 0;
     int chosenQFId = 0;
 
-	VulkanSwapChain* swapChain;
-	 
+    VulkanSwapChain* swapChain;
+     
     VkCommandPool commandPool;
 
     VkQueue mainQueue;
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties); 
 
-	ImageData* readFileImageData(std::string path);
-	VulkanImage* createTexture(ImageData * img); 
+    ImageData* readFileImageData(std::string path);
+    VulkanImage* createTexture(ImageData * img); 
 
-	VkCommandBuffer beginSingleTimeCommands();
-	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
-	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+    VkCommandBuffer beginSingleTimeCommands();
+    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+    void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+    void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 };

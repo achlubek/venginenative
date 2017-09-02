@@ -26,7 +26,7 @@ Object3dInfo::~Object3dInfo()
 {
     vbo.clear();
     if (generated) {
-		//
+        //
     }
 }
 
@@ -35,26 +35,26 @@ void Object3dInfo::draw(VulkanGraphicsPipeline p, VulkanDescriptorSet &set, VkCo
     if (!generated)
         generate();
 
-	vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, p.pipelineLayout, 0, 1, &set.set, 0, nullptr);
-	VkBuffer vertexBuffers[] = { vertexBuffer };
-	VkDeviceSize offsets[] = { 0 };
-	vkCmdBindVertexBuffers(cb, 0, 1, vertexBuffers, offsets);
+    vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, p.pipelineLayout, 0, 1, &set.set, 0, nullptr);
+    VkBuffer vertexBuffers[] = { vertexBuffer };
+    VkDeviceSize offsets[] = { 0 };
+    vkCmdBindVertexBuffers(cb, 0, 1, vertexBuffers, offsets);
 
-	vkCmdDraw(cb, static_cast<uint32_t>(vertexCount), 1, 0, 0);
+    vkCmdDraw(cb, static_cast<uint32_t>(vertexCount), 1, 0, 0);
 }
 
 void Object3dInfo::drawInstanced(VulkanGraphicsPipeline p, VulkanDescriptorSet &set, VkCommandBuffer cb, size_t instances)
 {
-	if (!generated) {
-		generate(); 
-	}
+    if (!generated) {
+        generate(); 
+    }
 
-	vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, p.pipelineLayout, 0, 1, &set.set, 0, nullptr);
-	VkBuffer vertexBuffers[] = { vertexBuffer };
-	VkDeviceSize offsets[] = { 0 };
-	vkCmdBindVertexBuffers(cb, 0, 1, vertexBuffers, offsets);
+    vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, p.pipelineLayout, 0, 1, &set.set, 0, nullptr);
+    VkBuffer vertexBuffers[] = { vertexBuffer };
+    VkDeviceSize offsets[] = { 0 };
+    vkCmdBindVertexBuffers(cb, 0, 1, vertexBuffers, offsets);
 
-	vkCmdDraw(cb, static_cast<uint32_t>(vertexCount), instances, 0, 0);
+    vkCmdDraw(cb, static_cast<uint32_t>(vertexCount), instances, 0, 0);
 }
 
 void Object3dInfo::updateRadius()
@@ -91,35 +91,35 @@ void Object3dInfo::rebufferVbo(vector<GLfloat> data, bool force_resize)
 
 void Object3dInfo::generate()
 { 
-	VkBufferCreateInfo bufferInfo = {};
-	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = sizeof(vbo[0]) * vbo.size();
-	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = sizeof(vbo[0]) * vbo.size();
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	if (vkCreateBuffer(VulkanToolkit::singleton->device, &bufferInfo, nullptr, &vertexBuffer) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create vertex buffer!");
-	}
+    if (vkCreateBuffer(VulkanToolkit::singleton->device, &bufferInfo, nullptr, &vertexBuffer) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create vertex buffer!");
+    }
 
-	VkMemoryRequirements memRequirements;
-	vkGetBufferMemoryRequirements(VulkanToolkit::singleton->device, vertexBuffer, &memRequirements);
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(VulkanToolkit::singleton->device, vertexBuffer, &memRequirements);
 
-	VkMemoryAllocateInfo allocInfo = {};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = VulkanToolkit::singleton->findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    VkMemoryAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = VulkanToolkit::singleton->findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-	if (vkAllocateMemory(VulkanToolkit::singleton->device, &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate vertex buffer memory!");
-	}
+    if (vkAllocateMemory(VulkanToolkit::singleton->device, &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate vertex buffer memory!");
+    }
 
-	vkBindBufferMemory(VulkanToolkit::singleton->device, vertexBuffer, vertexBufferMemory, 0);
+    vkBindBufferMemory(VulkanToolkit::singleton->device, vertexBuffer, vertexBufferMemory, 0);
 
-	void* data;
-	vkMapMemory(VulkanToolkit::singleton->device, vertexBufferMemory, 0, bufferInfo.size, 0, &data);
-	memcpy(data, vbo.data(), (size_t)bufferInfo.size);
-	vkUnmapMemory(VulkanToolkit::singleton->device, vertexBufferMemory);
-	vertexCount = vbo.size() / 12;
-	
+    void* data;
+    vkMapMemory(VulkanToolkit::singleton->device, vertexBufferMemory, 0, bufferInfo.size, 0, &data);
+    memcpy(data, vbo.data(), (size_t)bufferInfo.size);
+    vkUnmapMemory(VulkanToolkit::singleton->device, vertexBufferMemory);
+    vertexCount = vbo.size() / 12;
+    
     generated = true;
 }

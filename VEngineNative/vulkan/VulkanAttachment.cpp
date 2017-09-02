@@ -4,8 +4,8 @@
 VulkanAttachment::VulkanAttachment(VulkanImage* iimage, VkFormat format, VkSampleCountFlagBits samples, VkAttachmentLoadOp loadop, VkAttachmentStoreOp storeop, 
     VkAttachmentLoadOp stencilloadop, VkAttachmentStoreOp stencilstoreop, VkImageLayout initialLayout, VkImageLayout finalLayout)
 {
-	image = iimage;
-	description = {};
+    image = iimage;
+    description = {};
     description.format = format;
     description.samples = samples;
     description.loadOp = loadop;

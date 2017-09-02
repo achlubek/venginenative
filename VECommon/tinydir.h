@@ -171,7 +171,7 @@ extern "C" {
 #ifndef _MSC_VER
 #ifndef _TINYDIR_USE_READDIR
         int error;
-        int size;	/* using int size */
+        int size;    /* using int size */
 #endif
 #else
         char path_buf[_TINYDIR_PATH_MAX];

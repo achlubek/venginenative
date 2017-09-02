@@ -15,7 +15,7 @@ TransformStruct::TransformStruct(glm::vec3 iposition)
 {
     position = iposition;
     size = vec3(1);
-	orientation = quat(1.0, 0.0, 0.0, 0.0);
+    orientation = quat(1.0, 0.0, 0.0, 0.0);
 }
 
 TransformStruct::TransformStruct(glm::vec3 iposition, glm::quat iorientation)
@@ -36,7 +36,7 @@ TransformStruct::TransformStruct(glm::vec3 iposition, glm::vec3 isize)
 {
     position = iposition;
     size = isize;
-	orientation = quat(1.0, 0.0, 0.0, 0.0);
+    orientation = quat(1.0, 0.0, 0.0, 0.0);
 }
 
 TransformStruct::TransformStruct(glm::quat iorientation)
@@ -60,14 +60,14 @@ TransformationManager::TransformationManager()
 {
     position = vec3(0);
     size = vec3(1);
-	orientation = quat(1.0, 0.0, 0.0, 0.0);
+    orientation = quat(1.0, 0.0, 0.0, 0.0);
 }
 
 TransformationManager::TransformationManager(glm::vec3 iposition)
 {
     position = iposition;
     size = vec3(1);
-	orientation = quat(1.0, 0.0, 0.0, 0.0);
+    orientation = quat(1.0, 0.0, 0.0, 0.0);
 }
 
 TransformationManager::TransformationManager(glm::vec3 iposition, glm::quat iorientation)
@@ -88,7 +88,7 @@ TransformationManager::TransformationManager(glm::vec3 iposition, glm::vec3 isiz
 {
     position = iposition;
     size = isize;
-	orientation = quat(1.0, 0.0, 0.0, 0.0);
+    orientation = quat(1.0, 0.0, 0.0, 0.0);
 }
 
 TransformationManager::TransformationManager(glm::quat iorientation)

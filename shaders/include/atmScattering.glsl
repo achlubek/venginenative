@@ -12,19 +12,19 @@ float fbmHI(vec3 p){
    // p *= 0.1;
     p *= 0.0000169;
     p.x *= 0.489;
-	p += hiFreq.Time * 0.02;
-	//p += getWind(p * 0.2) * 6.0;
-	float a = 0.0;
+    p += hiFreq.Time * 0.02;
+    //p += getWind(p * 0.2) * 6.0;
+    float a = 0.0;
     float w = 1.0;
     float wc = 0.0;
-	for(int i=0;i<4;i++){
+    for(int i=0;i<4;i++){
         //p += noise(vec3(a));
-		a += clamp(2.0 * abs(0.5 - (supernoise3dX(p))) * w, 0.0, 1.0);
-		wc += w;
+        a += clamp(2.0 * abs(0.5 - (supernoise3dX(p))) * w, 0.0, 1.0);
+        wc += w;
         w *= 0.5;
-		p = p * 3.0;
-	}
-	return a / wc;// + noise(p * 100.0) * 11;
+        p = p * 3.0;
+    }
+    return a / wc;// + noise(p * 100.0) * 11;
 }
 vec3 wind(vec3 p){
     return vec3(
@@ -37,9 +37,9 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
 
     pSun = normalize(pSun);
     r = normalize(r);
-	float rs = rsi2(Ray(r0, r), Sphere(vec3(0), rAtmos));
-	vec3 px = r0 + r * rs;
-	shMie *= smoothstep(0.7, 1.0, 1.0) * ((pow(fbmHI(px  + wind(px * 0.00000669) * 40000.0) * (supernoise3dX(px* 0.00000669 + hiFreq.Time * 0.001)*0.5 + 0.5) * 1.3, 3.0) * 0.8 + 0.5));
+    float rs = rsi2(Ray(r0, r), Sphere(vec3(0), rAtmos));
+    vec3 px = r0 + r * rs;
+    shMie *= smoothstep(0.7, 1.0, 1.0) * ((pow(fbmHI(px  + wind(px * 0.00000669) * 40000.0) * (supernoise3dX(px* 0.00000669 + hiFreq.Time * 0.001)*0.5 + 0.5) * 1.3, 3.0) * 0.8 + 0.5));
     float iStepSize = rs / float(iSteps);
     float iTime = 0.0;
     vec3 totalRlh = vec3(0,0,0);
@@ -83,7 +83,7 @@ vec3 getAtmosphereForDirectionReal(vec3 origin, vec3 dir, vec3 sunpos){
 
 //    return supersimpleatmosphere(origin, dir, sunpos);
 
-	float mult = max(0.0, dot(VECTOR_UP, sunpos) * 0.9 + 0.1);
+    float mult = max(0.0, dot(VECTOR_UP, sunpos) * 0.9 + 0.1);
 
     //if(dir.y < -0.01) return vec3(0.0);
 

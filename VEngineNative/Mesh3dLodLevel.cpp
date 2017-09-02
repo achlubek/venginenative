@@ -10,7 +10,7 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial, float di
     material = imaterial;
     distanceStart = distancestart;
     distanceEnd = distanceend;
-	initialize();
+    initialize();
 }
 
 Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial)
@@ -19,7 +19,7 @@ Mesh3dLodLevel::Mesh3dLodLevel(Object3dInfo *info, Material *imaterial)
     material = imaterial;
     distanceStart = 0;
     distanceEnd = 99999.0;
-	initialize();
+    initialize();
 }
 
 Mesh3dLodLevel::Mesh3dLodLevel()
@@ -28,43 +28,43 @@ Mesh3dLodLevel::Mesh3dLodLevel()
     material = nullptr;
     distanceStart = 0;
     distanceEnd = 99999.0;
-	initialize();
+    initialize();
 }
 
 void Mesh3dLodLevel::initialize()
 {
-	int kb1 = 1024;
-	int mb1 = kb1 * 1024;
-	modelInfosBuffer = new VulkanGenericBuffer(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, 64 * kb1);
-	materialBuffer = new VulkanGenericBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, kb1);
-	samplerIndices = {};
-	modes = {};
-	targets = {};
-	sources = {};
-	modifiers = {};
-	uvScales = {};
-	nodesDatas = {};
-	nodesColors = {};
-	modes = {};
-	textureBinds = {};
-	wrapModes = {};
-	id = Application::instance->getNextId();
-	Application::instance->registerId(id, this);
-	descriptorSet = Application::instance->renderer->setManager.generateMesh3dDescriptorSet();
-	int i = 0;
-	descriptorSet.bindUniformBuffer(i++, Application::instance->renderer->uboHighFrequencyBuffer);
-	descriptorSet.bindUniformBuffer(i++, Application::instance->renderer->uboLowFrequencyBuffer);
+    int kb1 = 1024;
+    int mb1 = kb1 * 1024;
+    modelInfosBuffer = new VulkanGenericBuffer(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, 64 * kb1);
+    materialBuffer = new VulkanGenericBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, kb1);
+    samplerIndices = {};
+    modes = {};
+    targets = {};
+    sources = {};
+    modifiers = {};
+    uvScales = {};
+    nodesDatas = {};
+    nodesColors = {};
+    modes = {};
+    textureBinds = {};
+    wrapModes = {};
+    id = Application::instance->getNextId();
+    Application::instance->registerId(id, this);
+    descriptorSet = Application::instance->renderer->setManager.generateMesh3dDescriptorSet();
+    int i = 0;
+    descriptorSet.bindUniformBuffer(i++, Application::instance->renderer->uboHighFrequencyBuffer);
+    descriptorSet.bindUniformBuffer(i++, Application::instance->renderer->uboLowFrequencyBuffer);
 
-	descriptorSet.bindStorageBuffer(i++, *modelInfosBuffer);
-	descriptorSet.bindUniformBuffer(i++, *materialBuffer);
+    descriptorSet.bindStorageBuffer(i++, *modelInfosBuffer);
+    descriptorSet.bindUniformBuffer(i++, *materialBuffer);
 
-	descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
-	descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
-	descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
-	descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
-	descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
+    descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
+    descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
+    descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
+    descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
+    descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
 
-	descriptorSet.update();
+    descriptorSet.update();
 }
 
 Mesh3dLodLevel::~Mesh3dLodLevel()
@@ -89,7 +89,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
     // buffers into nextbuffer, draws current
     vec3 cameraPos = Application::instance->mainDisplayCamera->transformation->getPosition();
     vector<Mesh3dInstance*> filtered;
-	newids.clear();
+    newids.clear();
     bool changed = false;
     for (int i = 0; i < instances.size(); i++) {
         float dst = distance(cameraPos, instances[i]->transformation->getPosition());
@@ -117,9 +117,9 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
     // Urgently transfrom it into permament mapped buffer 
 
     int fint = filtered.size();
-	instancesFiltered = fint;
+    instancesFiltered = fint;
 
-	//changed = true;
+    //changed = true;
     if (changed) {
 
 
@@ -147,7 +147,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
                 ((float*)modelbufferpt)[a++] = s.y;
                 ((float*)modelbufferpt)[a++] = s.z;
                 ((float*)modelbufferpt)[a++] = 1.0f;
-				
+                
                 ((int*)modelbufferpt)[a++] = filtered[i]->id;
                 ((int*)modelbufferpt)[a++] = filtered[i]->id;
                 ((int*)modelbufferpt)[a++] = filtered[i]->id;
@@ -161,28 +161,28 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
     if (materialBufferNeedsUpdate) {
 
 
-		if (material->diffuseColorTex != nullptr) {
-			descriptorSet.bindImageViewSampler(4, *material->diffuseColorTex);
-		}
+        if (material->diffuseColorTex != nullptr) {
+            descriptorSet.bindImageViewSampler(4, *material->diffuseColorTex);
+        }
 
-		if (material->normalTex != nullptr) {
-			descriptorSet.bindImageViewSampler(5, *material->normalTex);
-		}
-		if (material->bumpTex != nullptr) {
-			descriptorSet.bindImageViewSampler(6, *material->bumpTex);
-		}
-		if (material->roughnessTex != nullptr) {
-			descriptorSet.bindImageViewSampler(7, *material->roughnessTex);
-		}
-		if (material->metalnessTex != nullptr) {
-			descriptorSet.bindImageViewSampler(8, *material->metalnessTex);
-		}
+        if (material->normalTex != nullptr) {
+            descriptorSet.bindImageViewSampler(5, *material->normalTex);
+        }
+        if (material->bumpTex != nullptr) {
+            descriptorSet.bindImageViewSampler(6, *material->bumpTex);
+        }
+        if (material->roughnessTex != nullptr) {
+            descriptorSet.bindImageViewSampler(7, *material->roughnessTex);
+        }
+        if (material->metalnessTex != nullptr) {
+            descriptorSet.bindImageViewSampler(8, *material->metalnessTex);
+        }
 
-		if (material->diffuseColorTex != nullptr || material->normalTex != nullptr
-			|| material->bumpTex != nullptr || material->roughnessTex != nullptr
-			|| material->metalnessTex != nullptr) {
-			descriptorSet.update();
-		}
+        if (material->diffuseColorTex != nullptr || material->normalTex != nullptr
+            || material->bumpTex != nullptr || material->roughnessTex != nullptr
+            || material->metalnessTex != nullptr) {
+            descriptorSet.update();
+        }
 
         materialBufferNeedsUpdate = false;
         vector<float> floats2;
@@ -230,10 +230,10 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
         floats2.push_back(0.0f);
         floats2.push_back(0.0f);
 
-		void* materialpointer = nullptr;
-		materialBuffer->map(0, 4 * floats2.size(), &materialpointer);
-		memcpy(materialpointer, floats2.data(), 4 * floats2.size());
-		materialBuffer->unmap();
+        void* materialpointer = nullptr;
+        materialBuffer->map(0, 4 * floats2.size(), &materialpointer);
+        memcpy(materialpointer, floats2.data(), 4 * floats2.size());
+        materialBuffer->unmap();
     }
 }
 
@@ -253,7 +253,7 @@ vec4 projectvdao2(mat4 mat, vec3 pos) {
 
 bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
 {
-	//return true;//debug
+    //return true;//debug
     if (ignoreFrustumCulling) return true;
     auto size = instance->transformation->getSize();
     float radius = info3d->radius * glm::max(glm::max(size.x, size.y), size.z);
