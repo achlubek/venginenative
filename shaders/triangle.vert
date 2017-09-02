@@ -5,28 +5,7 @@ out gl_PerVertex {
     vec4 gl_Position;
 };
 
-layout(set = 0, binding = 0) uniform UniformBufferObject1 {
-    float Time;
-    float Zero;
-    vec2 Mouse;
-    mat4 VPMatrix;
-    vec4 inCameraPos;
-    vec4 inFrustumConeLeftBottom;
-    vec4 inFrustumConeBottomLeftToBottomRight;
-    vec4 inFrustumConeBottomLeftToTopLeft;
-} hiFreq;
-
-#define CameraPosition (hiFreq.inCameraPos.xyz)
-#define FrustumConeLeftBottom (hiFreq.inFrustumConeLeftBottom.xyz)
-#define FrustumConeBottomLeftToBottomRight (hiFreq.inFrustumConeBottomLeftToBottomRight.xyz)
-#define FrustumConeBottomLeftToTopLeft (hiFreq.inFrustumConeBottomLeftToTopLeft.xyz)
-
-layout(set = 0, binding = 1) uniform UniformBufferObject2 {
-    float Time;
-    float Zero;
-    vec2 Mouse;
-    mat4 VPMatrix;
-} lowFreq;
+#include sharedBuffers.glsl
 
 struct ModelInfo{
     vec4 Rotation;
@@ -34,9 +13,11 @@ struct ModelInfo{
     vec4 Scale;
     uvec4 idAnd4Empty;
 };
+
 layout(set = 0, binding = 2) buffer UniformBufferObject3 {
     ModelInfo ModelInfos[];
 } modelData;
+
 layout(set = 0, binding = 3) uniform UniformBufferObject6 {
     vec4 RoughnessMetalness_ZeroZero;
     vec4 DiffuseColor_Zero;
@@ -85,8 +66,8 @@ void main() {
 
     vec3 WorldPos = transform_vertex(int(gl_InstanceIndex), inPosition.xyz);
     vec4 opo = (hiFreq.VPMatrix) * vec4(WorldPos, 1.0);
-    vec3 Normal = normalize((int(gl_InstanceIndex), (inNormal)));
-    outNormal = Normal;
+    vec3 Normal = transform_normal(int(gl_InstanceIndex), inNormal);
+    outNormal = normalize(Normal);
     outTangent = clamp(vec4(normalize(transform_normal(int(gl_InstanceIndex), inTangent.xyz)), inTangent.w), -1.0, 1.0);
     outTexCoord = inTexCoord;
     inInstanceId = gl_InstanceIndex;

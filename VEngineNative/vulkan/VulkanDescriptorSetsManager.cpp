@@ -149,8 +149,15 @@ void VulkanDescriptorSetsManager::createLayoutPostProcessing()
     distanceTextureBinding.pImmutableSamplers = nullptr;
     distanceTextureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
+    VkDescriptorSetLayoutBinding ambientTextureBinding = {};
+    ambientTextureBinding.binding = 5;
+    ambientTextureBinding.descriptorCount = 1;
+    ambientTextureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    ambientTextureBinding.pImmutableSamplers = nullptr;
+    ambientTextureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
     std::vector<VkDescriptorSetLayoutBinding> bindings = {
-        globalHighFrequencyUBO, globalLowFrequencyUBO, diffuseTextureBinding, normalTextureBinding, distanceTextureBinding
+        globalHighFrequencyUBO, globalLowFrequencyUBO, diffuseTextureBinding, normalTextureBinding, distanceTextureBinding, ambientTextureBinding
     };
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;

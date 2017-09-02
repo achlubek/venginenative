@@ -17,28 +17,7 @@ layout(binding = 6) uniform sampler2D bumpTexture;
 layout(binding = 7) uniform sampler2D roughnessTexture;
 layout(binding = 8) uniform sampler2D metalnessTexture;
 
-layout(set = 0, binding = 0) uniform UniformBufferObject1 {
-    float Time;
-    float Zero;
-    vec2 Mouse;
-    mat4 VPMatrix;
-    vec4 inCameraPos;
-    vec4 inFrustumConeLeftBottom;
-    vec4 inFrustumConeBottomLeftToBottomRight;
-    vec4 inFrustumConeBottomLeftToTopLeft;
-} hiFreq;
-
-#define CameraPosition (hiFreq.inCameraPos.xyz)
-#define FrustumConeLeftBottom (hiFreq.inFrustumConeLeftBottom.xyz)
-#define FrustumConeBottomLeftToBottomRight (hiFreq.inFrustumConeBottomLeftToBottomRight.xyz)
-#define FrustumConeBottomLeftToTopLeft (hiFreq.inFrustumConeBottomLeftToTopLeft.xyz)
-
-layout(set = 0, binding = 1) uniform UniformBufferObject2 {
-    float Time;
-    float Zero;
-    vec2 Mouse;
-    mat4 VPMatrix;
-} lowFreq;
+#include sharedBuffers.glsl
 
 struct ModelInfo{
     vec4 Rotation;

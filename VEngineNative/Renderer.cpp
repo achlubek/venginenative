@@ -20,6 +20,8 @@ Renderer::Renderer(int iwidth, int iheight)
     distanceImage = VulkanImage(width, height, VK_FORMAT_R32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
+    ambientImage = VulkanImage(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
     depthImage = VulkanImage(width, height, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, true);
@@ -28,6 +30,8 @@ Renderer::Renderer(int iwidth, int iheight)
     uboLowFrequencyBuffer = VulkanGenericBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
 
     //setManager = VulkanDescriptorSetsManager();
+
+    //##########################//
 
     auto vertShaderModule = VulkanShaderModule("../../shaders/compiled/triangle.vert.spv");
     auto fragShaderModule = VulkanShaderModule("../../shaders/compiled/triangle.frag.spv");
@@ -44,16 +48,35 @@ Renderer::Renderer(int iwidth, int iheight)
     meshRenderStage->addOutputImage(normalImage);
     meshRenderStage->addOutputImage(distanceImage);
     meshRenderStage->addOutputImage(depthImage);
-    
+
+    //####//
+
     auto ppvertShaderModule = VulkanShaderModule("../../shaders/compiled/pp.vert.spv");
-    auto ppfragShaderModule = VulkanShaderModule("../../shaders/compiled/pp.frag.spv");
-     
+
+    //##########################//
+
+    auto ppshadefragShaderModule = VulkanShaderModule("../../shaders/compiled/pp-shade-ambient.frag.spv");
+
+    auto ppShadeAmbientStage = new VulkanRenderStage();
+
+    ppShadeAmbientStage->setViewport(ext);
+    ppShadeAmbientStage->addShaderStage(ppvertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
+    ppShadeAmbientStage->addShaderStage(ppshadefragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
+    ppShadeAmbientStage->addDescriptorSetLayout(setManager.ppLayout);
+    ppShadeAmbientStage->addOutputImage(ambientImage);
+
+    //##########################//
+
+    auto ppoutputfragShaderModule = VulkanShaderModule("../../shaders/compiled/pp-output.frag.spv");
+
     auto post_process_zygote = new VulkanRenderStage();
 
     post_process_zygote->setViewport(ext);
     post_process_zygote->addShaderStage(ppvertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
-    post_process_zygote->addShaderStage(ppfragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
-    post_process_zygote->addDescriptorSetLayout(setManager.ppLayout); 
+    post_process_zygote->addShaderStage(ppoutputfragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
+    post_process_zygote->addDescriptorSetLayout(setManager.ppLayout);
+
+    //##########################//
 
     postProcessSet = setManager.generatePostProcessingDescriptorSet();
     postProcessSet.bindUniformBuffer(0, uboHighFrequencyBuffer);
@@ -61,10 +84,12 @@ Renderer::Renderer(int iwidth, int iheight)
     postProcessSet.bindImageViewSampler(2, diffuseImage);
     postProcessSet.bindImageViewSampler(3, normalImage);
     postProcessSet.bindImageViewSampler(4, distanceImage);
+    postProcessSet.bindImageViewSampler(5, ambientImage);
     postProcessSet.update();
 
     renderer = new VulkanRenderer();
     renderer->setMeshStage(meshRenderStage);
+    renderer->addPostProcessingStage(ppShadeAmbientStage);
     renderer->setOutputStage(post_process_zygote);
     renderer->setPostProcessingDescriptorSet(&postProcessSet);
     renderer->compile();
