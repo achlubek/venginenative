@@ -261,6 +261,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="VulkanRenderer.h" />
     <ClInclude Include="vulkan\VulkanAttachment.h" />
     <ClInclude Include="vulkan\VulkanBinaryBufferBuilder.h" />
     <ClInclude Include="vulkan\VulkanCommandBuffer.h" />
@@ -297,6 +298,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NotOptimization|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="VulkanRenderer.cpp" />
     <ClCompile Include="vulkan\VulkanAttachment.cpp" />
     <ClCompile Include="vulkan\VulkanBinaryBufferBuilder.cpp" />
     <ClCompile Include="vulkan\VulkanCommandBuffer.cpp" />

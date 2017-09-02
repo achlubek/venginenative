@@ -8,12 +8,7 @@
 Renderer::Renderer(int iwidth, int iheight)
 {
 	width = iwidth;
-	height = iheight;
-	VkSemaphoreCreateInfo semaphoreInfo = {};
-	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	if (vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create semaphores!");
-	}
+	height = iheight; 
 
 	diffuseImage = VulkanImage(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
@@ -37,49 +32,29 @@ Renderer::Renderer(int iwidth, int iheight)
 	auto vertShaderModule = VulkanShaderModule("../../shaders/compiled/triangle.vert.spv");
 	auto fragShaderModule = VulkanShaderModule("../../shaders/compiled/triangle.frag.spv");
 
-	meshRenderStage = VulkanRenderStage();
+	auto meshRenderStage = new VulkanRenderStage();
 	VkExtent2D ext = VkExtent2D();
 	ext.width = width;
 	ext.height = height;
-	meshRenderStage.setViewport(ext);
-	meshRenderStage.addShaderStage(vertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
-	meshRenderStage.addShaderStage(fragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
-	meshRenderStage.addDescriptorSetLayout(setManager.mesh3dLayout);
-	meshRenderStage.addOutputImage(diffuseImage);
-	meshRenderStage.addOutputImage(normalImage);
-	meshRenderStage.addOutputImage(distanceImage);
-	meshRenderStage.addOutputImage(depthImage);
-
-	meshRenderStage.compile();
-
-
+	meshRenderStage->setViewport(ext);
+	meshRenderStage->addShaderStage(vertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
+	meshRenderStage->addShaderStage(fragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
+	meshRenderStage->addDescriptorSetLayout(setManager.mesh3dLayout);
+	meshRenderStage->addOutputImage(diffuseImage);
+	meshRenderStage->addOutputImage(normalImage);
+	meshRenderStage->addOutputImage(distanceImage);
+	meshRenderStage->addOutputImage(depthImage);
+	
 	auto ppvertShaderModule = VulkanShaderModule("../../shaders/compiled/pp.vert.spv");
 	auto ppfragShaderModule = VulkanShaderModule("../../shaders/compiled/pp.frag.spv");
+	 
+	auto post_process_zygote = new VulkanRenderStage();
 
-	postProcessRenderStages.resize(VulkanToolkit::singleton->swapChain->swapChainImages.size());
+	post_process_zygote->setViewport(ext);
+	post_process_zygote->addShaderStage(ppvertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
+	post_process_zygote->addShaderStage(ppfragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
+	post_process_zygote->addDescriptorSetLayout(setManager.ppLayout); 
 
-	auto post_process_zygote = VulkanRenderStage();
-
-	post_process_zygote.setViewport(ext);
-	post_process_zygote.addShaderStage(ppvertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
-	post_process_zygote.addShaderStage(ppfragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
-	post_process_zygote.addDescriptorSetLayout(setManager.ppLayout);
-	VkFormat format = VulkanToolkit::singleton->swapChain->swapChainImageFormat;
-	for (int i = 0; i < VulkanToolkit::singleton->swapChain->swapChainImages.size(); i++) {
-
-		postProcessRenderStages[i] = post_process_zygote.copy(); 
-
-		VulkanImage* img = new VulkanImage(format, VulkanToolkit::singleton->swapChain->swapChainImages[i], VulkanToolkit::singleton->swapChain->swapChainImageViews[i]);
-		img->format = format;
-		img->image = VulkanToolkit::singleton->swapChain->swapChainImages[i];
-		img->imageView = VulkanToolkit::singleton->swapChain->swapChainImageViews[i];
-		img->isPresentReady = true;
-		postProcessRenderStages[i].addOutputImage(*img);
-
-		postProcessRenderStages[i].compile();
-	}
-
-	postprocessmesh = Application::instance->asset->loadObject3dInfoFile("ppplane.vbo");
 	postProcessSet = setManager.generatePostProcessingDescriptorSet();
 	postProcessSet.bindUniformBuffer(0, uboHighFrequencyBuffer);
 	postProcessSet.bindUniformBuffer(1, uboLowFrequencyBuffer);
@@ -88,16 +63,16 @@ Renderer::Renderer(int iwidth, int iheight)
 	postProcessSet.bindImageViewSampler(4, distanceImage);
 	postProcessSet.update();
 
+	renderer = new VulkanRenderer();
+	renderer->setMeshStage(meshRenderStage);
+	renderer->addPostProcessingStage(post_process_zygote);
+	renderer->setPostProcessingDescriptorSet(&postProcessSet);
+	renderer->compile();
 
-	//postprocessmesh->descriptorSet = meshSetManager.generateMesh3dDescriptorSet();
-	//postprocessmesh->descriptorSet.bindUniformBuffer(0, uniformBuffer);
-	//postprocessmesh->descriptorSet.bindImageViewSampler(1, colorImage);
-	//postprocessmesh->descriptorSet.update();
 }
 
 Renderer::~Renderer()
 { 
-	vkDestroySemaphore(VulkanToolkit::singleton->device, imageAvailableSemaphore, nullptr);
 }
 
 void Renderer::renderToSwapChain(Camera *camera)
@@ -145,32 +120,6 @@ void Renderer::renderToSwapChain(Camera *camera)
 	glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
 	glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
 	camera->cone->update(inverse(rpmatrix));
-	Application::instance->scene->prepareFrame();
-	meshRenderStage.beginDrawing(); 
-	Application::instance->scene->draw(&meshRenderStage);
-	meshRenderStage.endDrawing();
 
-	if (!ppRecorded) {
-
-		for (int i = 0; i < VulkanToolkit::singleton->swapChain->swapChainImages.size(); i++) {
-			postProcessRenderStages[i].beginDrawing();
-			postProcessRenderStages[i].drawMesh(postprocessmesh, postProcessSet, 1);
-			postProcessRenderStages[i].endDrawing();
-		}
-
-		ppRecorded = true;
-	}
-
-	vkAcquireNextImageKHR(VulkanToolkit::singleton->device, VulkanToolkit::singleton->swapChain->swapChain,
-		std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
-
-	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
-
-
-
-	meshRenderStage.submit({ imageAvailableSemaphore });
-	postProcessRenderStages[imageIndex].submit({ meshRenderStage.signalSemaphore });
-	VulkanToolkit::singleton->swapChain->present({ postProcessRenderStages[imageIndex].signalSemaphore }, imageIndex);
-
-	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
+	renderer->draw();
 }

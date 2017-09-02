@@ -129,13 +129,13 @@ void VulkanRenderStage::compile()
 		setLayouts, shaderStages, renderPass, foundDepthBuffer);
 }
 
-VulkanRenderStage VulkanRenderStage::copy()
+VulkanRenderStage* VulkanRenderStage::copy()
 {
-	auto v = VulkanRenderStage();
-	v.setLayouts = setLayouts;
-	v.outputImages = outputImages;
-	v.shaderStages = shaderStages;
-	v.viewport = viewport;
+	auto v = new VulkanRenderStage();
+	v->setLayouts = setLayouts;
+	v->outputImages = outputImages;
+	v->shaderStages = shaderStages;
+	v->viewport = viewport;
 	return v;
 }
 

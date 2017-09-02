@@ -3,6 +3,7 @@
 #include "Camera.h"
 #include "FrustumCone.h"
 #include "vulkan/VulkanRenderStage.h"
+#include "VulkanRenderer.h"
 #include "INIReader.h"
 #include "Mesh3d.h"
 
@@ -10,10 +11,7 @@ class Renderer
 {
 public:
 	Renderer(int iwidth, int iheight);
-	~Renderer();
-	VkSemaphore imageAvailableSemaphore; 
-	VulkanRenderStage meshRenderStage;
-	std::vector<VulkanRenderStage> postProcessRenderStages;
+	~Renderer(); 
 
 	VulkanDescriptorSetsManager setManager;
 	VulkanDescriptorSet postProcessSet;
@@ -26,9 +24,9 @@ public:
 	VulkanImage distanceImage;
 	VulkanImage depthImage;
 
-	Object3dInfo* postprocessmesh;
+	VulkanRenderer* renderer;
+	 
 	void renderToSwapChain(Camera *camera);
 	int width;
-	int height;
-	bool ppRecorded = false;
+	int height; 
 };
