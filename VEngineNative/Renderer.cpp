@@ -36,6 +36,19 @@ Renderer::Renderer(int iwidth, int iheight)
     auto vertShaderModule = VulkanShaderModule("../../shaders/compiled/triangle.vert.spv");
     auto fragShaderModule = VulkanShaderModule("../../shaders/compiled/triangle.frag.spv");
 
+    meshSetLayout = new VulkanDescriptorSetLayout();
+    meshSetLayout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+    meshSetLayout->addField(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+    meshSetLayout->addField(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+    meshSetLayout->addField(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+
+    meshSetLayout->addField(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    meshSetLayout->addField(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    meshSetLayout->addField(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    meshSetLayout->addField(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    meshSetLayout->addField(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    meshSetLayout->compile();
+
     auto meshRenderStage = new VulkanRenderStage();
     VkExtent2D ext = VkExtent2D();
     ext.width = width;
@@ -43,7 +56,7 @@ Renderer::Renderer(int iwidth, int iheight)
     meshRenderStage->setViewport(ext);
     meshRenderStage->addShaderStage(vertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
     meshRenderStage->addShaderStage(fragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
-    meshRenderStage->addDescriptorSetLayout(setManager.mesh3dLayout);
+    meshRenderStage->addDescriptorSetLayout(meshSetLayout->layout);
     meshRenderStage->addOutputImage(diffuseImage);
     meshRenderStage->addOutputImage(normalImage);
     meshRenderStage->addOutputImage(distanceImage);
@@ -52,6 +65,16 @@ Renderer::Renderer(int iwidth, int iheight)
     //####//
 
     auto ppvertShaderModule = VulkanShaderModule("../../shaders/compiled/pp.vert.spv");
+
+    auto ppSetLayout = new VulkanDescriptorSetLayout();
+    ppSetLayout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+    ppSetLayout->addField(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+
+    ppSetLayout->addField(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    ppSetLayout->addField(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    ppSetLayout->addField(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    ppSetLayout->addField(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    ppSetLayout->compile();
 
     //##########################//
 
@@ -62,7 +85,7 @@ Renderer::Renderer(int iwidth, int iheight)
     ppShadeAmbientStage->setViewport(ext);
     ppShadeAmbientStage->addShaderStage(ppvertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
     ppShadeAmbientStage->addShaderStage(ppshadefragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
-    ppShadeAmbientStage->addDescriptorSetLayout(setManager.ppLayout);
+    ppShadeAmbientStage->addDescriptorSetLayout(ppSetLayout->layout);
     ppShadeAmbientStage->addOutputImage(ambientImage);
 
     //##########################//
@@ -74,11 +97,11 @@ Renderer::Renderer(int iwidth, int iheight)
     post_process_zygote->setViewport(ext);
     post_process_zygote->addShaderStage(ppvertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
     post_process_zygote->addShaderStage(ppoutputfragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
-    post_process_zygote->addDescriptorSetLayout(setManager.ppLayout);
+    post_process_zygote->addDescriptorSetLayout(ppSetLayout->layout);
 
     //##########################//
 
-    postProcessSet = setManager.generatePostProcessingDescriptorSet();
+    postProcessSet = ppSetLayout->generateDescriptorSet();
     postProcessSet.bindUniformBuffer(0, uboHighFrequencyBuffer);
     postProcessSet.bindUniformBuffer(1, uboLowFrequencyBuffer);
     postProcessSet.bindImageViewSampler(2, diffuseImage);

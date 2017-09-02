@@ -50,7 +50,7 @@ void Mesh3dLodLevel::initialize()
     wrapModes = {};
     id = Application::instance->getNextId();
     Application::instance->registerId(id, this);
-    descriptorSet = Application::instance->renderer->setManager.generateMesh3dDescriptorSet();
+    descriptorSet = Application::instance->renderer->meshSetLayout->generateDescriptorSet();
     int i = 0;
     descriptorSet.bindUniformBuffer(i++, Application::instance->renderer->uboHighFrequencyBuffer);
     descriptorSet.bindUniformBuffer(i++, Application::instance->renderer->uboLowFrequencyBuffer);

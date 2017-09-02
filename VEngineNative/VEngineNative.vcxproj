@@ -261,12 +261,12 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="VulkanDescriptorSetLayout.h" />
     <ClInclude Include="VulkanRenderer.h" />
     <ClInclude Include="vulkan\VulkanAttachment.h" />
     <ClInclude Include="vulkan\VulkanBinaryBufferBuilder.h" />
     <ClInclude Include="vulkan\VulkanCommandBuffer.h" />
     <ClInclude Include="vulkan\VulkanDescriptorSet.h" />
-    <ClInclude Include="vulkan\VulkanDescriptorSetsManager.h" />
     <ClInclude Include="vulkan\VulkanFramebuffer.h" />
     <ClInclude Include="vulkan\VulkanGenericBuffer.h" />
     <ClInclude Include="vulkan\VulkanGraphicsPipeline.h" />
@@ -298,12 +298,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NotOptimization|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="VulkanDescriptorSetLayout.cpp" />
     <ClCompile Include="VulkanRenderer.cpp" />
     <ClCompile Include="vulkan\VulkanAttachment.cpp" />
     <ClCompile Include="vulkan\VulkanBinaryBufferBuilder.cpp" />
     <ClCompile Include="vulkan\VulkanCommandBuffer.cpp" />
     <ClCompile Include="vulkan\VulkanDescriptorSet.cpp" />
-    <ClCompile Include="vulkan\VulkanDescriptorSetsManager.cpp" />
     <ClCompile Include="vulkan\VulkanFramebuffer.cpp" />
     <ClCompile Include="vulkan\VulkanGenericBuffer.cpp" />
     <ClCompile Include="vulkan\VulkanGraphicsPipeline.cpp" />

@@ -59,13 +59,14 @@ using namespace std;
 #include "vulkan/VulkanImage.h"
 #include "vulkan/VulkanGenericBuffer.h"
 #include "vulkan/VulkanDescriptorSet.h"
-#include "vulkan/VulkanDescriptorSetsManager.h"
 #include "vulkan/VulkanRenderStage.h"
 
 #include "vulkan/VulkanSwapChain.h"
 #include "vulkan/VulkanToolkit.h"
 
 #include "vulkan/VulkanBinaryBufferBuilder.h"
+
+#include "VulkanDescriptorSetLayout.h"
 
 #define glAssert() {if(glGetError() != GL_NO_ERROR) printf("ERROR ON LINE [%d] %s", __LINE__, __FILE__);}
 

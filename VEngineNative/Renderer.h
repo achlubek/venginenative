@@ -13,7 +13,7 @@ public:
     Renderer(int iwidth, int iheight);
     ~Renderer(); 
 
-    VulkanDescriptorSetsManager setManager;
+    VulkanDescriptorSetLayout* meshSetLayout;
     VulkanDescriptorSet postProcessSet;
     Mesh3d* dummyMesh;
 
