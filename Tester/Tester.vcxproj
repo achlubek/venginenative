@@ -202,7 +202,7 @@
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Code\SFML-2.4.2\include\;C:\Code\squirrel3\include;C:\Code\bullet3-2.86.1\src;C:\Code\glfw-3.2.1\include;C:\VulkanSDK\1.0.57.0\Include\vulkan;C:\Code\VEngineNative\VESound;C:\Code\VEngineNative\VEPhysics;C:\Code\glm-0.9.9-a1;C:\Code\VEngineNative\VECommon;C:\Code\VEngineNative\VEInput</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Code\SFML-2.4.2\include\;C:\Code\squirrel3\include;C:\Code\bullet3-2.86.1\src;C:\Code\glfw-3.2.1\include;C:\VulkanSDK\1.0.57.0\Include\vulkan;C:\Code\VEngineNative\VESound;C:\Code\VEngineNative\VEPhysics;C:\Code\glm-0.9.9-a1;C:\Code\VEngineNative\VECommon;C:\Code\VEngineNative\VEInput;C:\Code\VEngineNative\VEngineNative</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>

@@ -407,7 +407,8 @@ Material * AssetLoader::loadMaterialString(string source)
                         node->texture = (VulkanImage*)cached;
                     }
                     else {
-                        node->texture = VulkanToolkit::singleton->createTexture(Media::getPath(ss.str()));
+						auto img = VulkanToolkit::singleton->readFileImageData(Media::getPath(ss.str()));
+                        node->texture = VulkanToolkit::singleton->createTexture(img);
                         Media::saveCache(ss.str(), node->texture);
                     }
                 }

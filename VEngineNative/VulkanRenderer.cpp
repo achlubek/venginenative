@@ -21,6 +21,11 @@ void VulkanRenderer::setMeshStage(VulkanRenderStage * stage)
 	meshStage = stage;
 }
 
+void VulkanRenderer::setOutputStage(VulkanRenderStage * stage)
+{
+	outputStageZygote = stage;
+}
+
 void VulkanRenderer::addPostProcessingStage(VulkanRenderStage * stage)
 {
 	postProcessingStages.push_back(stage);
@@ -40,16 +45,16 @@ void VulkanRenderer::compile()
 	}
 	postprocessmesh = Application::instance->asset->loadObject3dInfoFile("ppplane.vbo");
 	meshStage->compile();
-	auto lastPPStage = postProcessingStages[postProcessingStages.size() - 1];
-	postProcessingStages.pop_back();
+
 	for (int i = 0; i < postProcessingStages.size(); i++) {
 		postProcessingStages[i]->compile();
 	}	
+
 	VkFormat format = VulkanToolkit::singleton->swapChain->swapChainImageFormat;
 	outputStages.resize(VulkanToolkit::singleton->swapChain->swapChainImages.size());
 	for (int i = 0; i < VulkanToolkit::singleton->swapChain->swapChainImages.size(); i++) {
 
-		outputStages[i] = lastPPStage->copy();
+		outputStages[i] = outputStageZygote->copy();
 
 		VulkanImage* img = new VulkanImage(format, VulkanToolkit::singleton->swapChain->swapChainImages[i], VulkanToolkit::singleton->swapChain->swapChainImageViews[i]);
 		img->format = format;
@@ -85,21 +90,22 @@ void VulkanRenderer::draw()
 	}
 
 	uint32_t imageIndex;
-	vkAcquireNextImageKHR(VulkanToolkit::singleton->device, VulkanToolkit::singleton->swapChain->swapChain,
-		std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
 	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 
+	vkAcquireNextImageKHR(VulkanToolkit::singleton->device, VulkanToolkit::singleton->swapChain->swapChain,
+		std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
 	meshStage->submit({ imageAvailableSemaphore });
 	VkSemaphore lastSemaphore = meshStage->signalSemaphore;
-
+	
 	for (int i = 0; i < postProcessingStages.size(); i++) {
 		postProcessingStages[i]->submit({ lastSemaphore });
 		lastSemaphore = postProcessingStages[i]->signalSemaphore;
 	}
 
-	outputStages[imageIndex]->submit({ meshStage->signalSemaphore });
-
+	outputStages[imageIndex]->submit({ lastSemaphore });
+	
 	VulkanToolkit::singleton->swapChain->present({ outputStages[imageIndex]->signalSemaphore }, imageIndex);
 
 	vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);

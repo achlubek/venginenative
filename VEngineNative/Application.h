@@ -1,8 +1,9 @@
 #pragma once
-#include <GLFW\glfw3.h>
-#include "Renderer.h";
+#include <GLFW\glfw3.h> 
+#include "Camera.h";
 #include "AssetLoader.h";
 #include "EventHandler.h";
+#include "Renderer.h";
  
 
 class Application
@@ -11,8 +12,8 @@ public:
 	static Application *instance;
 
     Scene *scene;
-    Renderer *renderer;
-    AssetLoader *asset;
+	AssetLoader *asset;
+	Renderer *renderer;
 	VulkanToolkit* vulkan;
 	VulkanImage* dummyTexture;
 

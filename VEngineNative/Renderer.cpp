@@ -65,7 +65,7 @@ Renderer::Renderer(int iwidth, int iheight)
 
 	renderer = new VulkanRenderer();
 	renderer->setMeshStage(meshRenderStage);
-	renderer->addPostProcessingStage(post_process_zygote);
+	renderer->setOutputStage(post_process_zygote);
 	renderer->setPostProcessingDescriptorSet(&postProcessSet);
 	renderer->compile();
 

@@ -3,30 +3,36 @@
 #include "Media.h"
 
 Application * Application::instance = nullptr;
- 
+
 Application::Application(int windowwidth, int windowheight)
-{ 
+{
 	instance = this;
 	frame = 0;
 	width = windowwidth;
 	height = windowheight;
-	invokeQueue = queue<function<void(void)>>(); 
+	invokeQueue = queue<function<void(void)>>();
 	onRenderFrame = {};
 	asset = new AssetLoader();
 	scene = new Scene();
-	onRenderFrame = EventHandler<int>(); 
-	onWindowResize = EventHandler<int>(); 
+	onRenderFrame = EventHandler<int>();
+	onWindowResize = EventHandler<int>();
 	idMap = unordered_map<int, void*>();
 	hasExited = false;
 	vulkan = new VulkanToolkit();
 	vulkan->initialize();
-	dummyTexture = vulkan->createTexture(Media::getPath("dummy_texture.png"));
+	//auto data = readFileImageData(path);
+	ImageData *img = new ImageData();
+	img->width = 1;
+	img->height = 1;
+	unsigned char * emptytexture = new unsigned char[4]{ (unsigned char)0x255, (unsigned char)0x255, (unsigned char)0x255, (unsigned char)0x255 };
+	img->data = (void*)emptytexture;
+	dummyTexture = vulkan->createTexture(img);
 	renderer = new Renderer(width, height);
 }
 
 Application::~Application()
 {
-} 
+}
 
 void Application::start()
 {
@@ -81,20 +87,22 @@ void Application::invoke(const function<void(void)> &func)
 
 void Application::onRenderFrameFunc()
 {
-	time = glfwGetTime();
-	//firstFullDrawFinished = false;
-	while (invokeQueue.size() > 0) {
-		invokeQueue.front()();
-		invokeQueue.pop();
-	}
-	onRenderFrame.invoke(0);
-
 	if (mainDisplayCamera != nullptr) {
+		time = glfwGetTime(); 
+
 		if (vpmatrixUpdateFrameId != frame) {
 			viewProjMatrix = mainDisplayCamera->projectionMatrix * mainDisplayCamera->transformation->getInverseWorldTransform();
 			vpmatrixUpdateFrameId = frame;
 		}
+
+		while (invokeQueue.size() > 0) {
+			invokeQueue.front()();
+			invokeQueue.pop();
+		}
+		onRenderFrame.invoke(0);
+		
 		renderer->renderToSwapChain(mainDisplayCamera);
-	} 
-	frame++;
+
+		frame++;
+	}
 }

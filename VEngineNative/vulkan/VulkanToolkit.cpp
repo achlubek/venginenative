@@ -244,9 +244,8 @@ ImageData * VulkanToolkit::readFileImageData(std::string path)
 	return d;
 }
 
-VulkanImage* VulkanToolkit::createTexture(std::string path)
-{
-	ImageData * img = readFileImageData(path);
+VulkanImage* VulkanToolkit::createTexture(ImageData * img)
+{ 
 	VulkanGenericBuffer stagingBuffer = VulkanGenericBuffer(VK_IMAGE_USAGE_TRANSFER_SRC_BIT, img->width * img->height * 4); //  always rgba for now
 	void* mappoint;
 	stagingBuffer.map(0, img->width * img->height * 4, &mappoint);

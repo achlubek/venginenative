@@ -7,6 +7,7 @@ public:
 	~VulkanRenderer();
 
 	void setMeshStage(VulkanRenderStage* stage);
+	void setOutputStage(VulkanRenderStage* stage);
 	void addPostProcessingStage(VulkanRenderStage* stage);
 	void setPostProcessingDescriptorSet(VulkanDescriptorSet* set);
 	void compile();
@@ -20,5 +21,6 @@ private:
 	VulkanDescriptorSet* postProcessSet;
 	std::vector<VulkanRenderStage*> postProcessingStages;
 	std::vector<VulkanRenderStage*> outputStages;
+	VulkanRenderStage* outputStageZygote;
 };
 
