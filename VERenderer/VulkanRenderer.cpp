@@ -3,7 +3,6 @@
 
 VulkanRenderer::VulkanRenderer()
 {
-    meshStage = nullptr;
     postProcessingStages = {};
     outputStages = {};
 }
@@ -16,6 +15,7 @@ VulkanRenderer::~VulkanRenderer()
 
 void VulkanRenderer::setMeshStage(VulkanRenderStage * stage)
 {
+    usingMeshStage = true;
     meshStage = stage;
 }
 
@@ -37,20 +37,41 @@ VulkanRenderStage * VulkanRenderer::getMesh3dStage()
 {
     return meshStage;
 }
-Object3dInfo * loadObject3dInfoFile(string source)
-{
-    void * cached = Media::checkCache(source);
-    if (cached != nullptr) {
-        return (Object3dInfo*)cached;
-    }
-    unsigned char* bytes;
-    int bytescount = Media::readBinary(source, &bytes);
+Object3dInfo * createPostProcessingObject()
+{ 
+    unsigned char bytes[288] = {
+        0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x80, 0xBF, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x80, 0xBF,
+        0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x80, 0x3F,
+        0x00, 0x00, 0x80, 0xBF, 0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x80, 0xBF,
+        0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x80, 0x3F,
+        0x00, 0x00, 0x80, 0xBF, 0x00, 0x00, 0x80, 0xBF, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x80, 0xBF,
+        0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x80, 0x3F,
+        0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x80, 0xBF, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x80, 0xBF,
+        0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x80, 0x3F,
+        0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x80, 0xBF,
+        0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x80, 0x3F,
+        0x00, 0x00, 0x80, 0xBF, 0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x80, 0xBF,
+        0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x80, 0x3F
+    };
+
+    int bytescount = 288;
     GLfloat * floats = (GLfloat*)bytes;
     int floatsCount = bytescount / 4;
     vector<GLfloat> flo(floats, floats + floatsCount);
 
     auto o = new Object3dInfo(flo);
-    Media::saveCache(source, o);
     return o;
 
 }
@@ -61,37 +82,69 @@ void VulkanRenderer::compile()
     if (vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS) {
         throw std::runtime_error("failed to create semaphores!");
     }
-    postprocessmesh = loadObject3dInfoFile("ppplane.vbo");
-    meshStage->compile();
+    if (vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &stubMeshSemaphore) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create semaphores!");
+    }
+    postprocessmesh = createPostProcessingObject();
+    if (usingMeshStage) {
+        meshStage->compile();
+    }
 
     for (int i = 0; i < postProcessingStages.size(); i++) {
         postProcessingStages[i]->compile();
     }
+    if (outputStageZygote != nullptr) {
+        VkFormat format = VulkanToolkit::singleton->swapChain->swapChainImageFormat;
+        outputStages.resize(VulkanToolkit::singleton->swapChain->swapChainImages.size());
+        for (int i = 0; i < VulkanToolkit::singleton->swapChain->swapChainImages.size(); i++) {
 
-    VkFormat format = VulkanToolkit::singleton->swapChain->swapChainImageFormat;
-    outputStages.resize(VulkanToolkit::singleton->swapChain->swapChainImages.size());
-    for (int i = 0; i < VulkanToolkit::singleton->swapChain->swapChainImages.size(); i++) {
+            outputStages[i] = outputStageZygote->copy();
 
-        outputStages[i] = outputStageZygote->copy();
+            VulkanImage* img = new VulkanImage(format, VulkanToolkit::singleton->swapChain->swapChainImages[i], VulkanToolkit::singleton->swapChain->swapChainImageViews[i]);
+            img->format = format;
+            img->image = VulkanToolkit::singleton->swapChain->swapChainImages[i];
+            img->imageView = VulkanToolkit::singleton->swapChain->swapChainImageViews[i];
+            img->isPresentReady = true;
+            outputStages[i]->addOutputImage(*img);
 
-        VulkanImage* img = new VulkanImage(format, VulkanToolkit::singleton->swapChain->swapChainImages[i], VulkanToolkit::singleton->swapChain->swapChainImageViews[i]);
-        img->format = format;
-        img->image = VulkanToolkit::singleton->swapChain->swapChainImages[i];
-        img->imageView = VulkanToolkit::singleton->swapChain->swapChainImageViews[i];
-        img->isPresentReady = true;
-        outputStages[i]->addOutputImage(*img);
-
-        outputStages[i]->compile();
+            outputStages[i]->compile();
+        }
     }
 }
 
 void VulkanRenderer::beginDrawing()
 {
-    meshStage->beginDrawing();
+    if (usingMeshStage) {
+        meshStage->beginDrawing();
+    }
 }
+
+
+void VulkanRenderer::submitEmptyBatch(std::vector<VkSemaphore> waitSemaphores, VkSemaphore signalSemaphore)
+{
+    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.waitSemaphoreCount = waitSemaphores.size();
+    submitInfo.pWaitSemaphores = waitSemaphores.data();
+    submitInfo.pWaitDstStageMask = waitStages2;
+
+    submitInfo.commandBufferCount = 0;
+    submitInfo.pCommandBuffers = nullptr;
+
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = &signalSemaphore;
+
+    if (vkQueueSubmit(VulkanToolkit::singleton->mainQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+        throw std::runtime_error("failed to submit draw command buffer!");
+    }
+}
+
 void VulkanRenderer::endDrawing()
 {
-    meshStage->endDrawing();
+    if (usingMeshStage) {
+        meshStage->endDrawing(); 
+    }
 
     if (!ppRecorded) {
         for (int i = 0; i < postProcessingStages.size(); i++) {
@@ -105,27 +158,51 @@ void VulkanRenderer::endDrawing()
             outputStages[i]->endDrawing();
         }
 
+
         ppRecorded = true;
     }
-
-    uint32_t imageIndex;
-
     vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
+    if (outputStageZygote != nullptr) {
+        uint32_t imageIndex;
 
-    vkAcquireNextImageKHR(VulkanToolkit::singleton->device, VulkanToolkit::singleton->swapChain->swapChain,
-        9999999, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+        vkAcquireNextImageKHR(VulkanToolkit::singleton->device, VulkanToolkit::singleton->swapChain->swapChain,
+            9999999, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
-    meshStage->submit({ imageAvailableSemaphore });
-    VkSemaphore lastSemaphore = meshStage->signalSemaphore;
+        VkSemaphore lastSemaphore = stubMeshSemaphore;
+        if (usingMeshStage) {
+            meshStage->submit({ imageAvailableSemaphore });
+            VkSemaphore lastSemaphore = meshStage->signalSemaphore;
+        }
+        else {
+            submitEmptyBatch({ imageAvailableSemaphore }, stubMeshSemaphore);
+            VkSemaphore lastSemaphore = stubMeshSemaphore;
+        }
 
-    for (int i = 0; i < postProcessingStages.size(); i++) {
-        postProcessingStages[i]->submit({ lastSemaphore });
-        lastSemaphore = postProcessingStages[i]->signalSemaphore;
+        for (int i = 0; i < postProcessingStages.size(); i++) {
+            postProcessingStages[i]->submit({ lastSemaphore });
+            lastSemaphore = postProcessingStages[i]->signalSemaphore;
+        }
+
+        outputStages[imageIndex]->submit({ lastSemaphore });
+
+        VulkanToolkit::singleton->swapChain->present({ outputStages[imageIndex]->signalSemaphore }, imageIndex);
+
     }
+    else {
+        VkSemaphore lastSemaphore = stubMeshSemaphore;
+        if (usingMeshStage) {
+            meshStage->submit({ imageAvailableSemaphore });
+            VkSemaphore lastSemaphore = meshStage->signalSemaphore;
+        }
+        else {
+            submitEmptyBatch({ imageAvailableSemaphore }, stubMeshSemaphore);
+            VkSemaphore lastSemaphore = stubMeshSemaphore;
+        }
 
-    outputStages[imageIndex]->submit({ lastSemaphore });
-
-    VulkanToolkit::singleton->swapChain->present({ outputStages[imageIndex]->signalSemaphore }, imageIndex);
-
+        for (int i = 0; i < postProcessingStages.size(); i++) {
+            postProcessingStages[i]->submit({ lastSemaphore });
+            lastSemaphore = postProcessingStages[i]->signalSemaphore;
+        }
+    }
     vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 }

@@ -33,15 +33,7 @@ void VulkanBinaryBufferBuilder::emplaceFloat32(float d)
     for (int i = 0; i < 4; i++) emplaceByte(*(data + i));
 }
 
-void VulkanBinaryBufferBuilder::emplaceMat4(glm::mat4 m)
-{
-    unsigned char* data = (unsigned char*)&m;
-    for (int i = 0; i < sizeof(m); i++) emplaceByte(*(data + i));
-}
-
-void VulkanBinaryBufferBuilder::emplaceVec3(glm::vec3 v)
-{
-    emplaceFloat32(v.x);
-    emplaceFloat32(v.y);
-    emplaceFloat32(v.z);
-}
+void VulkanBinaryBufferBuilder::emplaceGeneric(unsigned char* m, int bytes)
+{ 
+    for (int i = 0; i < bytes; i++) emplaceByte(*(m + i));
+} 

@@ -72,7 +72,7 @@ void Application::start()
         if (shouldClose) break;
         onRenderFrameFunc();
 
-        glfwPollEvents();
+        vulkan->poolEvents();
     }
     delete vulkan;
     glfwTerminate();

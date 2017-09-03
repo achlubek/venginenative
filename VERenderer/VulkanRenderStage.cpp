@@ -87,7 +87,7 @@ void VulkanRenderStage::drawMesh(Object3dInfo * info, std::vector<VulkanDescript
 }
 
 void VulkanRenderStage::compile()
-{
+{ 
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &signalSemaphore);

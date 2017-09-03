@@ -1,4 +1,13 @@
 #pragma once
+
+#include <string>
+#include <vector> 
+#include <fstream> 
+#include <array>
+using namespace std;
+
+#include "vulkan.h"
+
 #include "VulkanShaderModule.h"
 #include "VulkanAttachment.h"
 #include "VulkanSubpass.h"

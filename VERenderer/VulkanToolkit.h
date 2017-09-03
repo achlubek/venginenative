@@ -1,5 +1,5 @@
 #pragma once
- 
+struct GLFWwindow;
 
 struct ImageData {
 public:
@@ -39,6 +39,10 @@ public:
 
     int windowWidth;
     int windowHeight;
+
+    bool shouldCloseWindow();
+    void poolEvents();
+    double getExecutionTime();
 
     VulkanSwapChain* swapChain;
      

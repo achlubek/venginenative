@@ -74,16 +74,16 @@ void ShadowMapRenderer::renderToSwapChain(Camera *camera)
     bb.emplaceFloat32(0.0f);
     bb.emplaceFloat32((float)xpos / (float)width);
     bb.emplaceFloat32((float)ypos / (float)height);
-    bb.emplaceMat4(vpmatrix);
+    bb.emplaceGeneric((unsigned char*)&vpmatrix, sizeof(vpmatrix));
 
-    bb.emplaceVec3(camera->transformation->getPosition());
+    bb.emplaceGeneric((unsigned char*)&camera->transformation->getPosition(), sizeof(camera->cone->leftBottom));
     bb.emplaceFloat32(0.0f);
 
-    bb.emplaceVec3(camera->cone->leftBottom);
+    bb.emplaceGeneric((unsigned char*)&(camera->cone->leftBottom), sizeof(camera->cone->leftBottom));
     bb.emplaceFloat32(0.0f);
-    bb.emplaceVec3(camera->cone->rightBottom - camera->cone->leftBottom);
+    bb.emplaceGeneric((unsigned char*)&(camera->cone->rightBottom - camera->cone->leftBottom), sizeof(camera->cone->leftBottom));
     bb.emplaceFloat32(0.0f);
-    bb.emplaceVec3(camera->cone->leftTop - camera->cone->leftBottom);
+    bb.emplaceGeneric((unsigned char*)&(camera->cone->leftTop - camera->cone->leftBottom), sizeof(camera->cone->leftBottom));
     bb.emplaceFloat32(0.0f);
 
     void* data;

@@ -16,13 +16,16 @@ public:
     void endDrawing();
 
 private:
+    void submitEmptyBatch(std::vector<VkSemaphore> waitSemaphores, VkSemaphore signalSemaphore);
     VkSemaphore imageAvailableSemaphore;
+    VkSemaphore stubMeshSemaphore;
     bool ppRecorded = false;
+    bool usingMeshStage = false;
     Object3dInfo* postprocessmesh;
-    VulkanRenderStage* meshStage;
-    VulkanDescriptorSet* postProcessSet;
+    VulkanRenderStage* meshStage = nullptr;
+    VulkanDescriptorSet* postProcessSet = nullptr;
     std::vector<VulkanRenderStage*> postProcessingStages;
     std::vector<VulkanRenderStage*> outputStages;
-    VulkanRenderStage* outputStageZygote;
+    VulkanRenderStage* outputStageZygote = nullptr;
 };
 

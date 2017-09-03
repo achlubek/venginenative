@@ -227,6 +227,21 @@ void VulkanToolkit::createLogicalDevice(VkPhysicalDevice pdevice, VkDeviceCreate
     VkResult result = vkCreateDevice(pdevice, &cinfo, nullptr, &device);
 }
 
+bool VulkanToolkit::shouldCloseWindow()
+{
+    return glfwWindowShouldClose(window);
+}
+
+void VulkanToolkit::poolEvents()
+{
+    glfwPollEvents();
+}
+
+double VulkanToolkit::getExecutionTime()
+{
+    return glfwGetTime();
+}
+
 uint32_t VulkanToolkit::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
     for (uint32_t i = 0; i < physicalDevicesMemoryProps[chosenDeviceId].memoryTypeCount; i++) {
         if ((typeFilter & (1 << i)) && (physicalDevicesMemoryProps[chosenDeviceId].memoryTypes[i].propertyFlags & properties) == properties) {
