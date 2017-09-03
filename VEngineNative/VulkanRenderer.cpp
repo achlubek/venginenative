@@ -77,12 +77,12 @@ void VulkanRenderer::draw()
     if (!ppRecorded) {
         for (int i = 0; i < postProcessingStages.size(); i++) {
             postProcessingStages[i]->beginDrawing();
-            postProcessingStages[i]->drawMesh(postprocessmesh, *postProcessSet, 1);
+            postProcessingStages[i]->drawMesh(postprocessmesh, { *postProcessSet }, 1);
             postProcessingStages[i]->endDrawing();
         }
         for (int i = 0; i < outputStages.size(); i++) {
             outputStages[i]->beginDrawing();
-            outputStages[i]->drawMesh(postprocessmesh, *postProcessSet, 1);
+            outputStages[i]->drawMesh(postprocessmesh, { *postProcessSet }, 1);
             outputStages[i]->endDrawing();
         }
 

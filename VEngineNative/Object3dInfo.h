@@ -6,8 +6,8 @@ public:
     Object3dInfo(vector<float> &vbo);
     ~Object3dInfo();
 
-    void draw(VulkanGraphicsPipeline p, VulkanDescriptorSet &set, VkCommandBuffer cb);
-    void drawInstanced(VulkanGraphicsPipeline p, VulkanDescriptorSet &set, VkCommandBuffer cb, size_t instances);
+    void draw(VulkanGraphicsPipeline p, std::vector<VulkanDescriptorSet> sets, VkCommandBuffer cb);
+    void drawInstanced(VulkanGraphicsPipeline p, std::vector<VulkanDescriptorSet> sets, VkCommandBuffer cb, size_t instances);
     void updateRadius();
     float radius = 0.0f;
     vector<float> vbo;

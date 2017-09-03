@@ -7,28 +7,21 @@
 #include "INIReader.h"
 #include "Mesh3d.h"
 
-class Renderer
+class ShadowMapRenderer
 {
 public:
-    Renderer(int iwidth, int iheight);
-    ~Renderer(); 
-
+    ShadowMapRenderer(int width, int height);
+    ~ShadowMapRenderer();
     VulkanDescriptorSetLayout* meshSetLayout;
-    VulkanDescriptorSet postProcessSet;
-    VulkanDescriptorSet sharedSet;
-    Mesh3d* dummyMesh;
-
+    
     VulkanGenericBuffer uboHighFrequencyBuffer;
     VulkanGenericBuffer uboLowFrequencyBuffer;
-    VulkanImage diffuseImage;
-    VulkanImage normalImage;
-    VulkanImage distanceImage;
-    VulkanImage ambientImage;
     VulkanImage depthImage;
 
     VulkanRenderer* renderer;
-     
+
     void renderToSwapChain(Camera *camera);
     int width;
-    int height; 
+    int height;
 };
+

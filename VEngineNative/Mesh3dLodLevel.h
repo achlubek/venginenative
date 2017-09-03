@@ -20,6 +20,7 @@ public:
     void draw(VulkanRenderStage* stage, const Mesh3d* mesh);
     void updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstance*> &instances); 
     void initialize(); 
+    VulkanDescriptorSet descriptorSet;
 private:
     VulkanGenericBuffer *modelInfosBuffer;
 

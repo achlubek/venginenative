@@ -11,12 +11,6 @@ layout(location = 0) out vec4 outAlbedoRoughness;
 layout(location = 1) out vec4 outNormalsMetalness;
 layout(location = 2) out float outDistance;
 
-layout(binding = 4) uniform sampler2D diffuseTexture;
-layout(binding = 5) uniform sampler2D normalTexture;
-layout(binding = 6) uniform sampler2D bumpTexture;
-layout(binding = 7) uniform sampler2D roughnessTexture;
-layout(binding = 8) uniform sampler2D metalnessTexture;
-
 #include sharedBuffers.glsl
 
 struct ModelInfo{
@@ -25,10 +19,11 @@ struct ModelInfo{
     vec4 Scale;
     uvec4 idAnd4Empty;
 };
-layout(set = 0, binding = 2) buffer UniformBufferObject3 {
+layout(set = 1, binding = 0) buffer UniformBufferObject3 {
     ModelInfo ModelInfos[];
 } modelData;
-layout(set = 0, binding = 3) uniform UniformBufferObject6 {
+
+layout(set = 2, binding = 0) uniform UniformBufferObject6 {
     vec4 RoughnessMetalness_ZeroZero;
     vec4 DiffuseColor_Zero;
     ivec4 UseTex_DNBR;
@@ -38,6 +33,13 @@ layout(set = 0, binding = 3) uniform UniformBufferObject6 {
     vec4 ScaleTex_MZeroZero;
     uvec4 MeshId_LodLevelId_ZeroZero;
 } materialData;
+
+layout(set = 2, binding = 1) uniform sampler2D diffuseTexture;
+layout(set = 2, binding = 2) uniform sampler2D normalTexture;
+layout(set = 2, binding = 3) uniform sampler2D bumpTexture;
+layout(set = 2, binding = 4) uniform sampler2D roughnessTexture;
+layout(set = 2, binding = 5) uniform sampler2D metalnessTexture;
+
 
 
 #define useDiffuseColorTexInt materialData.UseTex_DNBR.x

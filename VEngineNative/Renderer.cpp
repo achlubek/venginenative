@@ -39,15 +39,12 @@ Renderer::Renderer(int iwidth, int iheight)
     meshSetLayout = new VulkanDescriptorSetLayout();
     meshSetLayout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
     meshSetLayout->addField(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
-    meshSetLayout->addField(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
-    meshSetLayout->addField(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
-
-    meshSetLayout->addField(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    meshSetLayout->addField(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    meshSetLayout->addField(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    meshSetLayout->addField(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    meshSetLayout->addField(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     meshSetLayout->compile();
+
+    sharedSet = meshSetLayout->generateDescriptorSet();
+    sharedSet.bindUniformBuffer(0, uboHighFrequencyBuffer);
+    sharedSet.bindUniformBuffer(1, uboLowFrequencyBuffer);
+    sharedSet.update();
 
     auto meshRenderStage = new VulkanRenderStage();
     VkExtent2D ext = VkExtent2D();
@@ -57,10 +54,13 @@ Renderer::Renderer(int iwidth, int iheight)
     meshRenderStage->addShaderStage(vertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
     meshRenderStage->addShaderStage(fragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
     meshRenderStage->addDescriptorSetLayout(meshSetLayout->layout);
+    meshRenderStage->addDescriptorSetLayout(Application::instance->meshModelsDataLayout->layout);
+    meshRenderStage->addDescriptorSetLayout(Application::instance->materialLayout->layout);
     meshRenderStage->addOutputImage(diffuseImage);
     meshRenderStage->addOutputImage(normalImage);
     meshRenderStage->addOutputImage(distanceImage);
     meshRenderStage->addOutputImage(depthImage);
+    meshRenderStage->meshSharedSet = &sharedSet;
 
     //####//
 
@@ -86,7 +86,7 @@ Renderer::Renderer(int iwidth, int iheight)
     ppShadeAmbientStage->addShaderStage(ppvertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
     ppShadeAmbientStage->addShaderStage(ppshadefragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
     ppShadeAmbientStage->addDescriptorSetLayout(ppSetLayout->layout);
-    ppShadeAmbientStage->addOutputImage(ambientImage);
+    ppShadeAmbientStage->addOutputImage(ambientImage); 
 
     //##########################//
 

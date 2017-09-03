@@ -40,6 +40,10 @@ void Mesh3dLodLevel::initialize()
     id = Application::instance->getNextId();
     Application::instance->registerId(id, this); 
     int i = 0; 
+
+    descriptorSet = Application::instance->meshModelsDataLayout->generateDescriptorSet();
+    descriptorSet.bindStorageBuffer(0, *modelInfosBuffer);
+    descriptorSet.update();
 }
 
 Mesh3dLodLevel::~Mesh3dLodLevel()
@@ -52,8 +56,7 @@ void Mesh3dLodLevel::draw(VulkanRenderStage* stage, const Mesh3d* mesh)
 
     if (!mesh->visible) return;
     if (!visible) return;
-
-    stage->drawMesh(info3d, material->descriptorSet, instancesFiltered);
+    stage->drawMesh(info3d, { *stage->meshSharedSet, descriptorSet, material->descriptorSet }, instancesFiltered);
 
 }
 
@@ -132,12 +135,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
             modelInfosBuffer->unmap();
         }
     }
-    if (material->needsUpdate) {
-        material->descriptorSet.bindUniformBuffer(0, Application::instance->renderer->uboHighFrequencyBuffer);
-        material->descriptorSet.bindUniformBuffer(1, Application::instance->renderer->uboLowFrequencyBuffer);
 
-        material->descriptorSet.bindStorageBuffer(2, *modelInfosBuffer);
-    }
     material->updateBuffer();
 }
 

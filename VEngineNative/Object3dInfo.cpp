@@ -30,12 +30,16 @@ Object3dInfo::~Object3dInfo()
     }
 }
 
-void Object3dInfo::draw(VulkanGraphicsPipeline p, VulkanDescriptorSet &set, VkCommandBuffer cb)
+void Object3dInfo::draw(VulkanGraphicsPipeline p, std::vector<VulkanDescriptorSet> sets, VkCommandBuffer cb)
 {
-    if (!generated)
+    if (!generated) {
         generate();
-
-    vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, p.pipelineLayout, 0, 1, &set.set, 0, nullptr);
+    }
+    std::vector<VkDescriptorSet> realsets = {};
+    for (int i = 0; i < sets.size(); i++) {
+        realsets.push_back(sets[i].set);
+    }
+    vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, p.pipelineLayout, 0, realsets.size(), realsets.data(), 0, nullptr);
     VkBuffer vertexBuffers[] = { vertexBuffer };
     VkDeviceSize offsets[] = { 0 };
     vkCmdBindVertexBuffers(cb, 0, 1, vertexBuffers, offsets);
@@ -43,13 +47,16 @@ void Object3dInfo::draw(VulkanGraphicsPipeline p, VulkanDescriptorSet &set, VkCo
     vkCmdDraw(cb, static_cast<uint32_t>(vertexCount), 1, 0, 0);
 }
 
-void Object3dInfo::drawInstanced(VulkanGraphicsPipeline p, VulkanDescriptorSet &set, VkCommandBuffer cb, size_t instances)
+void Object3dInfo::drawInstanced(VulkanGraphicsPipeline p, std::vector<VulkanDescriptorSet> sets, VkCommandBuffer cb, size_t instances)
 {
     if (!generated) {
-        generate(); 
+        generate();
     }
-
-    vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, p.pipelineLayout, 0, 1, &set.set, 0, nullptr);
+    std::vector<VkDescriptorSet> realsets = {};
+    for (int i = 0; i < sets.size(); i++) {
+        realsets.push_back(sets[i].set);
+    }
+    vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, p.pipelineLayout, 0, realsets.size(), realsets.data(), 0, nullptr);
     VkBuffer vertexBuffers[] = { vertexBuffer };
     VkDeviceSize offsets[] = { 0 };
     vkCmdBindVertexBuffers(cb, 0, 1, vertexBuffers, offsets);
@@ -76,7 +83,7 @@ void Object3dInfo::rebufferVbo(vector<GLfloat> data, bool force_resize)
 {/*
     if (!generated) {
         vbo = data;
-        return; 
+        return;
     }
     if (force_resize) {
         vbo = data;
@@ -90,7 +97,7 @@ void Object3dInfo::rebufferVbo(vector<GLfloat> data, bool force_resize)
 }
 
 void Object3dInfo::generate()
-{ 
+{
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = sizeof(vbo[0]) * vbo.size();
@@ -120,6 +127,6 @@ void Object3dInfo::generate()
     memcpy(data, vbo.data(), (size_t)bufferInfo.size);
     vkUnmapMemory(VulkanToolkit::singleton->device, vertexBufferMemory);
     vertexCount = vbo.size() / 12;
-    
+
     generated = true;
 }

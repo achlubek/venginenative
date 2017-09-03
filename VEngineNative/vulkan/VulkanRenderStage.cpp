@@ -80,9 +80,9 @@ void VulkanRenderStage::endDrawing()
     commandBuffer.end();
 }
 
-void VulkanRenderStage::drawMesh(Object3dInfo * info, VulkanDescriptorSet &set, size_t instances)
+void VulkanRenderStage::drawMesh(Object3dInfo * info, std::vector<VulkanDescriptorSet> sets, size_t instances)
 {
-    info->drawInstanced(pipeline, set, commandBuffer.handle, instances);
+    info->drawInstanced(pipeline, sets, commandBuffer.handle, instances);
     cmdMeshesCounts++;
 }
 

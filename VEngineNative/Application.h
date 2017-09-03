@@ -37,6 +37,8 @@ public:
     void* getObjectById(unsigned int id);
     void registerId(unsigned int id, void* p);
     glm::mat4 viewProjMatrix;
+    VulkanDescriptorSetLayout* meshModelsDataLayout;
+    VulkanDescriptorSetLayout* materialLayout;
 private:
 
     unsigned int lastId = 1;

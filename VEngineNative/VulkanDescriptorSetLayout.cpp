@@ -6,7 +6,7 @@ VulkanDescriptorSetLayout::VulkanDescriptorSetLayout()
 {
     bindings = {};
     descriptorPools = {};
-    generateNewPool();
+    allocationCounter = 9999999;
 }
 
 

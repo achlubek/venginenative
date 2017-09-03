@@ -13,12 +13,11 @@ struct ModelInfo{
     vec4 Scale;
     uvec4 idAnd4Empty;
 };
-
-layout(set = 0, binding = 2) buffer UniformBufferObject3 {
+layout(set = 1, binding = 0) buffer UniformBufferObject3 {
     ModelInfo ModelInfos[];
 } modelData;
 
-layout(set = 0, binding = 3) uniform UniformBufferObject6 {
+layout(set = 2, binding = 0) uniform UniformBufferObject6 {
     vec4 RoughnessMetalness_ZeroZero;
     vec4 DiffuseColor_Zero;
     ivec4 UseTex_DNBR;
@@ -28,6 +27,7 @@ layout(set = 0, binding = 3) uniform UniformBufferObject6 {
     vec4 ScaleTex_MZeroZero;
     uvec4 MeshId_LodLevelId_ZeroZero;
 } materialData;
+
 vec3 quat_mul_vec( vec4 q, vec3 v ){
     return v + 2.0*cross(cross(v, q.xyz ) + q.w*v, q.xyz);
 }
