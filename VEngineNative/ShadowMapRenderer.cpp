@@ -102,5 +102,5 @@ void ShadowMapRenderer::renderToSwapChain(Camera *camera)
     glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
     camera->cone->update(inverse(rpmatrix));
 
-    renderer->draw();
+   // renderer->draw();
 }

@@ -10,8 +10,10 @@ public:
     void setOutputStage(VulkanRenderStage* stage);
     void addPostProcessingStage(VulkanRenderStage* stage);
     void setPostProcessingDescriptorSet(VulkanDescriptorSet* set);
+    VulkanRenderStage* getMesh3dStage();
     void compile();
-    void draw();
+    void beginDrawing();
+    void endDrawing();
 
 private:
     VkSemaphore imageAvailableSemaphore;

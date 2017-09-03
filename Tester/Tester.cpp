@@ -4,9 +4,8 @@
 #include "stdafx.h"
 
 #include "windows.h"
-
-#include "../VEngineNative/stdafx.h"
-#include "../VEngineNative/Application.h"
+ 
+#include "Application.h"
 #include "Media.h"
 #include "EditorApp.h"
 

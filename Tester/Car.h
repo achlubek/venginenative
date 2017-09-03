@@ -1,17 +1,13 @@
 #pragma once
-#include "../VEngineNative/stdafx.h"
-#include "../VEngineNative/Application.h"
-#include "Media.h"
-#include "../VEngineNative/Camera.h";
-#include "../VEngineNative/Object3dInfo.h";
-#include "../VEngineNative/Scene.h";
-#include "../VEngineNative/Material.h";
-#include "Sound.h";
-#include "Sound3d.h";
-#include "../VEngineNative/Mesh3d.h";
-#include "SimpleParser.h";
-#include "INIReader.h"
-#include "Physics.h"
+
+class Physics;
+class TransformationManager;
+class PhysicalBody;
+class PhysicalConstraint;
+class INIReader;
+class Mesh3d;
+class TransformStruct;
+
 class Car
 {
 public:

@@ -13,15 +13,15 @@ public:
     VkExtent2D swapChainExtent;
 
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
-    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+    VkExtent2D chooseSwapExtent(int width, int height, const VkSurfaceCapabilitiesKHR& capabilities);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 
-    void createSwapChain();
+    void createSwapChain(int width, int height);
 
     std::vector<VkImageView> swapChainImageViews;
     void present(std::vector<VkSemaphore> waitSemaphores, const uint32_t imageIndex);
-    VulkanSwapChain();
+    VulkanSwapChain(int width, int height);
     ~VulkanSwapChain();
 };
 

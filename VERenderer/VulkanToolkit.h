@@ -24,7 +24,7 @@ public:
     GLFWwindow *window;
     VkSurfaceKHR surface;
     VkDebugReportCallbackEXT callback;
-    void initialize();
+    void initialize(int width, int height);
     void createInstance(std::string appname, std::string enginename);
     void setupDebugCallback();
     void loadPhysicalDevices();
@@ -36,6 +36,9 @@ public:
     };
     int chosenDeviceId = 0;
     int chosenQFId = 0;
+
+    int windowWidth;
+    int windowHeight;
 
     VulkanSwapChain* swapChain;
      

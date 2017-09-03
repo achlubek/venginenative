@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "../Object3dInfo.h"
+#include "Object3dInfo.h"
 
 VulkanRenderStage::VulkanRenderStage()
 {

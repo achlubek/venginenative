@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "glm/glm.hpp"
 
 VulkanBinaryBufferBuilder::VulkanBinaryBufferBuilder()
 {

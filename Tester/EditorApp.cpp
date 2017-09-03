@@ -1,10 +1,18 @@
 #include "stdafx.h"
-#include "EditorApp.h"
-#include "../VEngineNative/stdafx.h" 
+#include "EditorApp.h" 
 #include "Physics.h"
 #include "Keyboard.h"
 #include "Mouse.h"
-
+#include "Camera.h"
+#include "Application.h"
+#include "Sound.h"
+#include "Sound3d.h"
+#include "Scene.h"
+#include "Mesh3d.h"
+#include "Mesh3dInstance.h"
+#include "Mesh3dLodLevel.h"
+#include "TransformationManager.h"
+#undef max
 
 EditorApp::EditorApp()
 {

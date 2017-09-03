@@ -1,11 +1,8 @@
-#pragma once
-#include "Object3dInfo.h"
-#include "Camera.h"
-#include "FrustumCone.h"
-#include "vulkan/VulkanRenderStage.h"
-#include "VulkanRenderer.h"
-#include "INIReader.h"
-#include "Mesh3d.h"
+#pragma once  
+class VulkanDescriptorSetLayout;
+class VulkanGenericBuffer;
+class VulkanImage;
+class Camera;
 
 class ShadowMapRenderer
 {

@@ -20,9 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{7F5A4EED-2558-409F-9611-A593D1B450EC}</ProjectGuid>
+    <ProjectGuid>{588A34FB-5137-4A09-B272-439764A4C5A8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>VECommon</RootNamespace>
+    <RootNamespace>VERenderer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -79,7 +79,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Code\glm-0.9.9-a1</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.0.57.0\Include\vulkan;C:\Code\glfw-3.2.1\include;C:\Code\glm-0.9.9-a1;C:\Code\VEngineNative\VECommon;C:\Code\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -125,29 +125,54 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="AbsTransformable.h" />
-    <ClInclude Include="EventHandler.h" />
-    <ClInclude Include="INIReader.h" />
-    <ClInclude Include="Media.h" />
-    <ClInclude Include="SimpleParser.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
-    <ClInclude Include="tinydir.h" />
-    <ClInclude Include="TransformationManager.h" />
-    <ClInclude Include="VECommon.h" />
+    <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AbsTransformable.cpp" />
-    <ClCompile Include="INIReader.cpp" />
-    <ClCompile Include="Media.cpp" />
-    <ClCompile Include="SimpleParser.cpp" />
+    <ClInclude Include="Object3dInfo.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="VERenderer.h" />
+    <ClInclude Include="VulkanAttachment.h" />
+    <ClInclude Include="VulkanBinaryBufferBuilder.h" />
+    <ClInclude Include="VulkanCommandBuffer.h" />
+    <ClInclude Include="VulkanDescriptorSet.h" />
+    <ClInclude Include="VulkanDescriptorSetLayout.h" />
+    <ClInclude Include="VulkanFramebuffer.h" />
+    <ClInclude Include="VulkanGenericBuffer.h" />
+    <ClInclude Include="VulkanGraphicsPipeline.h" />
+    <ClInclude Include="VulkanImage.h" />
+    <ClInclude Include="VulkanRenderer.h" />
+    <ClInclude Include="VulkanRenderPass.h" />
+    <ClInclude Include="VulkanRenderStage.h" />
+    <ClInclude Include="VulkanShaderModule.h" />
+    <ClInclude Include="VulkanSubpass.h" />
+    <ClInclude Include="VulkanSwapChain.h" />
+    <ClInclude Include="VulkanToolkit.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Object3dInfo.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="TransformationManager.cpp" />
+    <ClCompile Include="VulkanAttachment.cpp" />
+    <ClCompile Include="VulkanBinaryBufferBuilder.cpp" />
+    <ClCompile Include="VulkanCommandBuffer.cpp" />
+    <ClCompile Include="VulkanDescriptorSet.cpp" />
+    <ClCompile Include="VulkanDescriptorSetLayout.cpp" />
+    <ClCompile Include="VulkanFramebuffer.cpp" />
+    <ClCompile Include="VulkanGenericBuffer.cpp" />
+    <ClCompile Include="VulkanGraphicsPipeline.cpp" />
+    <ClCompile Include="VulkanImage.cpp" />
+    <ClCompile Include="VulkanRenderer.cpp" />
+    <ClCompile Include="VulkanRenderPass.cpp" />
+    <ClCompile Include="VulkanRenderStage.cpp" />
+    <ClCompile Include="VulkanShaderModule.cpp" />
+    <ClCompile Include="VulkanSubpass.cpp" />
+    <ClCompile Include="VulkanSwapChain.cpp" />
+    <ClCompile Include="VulkanToolkit.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

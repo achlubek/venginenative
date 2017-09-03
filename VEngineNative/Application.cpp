@@ -19,7 +19,7 @@ Application::Application(int windowwidth, int windowheight)
     idMap = unordered_map<int, void*>();
     hasExited = false;
     vulkan = new VulkanToolkit();
-    vulkan->initialize();
+    vulkan->initialize(windowwidth, windowheight);
     //auto data = readFileImageData(path);
     ImageData *img = new ImageData();
     img->width = 1;

@@ -1,7 +1,8 @@
 #pragma once
-#include "Mesh3dInstance.h";
-#include "Mesh3dLodLevel.h";
-#include "Object3dInfo.h";
+class Mesh3dInstance;
+class Mesh3dLodLevel;
+class Object3dInfo;
+
 #include "Material.h";
 class Mesh3d
 {

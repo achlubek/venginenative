@@ -2,6 +2,10 @@
 #include "Car.h"
 #include "LinearMath/btAlignedObjectArray.h"
 #include "BulletCollision/CollisionShapes/btShapeHull.h"
+#include "INIReader.h"
+#include "Physics.h"
+#include "TransformationManager.h"
+#include "Application.h"
 
 Car::Car(Physics* iphysics, string definitionkey, TransformationManager * spawn)
 {

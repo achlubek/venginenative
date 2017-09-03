@@ -1,18 +1,8 @@
 #pragma once
-#include "AbstractApp.h"
-#include "../VEngineNative/stdafx.h"
-#include "../VEngineNative/Application.h"
-#include "Media.h"
-#include "../VEngineNative/Camera.h";
-#include "../VEngineNative/Object3dInfo.h";
-#include "../VEngineNative/Scene.h";
-#include "../VEngineNative/Material.h";
-#include "Sound.h"; 
-#include "Sound3d.h";
-#include "../VEngineNative/Mesh3d.h";
-#include "SimpleParser.h";
+#include "AbstractApp.h" 
 
 #include "Car.h";
+class Sound3d;
 
 #define EDITOR_MODE_IDLE 0
 #define EDITOR_MODE_MOVE_CAMERA 1

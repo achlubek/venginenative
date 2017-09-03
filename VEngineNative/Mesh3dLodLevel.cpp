@@ -152,6 +152,7 @@ float rsi2(vec3 ro, vec3 rd, vec3 sp, float sr)
 vec4 projectvdao2(mat4 mat, vec3 pos) {
     return (mat * vec4(pos, 1.0));
 }
+#undef max
 
 bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
 {

@@ -1,7 +1,5 @@
 #include "stdafx.h"
 #include "AbstractApp.h"
-#include "../VEngineNative/stdafx.h"
-#include "../VEngineNative/Application.h"
 #include "Keyboard.h"
 #include "Mouse.h"
 

@@ -1,8 +1,7 @@
 #include "stdafx.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-#include "../Application.h"
+#include <stb_image.h> 
 
 VulkanToolkit* VulkanToolkit::singleton = nullptr;
 
@@ -16,9 +15,11 @@ VulkanToolkit::~VulkanToolkit()
     vkDestroyInstance(instance, nullptr);
 }
 
-void VulkanToolkit::initialize()
+void VulkanToolkit::initialize(int width, int height)
 {
-    createInstance("Teapot", "VEngine");
+    windowWidth = width;
+    windowHeight = height;
+    createInstance("VEngine", "VEngine");
     loadPhysicalDevices();
     for (int i = 0; i < physicalDevices.size(); i++) {
         auto props = getQueueFamilyProperties(physicalDevices[i]);
@@ -68,7 +69,7 @@ void VulkanToolkit::initialize()
     createLogicalDevice(physicalDevices[chosenDeviceId], createInfo);
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    window = glfwCreateWindow(Application::instance->width, Application::instance->height, "VULKAN", NULL, NULL);
+    window = glfwCreateWindow(width, height, "VEngine", NULL, NULL);
 
     VkResult result;
     result = glfwCreateWindowSurface(instance, window, NULL, &surface);
@@ -77,7 +78,7 @@ void VulkanToolkit::initialize()
 
     VkBool32 supported = false;
     vkGetPhysicalDeviceSurfaceSupportKHR(pdevice, chosenQFId, surface, &supported);
-    swapChain = new VulkanSwapChain(); 
+    swapChain = new VulkanSwapChain(width, height);
 
     VkCommandPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;

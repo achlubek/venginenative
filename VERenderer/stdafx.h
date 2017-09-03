@@ -1,12 +1,14 @@
-// stdafx.h : include file for standard system include files,
-// or project specific include files that are used frequently, but
-// are changed infrequently
+// stdafx.h: do³¹cz plik do standardowych systemowych plików do³¹czanych,
+// lub specyficzne dla projektu pliki do³¹czane, które s¹ czêsto wykorzystywane, ale
+// s¹ rzadko zmieniane
 //
 
 #pragma once
-#pragma warning(disable:4067)
 
 #include "targetver.h"
+
+#define WIN32_LEAN_AND_MEAN             // Wyklucz rzadko u¿ywane rzeczy z nag³ówków systemu Windows
+
 
 #include <stdio.h>
 #include <tchar.h>
@@ -29,16 +31,18 @@
 #include <unordered_map>
 #include <array>
 #include <fstream>
+#include <limits>
 using namespace std;
 
 //#include "glad.h"
 //#include <GLFW\glfw3.h>
-#include <GLFW\glfw3native.h>
+//#include <GLFW\glfw3native.h>
 
 #include "vulkan.h"
 #include <GLFW/glfw3.h>
 #include <memory>
 //#define GLM_FORCE_DEPTH_ZERO_TO_ONE 1
+
 #include "glm/vec3.hpp" // glm::vec3
 #include "glm/vec4.hpp" // glm::vec4
 #include "glm/mat4x4.hpp" // glm::mat4
@@ -47,22 +51,10 @@ using namespace std;
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
+
 #include "VECommon.h"
 #include "VERenderer.h"
-#include "VEngine.h"
 
-#define PI 3.141592f
-#define rad2deg(a) (a * (180.0f / PI))
-#define deg2rad(a) (a * (PI / 180.0f))
+#define glAssert() {if(glGetError() != GL_NO_ERROR) printf("ERROR ON LINE [%d] %s", __LINE__, __FILE__);}
 
-#include "btBulletCollisionCommon.h"
-#include "btBulletDynamicsCommon.h"
-#include "BulletDynamics/ConstraintSolver/btNNCGConstraintSolver.h"
-#include "LinearMath/btAlignedObjectArray.h"
-#include "BulletCollision/CollisionShapes/btConvexShape.h"
-#include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
-#include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
-btVector3 bulletify3(glm::vec3 v);
-glm::vec3 glmify3(btVector3 v);
-btQuaternion bulletifyq(glm::quat v);
-glm::quat glmifyq(btQuaternion v);
+// TODO: W tym miejscu odwo³aj siê do dodatkowych nag³ówków wymaganych przez program

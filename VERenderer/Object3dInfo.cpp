@@ -1,10 +1,4 @@
 #include "stdafx.h"
-#include "Object3dInfo.h"
-
-#include "Media.h"
-#include "Application.h"
-#include "vulkan/VulkanGraphicsPipeline.h"
-#include "vulkan/VulkanDescriptorSet.h"
 
 /*
 This class expected interleaved buffer in format

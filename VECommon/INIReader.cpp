@@ -1,6 +1,4 @@
 #include "stdafx.h"
-#include "INIReader.h"
-#include "Media.h"
 
 INIReader::INIReader(string mediakey)
 {

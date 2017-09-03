@@ -1,6 +1,4 @@
 #include "stdafx.h"
-#include "Media.h"
-#include "tinydir.h"
 
 map<string, string> Media::mediaMap = {};
 map<string, void*> Media::cache = {};

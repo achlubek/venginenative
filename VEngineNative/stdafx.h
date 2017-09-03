@@ -49,24 +49,9 @@ using namespace std;
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#include "vulkan/VulkanShaderModule.h"
-#include "vulkan/VulkanAttachment.h"
-#include "vulkan/VulkanSubpass.h"
-#include "vulkan/VulkanRenderPass.h"
-#include "vulkan/VulkanFramebuffer.h"
-#include "vulkan/VulkanGraphicsPipeline.h"
-#include "vulkan/VulkanCommandBuffer.h"
-#include "vulkan/VulkanImage.h"
-#include "vulkan/VulkanGenericBuffer.h"
-#include "vulkan/VulkanDescriptorSet.h"
-#include "vulkan/VulkanRenderStage.h"
-
-#include "vulkan/VulkanSwapChain.h"
-#include "vulkan/VulkanToolkit.h"
-
-#include "vulkan/VulkanBinaryBufferBuilder.h"
-
-#include "VulkanDescriptorSetLayout.h"
+#include "VECommon.h"
+#include "VERenderer.h"
+#include "VEngine.h"
 
 #define glAssert() {if(glGetError() != GL_NO_ERROR) printf("ERROR ON LINE [%d] %s", __LINE__, __FILE__);}
 

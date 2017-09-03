@@ -1,6 +1,4 @@
-#include "stdafx.h"
-#include "VulkanRenderer.h"
-#include "Application.h"
+#include "stdafx.h" 
 
 
 VulkanRenderer::VulkanRenderer()
@@ -35,7 +33,27 @@ void VulkanRenderer::setPostProcessingDescriptorSet(VulkanDescriptorSet * set)
 {
     postProcessSet = set;
 }
+VulkanRenderStage * VulkanRenderer::getMesh3dStage()
+{
+    return meshStage;
+}
+Object3dInfo * loadObject3dInfoFile(string source)
+{
+    void * cached = Media::checkCache(source);
+    if (cached != nullptr) {
+        return (Object3dInfo*)cached;
+    }
+    unsigned char* bytes;
+    int bytescount = Media::readBinary(source, &bytes);
+    GLfloat * floats = (GLfloat*)bytes;
+    int floatsCount = bytescount / 4;
+    vector<GLfloat> flo(floats, floats + floatsCount);
 
+    auto o = new Object3dInfo(flo);
+    Media::saveCache(source, o);
+    return o;
+
+}
 void VulkanRenderer::compile()
 {
     VkSemaphoreCreateInfo semaphoreInfo = {};
@@ -43,12 +61,12 @@ void VulkanRenderer::compile()
     if (vkCreateSemaphore(VulkanToolkit::singleton->device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS) {
         throw std::runtime_error("failed to create semaphores!");
     }
-    postprocessmesh = Application::instance->asset->loadObject3dInfoFile("ppplane.vbo");
+    postprocessmesh = loadObject3dInfoFile("ppplane.vbo");
     meshStage->compile();
 
     for (int i = 0; i < postProcessingStages.size(); i++) {
         postProcessingStages[i]->compile();
-    }    
+    }
 
     VkFormat format = VulkanToolkit::singleton->swapChain->swapChainImageFormat;
     outputStages.resize(VulkanToolkit::singleton->swapChain->swapChainImages.size());
@@ -67,11 +85,12 @@ void VulkanRenderer::compile()
     }
 }
 
-void VulkanRenderer::draw()
+void VulkanRenderer::beginDrawing()
 {
-    Application::instance->scene->prepareFrame();
     meshStage->beginDrawing();
-    Application::instance->scene->draw(meshStage);
+}
+void VulkanRenderer::endDrawing()
+{
     meshStage->endDrawing();
 
     if (!ppRecorded) {
@@ -94,18 +113,18 @@ void VulkanRenderer::draw()
     vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 
     vkAcquireNextImageKHR(VulkanToolkit::singleton->device, VulkanToolkit::singleton->swapChain->swapChain,
-        std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+        9999999, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
     meshStage->submit({ imageAvailableSemaphore });
     VkSemaphore lastSemaphore = meshStage->signalSemaphore;
-    
+
     for (int i = 0; i < postProcessingStages.size(); i++) {
         postProcessingStages[i]->submit({ lastSemaphore });
         lastSemaphore = postProcessingStages[i]->signalSemaphore;
     }
 
     outputStages[imageIndex]->submit({ lastSemaphore });
-    
+
     VulkanToolkit::singleton->swapChain->present({ outputStages[imageIndex]->signalSemaphore }, imageIndex);
 
     vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);

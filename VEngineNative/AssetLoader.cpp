@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include "AssetLoader.h"
 #include "Media.h"
+#include "Object3dInfo.h"
+#include "Material.h"
+#include "Mesh3d.h"
+#include "Mesh3dInstance.h"
+#include "Mesh3dLodLevel.h"
+#include "Scene.h"
 
 AssetLoader::AssetLoader()
 {

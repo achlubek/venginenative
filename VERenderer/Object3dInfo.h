@@ -1,5 +1,6 @@
 #pragma once
 class VulkanGraphicsPipeline;
+class VulkanDescriptorSet;
 class Object3dInfo
 {
 public:

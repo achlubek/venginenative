@@ -1,5 +1,4 @@
 #include "stdafx.h" 
-#include "../Object3dInfo.h"
 
 VulkanGraphicsPipeline::VulkanGraphicsPipeline(int viewportwidth, int viewportheight, std::vector<VkDescriptorSetLayout> setlayouts,
     std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass renderpass, bool enableDepthTest)

@@ -1,8 +1,8 @@
 #pragma once
-#include "Mesh3d.h"
-#include "Scene.h"
-#include "Material.h"
-#include "Object3dInfo.h"
+class Mesh3d;
+class Scene;
+class Material;
+class Object3dInfo;
 
 
 class AssetLoader

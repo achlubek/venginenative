@@ -201,7 +201,7 @@
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Code\stb;C:\VulkanSDK\1.0.57.0\Include\vulkan;C:\Code\glfw-3.2.1\include;C:\Code\glm-0.9.9-a1;C:\Code\VEngineNative\VECommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Code\stb;C:\VulkanSDK\1.0.57.0\Include\vulkan;C:\Code\glfw-3.2.1\include;C:\Code\glm-0.9.9-a1;C:\Code\VEngineNative\VECommon;C:\Code\VEngineNative\VERenderer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -256,28 +256,12 @@
     <ClInclude Include="Mesh3d.h" />
     <ClInclude Include="Mesh3dInstance.h" />
     <ClInclude Include="Mesh3dLodLevel.h" />
-    <ClInclude Include="Object3dInfo.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ShadowMapRenderer.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="VulkanDescriptorSetLayout.h" />
-    <ClInclude Include="VulkanRenderer.h" />
-    <ClInclude Include="vulkan\VulkanAttachment.h" />
-    <ClInclude Include="vulkan\VulkanBinaryBufferBuilder.h" />
-    <ClInclude Include="vulkan\VulkanCommandBuffer.h" />
-    <ClInclude Include="vulkan\VulkanDescriptorSet.h" />
-    <ClInclude Include="vulkan\VulkanFramebuffer.h" />
-    <ClInclude Include="vulkan\VulkanGenericBuffer.h" />
-    <ClInclude Include="vulkan\VulkanGraphicsPipeline.h" />
-    <ClInclude Include="vulkan\VulkanImage.h" />
-    <ClInclude Include="vulkan\VulkanRenderPass.h" />
-    <ClInclude Include="vulkan\VulkanRenderStage.h" />
-    <ClInclude Include="vulkan\VulkanShaderModule.h" />
-    <ClInclude Include="vulkan\VulkanSubpass.h" />
-    <ClInclude Include="vulkan\VulkanSwapChain.h" />
-    <ClInclude Include="vulkan\VulkanToolkit.h" />
+    <ClInclude Include="VEngine.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssetLoader.cpp" />
@@ -288,7 +272,6 @@
     <ClCompile Include="Mesh3d.cpp" />
     <ClCompile Include="Mesh3dInstance.cpp" />
     <ClCompile Include="Mesh3dLodLevel.cpp" />
-    <ClCompile Include="Object3dInfo.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShadowMapRenderer.cpp" />
@@ -300,22 +283,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NotOptimization|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="VulkanDescriptorSetLayout.cpp" />
-    <ClCompile Include="VulkanRenderer.cpp" />
-    <ClCompile Include="vulkan\VulkanAttachment.cpp" />
-    <ClCompile Include="vulkan\VulkanBinaryBufferBuilder.cpp" />
-    <ClCompile Include="vulkan\VulkanCommandBuffer.cpp" />
-    <ClCompile Include="vulkan\VulkanDescriptorSet.cpp" />
-    <ClCompile Include="vulkan\VulkanFramebuffer.cpp" />
-    <ClCompile Include="vulkan\VulkanGenericBuffer.cpp" />
-    <ClCompile Include="vulkan\VulkanGraphicsPipeline.cpp" />
-    <ClCompile Include="vulkan\VulkanImage.cpp" />
-    <ClCompile Include="vulkan\VulkanRenderPass.cpp" />
-    <ClCompile Include="vulkan\VulkanRenderStage.cpp" />
-    <ClCompile Include="vulkan\VulkanShaderModule.cpp" />
-    <ClCompile Include="vulkan\VulkanSubpass.cpp" />
-    <ClCompile Include="vulkan\VulkanSwapChain.cpp" />
-    <ClCompile Include="vulkan\VulkanToolkit.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,6 +1,5 @@
 #include "stdafx.h"
 
-#include "../Application.h"
 
 void VulkanSwapChain::present(std::vector<VkSemaphore> waitSemaphores, const uint32_t imageIndex)
 {
@@ -24,9 +23,9 @@ void VulkanSwapChain::present(std::vector<VkSemaphore> waitSemaphores, const uin
     glfwSwapBuffers(VulkanToolkit::singleton->window);
 }
 
-VulkanSwapChain::VulkanSwapChain()
+VulkanSwapChain::VulkanSwapChain(int width, int height)
 {
-    createSwapChain();
+    createSwapChain(width, height);
 }
 
 
@@ -71,12 +70,12 @@ int vmin(int a, int b) {
     return a > b ? b : a;
 }
 
-VkExtent2D VulkanSwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
-    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+VkExtent2D VulkanSwapChain::chooseSwapExtent(int width, int height, const VkSurfaceCapabilitiesKHR& capabilities) {
+    if (capabilities.currentExtent.width != 0xffffffff) {
         return capabilities.currentExtent;
     }
     else {
-        VkExtent2D actualExtent = { Application::instance->width, Application::instance->height };
+        VkExtent2D actualExtent = { width,height };
 
         actualExtent.width = vmax(capabilities.minImageExtent.width, vmin(capabilities.maxImageExtent.width, actualExtent.width));
         actualExtent.height = vmax(capabilities.minImageExtent.height, vmin(capabilities.maxImageExtent.height, actualExtent.height));
@@ -109,13 +108,13 @@ SwapChainSupportDetails VulkanSwapChain::querySwapChainSupport(VkPhysicalDevice 
     return details;
 }
 
-void VulkanSwapChain::createSwapChain()
+void VulkanSwapChain::createSwapChain(int width, int height)
 {
     SwapChainSupportDetails swapChainSupport = querySwapChainSupport(VulkanToolkit::singleton->pdevice);
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-    VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
+    VkExtent2D extent = chooseSwapExtent(width, height, swapChainSupport.capabilities);
 
     uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
     if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
