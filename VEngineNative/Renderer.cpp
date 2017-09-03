@@ -81,7 +81,7 @@ Renderer::Renderer(int iwidth, int iheight)
     auto ppshadefragShaderModule = VulkanShaderModule("../../shaders/compiled/pp-shade-ambient.frag.spv");
 
     auto ppShadeAmbientStage = new VulkanRenderStage();
-
+     
     ppShadeAmbientStage->setViewport(ext);
     ppShadeAmbientStage->addShaderStage(ppvertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
     ppShadeAmbientStage->addShaderStage(ppshadefragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));

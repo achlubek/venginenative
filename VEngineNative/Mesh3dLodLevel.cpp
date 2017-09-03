@@ -36,35 +36,10 @@ void Mesh3dLodLevel::initialize()
     int kb1 = 1024;
     int mb1 = kb1 * 1024;
     modelInfosBuffer = new VulkanGenericBuffer(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, 64 * kb1);
-    materialBuffer = new VulkanGenericBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, kb1);
-    samplerIndices = {};
-    modes = {};
-    targets = {};
-    sources = {};
-    modifiers = {};
-    uvScales = {};
-    nodesDatas = {};
-    nodesColors = {};
-    modes = {};
-    textureBinds = {};
-    wrapModes = {};
+
     id = Application::instance->getNextId();
-    Application::instance->registerId(id, this);
-    descriptorSet = Application::instance->renderer->meshSetLayout->generateDescriptorSet();
-    int i = 0;
-    descriptorSet.bindUniformBuffer(i++, Application::instance->renderer->uboHighFrequencyBuffer);
-    descriptorSet.bindUniformBuffer(i++, Application::instance->renderer->uboLowFrequencyBuffer);
-
-    descriptorSet.bindStorageBuffer(i++, *modelInfosBuffer);
-    descriptorSet.bindUniformBuffer(i++, *materialBuffer);
-
-    descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
-    descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
-    descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
-    descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
-    descriptorSet.bindImageViewSampler(i++, *Application::instance->dummyTexture);
-
-    descriptorSet.update();
+    Application::instance->registerId(id, this); 
+    int i = 0; 
 }
 
 Mesh3dLodLevel::~Mesh3dLodLevel()
@@ -78,7 +53,7 @@ void Mesh3dLodLevel::draw(VulkanRenderStage* stage, const Mesh3d* mesh)
     if (!mesh->visible) return;
     if (!visible) return;
 
-    stage->drawMesh(info3d, descriptorSet, instancesFiltered);
+    stage->drawMesh(info3d, material->descriptorSet, instancesFiltered);
 
 }
 
@@ -157,84 +132,13 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
             modelInfosBuffer->unmap();
         }
     }
+    if (material->needsUpdate) {
+        material->descriptorSet.bindUniformBuffer(0, Application::instance->renderer->uboHighFrequencyBuffer);
+        material->descriptorSet.bindUniformBuffer(1, Application::instance->renderer->uboLowFrequencyBuffer);
 
-    if (materialBufferNeedsUpdate) {
-
-
-        if (material->diffuseColorTex != nullptr) {
-            descriptorSet.bindImageViewSampler(4, *material->diffuseColorTex);
-        }
-
-        if (material->normalTex != nullptr) {
-            descriptorSet.bindImageViewSampler(5, *material->normalTex);
-        }
-        if (material->bumpTex != nullptr) {
-            descriptorSet.bindImageViewSampler(6, *material->bumpTex);
-        }
-        if (material->roughnessTex != nullptr) {
-            descriptorSet.bindImageViewSampler(7, *material->roughnessTex);
-        }
-        if (material->metalnessTex != nullptr) {
-            descriptorSet.bindImageViewSampler(8, *material->metalnessTex);
-        }
-
-        if (material->diffuseColorTex != nullptr || material->normalTex != nullptr
-            || material->bumpTex != nullptr || material->roughnessTex != nullptr
-            || material->metalnessTex != nullptr) {
-            descriptorSet.update();
-        }
-
-        materialBufferNeedsUpdate = false;
-        vector<float> floats2;
-        floats2.reserve(32);
-        floats2.push_back(material->roughness);
-        floats2.push_back(material->metalness);
-        floats2.push_back(0.0f);
-        floats2.push_back(0.0f);
-
-        floats2.push_back(material->diffuseColor.x);
-        floats2.push_back(material->diffuseColor.y);
-        floats2.push_back(material->diffuseColor.z);
-        floats2.push_back(0.0f);
-
-        int one = 1;
-        int zero = 0;
-
-        floats2.push_back(vcasti((material->diffuseColorTex != nullptr ? one : zero)));
-        floats2.push_back(vcasti((material->normalTex != nullptr ? one : zero)));
-        floats2.push_back(vcasti((material->bumpTex != nullptr ? one : zero)));
-        floats2.push_back(vcasti((material->roughnessTex != nullptr ? one : zero)));
-
-        floats2.push_back(vcasti((material->metalnessTex != nullptr ? one : zero)));
-        floats2.push_back(0.0f);
-        floats2.push_back(0.0f);
-        floats2.push_back(0.0f); // amd safety 
-
-        floats2.push_back(material->diffuseColorTexScale.x);
-        floats2.push_back(material->diffuseColorTexScale.y);
-        floats2.push_back(material->normalTexScale.x);
-        floats2.push_back(material->normalTexScale.y);
-
-        floats2.push_back(material->bumpTexScale.x);
-        floats2.push_back(material->bumpTexScale.y);
-        floats2.push_back(material->roughnessTexScale.x);
-        floats2.push_back(material->roughnessTexScale.y);
-
-        floats2.push_back(material->metalnessTexScale.x);
-        floats2.push_back(material->metalnessTexScale.y);
-        floats2.push_back(0.0f);
-        floats2.push_back(0.0f);
-
-        floats2.push_back(vcasti(mesh->id));
-        floats2.push_back(vcasti(id));
-        floats2.push_back(0.0f);
-        floats2.push_back(0.0f);
-
-        void* materialpointer = nullptr;
-        materialBuffer->map(0, 4 * floats2.size(), &materialpointer);
-        memcpy(materialpointer, floats2.data(), 4 * floats2.size());
-        materialBuffer->unmap();
+        material->descriptorSet.bindStorageBuffer(2, *modelInfosBuffer);
     }
+    material->updateBuffer();
 }
 
 float rsi2(vec3 ro, vec3 rd, vec3 sp, float sr)

@@ -14,35 +14,17 @@ public:
     Object3dInfo *info3d;
     float distanceStart;
     float distanceEnd;
-    unsigned int id;
-    bool disableFaceCulling = true;
+    unsigned int id; 
     bool visible = true;
-    bool ignoreFrustumCulling = false;
-    bool castShadow = true;
-    bool selectable = true;
+    bool ignoreFrustumCulling = false; 
     void draw(VulkanRenderStage* stage, const Mesh3d* mesh);
-    void updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstance*> &instances);
-    bool materialBufferNeedsUpdate = true;
-    VulkanDescriptorSet descriptorSet;
-    void initialize();
-    //Skeleton* skeleton;
-    //SkeletonPose* skeletonPose;
+    void updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstance*> &instances); 
+    void initialize(); 
 private:
     VulkanGenericBuffer *modelInfosBuffer;
 
-    VulkanGenericBuffer *materialBuffer;
-    
     bool checkIntersection(Mesh3dInstance* instance);
-    vector<int> samplerIndices;
-    vector<int> modes;
-    vector<int> targets;
-    vector<int> sources;
-    vector<int> modifiers;
-    vector<int> wrapModes;
-    vector<glm::vec2> uvScales;
-    vector<glm::vec4> nodesDatas;
-    vector<glm::vec4> nodesColors;
-    vector<VulkanImage*> textureBinds;
+
     size_t instancesFiltered;
     vector<unsigned int> lastIdMap = vector<unsigned int>{};
     vector<unsigned int> newids = vector<unsigned int>{};

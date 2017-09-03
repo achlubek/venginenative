@@ -18,4 +18,8 @@ public:
     glm::vec2 bumpTexScale;
     glm::vec2 roughnessTexScale;
     glm::vec2 metalnessTexScale;
+    VulkanGenericBuffer *materialBuffer;
+    VulkanDescriptorSet descriptorSet;
+    void updateBuffer();
+    bool needsUpdate = true;
 };
