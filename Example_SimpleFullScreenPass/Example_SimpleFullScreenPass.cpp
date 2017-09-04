@@ -45,6 +45,7 @@ int main()
         renderer->beginDrawing();
         // no meshes drawn, only post process which is handled automatically
         renderer->endDrawing();
+        toolkit->poolEvents();
     }
 
     return 0;
