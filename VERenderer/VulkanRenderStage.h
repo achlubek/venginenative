@@ -22,6 +22,7 @@ public:
     void addDescriptorSetLayout(VkDescriptorSetLayout lay);
     void addOutputImage(VulkanImage lay);
     void setViewport(VkExtent2D size);
+    void setViewport(int width, int height);
     void addShaderStage(VkPipelineShaderStageCreateInfo ss);
      
     int cmdMeshesCounts = 0;
@@ -29,7 +30,8 @@ public:
     void endDrawing();
     void drawMesh(Object3dInfo *info, std::vector<VulkanDescriptorSet> sets, size_t instances);
     void compile();
-    VulkanRenderStage* copy();
+    VulkanRenderStage* copy(); 
+    bool alphaBlending = false;
 
     void submit(std::vector<VkSemaphore> waitSemaphores);
 

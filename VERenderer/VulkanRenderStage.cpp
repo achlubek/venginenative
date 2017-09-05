@@ -28,6 +28,14 @@ void VulkanRenderStage::setViewport(VkExtent2D size)
     viewport = size;
 }
 
+void VulkanRenderStage::setViewport(int width, int height)
+{
+    VkExtent2D e = VkExtent2D();
+    e.width = width;
+    e.height = height;
+    setViewport(e);
+}
+
 void VulkanRenderStage::addShaderStage(VkPipelineShaderStageCreateInfo ss)
 {
     shaderStages.push_back(ss);
@@ -126,7 +134,7 @@ void VulkanRenderStage::compile()
     framebuffer = VulkanFramebuffer(VulkanToolkit::singleton->device, viewport.width, viewport.height, renderPass, attachmentsViews);
 
     pipeline = VulkanGraphicsPipeline(viewport.width, viewport.height,
-        setLayouts, shaderStages, renderPass, foundDepthBuffer);
+        setLayouts, shaderStages, renderPass, foundDepthBuffer, alphaBlending);
 }
 
 VulkanRenderStage* VulkanRenderStage::copy()

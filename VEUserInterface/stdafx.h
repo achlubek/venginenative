@@ -12,4 +12,6 @@
 #include "stb_truetype.h"
 #include "stb_rect_pack.h"
 
+#include "VERenderer.h"
+
 // TODO: W tym miejscu odwo³aj siê do dodatkowych nag³ówków wymaganych przez program

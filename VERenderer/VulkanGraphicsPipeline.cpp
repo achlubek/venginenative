@@ -1,7 +1,7 @@
 #include "stdafx.h" 
 
 VulkanGraphicsPipeline::VulkanGraphicsPipeline(int viewportwidth, int viewportheight, std::vector<VkDescriptorSetLayout> setlayouts,
-    std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass renderpass, bool enableDepthTest)
+    std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass renderpass, bool enableDepthTest, bool alphablend)
 {
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = Object3dInfo::getVertexInputStateCreateInfo();
 
@@ -56,12 +56,23 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(int viewportwidth, int viewporthe
      
     std::vector<VkPipelineColorBlendAttachmentState> atts = {  };
 
-
+    
     for (int i = 0; i < renderpass.attachments.size(); i++) {
         if (!renderpass.attachments[i].image->isDepthBuffer) {
             VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
             colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-            colorBlendAttachment.blendEnable = VK_FALSE;
+            if (alphablend) {
+                colorBlendAttachment.blendEnable = VK_TRUE;
+                colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+                colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+                colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+                colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+                colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+                colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+            }
+            else {
+                colorBlendAttachment.blendEnable = VK_FALSE;
+            }
             atts.push_back(colorBlendAttachment);
         }
     }
@@ -73,10 +84,10 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(int viewportwidth, int viewporthe
     colorBlending.logicOp = VK_LOGIC_OP_COPY;
     colorBlending.attachmentCount = atts.size();
     colorBlending.pAttachments = atts.data();
-    colorBlending.blendConstants[0] = 0.0f;
-    colorBlending.blendConstants[1] = 0.0f;
-    colorBlending.blendConstants[2] = 0.0f;
-    colorBlending.blendConstants[3] = 0.0f;
+    colorBlending.blendConstants[0] = 1.0f;
+    colorBlending.blendConstants[1] = 1.0f;
+    colorBlending.blendConstants[2] = 1.0f;
+    colorBlending.blendConstants[3] = 1.0f;
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

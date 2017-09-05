@@ -24,6 +24,7 @@ public:
     GLFWwindow *window;
     VkSurfaceKHR surface;
     VkDebugReportCallbackEXT callback;
+    Object3dInfo* fullScreenQuad3dInfo;
     void initialize(int width, int height);
     void createInstance(std::string appname, std::string enginename);
     void setupDebugCallback();
