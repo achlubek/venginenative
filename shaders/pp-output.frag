@@ -8,5 +8,6 @@ layout(location = 0) out vec4 outColor;
 //#########//
 
 void main() {
-    outColor = vec4(pow(texture(texAmbient, UV).rgb, vec3(1.0 / 2.2)), 1.0);
+    outColor = vec4(pow(texture(texAmbient, UV).rgb
+     + texture(texUi, UV).rgb, vec3(1.0 / 2.2)), 1.0);
 }

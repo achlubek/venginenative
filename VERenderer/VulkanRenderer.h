@@ -17,6 +17,8 @@ public:
 
 private:
     void submitEmptyBatch(std::vector<VkSemaphore> waitSemaphores, VkSemaphore signalSemaphore);
+    void submitEmptyBatch2(std::vector<VkSemaphore> waitSemaphores);
+    void submitEmptyBatch3(VkSemaphore signalSemaphore);
     VkSemaphore imageAvailableSemaphore;
     VkSemaphore stubMeshSemaphore;
     bool ppRecorded = false;

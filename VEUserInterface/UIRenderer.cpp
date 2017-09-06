@@ -29,7 +29,7 @@ UIRenderer::UIRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) :
     auto buffer = VulkanGenericBuffer(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, sizeof(float) * 1024 * 10);
 
     set = layout->generateDescriptorSet();
-    set.bindUniformBuffer(0, buffer);
+    set.bindStorageBuffer(0, buffer);
     set.update();
 
     renderer = new VulkanRenderer();
@@ -45,12 +45,12 @@ buffer struct layout for elements
 void UIRenderer::draw() {
     // update buffers.........
     for (int i = 0; i < boxes.size(); i++) {
-        boxes[i]->draw();
+   //     boxes[i]->draw();
     }
 
     renderer->beginDrawing();
     // and then this beast
-    stage->drawMesh(vulkan->fullScreenQuad3dInfo, { set }, boxes.size() + texts.size() + bitmaps.size());
+    //stage->drawMesh(vulkan->fullScreenQuad3dInfo, { set }, boxes.size() + texts.size() + bitmaps.size());
     renderer->endDrawing();
 }
 

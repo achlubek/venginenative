@@ -74,6 +74,7 @@ Renderer::Renderer(int iwidth, int iheight)
     ppSetLayout->addField(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     ppSetLayout->addField(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     ppSetLayout->addField(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    ppSetLayout->addField(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     ppSetLayout->compile();
 
     //##########################//
@@ -108,6 +109,7 @@ Renderer::Renderer(int iwidth, int iheight)
     postProcessSet.bindImageViewSampler(3, normalImage);
     postProcessSet.bindImageViewSampler(4, distanceImage);
     postProcessSet.bindImageViewSampler(5, ambientImage);
+    postProcessSet.bindImageViewSampler(6, *Application::instance->ui->outputImage);
     postProcessSet.update();
 
     renderer = new VulkanRenderer();
@@ -116,7 +118,7 @@ Renderer::Renderer(int iwidth, int iheight)
     renderer->setOutputStage(post_process_zygote);
     renderer->setPostProcessingDescriptorSet(&postProcessSet);
     renderer->compile();
-
+    
 }
 
 Renderer::~Renderer()
@@ -161,14 +163,12 @@ void Renderer::renderToSwapChain(Camera *camera)
     uboLowFrequencyBuffer.map(0, bb.buffer.size(), &data);
     memcpy(data, bb.getPointer(), bb.buffer.size());
     uboLowFrequencyBuffer.unmap();
-
-    uint32_t imageIndex;
-
+    
     glm::mat4 cameraViewMatrix = camera->transformation->getInverseWorldTransform(); 
     glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
     glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
     camera->cone->update(inverse(rpmatrix));
-
+    
     Application::instance->scene->prepareFrame();
     renderer->beginDrawing();
     Application::instance->scene->draw(renderer->getMesh3dStage());

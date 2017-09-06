@@ -1,10 +1,13 @@
 #pragma once
-#include <GLFW\glfw3.h> 
-#include "Camera.h";
-#include "AssetLoader.h";
 #include "EventHandler.h";
-#include "Renderer.h";
- 
+class Renderer;
+class UIRenderer;
+class AssetLoader;
+class Camera;
+class Scene;
+class VulkanToolkit;
+class VulkanImage;
+class VulkanDescriptorSetLayout;
 
 class Application
 {
@@ -14,6 +17,7 @@ public:
     Scene *scene;
     AssetLoader *asset;
     Renderer *renderer;
+    UIRenderer* ui;
     VulkanToolkit* vulkan;
     VulkanImage* dummyTexture;
 

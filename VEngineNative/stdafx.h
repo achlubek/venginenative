@@ -51,6 +51,7 @@ using namespace std;
 
 #include "VECommon.h"
 #include "VERenderer.h"
+#include "VEUserInterface.h"
 #include "VEngine.h"
 
 #define glAssert() {if(glGetError() != GL_NO_ERROR) printf("ERROR ON LINE [%d] %s", __LINE__, __FILE__);}

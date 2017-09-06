@@ -36,7 +36,7 @@ void VulkanRenderer::setPostProcessingDescriptorSet(VulkanDescriptorSet * set)
 VulkanRenderStage * VulkanRenderer::getMesh3dStage()
 {
     return meshStage;
-} 
+}
 
 void VulkanRenderer::compile()
 {
@@ -85,7 +85,7 @@ void VulkanRenderer::beginDrawing()
 
 void VulkanRenderer::submitEmptyBatch(std::vector<VkSemaphore> waitSemaphores, VkSemaphore signalSemaphore)
 {
-    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };// THIS GOT TO HAVE count of ALL wait stages NOT ONLY ONE ELEMENT
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.waitSemaphoreCount = waitSemaphores.size();
@@ -98,15 +98,49 @@ void VulkanRenderer::submitEmptyBatch(std::vector<VkSemaphore> waitSemaphores, V
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &signalSemaphore;
 
-    if (vkQueueSubmit(VulkanToolkit::singleton->mainQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
-        throw std::runtime_error("failed to submit draw command buffer!");
-    }
+    vkQueueSubmit(VulkanToolkit::singleton->mainQueue, 1, &submitInfo, VK_NULL_HANDLE);
+}
+
+void VulkanRenderer::submitEmptyBatch2(std::vector<VkSemaphore> waitSemaphores)
+{
+    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT };// THIS GOT TO HAVE count of ALL wait stages NOT ONLY ONE ELEMENT
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.waitSemaphoreCount = waitSemaphores.size();
+    submitInfo.pWaitSemaphores = waitSemaphores.data();
+    submitInfo.pWaitDstStageMask = waitStages2;
+
+    submitInfo.commandBufferCount = 0;
+    submitInfo.pCommandBuffers = nullptr;
+
+    submitInfo.signalSemaphoreCount = 0;
+    submitInfo.pSignalSemaphores = nullptr;
+
+    vkQueueSubmit(VulkanToolkit::singleton->mainQueue, 1, &submitInfo, VK_NULL_HANDLE);
+}
+
+void VulkanRenderer::submitEmptyBatch3(VkSemaphore signalSemaphore)
+{
+    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT }; // THIS GOT TO HAVE count of ALL wait stages NOT ONLY ONE ELEMENT
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.waitSemaphoreCount = 0;
+    submitInfo.pWaitSemaphores = nullptr;
+    submitInfo.pWaitDstStageMask = waitStages2;
+
+    submitInfo.commandBufferCount = 0;
+    submitInfo.pCommandBuffers = nullptr;
+
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = &signalSemaphore;
+
+    vkQueueSubmit(VulkanToolkit::singleton->mainQueue, 1, &submitInfo, VK_NULL_HANDLE);
 }
 
 void VulkanRenderer::endDrawing()
 {
     if (usingMeshStage) {
-        meshStage->endDrawing(); 
+        meshStage->endDrawing();
     }
 
     if (!ppRecorded) {
@@ -153,12 +187,12 @@ void VulkanRenderer::endDrawing()
     }
     else {
         VkSemaphore lastSemaphore = stubMeshSemaphore;
-        if (usingMeshStage) {
-            meshStage->submit({ imageAvailableSemaphore });
+        if (usingMeshStage) { 
+            meshStage->submit({ });
             lastSemaphore = meshStage->signalSemaphore;
         }
         else {
-            submitEmptyBatch({ imageAvailableSemaphore }, stubMeshSemaphore);
+            submitEmptyBatch({ }, stubMeshSemaphore);
             lastSemaphore = stubMeshSemaphore;
         }
 
@@ -166,6 +200,8 @@ void VulkanRenderer::endDrawing()
             postProcessingStages[i]->submit({ lastSemaphore });
             lastSemaphore = postProcessingStages[i]->signalSemaphore;
         }
+
+        submitEmptyBatch2({ meshStage->signalSemaphore });
     }
     vkQueueWaitIdle(VulkanToolkit::singleton->mainQueue);
 }

@@ -15,7 +15,7 @@ public:
     VulkanToolkit* vulkan{ nullptr };
     VulkanRenderer* renderer{ nullptr };
     VulkanRenderStage* stage{ nullptr };
-    VulkanDescriptorSet set{ nullptr };
+    VulkanDescriptorSet set;
     VulkanImage* outputImage;
     std::vector<UIBox*> boxes;
     std::vector<UIText*> texts;

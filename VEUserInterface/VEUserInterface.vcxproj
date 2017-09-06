@@ -135,6 +135,7 @@
     <ClInclude Include="UIColor.h" />
     <ClInclude Include="UIRenderer.h" />
     <ClInclude Include="UIText.h" />
+    <ClInclude Include="VEUserInterface.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
