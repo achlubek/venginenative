@@ -15,11 +15,12 @@ public:
     VulkanToolkit* vulkan{ nullptr };
     VulkanRenderer* renderer{ nullptr };
     VulkanRenderStage* stage{ nullptr };
-    VulkanDescriptorSet set;
+    VulkanDescriptorSetLayout* layout{ nullptr };
     VulkanImage* outputImage;
     std::vector<UIBox*> boxes;
     std::vector<UIText*> texts;
     std::vector<UIBitmap*> bitmaps;
     void draw();
+    VulkanImage* dummyTexture;
 };
 

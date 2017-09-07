@@ -12,6 +12,10 @@
 #include "Mesh3dInstance.h"
 #include "Mesh3dLodLevel.h"
 #include "TransformationManager.h"
+#include "UIBox.h"
+#include "UIBitmap.h"
+#include "UIText.h"
+#include "UIRenderer.h"
 #undef max
 
 EditorApp::EditorApp()
@@ -348,6 +352,10 @@ void EditorApp::onChar(unsigned int c)
 
 void EditorApp::onBind()
 {
+    auto box = new UIBox(app->ui, 0.1, 0.1, 0.5, 0.5, UIColor(1, 0, 1, 0.5));
+    app->ui->boxes.push_back(box);
+
+
     car = {};
     cam = new Camera();
     FOV = 85.0f;
