@@ -14,6 +14,7 @@ public:
     VkMemoryPropertyFlags properties;
     VkImageAspectFlags aspectFlags;
     VkImageLayout initialLayout;
+    VkSampler sampler;
     bool isDepthBuffer;
     bool isPresentReady = false;
 

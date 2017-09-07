@@ -13,3 +13,4 @@ vec4 uiBoxColor = dataBuffer.box_color.rgba;
 int uiType = dataBuffer.type.x;
 #define UI_TYPE_BOX 1
 #define UI_TYPE_BITMAP 2
+#define UI_TYPE_TEXT 3

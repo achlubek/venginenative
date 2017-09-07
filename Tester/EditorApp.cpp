@@ -355,9 +355,11 @@ void EditorApp::onBind()
     auto box = new UIBox(app->ui, 0.1, 0.1, 0.5, 0.5, UIColor(1, 0, 1, 0.5));
     auto box2 = new UIBox(app->ui, 0.2, 0.2, 0.5, 0.5, UIColor(1, 0, 0, 0.5));
     auto img1 = new UIBitmap(app->ui, 0.1, 0.2, 0.3, 0.3, app->asset->loadTextureFile("witcher_icon.png"), UIColor(1, 0, 0, 0.5));
-    app->ui->boxes.push_back(box);
-    app->ui->boxes.push_back(box2);
-    app->ui->bitmaps.push_back(img1);
+    auto txt = new UIText(app->ui, 0.2, 0.2, UIColor(1, 0, 0, 0.5), Media::getPath("font.ttf"), "Hello World!!");
+ //   app->ui->boxes.push_back(box);
+  //  app->ui->boxes.push_back(box2);
+  //  app->ui->bitmaps.push_back(img1);
+    app->ui->texts.push_back(txt);
 
 
     car = {};

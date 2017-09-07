@@ -14,6 +14,9 @@ void main() {
     }
     else if(uiType == UI_TYPE_BOX) {
         outColor = uiBoxColor;
+    }
+    else if(uiType == UI_TYPE_TEXT) {
+        outColor = uiBoxColor * textureLod(texBitmap, uiBitmapOffset + UV * uiBitmapScale, 0.0).r;
     } else {
         outColor = vec4(1.0);
     }

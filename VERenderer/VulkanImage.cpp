@@ -63,6 +63,14 @@ VulkanImage::VulkanImage(uint32_t iwidth, uint32_t iheight, VkFormat iformat, Vk
     }
 }
 
+VulkanImage::~VulkanImage()
+{
+   // if (sampler != nullptr) vkDestroySampler(VulkanToolkit::singleton->device, *sampler, nullptr);
+   // vkDestroyImageView(VulkanToolkit::singleton->device, imageView, nullptr);
+   // vkDestroyImage(VulkanToolkit::singleton->device, image, nullptr);
+   // vkFreeMemory(VulkanToolkit::singleton->device, imageMemory, nullptr);
+}
+
 VulkanImage::VulkanImage(VkFormat iformat, VkImage imageHandle, VkImageView viewHandle)
 {
     iformat = format;
@@ -86,12 +94,11 @@ VkSampler VulkanImage::getSampler()
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
     samplerInfo.compareEnable = VK_FALSE;
     samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    VkSampler textureSampler;
-    if (vkCreateSampler(VulkanToolkit::singleton->device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR; 
+    if (vkCreateSampler(VulkanToolkit::singleton->device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
         throw std::runtime_error("failed to create texture sampler!");
     }
-    return textureSampler;
+    return sampler;
 }
 
 VulkanAttachment VulkanImage::getAttachment()
@@ -100,8 +107,4 @@ VulkanAttachment VulkanImage::getAttachment()
         VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
         VK_IMAGE_LAYOUT_UNDEFINED, isPresentReady ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR  : (isDepthBuffer ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL));
-}
-
-VulkanImage::~VulkanImage()
-{
 }

@@ -286,7 +286,7 @@ VulkanImage * AssetLoader::loadTextureFile(string source)
     }
     else {
         auto imgdata = VulkanToolkit::singleton->readFileImageData(Media::getPath(source));
-        auto img = VulkanToolkit::singleton->createTexture(imgdata);
+        auto img = VulkanToolkit::singleton->createTexture(imgdata, VK_FORMAT_R8G8B8A8_UNORM);
         Media::saveCache(source, img);
         return img;
     }

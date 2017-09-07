@@ -15,7 +15,7 @@ UIRenderer::UIRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) :
     img->height = 1;
     unsigned char * emptytexture = new unsigned char[4]{ (unsigned char)0x255, (unsigned char)0x255, (unsigned char)0x255, (unsigned char)0x255 };
     img->data = (void*)emptytexture;
-    dummyTexture = vulkan->createTexture(img);
+    dummyTexture = vulkan->createTexture(img, VK_FORMAT_R8G8B8A8_UNORM);
 
     layout = new VulkanDescriptorSetLayout();
     layout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
@@ -56,6 +56,9 @@ void UIRenderer::draw() {
     for (int i = 0; i < bitmaps.size(); i++) {
         bitmaps[i]->updateBuffer();
     }
+    for (int i = 0; i < texts.size(); i++) {
+        texts[i]->updateBuffer();
+    }
 
     renderer->beginDrawing();
 
@@ -65,6 +68,9 @@ void UIRenderer::draw() {
     }
     for (int i = 0; i < bitmaps.size(); i++) {
         stage->drawMesh(vulkan->fullScreenQuad3dInfo, { bitmaps[i]->set }, 1);
+    }
+    for (int i = 0; i < texts.size(); i++) {
+        stage->drawMesh(vulkan->fullScreenQuad3dInfo, { texts[i]->set }, 1);
     }
 
     renderer->endDrawing();

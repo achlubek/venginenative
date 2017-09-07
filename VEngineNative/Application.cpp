@@ -26,7 +26,7 @@ Application::Application(int windowwidth, int windowheight)
     img->height = 1;
     unsigned char * emptytexture = new unsigned char[4]{ (unsigned char)0x255, (unsigned char)0x255, (unsigned char)0x255, (unsigned char)0x255 };
     img->data = (void*)emptytexture;
-    dummyTexture = vulkan->createTexture(img);
+    dummyTexture = vulkan->createTexture(img, VK_FORMAT_R8G8B8A8_UNORM);
     meshModelsDataLayout = new VulkanDescriptorSetLayout();
     meshModelsDataLayout->addField(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
     meshModelsDataLayout->compile();
