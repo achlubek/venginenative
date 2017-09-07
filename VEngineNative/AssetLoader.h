@@ -16,6 +16,8 @@ public:
     Skeleton *loadSkeletonString(string source);
     Skeleton *loadSkeletonFile(string source);
     */
+    VulkanImage *loadTextureFile(string source);
+
     Material *loadMaterialString(string source);
     Material *loadMaterialFile(string source);
 

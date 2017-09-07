@@ -53,15 +53,20 @@ void UIRenderer::draw() {
     for (int i = 0; i < boxes.size(); i++) {
         boxes[i]->updateBuffer();
     }
+    for (int i = 0; i < bitmaps.size(); i++) {
+        bitmaps[i]->updateBuffer();
+    }
+
     renderer->beginDrawing();
 
     auto stage = renderer->getMesh3dStage();
     for (int i = 0; i < boxes.size(); i++) {
         stage->drawMesh(vulkan->fullScreenQuad3dInfo, { boxes[i]->set }, 1);
     }
+    for (int i = 0; i < bitmaps.size(); i++) {
+        stage->drawMesh(vulkan->fullScreenQuad3dInfo, { bitmaps[i]->set }, 1);
+    }
 
-    // and then this beast
-    //stage->drawMesh(vulkan->fullScreenQuad3dInfo, { set }, boxes.size() + texts.size() + bitmaps.size());
     renderer->endDrawing();
 }
 

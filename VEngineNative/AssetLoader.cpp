@@ -278,6 +278,19 @@ MaterialNode::~MaterialNode()
 {
     delete texture;
 }
+VulkanImage * AssetLoader::loadTextureFile(string source)
+{
+    void * cached = Media::checkCache(source);
+    if (cached != nullptr) {
+        return (VulkanImage*)cached;
+    }
+    else {
+        auto imgdata = VulkanToolkit::singleton->readFileImageData(Media::getPath(source));
+        auto img = VulkanToolkit::singleton->createTexture(imgdata);
+        Media::saveCache(source, img);
+        return img;
+    }
+}
 Material * AssetLoader::loadMaterialString(string source)
 {
     vector<string> materialLines;
@@ -408,15 +421,7 @@ Material * AssetLoader::loadMaterialString(string source)
                 if (words.size() >= 2) {
                     stringstream ss;
                     for (int a = 1; a < words.size(); a++)ss << (a == 1 ? "" : " ") << words[a];
-                    void * cached = Media::checkCache(ss.str());
-                    if (cached != nullptr) {
-                        node->texture = (VulkanImage*)cached;
-                    }
-                    else {
-                        auto img = VulkanToolkit::singleton->readFileImageData(Media::getPath(ss.str()));
-                        node->texture = VulkanToolkit::singleton->createTexture(img);
-                        Media::saveCache(ss.str(), node->texture);
-                    }
+                    node->texture = loadTextureFile(ss.str());
                 }
             }
         }
