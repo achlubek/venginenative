@@ -20,11 +20,11 @@ public:
 
     VulkanGenericBuffer uboHighFrequencyBuffer;
     VulkanGenericBuffer uboLowFrequencyBuffer;
-    VulkanImage diffuseImage;
-    VulkanImage normalImage;
-    VulkanImage distanceImage;
-    VulkanImage ambientImage;
-    VulkanImage depthImage;
+    VulkanImage* diffuseImage;
+    VulkanImage* normalImage;
+    VulkanImage* distanceImage;
+    VulkanImage* ambientImage;
+    VulkanImage* depthImage;
 
     VulkanRenderer* renderer;
      

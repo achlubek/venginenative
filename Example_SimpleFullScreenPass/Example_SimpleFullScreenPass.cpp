@@ -26,7 +26,7 @@ int main()
     stage->addShaderStage(frag.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
     stage->addDescriptorSetLayout(layout->layout);
 
-    auto buffer = VulkanGenericBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
+    auto buffer = new VulkanGenericBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
 
     auto set = layout->generateDescriptorSet();
     set.bindUniformBuffer(0, buffer); 
@@ -39,9 +39,9 @@ int main()
 
     while (!toolkit->shouldCloseWindow()) {
         void* ptr;
-        buffer.map(0, sizeof(float) * 1, &ptr);
+        buffer->map(0, sizeof(float) * 1, &ptr);
         ((float*)ptr)[0] = (float)toolkit->getExecutionTime();
-        buffer.unmap();
+        buffer->unmap();
         renderer->beginDrawing();
         // no meshes drawn, only post process which is handled automatically
         renderer->endDrawing();

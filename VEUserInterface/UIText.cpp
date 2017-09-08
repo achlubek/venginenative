@@ -31,12 +31,9 @@ UIText::UIText(UIRenderer* irenderer, float ix, float iy, UIColor icolor, std::s
     {
         printf("failed\n");
     }
-    updateText(text);
     dataBuffer = new VulkanGenericBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 1024);
     set = renderer->layout->generateDescriptorSet();
-    set.bindUniformBuffer(0, *dataBuffer);
-    set.bindImageViewSampler(1, *texture);
-    set.update();
+    updateText(text);
 }
 
 
@@ -84,7 +81,7 @@ void UIText::updateText(std::string text)
     /* calculate font scaling */
     float scale = stbtt_ScaleForPixelHeight(font, l_h);
 
-    char* word = "how are you?";
+    const char* word = text.c_str();
 
     int nx = 0;
     int maxy = 0;
@@ -119,7 +116,6 @@ void UIText::updateText(std::string text)
         kern = stbtt_GetCodepointKernAdvance(font, word[i], word[i + 1]);
         nx += kern * scale;
     }
-
     unsigned char* bitmap = new unsigned char[nx * maxy];
     for (int i = 0; i < nx * maxy; i++)bitmap[i] = 0;
     int b_w = nx;
@@ -152,13 +148,20 @@ void UIText::updateText(std::string text)
    // free(fontBuffer);
    // free(bitmap);
 
-    ImageData *img = new ImageData();
-    img->width = nx;
-    img->height = maxy; 
-    img->data = (void*)bitmap;
+    ImageData img = ImageData();
+    img.width = nx;
+    img.height = maxy;
+    img.channelCount = 1;
+    img.data = (void*)bitmap;
 
     width = (float)nx / (float)renderer->width;
     height = (float)maxy / (float)renderer->height; 
 
+    if (texture != nullptr) delete texture;
     texture = VulkanToolkit::singleton->createTexture(img, VK_FORMAT_R8_UNORM);
+    set.bindUniformBuffer(0, dataBuffer);
+    set.bindImageViewSampler(1, texture);
+    set.update();
+
+   // delete[] bitmap; // stb deletes
 }

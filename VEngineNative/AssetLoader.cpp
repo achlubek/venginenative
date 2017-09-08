@@ -286,7 +286,12 @@ VulkanImage * AssetLoader::loadTextureFile(string source)
     }
     else {
         auto imgdata = VulkanToolkit::singleton->readFileImageData(Media::getPath(source));
-        auto img = VulkanToolkit::singleton->createTexture(imgdata, VK_FORMAT_R8G8B8A8_UNORM);
+        auto format = VK_FORMAT_R8G8B8A8_UNORM;
+        imgdata.channelCount = 4;
+      //  if (imgdata.channelCount == 3) format = VK_FORMAT_R8G8B8A8_UNORM;
+        //if (imgdata.channelCount == 2) format = VK_FORMAT_R8G8_UNORM;
+     //   if (imgdata.channelCount == 1) format = VK_FORMAT_R8_UNORM;
+        auto img = VulkanToolkit::singleton->createTexture(imgdata, format);
         Media::saveCache(source, img);
         return img;
     }

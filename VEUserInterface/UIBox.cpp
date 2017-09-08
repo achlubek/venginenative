@@ -8,8 +8,8 @@ UIBox::UIBox(UIRenderer* irenderer, float ix, float iy, float iwidth, float ihei
 {
     dataBuffer = new VulkanGenericBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 1024);
     set = renderer->layout->generateDescriptorSet();
-    set.bindUniformBuffer(0, *dataBuffer);
-    set.bindImageViewSampler(1, *renderer->dummyTexture);
+    set.bindUniformBuffer(0, dataBuffer);
+    set.bindImageViewSampler(1, renderer->dummyTexture);
     set.update();
 }
 

@@ -52,8 +52,8 @@ public:
     VkQueue mainQueue;
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties); 
 
-    ImageData* readFileImageData(std::string path);
-    VulkanImage* createTexture(ImageData * img, VkFormat format);
+    ImageData readFileImageData(std::string path);
+    VulkanImage* createTexture(const ImageData &img, VkFormat format);
 
     VkCommandBuffer beginSingleTimeCommands();
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);

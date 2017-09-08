@@ -26,12 +26,12 @@ VulkanDescriptorSet::~VulkanDescriptorSet()
 {
 }
 
-void VulkanDescriptorSet::bindImageViewSampler(int binding, VulkanImage img)
+void VulkanDescriptorSet::bindImageViewSampler(int binding, VulkanImage* img)
 {
     VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo();
     imageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    imageInfo->imageView = img.imageView;
-    imageInfo->sampler = img.getSampler();
+    imageInfo->imageView = img->imageView;
+    imageInfo->sampler = img->getSampler();
 
     writes.resize(writes.size() + 1);
 
@@ -47,12 +47,12 @@ void VulkanDescriptorSet::bindImageViewSampler(int binding, VulkanImage img)
 
 }
 
-void VulkanDescriptorSet::bindUniformBuffer(int binding, VulkanGenericBuffer buffer)
+void VulkanDescriptorSet::bindUniformBuffer(int binding, VulkanGenericBuffer* buffer)
 {
     VkDescriptorBufferInfo* bufferInfo = new VkDescriptorBufferInfo();
-    bufferInfo->buffer = buffer.buffer;
+    bufferInfo->buffer = buffer->buffer;
     bufferInfo->offset = 0;
-    bufferInfo->range = buffer.size;
+    bufferInfo->range = buffer->size;
 
     writes.resize(writes.size() + 1);
 
@@ -67,12 +67,12 @@ void VulkanDescriptorSet::bindUniformBuffer(int binding, VulkanGenericBuffer buf
     writes[i].pBufferInfo = bufferInfo;
 }
 
-void VulkanDescriptorSet::bindStorageBuffer(int binding, VulkanGenericBuffer buffer)
+void VulkanDescriptorSet::bindStorageBuffer(int binding, VulkanGenericBuffer* buffer)
 {
     VkDescriptorBufferInfo* bufferInfo = new VkDescriptorBufferInfo();
-    bufferInfo->buffer = buffer.buffer;
+    bufferInfo->buffer = buffer->buffer;
     bufferInfo->offset = 0;
-    bufferInfo->range = buffer.size;
+    bufferInfo->range = buffer->size;
 
     writes.resize(writes.size() + 1);
 

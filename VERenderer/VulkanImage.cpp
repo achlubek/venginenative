@@ -61,14 +61,17 @@ VulkanImage::VulkanImage(uint32_t iwidth, uint32_t iheight, VkFormat iformat, Vk
     if (vkCreateImageView(VulkanToolkit::singleton->device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
         throw std::runtime_error("failed to create texture image view!");
     }
+    samplerCreated = false;
 }
 
 VulkanImage::~VulkanImage()
 {
-   // if (sampler != nullptr) vkDestroySampler(VulkanToolkit::singleton->device, *sampler, nullptr);
-   // vkDestroyImageView(VulkanToolkit::singleton->device, imageView, nullptr);
-   // vkDestroyImage(VulkanToolkit::singleton->device, image, nullptr);
-   // vkFreeMemory(VulkanToolkit::singleton->device, imageMemory, nullptr);
+    if (samplerCreated) {
+        vkDestroySampler(VulkanToolkit::singleton->device, sampler, nullptr);
+    }
+    vkDestroyImageView(VulkanToolkit::singleton->device, imageView, nullptr);
+    vkDestroyImage(VulkanToolkit::singleton->device, image, nullptr);
+    vkFreeMemory(VulkanToolkit::singleton->device, imageMemory, nullptr);
 }
 
 VulkanImage::VulkanImage(VkFormat iformat, VkImage imageHandle, VkImageView viewHandle)
@@ -77,10 +80,15 @@ VulkanImage::VulkanImage(VkFormat iformat, VkImage imageHandle, VkImageView view
     image = imageHandle;
     imageView = viewHandle; 
     isDepthBuffer = false;
+    samplerCreated = false;
 }
 
 VkSampler VulkanImage::getSampler()
 {
+    if (samplerCreated) {
+        return sampler;
+    }
+   // sampler = new VkSampler();
     VkSamplerCreateInfo samplerInfo = {};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -98,6 +106,7 @@ VkSampler VulkanImage::getSampler()
     if (vkCreateSampler(VulkanToolkit::singleton->device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
         throw std::runtime_error("failed to create texture sampler!");
     }
+    samplerCreated = true;
     return sampler;
 }
 

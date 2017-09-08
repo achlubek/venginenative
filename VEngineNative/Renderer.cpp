@@ -10,20 +10,20 @@ Renderer::Renderer(int iwidth, int iheight)
     width = iwidth;
     height = iheight; 
 
-    diffuseImage = VulkanImage(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
+    diffuseImage = new VulkanImage(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
 
-    normalImage = VulkanImage(width, height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
+    normalImage = new VulkanImage(width, height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
-    distanceImage = VulkanImage(width, height, VK_FORMAT_R32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
+    distanceImage = new VulkanImage(width, height, VK_FORMAT_R32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
-    ambientImage = VulkanImage(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
+    ambientImage = new VulkanImage(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
-    depthImage = VulkanImage(width, height, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
+    depthImage = new VulkanImage(width, height, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, true);
 
     uboHighFrequencyBuffer = VulkanGenericBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
@@ -42,8 +42,8 @@ Renderer::Renderer(int iwidth, int iheight)
     meshSetLayout->compile();
 
     sharedSet = meshSetLayout->generateDescriptorSet();
-    sharedSet.bindUniformBuffer(0, uboHighFrequencyBuffer);
-    sharedSet.bindUniformBuffer(1, uboLowFrequencyBuffer);
+    sharedSet.bindUniformBuffer(0, &uboHighFrequencyBuffer);
+    sharedSet.bindUniformBuffer(1, &uboLowFrequencyBuffer);
     sharedSet.update();
 
     auto meshRenderStage = new VulkanRenderStage();
@@ -103,13 +103,13 @@ Renderer::Renderer(int iwidth, int iheight)
     //##########################//
 
     postProcessSet = ppSetLayout->generateDescriptorSet();
-    postProcessSet.bindUniformBuffer(0, uboHighFrequencyBuffer);
-    postProcessSet.bindUniformBuffer(1, uboLowFrequencyBuffer);
+    postProcessSet.bindUniformBuffer(0, &uboHighFrequencyBuffer);
+    postProcessSet.bindUniformBuffer(1, &uboLowFrequencyBuffer);
     postProcessSet.bindImageViewSampler(2, diffuseImage);
     postProcessSet.bindImageViewSampler(3, normalImage);
     postProcessSet.bindImageViewSampler(4, distanceImage);
     postProcessSet.bindImageViewSampler(5, ambientImage);
-    postProcessSet.bindImageViewSampler(6, *Application::instance->ui->outputImage);
+    postProcessSet.bindImageViewSampler(6, Application::instance->ui->outputImage);
     postProcessSet.update();
 
     renderer = new VulkanRenderer();

@@ -10,11 +10,12 @@ UIRenderer::UIRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) :
     width(iwidth), height(iheight), vulkan(ivulkan)
 {
 
-    ImageData *img = new ImageData();
-    img->width = 1;
-    img->height = 1;
+    ImageData img = ImageData();
+    img.width = 1;
+    img.height = 1;
+    img.channelCount = 4;
     unsigned char * emptytexture = new unsigned char[4]{ (unsigned char)0x255, (unsigned char)0x255, (unsigned char)0x255, (unsigned char)0x255 };
-    img->data = (void*)emptytexture;
+    img.data = (void*)emptytexture;
     dummyTexture = vulkan->createTexture(img, VK_FORMAT_R8G8B8A8_UNORM);
 
     layout = new VulkanDescriptorSetLayout();
@@ -35,7 +36,7 @@ UIRenderer::UIRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) :
     stage->addShaderStage(vert.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
     stage->addShaderStage(frag.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
     stage->addDescriptorSetLayout(layout->layout);
-    stage->addOutputImage(*outputImage);
+    stage->addOutputImage(outputImage);
     stage->alphaBlending = true; //yisss
     
     renderer = new VulkanRenderer();

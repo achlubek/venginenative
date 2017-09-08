@@ -11,9 +11,9 @@ public:
 
     std::vector<VkWriteDescriptorSet> writes;
 
-    void bindImageViewSampler(int binding, VulkanImage img);
-    void bindUniformBuffer(int binding, VulkanGenericBuffer buffer);
-    void bindStorageBuffer(int binding, VulkanGenericBuffer buffer);
+    void bindImageViewSampler(int binding, VulkanImage* img);
+    void bindUniformBuffer(int binding, VulkanGenericBuffer* buffer);
+    void bindStorageBuffer(int binding, VulkanGenericBuffer* buffer);
 
     void update();
 };

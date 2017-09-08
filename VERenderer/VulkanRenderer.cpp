@@ -68,7 +68,7 @@ void VulkanRenderer::compile()
             img->image = VulkanToolkit::singleton->swapChain->swapChainImages[i];
             img->imageView = VulkanToolkit::singleton->swapChain->swapChainImageViews[i];
             img->isPresentReady = true;
-            outputStages[i]->addOutputImage(*img);
+            outputStages[i]->addOutputImage(img);
 
             outputStages[i]->compile();
         }

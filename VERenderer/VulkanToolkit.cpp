@@ -266,27 +266,27 @@ uint32_t VulkanToolkit::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlag
 }
 
 
-ImageData * VulkanToolkit::readFileImageData(std::string path)
+ImageData VulkanToolkit::readFileImageData(std::string path)
 {
-    ImageData * d = new ImageData();
-    d->data = stbi_load(path.c_str(), &d->width, &d->height, &d->channelCount, STBI_rgb_alpha);
+    ImageData d = ImageData();
+    d.data = stbi_load(path.c_str(), &d.width, &d.height, &d.channelCount, STBI_rgb_alpha);
     return d;
 }
 
-VulkanImage* VulkanToolkit::createTexture(ImageData * img, VkFormat format)
+VulkanImage* VulkanToolkit::createTexture(const ImageData &img, VkFormat format)
 { 
-    VulkanGenericBuffer stagingBuffer = VulkanGenericBuffer(VK_IMAGE_USAGE_TRANSFER_SRC_BIT, img->width * img->height * 4); //  always rgba for now
+    VulkanGenericBuffer stagingBuffer = VulkanGenericBuffer(VK_IMAGE_USAGE_TRANSFER_SRC_BIT, img.width * img.height * img.channelCount); //  always rgba for now
     void* mappoint;
-    stagingBuffer.map(0, img->width * img->height * 4, &mappoint);
-    memcpy(mappoint, img->data, static_cast<size_t>(img->width * img->height * 4));
+    stagingBuffer.map(0, img.width * img.height * img.channelCount, &mappoint);
+    memcpy(mappoint, img.data, static_cast<size_t>(img.width * img.height * img.channelCount));
     stagingBuffer.unmap();
-    stbi_image_free(img->data);
+    stbi_image_free(img.data);
 
-    VulkanImage* res = new VulkanImage(img->width, img->height, format, VK_IMAGE_TILING_OPTIMAL,
+    VulkanImage* res = new VulkanImage(img.width, img.height, format, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, false);
 
     transitionImageLayout(res->image, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    copyBufferToImage(stagingBuffer.buffer, res->image, static_cast<uint32_t>(img->width), static_cast<uint32_t>(img->height));
+    copyBufferToImage(stagingBuffer.buffer, res->image, static_cast<uint32_t>(img.width), static_cast<uint32_t>(img.height));
     transitionImageLayout(res->image, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     return res;

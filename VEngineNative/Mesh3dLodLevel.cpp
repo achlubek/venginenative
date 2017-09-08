@@ -42,7 +42,7 @@ void Mesh3dLodLevel::initialize()
     int i = 0; 
 
     descriptorSet = Application::instance->meshModelsDataLayout->generateDescriptorSet();
-    descriptorSet.bindStorageBuffer(0, *modelInfosBuffer);
+    descriptorSet.bindStorageBuffer(0, modelInfosBuffer);
     descriptorSet.update();
 }
 

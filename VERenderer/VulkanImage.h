@@ -28,4 +28,6 @@ public:
     VkSampler getSampler();
     VulkanAttachment getAttachment();
     ~VulkanImage();
+private:
+    bool samplerCreated = false;
 };

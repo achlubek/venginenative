@@ -44,7 +44,7 @@ ShadowMapRenderer::ShadowMapRenderer(int iwidth, int iheight)
     meshRenderStage->addShaderStage(vertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
     meshRenderStage->addShaderStage(fragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
     meshRenderStage->addDescriptorSetLayout(meshSetLayout->layout);
-    meshRenderStage->addOutputImage(depthImage);
+    meshRenderStage->addOutputImage(&depthImage);
 
     renderer = new VulkanRenderer();
     renderer->setMeshStage(meshRenderStage);

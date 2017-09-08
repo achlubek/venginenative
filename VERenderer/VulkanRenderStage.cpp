@@ -18,7 +18,7 @@ void VulkanRenderStage::addDescriptorSetLayout(VkDescriptorSetLayout lay)
     setLayouts.push_back(lay);
 }
 
-void VulkanRenderStage::addOutputImage(VulkanImage lay)
+void VulkanRenderStage::addOutputImage(VulkanImage * lay)
 {
     outputImages.push_back(lay);
 }
@@ -110,8 +110,8 @@ void VulkanRenderStage::compile()
 
     bool foundDepthBuffer = false;
     for (int i = 0; i < outputImages.size(); i++) {
-        auto atta = outputImages[i].getAttachment();
-        if (outputImages[i].isDepthBuffer) {
+        auto atta = outputImages[i]->getAttachment();
+        if (outputImages[i]->isDepthBuffer) {
             depthAttachment = atta;
             foundDepthBuffer = true;
         }
@@ -120,7 +120,7 @@ void VulkanRenderStage::compile()
             colorattachmentsLayouts.push_back(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         }
         attachments.push_back(atta);
-        attachmentsViews.push_back(outputImages[i].imageView);
+        attachmentsViews.push_back(outputImages[i]->imageView);
     }
 
     VulkanSubpass subpass;

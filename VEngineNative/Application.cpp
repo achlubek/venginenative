@@ -21,11 +21,12 @@ Application::Application(int windowwidth, int windowheight)
     vulkan = new VulkanToolkit();
     vulkan->initialize(windowwidth, windowheight);
     //auto data = readFileImageData(path);
-    ImageData *img = new ImageData();
-    img->width = 1;
-    img->height = 1;
+    ImageData img = ImageData();
+    img.width = 1;
+    img.height = 1;
+    img.channelCount = 4;
     unsigned char * emptytexture = new unsigned char[4]{ (unsigned char)0x255, (unsigned char)0x255, (unsigned char)0x255, (unsigned char)0x255 };
-    img->data = (void*)emptytexture;
+    img.data = (void*)emptytexture;
     dummyTexture = vulkan->createTexture(img, VK_FORMAT_R8G8B8A8_UNORM);
     meshModelsDataLayout = new VulkanDescriptorSetLayout();
     meshModelsDataLayout->addField(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);

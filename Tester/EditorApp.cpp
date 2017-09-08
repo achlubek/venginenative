@@ -34,6 +34,7 @@ void EditorApp::initialize()
 
 void EditorApp::onRenderFrame(float elapsed)
 {
+    app->ui->texts[0]->updateText(std::to_string(app->time));
     physics->simulationStep(1.0 / 60.0);
     //app->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setPosition(glm::vec3(sin(app->time), cos(app->time * 1.2), sin(app->time * 1.6)));
     //app->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setSize(glm::vec3(sin(app->time) * 0.5 + 1.5));
