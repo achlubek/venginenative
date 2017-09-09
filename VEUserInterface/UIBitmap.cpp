@@ -6,11 +6,11 @@
 UIBitmap::UIBitmap(UIRenderer* irenderer, float ix, float iy, float iwidth, float iheight, VulkanImage* itexture, UIColor icolor)
     : renderer(irenderer), x(ix), y(iy), width(iwidth), height(iheight), texture(itexture), color(icolor)
 {
-    dataBuffer = new VulkanGenericBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 1024);
+    dataBuffer = new VulkanGenericBuffer(irenderer->vulkan, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 1024);
     set = renderer->layout->generateDescriptorSet();
-    set.bindUniformBuffer(0, dataBuffer);
-    set.bindImageViewSampler(1, texture);
-    set.update();
+    set->bindUniformBuffer(0, dataBuffer);
+    set->bindImageViewSampler(1, texture);
+    set->update();
 }
 
 

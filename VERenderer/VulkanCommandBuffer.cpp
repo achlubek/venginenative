@@ -1,14 +1,15 @@
 #include "stdafx.h"
 
-VulkanCommandBuffer::VulkanCommandBuffer( VkCommandBufferLevel level)
+VulkanCommandBuffer::VulkanCommandBuffer(VulkanToolkit * ivulkan, VkCommandBufferLevel level)
+    : vulkan(ivulkan)
 {
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.commandPool = VulkanToolkit::singleton->commandPool;
+    allocInfo.commandPool = vulkan->commandPool;
     allocInfo.level = level;
     allocInfo.commandBufferCount = 1;
 
-    vkAllocateCommandBuffers(VulkanToolkit::singleton->device, &allocInfo, &handle);
+    vkAllocateCommandBuffers(vulkan->device, &allocInfo, &handle);
 }
 
 VulkanCommandBuffer::~VulkanCommandBuffer()

@@ -1,10 +1,7 @@
 #include "stdafx.h" 
 
-VulkanGenericBuffer::VulkanGenericBuffer()
-{
-
-}
-VulkanGenericBuffer::VulkanGenericBuffer(VkBufferUsageFlags usage, VkDeviceSize s)
+VulkanGenericBuffer::VulkanGenericBuffer(VulkanToolkit * ivulkan, VkBufferUsageFlags usage, VkDeviceSize s)
+    : vulkan(ivulkan)
 {
     size = s;
     VkBufferCreateInfo bufferInfo = {};
@@ -13,23 +10,23 @@ VulkanGenericBuffer::VulkanGenericBuffer(VkBufferUsageFlags usage, VkDeviceSize 
     bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateBuffer(VulkanToolkit::singleton->device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+    if (vkCreateBuffer(vulkan->device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to create buffer!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(VulkanToolkit::singleton->device, buffer, &memRequirements);
+    vkGetBufferMemoryRequirements(vulkan->device, buffer, &memRequirements);
 
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = VulkanToolkit::singleton->findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    allocInfo.memoryTypeIndex = vulkan->findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    if (vkAllocateMemory(VulkanToolkit::singleton->device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+    if (vkAllocateMemory(vulkan->device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate buffer memory!");
     }
 
-    vkBindBufferMemory(VulkanToolkit::singleton->device, buffer, bufferMemory, 0);
+    vkBindBufferMemory(vulkan->device, buffer, bufferMemory, 0);
 }
 
 VulkanGenericBuffer::~VulkanGenericBuffer()
@@ -38,10 +35,10 @@ VulkanGenericBuffer::~VulkanGenericBuffer()
 
 void VulkanGenericBuffer::map(VkDeviceSize offset, VkDeviceSize size, void ** data)
 {
-    vkMapMemory(VulkanToolkit::singleton->device, bufferMemory, offset, size, 0, data);
+    vkMapMemory(vulkan->device, bufferMemory, offset, size, 0, data);
 }
 
 void VulkanGenericBuffer::unmap()
 {
-    vkUnmapMemory(VulkanToolkit::singleton->device, bufferMemory);
+    vkUnmapMemory(vulkan->device, bufferMemory);
 }

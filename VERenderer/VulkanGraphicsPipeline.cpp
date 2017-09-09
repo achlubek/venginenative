@@ -1,7 +1,8 @@
 #include "stdafx.h" 
 
-VulkanGraphicsPipeline::VulkanGraphicsPipeline(int viewportwidth, int viewportheight, std::vector<VkDescriptorSetLayout> setlayouts,
-    std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass renderpass, bool enableDepthTest, bool alphablend)
+VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int viewportwidth, int viewportheight, std::vector<VkDescriptorSetLayout> setlayouts,
+    std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass* renderpass, bool enableDepthTest, bool alphablend)
+    : vulkan(ivulkan)
 {
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = Object3dInfo::getVertexInputStateCreateInfo();
 
@@ -57,8 +58,8 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(int viewportwidth, int viewporthe
     std::vector<VkPipelineColorBlendAttachmentState> atts = {  };
 
     
-    for (int i = 0; i < renderpass.attachments.size(); i++) {
-        if (!renderpass.attachments[i].image->isDepthBuffer) {
+    for (int i = 0; i < renderpass->attachments.size(); i++) {
+        if (!renderpass->attachments[i].image->isDepthBuffer) {
             VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
             colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             if (alphablend) {
@@ -95,7 +96,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(int viewportwidth, int viewporthe
     pipelineLayoutInfo.pSetLayouts = setlayouts.data();
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-    if (vkCreatePipelineLayout(VulkanToolkit::singleton->device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+    if (vkCreatePipelineLayout(vulkan->device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout!");
     }
 
@@ -111,11 +112,11 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(int viewportwidth, int viewporthe
     pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.layout = pipelineLayout;
-    pipelineInfo.renderPass = renderpass.handle;
+    pipelineInfo.renderPass = renderpass->handle;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-    if (vkCreateGraphicsPipelines(VulkanToolkit::singleton->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+    if (vkCreateGraphicsPipelines(vulkan->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline!");
     }
 }

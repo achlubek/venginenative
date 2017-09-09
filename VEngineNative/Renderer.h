@@ -6,20 +6,22 @@ class VulkanGenericBuffer;
 class VulkanImage;
 class VulkanRenderer;
 class Camera;
+class VulkanToolkit;
 
 class Renderer
 {
 public:
-    Renderer(int iwidth, int iheight);
+    Renderer(VulkanToolkit * vulkan, int iwidth, int iheight);
     ~Renderer(); 
 
+    VulkanToolkit * vulkan;
     VulkanDescriptorSetLayout* meshSetLayout;
-    VulkanDescriptorSet postProcessSet;
-    VulkanDescriptorSet sharedSet;
+    VulkanDescriptorSet* postProcessSet;
+    VulkanDescriptorSet* sharedSet;
     Mesh3d* dummyMesh;
 
-    VulkanGenericBuffer uboHighFrequencyBuffer;
-    VulkanGenericBuffer uboLowFrequencyBuffer;
+    VulkanGenericBuffer* uboHighFrequencyBuffer;
+    VulkanGenericBuffer* uboLowFrequencyBuffer;
     VulkanImage* diffuseImage;
     VulkanImage* normalImage;
     VulkanImage* distanceImage;

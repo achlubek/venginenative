@@ -1,7 +1,9 @@
 #pragma once 
+class VulkanToolkit;
 class VulkanImage
 {
 public:
+    VulkanToolkit * vulkan;
     VkImage image;
     VkDeviceMemory imageMemory;
     VkImageView imageView;
@@ -17,9 +19,8 @@ public:
     VkSampler sampler;
     bool isDepthBuffer;
     bool isPresentReady = false;
-
-    VulkanImage() {}
-    VulkanImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
+     
+    VulkanImage(VulkanToolkit * vulkan, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
         VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags,
         VkImageLayout initialLayout, bool iisDepthBuffer);
 

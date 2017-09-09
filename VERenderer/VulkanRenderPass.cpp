@@ -1,7 +1,8 @@
 #include "stdafx.h" 
 
 
-VulkanRenderPass::VulkanRenderPass(std::vector<VulkanAttachment> iattachments, std::vector<VulkanSubpass> subpasses)
+VulkanRenderPass::VulkanRenderPass(VulkanToolkit * ivulkan, std::vector<VulkanAttachment> iattachments, std::vector<VulkanSubpass> subpasses)
+    : vulkan(ivulkan)
 {
     attachments = iattachments;
     std::vector<VkAttachmentDescription> descs = {};
@@ -19,7 +20,7 @@ VulkanRenderPass::VulkanRenderPass(std::vector<VulkanAttachment> iattachments, s
     renderPassInfo.subpassCount = subpassesraw.size();
     renderPassInfo.pSubpasses = subpassesraw.data();
 
-    vkCreateRenderPass(VulkanToolkit::singleton->device, &renderPassInfo, nullptr, &handle);
+    vkCreateRenderPass(vulkan->device, &renderPassInfo, nullptr, &handle);
 }
 
 

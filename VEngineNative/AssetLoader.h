@@ -3,14 +3,16 @@ class Mesh3d;
 class Scene;
 class Material;
 class Object3dInfo;
+class VulkanToolkit;
 
 
 class AssetLoader
 {
 public:
-    AssetLoader();
+    AssetLoader(VulkanToolkit * vulkan);
     ~AssetLoader();
 
+    VulkanToolkit * vulkan;
     Object3dInfo *loadObject3dInfoFile(string source);
     /*
     Skeleton *loadSkeletonString(string source);

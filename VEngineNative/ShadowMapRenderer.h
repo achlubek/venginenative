@@ -2,18 +2,20 @@
 class VulkanDescriptorSetLayout;
 class VulkanGenericBuffer;
 class VulkanImage;
+class VulkanToolkit;
 class Camera;
 
 class ShadowMapRenderer
 {
 public:
-    ShadowMapRenderer(int width, int height);
+    ShadowMapRenderer(VulkanToolkit * vulkan, int width, int height);
     ~ShadowMapRenderer();
+    VulkanToolkit * vulkan;
     VulkanDescriptorSetLayout* meshSetLayout;
     
-    VulkanGenericBuffer uboHighFrequencyBuffer;
-    VulkanGenericBuffer uboLowFrequencyBuffer;
-    VulkanImage depthImage;
+    VulkanGenericBuffer* uboHighFrequencyBuffer;
+    VulkanGenericBuffer* uboLowFrequencyBuffer;
+    VulkanImage* depthImage;
 
     VulkanRenderer* renderer;
 

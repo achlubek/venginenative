@@ -1,6 +1,17 @@
 #include "stdafx.h"
 
 
+VulkanSwapChain::VulkanSwapChain(VulkanToolkit * ivulkan, int width, int height)
+    : vulkan(ivulkan)
+{
+    createSwapChain(width, height);
+}
+
+
+VulkanSwapChain::~VulkanSwapChain()
+{
+}
+
 void VulkanSwapChain::present(std::vector<VkSemaphore> waitSemaphores, const uint32_t imageIndex)
 {
 
@@ -10,27 +21,17 @@ void VulkanSwapChain::present(std::vector<VkSemaphore> waitSemaphores, const uin
     presentInfo.waitSemaphoreCount = waitSemaphores.size();
     presentInfo.pWaitSemaphores = waitSemaphores.data();
 
-    VkSwapchainKHR swapChains[] = { VulkanToolkit::singleton->swapChain->swapChain };
+    VkSwapchainKHR swapChains[] = { vulkan->swapChain->swapChain };
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
 
     presentInfo.pImageIndices = &imageIndex;
 
-    vkQueuePresentKHR(VulkanToolkit::singleton->mainQueue, &presentInfo);
+    vkQueuePresentKHR(vulkan->mainQueue, &presentInfo);
     //###########
 
     /* Swap front and back buffers */
-    glfwSwapBuffers(VulkanToolkit::singleton->window);
-}
-
-VulkanSwapChain::VulkanSwapChain(int width, int height)
-{
-    createSwapChain(width, height);
-}
-
-
-VulkanSwapChain::~VulkanSwapChain()
-{
+    glfwSwapBuffers(vulkan->window);
 }
 
 
@@ -87,22 +88,22 @@ VkExtent2D VulkanSwapChain::chooseSwapExtent(int width, int height, const VkSurf
 SwapChainSupportDetails VulkanSwapChain::querySwapChainSupport(VkPhysicalDevice device) {
     SwapChainSupportDetails details;
 
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, VulkanToolkit::singleton->surface, &details.capabilities);
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, vulkan->surface, &details.capabilities);
 
     uint32_t formatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(device, VulkanToolkit::singleton->surface, &formatCount, nullptr);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(device, vulkan->surface, &formatCount, nullptr);
 
     if (formatCount != 0) {
         details.formats.resize(formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, VulkanToolkit::singleton->surface, &formatCount, details.formats.data());
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, vulkan->surface, &formatCount, details.formats.data());
     }
 
     uint32_t presentModeCount;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(device, VulkanToolkit::singleton->surface, &presentModeCount, nullptr);
+    vkGetPhysicalDeviceSurfacePresentModesKHR(device, vulkan->surface, &presentModeCount, nullptr);
 
     if (presentModeCount != 0) {
         details.presentModes.resize(presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(device, VulkanToolkit::singleton->surface, &presentModeCount, details.presentModes.data());
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, vulkan->surface, &presentModeCount, details.presentModes.data());
     }
 
     return details;
@@ -110,7 +111,7 @@ SwapChainSupportDetails VulkanSwapChain::querySwapChainSupport(VkPhysicalDevice 
 
 void VulkanSwapChain::createSwapChain(int width, int height)
 {
-    SwapChainSupportDetails swapChainSupport = querySwapChainSupport(VulkanToolkit::singleton->pdevice);
+    SwapChainSupportDetails swapChainSupport = querySwapChainSupport(vulkan->pdevice);
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
@@ -123,7 +124,7 @@ void VulkanSwapChain::createSwapChain(int width, int height)
 
     VkSwapchainCreateInfoKHR createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface = VulkanToolkit::singleton->surface;
+    createInfo.surface = vulkan->surface;
 
     createInfo.minImageCount = imageCount;
     createInfo.imageFormat = surfaceFormat.format;
@@ -141,11 +142,11 @@ void VulkanSwapChain::createSwapChain(int width, int height)
 
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    vkCreateSwapchainKHR(VulkanToolkit::singleton->device, &createInfo, nullptr, &swapChain);
+    vkCreateSwapchainKHR(vulkan->device, &createInfo, nullptr, &swapChain);
 
-    vkGetSwapchainImagesKHR(VulkanToolkit::singleton->device, swapChain, &imageCount, nullptr);
+    vkGetSwapchainImagesKHR(vulkan->device, swapChain, &imageCount, nullptr);
     swapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(VulkanToolkit::singleton->device, swapChain, &imageCount, swapChainImages.data());
+    vkGetSwapchainImagesKHR(vulkan->device, swapChain, &imageCount, swapChainImages.data());
 
     swapChainImageFormat = surfaceFormat.format;
     swapChainExtent = extent;
@@ -168,6 +169,6 @@ void VulkanSwapChain::createSwapChain(int width, int height)
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1;
 
-        vkCreateImageView(VulkanToolkit::singleton->device, &createInfo, nullptr, &swapChainImageViews[i]);
+        vkCreateImageView(vulkan->device, &createInfo, nullptr, &swapChainImageViews[i]);
     }
 }

@@ -35,15 +35,15 @@ void Mesh3dLodLevel::initialize()
 {
     int kb1 = 1024;
     int mb1 = kb1 * 1024;
-    modelInfosBuffer = new VulkanGenericBuffer(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, 64 * kb1);
+    modelInfosBuffer = new VulkanGenericBuffer(Application::instance->vulkan, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, 64 * kb1);
 
     id = Application::instance->getNextId();
     Application::instance->registerId(id, this); 
     int i = 0; 
 
     descriptorSet = Application::instance->meshModelsDataLayout->generateDescriptorSet();
-    descriptorSet.bindStorageBuffer(0, modelInfosBuffer);
-    descriptorSet.update();
+    descriptorSet->bindStorageBuffer(0, modelInfosBuffer);
+    descriptorSet->update();
 }
 
 Mesh3dLodLevel::~Mesh3dLodLevel()
@@ -56,7 +56,7 @@ void Mesh3dLodLevel::draw(VulkanRenderStage* stage, const Mesh3d* mesh)
 
     if (!mesh->visible) return;
     if (!visible) return;
-    stage->drawMesh(info3d, { *stage->meshSharedSet, descriptorSet, material->descriptorSet }, instancesFiltered);
+    stage->drawMesh(info3d, { stage->meshSharedSet, descriptorSet, material->descriptorSet }, instancesFiltered);
 
 }
 

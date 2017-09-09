@@ -1,13 +1,10 @@
 #include "stdafx.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h> 
-
-VulkanToolkit* VulkanToolkit::singleton = nullptr;
+#include <stb_image.h>  
 
 VulkanToolkit::VulkanToolkit()
-{
-    singleton = this;
+{ 
 }
 
 VulkanToolkit::~VulkanToolkit()
@@ -78,7 +75,7 @@ void VulkanToolkit::initialize(int width, int height)
 
     VkBool32 supported = false;
     vkGetPhysicalDeviceSurfaceSupportKHR(pdevice, chosenQFId, surface, &supported);
-    swapChain = new VulkanSwapChain(width, height);
+    swapChain = new VulkanSwapChain(this, width, height);
 
     VkCommandPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -121,7 +118,7 @@ void VulkanToolkit::initialize(int width, int height)
     int floatsCount = bytescount / 4;
     vector<GLfloat> flo(floats, floats + floatsCount);
 
-    fullScreenQuad3dInfo = new Object3dInfo(flo);
+    fullScreenQuad3dInfo = new Object3dInfo(this, flo);
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
@@ -275,18 +272,18 @@ ImageData VulkanToolkit::readFileImageData(std::string path)
 
 VulkanImage* VulkanToolkit::createTexture(const ImageData &img, VkFormat format)
 { 
-    VulkanGenericBuffer stagingBuffer = VulkanGenericBuffer(VK_IMAGE_USAGE_TRANSFER_SRC_BIT, img.width * img.height * img.channelCount); //  always rgba for now
+    VulkanGenericBuffer* stagingBuffer = new VulkanGenericBuffer(this, VK_IMAGE_USAGE_TRANSFER_SRC_BIT, img.width * img.height * img.channelCount); //  always rgba for now
     void* mappoint;
-    stagingBuffer.map(0, img.width * img.height * img.channelCount, &mappoint);
+    stagingBuffer->map(0, img.width * img.height * img.channelCount, &mappoint);
     memcpy(mappoint, img.data, static_cast<size_t>(img.width * img.height * img.channelCount));
-    stagingBuffer.unmap();
+    stagingBuffer->unmap();
     stbi_image_free(img.data);
 
-    VulkanImage* res = new VulkanImage(img.width, img.height, format, VK_IMAGE_TILING_OPTIMAL,
+    VulkanImage* res = new VulkanImage(this, img.width, img.height, format, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, false);
 
     transitionImageLayout(res->image, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    copyBufferToImage(stagingBuffer.buffer, res->image, static_cast<uint32_t>(img.width), static_cast<uint32_t>(img.height));
+    copyBufferToImage(stagingBuffer->buffer, res->image, static_cast<uint32_t>(img.width), static_cast<uint32_t>(img.height));
     transitionImageLayout(res->image, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     return res;

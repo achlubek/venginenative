@@ -12,7 +12,6 @@ Application::Application(int windowwidth, int windowheight)
     height = windowheight;
     invokeQueue = queue<function<void(void)>>();
     onRenderFrame = {};
-    asset = new AssetLoader();
     scene = new Scene();
     onRenderFrame = EventHandler<int>();
     onWindowResize = EventHandler<int>();
@@ -21,6 +20,7 @@ Application::Application(int windowwidth, int windowheight)
     vulkan = new VulkanToolkit();
     vulkan->initialize(windowwidth, windowheight);
     //auto data = readFileImageData(path);
+    asset = new AssetLoader(vulkan);
     ImageData img = ImageData();
     img.width = 1;
     img.height = 1;
@@ -28,11 +28,11 @@ Application::Application(int windowwidth, int windowheight)
     unsigned char * emptytexture = new unsigned char[4]{ (unsigned char)0x255, (unsigned char)0x255, (unsigned char)0x255, (unsigned char)0x255 };
     img.data = (void*)emptytexture;
     dummyTexture = vulkan->createTexture(img, VK_FORMAT_R8G8B8A8_UNORM);
-    meshModelsDataLayout = new VulkanDescriptorSetLayout();
+    meshModelsDataLayout = new VulkanDescriptorSetLayout(vulkan);
     meshModelsDataLayout->addField(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
     meshModelsDataLayout->compile();
 
-    materialLayout = new VulkanDescriptorSetLayout();
+    materialLayout = new VulkanDescriptorSetLayout(vulkan);
 
     materialLayout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
 
@@ -42,8 +42,8 @@ Application::Application(int windowwidth, int windowheight)
     materialLayout->addField(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     materialLayout->addField(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     materialLayout->compile();
-    ui = new UIRenderer(VulkanToolkit::singleton, width, height);
-    renderer = new Renderer(width, height);
+    ui = new UIRenderer(vulkan, width, height);
+    renderer = new Renderer(vulkan, width, height);
 }
 
 Application::~Application()

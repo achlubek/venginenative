@@ -1,11 +1,12 @@
 #pragma once
+class VulkanToolkit;
 class VulkanCommandBuffer
 {
 public:
     VkCommandBuffer handle;
-
-    VulkanCommandBuffer() {};
-    VulkanCommandBuffer(VkCommandBufferLevel level);
+    VulkanToolkit * vulkan;
+     
+    VulkanCommandBuffer(VulkanToolkit * vulkan, VkCommandBufferLevel level);
     ~VulkanCommandBuffer();
 
     void begin(VkCommandBufferUsageFlags flags);

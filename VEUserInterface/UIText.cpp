@@ -31,7 +31,7 @@ UIText::UIText(UIRenderer* irenderer, float ix, float iy, UIColor icolor, std::s
     {
         printf("failed\n");
     }
-    dataBuffer = new VulkanGenericBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 1024);
+    dataBuffer = new VulkanGenericBuffer(irenderer->vulkan, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 1024);
     set = renderer->layout->generateDescriptorSet();
     updateText(text);
 }
@@ -158,10 +158,10 @@ void UIText::updateText(std::string text)
     height = (float)maxy / (float)renderer->height; 
 
     if (texture != nullptr) delete texture;
-    texture = VulkanToolkit::singleton->createTexture(img, VK_FORMAT_R8_UNORM);
-    set.bindUniformBuffer(0, dataBuffer);
-    set.bindImageViewSampler(1, texture);
-    set.update();
+    texture = renderer->vulkan->createTexture(img, VK_FORMAT_R8_UNORM);
+    set->bindUniformBuffer(0, dataBuffer);
+    set->bindImageViewSampler(1, texture);
+    set->update();
 
    // delete[] bitmap; // stb deletes
 }

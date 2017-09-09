@@ -1,8 +1,9 @@
 #include "stdafx.h" 
 
-VulkanImage::VulkanImage(uint32_t iwidth, uint32_t iheight, VkFormat iformat, VkImageTiling itiling,
+VulkanImage::VulkanImage(VulkanToolkit * ivulkan, uint32_t iwidth, uint32_t iheight, VkFormat iformat, VkImageTiling itiling,
     VkImageUsageFlags iusage, VkMemoryPropertyFlags iproperties, VkImageAspectFlags iaspectFlags,
     VkImageLayout iinitialLayout, bool iisDepthBuffer)
+    : vulkan(ivulkan)
 {
     width = iwidth;
     height = iheight;
@@ -29,23 +30,23 @@ VulkanImage::VulkanImage(uint32_t iwidth, uint32_t iheight, VkFormat iformat, Vk
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateImage(VulkanToolkit::singleton->device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+    if (vkCreateImage(vulkan->device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
         throw std::runtime_error("failed to create image!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetImageMemoryRequirements(VulkanToolkit::singleton->device, image, &memRequirements);
+    vkGetImageMemoryRequirements(vulkan->device, image, &memRequirements);
 
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = VulkanToolkit::singleton->findMemoryType(memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = vulkan->findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(VulkanToolkit::singleton->device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+    if (vkAllocateMemory(vulkan->device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate image memory!");
     }
 
-    vkBindImageMemory(VulkanToolkit::singleton->device, image, imageMemory, 0);
+    vkBindImageMemory(vulkan->device, image, imageMemory, 0);
 
     VkImageViewCreateInfo viewInfo = {};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -58,7 +59,7 @@ VulkanImage::VulkanImage(uint32_t iwidth, uint32_t iheight, VkFormat iformat, Vk
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
-    if (vkCreateImageView(VulkanToolkit::singleton->device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
+    if (vkCreateImageView(vulkan->device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
         throw std::runtime_error("failed to create texture image view!");
     }
     samplerCreated = false;
@@ -67,11 +68,11 @@ VulkanImage::VulkanImage(uint32_t iwidth, uint32_t iheight, VkFormat iformat, Vk
 VulkanImage::~VulkanImage()
 {
     if (samplerCreated) {
-        vkDestroySampler(VulkanToolkit::singleton->device, sampler, nullptr);
+        vkDestroySampler(vulkan->device, sampler, nullptr);
     }
-    vkDestroyImageView(VulkanToolkit::singleton->device, imageView, nullptr);
-    vkDestroyImage(VulkanToolkit::singleton->device, image, nullptr);
-    vkFreeMemory(VulkanToolkit::singleton->device, imageMemory, nullptr);
+    vkDestroyImageView(vulkan->device, imageView, nullptr);
+    vkDestroyImage(vulkan->device, image, nullptr);
+    vkFreeMemory(vulkan->device, imageMemory, nullptr);
 }
 
 VulkanImage::VulkanImage(VkFormat iformat, VkImage imageHandle, VkImageView viewHandle)
@@ -103,7 +104,7 @@ VkSampler VulkanImage::getSampler()
     samplerInfo.compareEnable = VK_FALSE;
     samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
     samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR; 
-    if (vkCreateSampler(VulkanToolkit::singleton->device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
+    if (vkCreateSampler(vulkan->device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
         throw std::runtime_error("failed to create texture sampler!");
     }
     samplerCreated = true;

@@ -1,12 +1,13 @@
 #pragma once
+class VulkanToolkit;
 class VulkanDescriptorSet
 {
 public:
+    VulkanToolkit * vulkan;
     VkDescriptorPool pool;
     VkDescriptorSetLayout layout;
-    VkDescriptorSet set;
-    VulkanDescriptorSet();
-    VulkanDescriptorSet(VkDescriptorPool p, VkDescriptorSetLayout l);
+    VkDescriptorSet set; 
+    VulkanDescriptorSet(VulkanToolkit * vulkan, VkDescriptorPool p, VkDescriptorSetLayout l);
     ~VulkanDescriptorSet();
 
     std::vector<VkWriteDescriptorSet> writes;

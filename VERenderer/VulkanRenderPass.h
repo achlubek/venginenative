@@ -1,9 +1,11 @@
 #pragma once
+class VulkanToolkit;
 class VulkanRenderPass
 {
-public:
-    VulkanRenderPass() {}
-    VulkanRenderPass(std::vector<VulkanAttachment> iattachments, std::vector<VulkanSubpass> subpasses);
+public: 
+    VulkanToolkit * vulkan;
+
+    VulkanRenderPass(VulkanToolkit * vulkan, std::vector<VulkanAttachment> iattachments, std::vector<VulkanSubpass> subpasses);
     ~VulkanRenderPass();
     VkRenderPass handle;
     std::vector<VulkanAttachment> attachments;

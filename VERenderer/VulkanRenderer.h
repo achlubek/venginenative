@@ -1,9 +1,11 @@
 #pragma once
 class VulkanRenderStage;
+class VulkanToolkit;
 class VulkanRenderer
 {
 public:
-    VulkanRenderer();
+    VulkanToolkit * vulkan;
+    VulkanRenderer(VulkanToolkit * vulkan);
     ~VulkanRenderer();
 
     void setMeshStage(VulkanRenderStage* stage);

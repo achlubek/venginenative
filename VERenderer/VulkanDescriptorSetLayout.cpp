@@ -1,7 +1,8 @@
 #include "stdafx.h"
 
 
-VulkanDescriptorSetLayout::VulkanDescriptorSetLayout()
+VulkanDescriptorSetLayout::VulkanDescriptorSetLayout(VulkanToolkit * ivulkan)
+    : vulkan(ivulkan)
 {
     bindings = {};
     descriptorPools = {};
@@ -31,10 +32,10 @@ void VulkanDescriptorSetLayout::compile()
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
     layoutInfo.pBindings = bindings.data();
 
-    vkCreateDescriptorSetLayout(VulkanToolkit::singleton->device, &layoutInfo, nullptr, &layout);
+    vkCreateDescriptorSetLayout(vulkan->device, &layoutInfo, nullptr, &layout);
 }
 
-VulkanDescriptorSet VulkanDescriptorSetLayout::generateDescriptorSet()
+VulkanDescriptorSet* VulkanDescriptorSetLayout::generateDescriptorSet()
 {
     allocationCounter++;
     if (allocationCounter > 10) {
@@ -43,7 +44,7 @@ VulkanDescriptorSet VulkanDescriptorSetLayout::generateDescriptorSet()
     }
     VkDescriptorPool pool = descriptorPools[descriptorPools.size() - 1];
 
-    return VulkanDescriptorSet(pool, layout);
+    return new VulkanDescriptorSet(vulkan, pool, layout);
 }
 
 void VulkanDescriptorSetLayout::generateNewPool()
@@ -62,7 +63,7 @@ void VulkanDescriptorSetLayout::generateNewPool()
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
     poolInfo.maxSets = 100;
-    vkCreateDescriptorPool(VulkanToolkit::singleton->device, &poolInfo, nullptr, &pool);
+    vkCreateDescriptorPool(vulkan->device, &poolInfo, nullptr, &pool);
 
     descriptorPools.push_back(pool);
 }

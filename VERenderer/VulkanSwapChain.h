@@ -4,9 +4,14 @@ struct SwapChainSupportDetails {
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> presentModes;
 };
+class VulkanToolkit;
 class VulkanSwapChain
 {
 public:
+    VulkanSwapChain(VulkanToolkit * vulkan, int width, int height);
+    ~VulkanSwapChain();
+
+    VulkanToolkit * vulkan;
     VkSwapchainKHR swapChain;
     std::vector<VkImage> swapChainImages;
     VkFormat swapChainImageFormat;
@@ -21,7 +26,5 @@ public:
 
     std::vector<VkImageView> swapChainImageViews;
     void present(std::vector<VkSemaphore> waitSemaphores, const uint32_t imageIndex);
-    VulkanSwapChain(int width, int height);
-    ~VulkanSwapChain();
 };
 

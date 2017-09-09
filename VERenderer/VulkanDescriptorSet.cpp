@@ -1,13 +1,7 @@
 #include "stdafx.h"
 
-
-VulkanDescriptorSet::VulkanDescriptorSet()
-{
-    writes = {};
-}
-
-
-VulkanDescriptorSet::VulkanDescriptorSet(VkDescriptorPool p, VkDescriptorSetLayout l)
+VulkanDescriptorSet::VulkanDescriptorSet(VulkanToolkit * ivulkan, VkDescriptorPool p, VkDescriptorSetLayout l)
+    : vulkan(ivulkan)
 {
     writes = {};
     pool = p;
@@ -19,7 +13,7 @@ VulkanDescriptorSet::VulkanDescriptorSet(VkDescriptorPool p, VkDescriptorSetLayo
     allocInfo.descriptorPool = pool;
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = layouts;
-    vkAllocateDescriptorSets(VulkanToolkit::singleton->device, &allocInfo, &set);
+    vkAllocateDescriptorSets(vulkan->device, &allocInfo, &set);
 }
 
 VulkanDescriptorSet::~VulkanDescriptorSet()
@@ -89,7 +83,7 @@ void VulkanDescriptorSet::bindStorageBuffer(int binding, VulkanGenericBuffer* bu
 
 void VulkanDescriptorSet::update()
 {
-    vkUpdateDescriptorSets(VulkanToolkit::singleton->device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+    vkUpdateDescriptorSets(vulkan->device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     writes.clear();
     writes = {};
 }

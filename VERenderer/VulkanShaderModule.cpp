@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
-VulkanShaderModule::VulkanShaderModule(std::string path)
+VulkanShaderModule::VulkanShaderModule(VulkanToolkit * ivulkan, std::string path)
+    : vulkan(ivulkan)
 {
     std::ifstream file(path, std::ios::ate | std::ios::binary);
 
@@ -25,12 +26,12 @@ VulkanShaderModule::VulkanShaderModule(std::string path)
 
     createInfo.pCode = codeAligned.data();
 
-    vkCreateShaderModule(VulkanToolkit::singleton->device, &createInfo, nullptr, &handle);
+    vkCreateShaderModule(vulkan->device, &createInfo, nullptr, &handle);
 }
 
 VulkanShaderModule::~VulkanShaderModule()
 {
-    vkDestroyShaderModule(VulkanToolkit::singleton->device, handle, nullptr);
+    vkDestroyShaderModule(vulkan->device, handle, nullptr);
 }
 
 VkPipelineShaderStageCreateInfo VulkanShaderModule::createShaderStage(VkShaderStageFlagBits type, const char* entrypoint)

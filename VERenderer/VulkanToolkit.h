@@ -10,8 +10,7 @@ public:
 class VulkanToolkit
 {
 public:
-    
-    static VulkanToolkit* singleton;
+     
     VulkanToolkit();
     ~VulkanToolkit();
     VkInstance instance;

@@ -8,7 +8,8 @@
 #include "Mesh3dLodLevel.h"
 #include "Scene.h"
 
-AssetLoader::AssetLoader()
+AssetLoader::AssetLoader(VulkanToolkit * ivulkan)
+    : vulkan(ivulkan)
 {
 }
 
@@ -28,7 +29,7 @@ Object3dInfo * AssetLoader::loadObject3dInfoFile(string source)
     int floatsCount = bytescount / 4;
     vector<GLfloat> flo(floats, floats + floatsCount);
 
-    auto o = new Object3dInfo(flo);
+    auto o = new Object3dInfo(vulkan, flo);
     Media::saveCache(source, o);
     return o;
 
@@ -285,13 +286,13 @@ VulkanImage * AssetLoader::loadTextureFile(string source)
         return (VulkanImage*)cached;
     }
     else {
-        auto imgdata = VulkanToolkit::singleton->readFileImageData(Media::getPath(source));
+        auto imgdata = vulkan->readFileImageData(Media::getPath(source));
         auto format = VK_FORMAT_R8G8B8A8_UNORM;
         imgdata.channelCount = 4;
       //  if (imgdata.channelCount == 3) format = VK_FORMAT_R8G8B8A8_UNORM;
         //if (imgdata.channelCount == 2) format = VK_FORMAT_R8G8_UNORM;
      //   if (imgdata.channelCount == 1) format = VK_FORMAT_R8_UNORM;
-        auto img = VulkanToolkit::singleton->createTexture(imgdata, format);
+        auto img = vulkan->createTexture(imgdata, format);
         Media::saveCache(source, img);
         return img;
     }
@@ -522,7 +523,7 @@ Mesh3d * AssetLoader::loadMeshString(string source)
                               cout << flo[i] << " " ;
                           }*/
 
-                        lodlevel->info3d = new Object3dInfo(flo);
+                        lodlevel->info3d = new Object3dInfo(vulkan, flo);
                         Media::saveCache(ss.str(), lodlevel->info3d);
                     }
                 }

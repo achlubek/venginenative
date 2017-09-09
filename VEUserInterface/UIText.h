@@ -10,7 +10,7 @@ public:
     ~UIText();    
     UIRenderer* renderer{ nullptr };
     VulkanImage* texture{ nullptr };
-    VulkanDescriptorSet set;
+    VulkanDescriptorSet* set;
     VulkanGenericBuffer* dataBuffer{ nullptr };
     float x{ 0 }, y{ 0 }, width{ 0 }, height{ 0 };
     UIColor color{ UIColor(0.0, 0.0, 0.0, 0.0) };

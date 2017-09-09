@@ -21,7 +21,7 @@ Material::Material()
     bumpTexScale = glm::vec2(1.0f);
     roughnessTexScale = glm::vec2(1.0f);
     metalnessTexScale = glm::vec2(1.0f);
-    materialBuffer = new VulkanGenericBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 2048);
+    materialBuffer = new VulkanGenericBuffer(Application::instance->vulkan, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 2048);
      
     descriptorSet = Application::instance->materialLayout->generateDescriptorSet();
 }
@@ -33,43 +33,43 @@ void Material::updateBuffer() {
     if (!needsUpdate) return;
     needsUpdate = false;
     //####//
-    descriptorSet.bindUniformBuffer(0, materialBuffer);
+    descriptorSet->bindUniformBuffer(0, materialBuffer);
     if (diffuseColorTex != nullptr) {
-        descriptorSet.bindImageViewSampler(1, diffuseColorTex);
+        descriptorSet->bindImageViewSampler(1, diffuseColorTex);
     }
     else {
-        descriptorSet.bindImageViewSampler(1, Application::instance->dummyTexture);
+        descriptorSet->bindImageViewSampler(1, Application::instance->dummyTexture);
     }
     //####//
     if (normalTex != nullptr) {
-        descriptorSet.bindImageViewSampler(2, normalTex);
+        descriptorSet->bindImageViewSampler(2, normalTex);
     }
     else {
-        descriptorSet.bindImageViewSampler(2, Application::instance->dummyTexture);
+        descriptorSet->bindImageViewSampler(2, Application::instance->dummyTexture);
     }
     //####//
     if (bumpTex != nullptr) {
-        descriptorSet.bindImageViewSampler(3, bumpTex);
+        descriptorSet->bindImageViewSampler(3, bumpTex);
     }
     else {
-        descriptorSet.bindImageViewSampler(3, Application::instance->dummyTexture);
+        descriptorSet->bindImageViewSampler(3, Application::instance->dummyTexture);
     }
     //####//
     if (roughnessTex != nullptr) {
-        descriptorSet.bindImageViewSampler(4, roughnessTex);
+        descriptorSet->bindImageViewSampler(4, roughnessTex);
     }
     else {
-        descriptorSet.bindImageViewSampler(4, Application::instance->dummyTexture);
+        descriptorSet->bindImageViewSampler(4, Application::instance->dummyTexture);
     }
     //####//
     if (metalnessTex != nullptr) {
-        descriptorSet.bindImageViewSampler(5, metalnessTex);
+        descriptorSet->bindImageViewSampler(5, metalnessTex);
     }
     else {
-        descriptorSet.bindImageViewSampler(5, Application::instance->dummyTexture);
+        descriptorSet->bindImageViewSampler(5, Application::instance->dummyTexture);
     }
     //####//
-    descriptorSet.update();
+    descriptorSet->update();
 
     vector<float> floats2;
     floats2.reserve(32);
