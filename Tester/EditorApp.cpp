@@ -40,7 +40,7 @@ void EditorApp::onRenderFrame(float elapsed)
     physics->simulationStep(1.0 / 60.0);
     //app->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setPosition(glm::vec3(sin(app->time), cos(app->time * 1.2), sin(app->time * 1.6)));
     //app->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setSize(glm::vec3(sin(app->time) * 0.5 + 1.5));
-    if (currentMode == EDITOR_MODE_WRITING_TEXT && chat->inputEnabled == false) {
+    if (currentMode == EDITOR_MODE_WRITING_TEXT && chat->isInputEnabled() == false) {
         currentMode = lastMode;
     }
     if (currentMode == EDITOR_MODE_MOVE_CAMERA) {
@@ -250,11 +250,11 @@ void EditorApp::onKeyPress(int key)
     }
     else if (key == GLFW_KEY_T && currentMode != EDITOR_MODE_WRITING_TEXT) {
         switchMode(EDITOR_MODE_WRITING_TEXT); 
-        chat->inputEnabled = true;
+        chat->enableInput();
         return;
     }
     else if (key == GLFW_KEY_ESCAPE && currentMode == EDITOR_MODE_WRITING_TEXT) {
-        chat->inputEnabled = false;
+        chat->disableInput();
         switchMode(lastMode);
     }
 
@@ -439,7 +439,7 @@ void EditorApp::onBind()
     //app->world->scene->addMesh3d(s);
     */
 
-
+    /*
     int terrainparts = 10;
     float fullsize = 3612.0;
     float partsize = fullsize / 10.0;
@@ -463,7 +463,7 @@ void EditorApp::onBind()
             m->addLodLevel(new Mesh3dLodLevel(app->asset->loadObject3dInfoFile(ss2.str()), mat, 3350.0f, 11150.0f));
             app->scene->addMesh3d(m);
         }
-    }
+    }*/
 
 
 

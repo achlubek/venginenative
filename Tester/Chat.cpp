@@ -28,6 +28,7 @@ Chat::Chat(UIRenderer* irenderer, Keyboard* ikeyboard)
     renderer->texts.push_back(input);
     keyboard->onChar.add([&](unsigned int c) {
         if (inputEnabled) {
+            if (ignoreCharsCount-- > 0) return;
             if (c == '\n') return;
             inputString += c;
             updateRenders();
@@ -36,10 +37,10 @@ Chat::Chat(UIRenderer* irenderer, Keyboard* ikeyboard)
     keyboard->onKeyPress.add([&](int c) {
         if (inputEnabled) {
             if (c == GLFW_KEY_ENTER) {
-                printMessage(inputString);
-                inputString = "";
-                printf("aa");
                 inputEnabled = false;
+                auto s = inputString;
+                inputString = "";
+                printMessage(s);
             }
         }
     });
@@ -66,6 +67,26 @@ void Chat::clear()
         linesStrings[i] = "";
     }
     updateRenders();
+}
+
+void Chat::enableInput()
+{
+    inputEnabled = true;
+    inputString = "";
+    ignoreCharsCount = 1;
+    updateRenders();
+}
+
+void Chat::disableInput()
+{
+    inputEnabled = false;
+    inputString = "";
+    updateRenders();
+}
+
+bool Chat::isInputEnabled()
+{
+    return inputEnabled;
 }
 
 void Chat::updateRenders()

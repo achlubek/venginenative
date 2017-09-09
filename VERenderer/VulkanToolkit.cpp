@@ -286,6 +286,9 @@ VulkanImage* VulkanToolkit::createTexture(const ImageData &img, VkFormat format)
     copyBufferToImage(stagingBuffer->buffer, res->image, static_cast<uint32_t>(img.width), static_cast<uint32_t>(img.height));
     transitionImageLayout(res->image, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
+    vkDestroyBuffer(device, stagingBuffer->buffer, nullptr);
+    vkFreeMemory(device, stagingBuffer->bufferMemory, nullptr);
+
     return res;
 }
 
