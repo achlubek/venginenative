@@ -13,6 +13,9 @@ layout(location = 1) in vec2 inTexCoord;
 layout(location = 0) out vec2 outTexCoord;
 
 void main() {
-    gl_Position = vec4(uiPosition + inPosition.xy * uiScale, 0.0, 1.0);
+    vec2 p = inPosition.xy * 0.5 + 0.5;
+    p *= uiScale;
+    p += uiPosition;
+    gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
     outTexCoord = inTexCoord;
 }

@@ -22,8 +22,8 @@ int uitext_get_file_contents_binary(unsigned char** out_bytes, const char* path)
     return size;
 }
 
-UIText::UIText(UIRenderer* irenderer, float ix, float iy, UIColor icolor, std::string fontpath, std::string text)
-    : renderer(irenderer), x(ix), y(iy), color(icolor)
+UIText::UIText(UIRenderer* irenderer, float ix, float iy, UIColor icolor, std::string fontpath, int ifontsize, std::string text)
+    : renderer(irenderer), x(ix), y(iy), color(icolor), fontsize(ifontsize)
 {
     uitext_get_file_contents_binary(&fontBuffer, fontpath.c_str());
     font = new stbtt_fontinfo();
@@ -71,14 +71,9 @@ void UIText::updateBuffer()
 }
 
 void UIText::updateText(std::string text)
-{
-
+{ 
+    int l_h = fontsize;  
      
-    int l_h = 64; /* line height */
-
-                  /* create a bitmap for the phrase */
-
-    /* calculate font scaling */
     float scale = stbtt_ScaleForPixelHeight(font, l_h);
 
     const char* word = text.c_str();

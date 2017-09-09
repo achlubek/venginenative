@@ -2,6 +2,7 @@
 #include "AbstractApp.h" 
 
 #include "Car.h";
+class Chat;
 class Sound3d;
 
 #define EDITOR_MODE_IDLE 0
@@ -30,6 +31,8 @@ public:
     void switchMode(int mode);
 
     Physics* physics;
+
+    Chat* chat;
 
     int currentMode = EDITOR_MODE_IDLE;
     int lastMode = EDITOR_MODE_IDLE;

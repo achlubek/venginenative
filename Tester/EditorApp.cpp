@@ -16,6 +16,8 @@
 #include "UIBitmap.h"
 #include "UIText.h"
 #include "UIRenderer.h"
+#include "Chat.h"
+
 #undef max
 
 EditorApp::EditorApp()
@@ -38,7 +40,9 @@ void EditorApp::onRenderFrame(float elapsed)
     physics->simulationStep(1.0 / 60.0);
     //app->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setPosition(glm::vec3(sin(app->time), cos(app->time * 1.2), sin(app->time * 1.6)));
     //app->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setSize(glm::vec3(sin(app->time) * 0.5 + 1.5));
-
+    if (currentMode == EDITOR_MODE_WRITING_TEXT && chat->inputEnabled == false) {
+        currentMode = lastMode;
+    }
     if (currentMode == EDITOR_MODE_MOVE_CAMERA) {
         float speed = 0.1f;
         if (keyboard->getKeyStatus(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
@@ -245,11 +249,13 @@ void EditorApp::onKeyPress(int key)
         return;
     }
     else if (key == GLFW_KEY_T && currentMode != EDITOR_MODE_WRITING_TEXT) {
-        //switchMode(EDITOR_MODE_WRITING_TEXT);
-        //currentCommandText = "";
-        //isConsoleWindowOpened = true;
-    //    ignoreNextChar = true;
+        switchMode(EDITOR_MODE_WRITING_TEXT); 
+        chat->inputEnabled = true;
         return;
+    }
+    else if (key == GLFW_KEY_ESCAPE && currentMode == EDITOR_MODE_WRITING_TEXT) {
+        chat->inputEnabled = false;
+        switchMode(lastMode);
     }
 
     if (key == GLFW_KEY_F9) {
@@ -356,12 +362,13 @@ void EditorApp::onBind()
     auto box = new UIBox(app->ui, 0.1, 0.1, 0.5, 0.5, UIColor(1, 0, 1, 0.5));
     auto box2 = new UIBox(app->ui, 0.2, 0.2, 0.5, 0.5, UIColor(1, 0, 0, 0.5));
     auto img1 = new UIBitmap(app->ui, 0.1, 0.2, 0.3, 0.3, app->asset->loadTextureFile("witcher_icon.png"), UIColor(1, 0, 0, 0.5));
-    auto txt = new UIText(app->ui, 0.2, 0.2, UIColor(1, 0, 0, 0.5), Media::getPath("font.ttf"), "Hello World!!");
+    auto txt = new UIText(app->ui, 0.2, 0.2, UIColor(1, 0, 0, 0.5), Media::getPath("font.ttf"), 16, "Hello World!!");
  //   app->ui->boxes.push_back(box);
   //  app->ui->boxes.push_back(box2);
   //  app->ui->bitmaps.push_back(img1);
     app->ui->texts.push_back(txt);
 
+    chat = new Chat(app->ui, keyboard);
 
     car = {};
     cam = new Camera();

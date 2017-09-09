@@ -6,7 +6,7 @@ class UIRenderer;
 class UIText
 {
 public:
-    UIText(UIRenderer* renderer, float x, float y, UIColor color, std::string fontpath, std::string text);
+    UIText(UIRenderer* renderer, float x, float y, UIColor color, std::string fontpath, int ifontsize, std::string text);
     ~UIText();    
     UIRenderer* renderer{ nullptr };
     VulkanImage* texture{ nullptr };
@@ -17,6 +17,7 @@ public:
     void updateBuffer(); 
     stbtt_fontinfo* font;
     unsigned char* fontBuffer;
+    int fontsize = 64;
     void updateText(std::string text);
 };
 
