@@ -1,11 +1,12 @@
 #pragma once 
 class VulkanToolkit;
+#include "VulkanMemoryChunk.h"
 class VulkanImage
 {
 public:
     VulkanToolkit * vulkan;
     VkImage image;
-    VkDeviceMemory imageMemory;
+    VulkanSingleAllocation imageMemory;
     VkImageView imageView;
 
     uint32_t width;

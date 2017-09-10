@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "VulkanMemoryManager.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>  
@@ -72,6 +73,8 @@ void VulkanToolkit::initialize(int width, int height)
     result = glfwCreateWindowSurface(instance, window, NULL, &surface);
     
     vkGetDeviceQueue(device, chosenQFId, 0, &mainQueue);
+
+    memoryManager = new VulkanMemoryManager(this);
 
     VkBool32 supported = false;
     vkGetPhysicalDeviceSurfaceSupportKHR(pdevice, chosenQFId, surface, &supported);

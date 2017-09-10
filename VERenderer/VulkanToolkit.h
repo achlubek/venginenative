@@ -1,5 +1,6 @@
 #pragma once
 struct GLFWwindow;
+class VulkanMemoryManager;
 
 struct ImageData {
 public:
@@ -23,6 +24,7 @@ public:
     GLFWwindow *window;
     VkSurfaceKHR surface;
     VkDebugReportCallbackEXT callback;
+    VulkanMemoryManager* memoryManager;
     Object3dInfo* fullScreenQuad3dInfo;
     void initialize(int width, int height);
     void createInstance(std::string appname, std::string enginename);

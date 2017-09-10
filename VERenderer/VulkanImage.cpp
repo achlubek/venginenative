@@ -1,9 +1,12 @@
 #include "stdafx.h" 
+#include "VulkanToolkit.h" 
+#include "VulkanMemoryManager.h" 
+#include "VulkanMemoryChunk.h" 
 
 VulkanImage::VulkanImage(VulkanToolkit * ivulkan, uint32_t iwidth, uint32_t iheight, VkFormat iformat, VkImageTiling itiling,
     VkImageUsageFlags iusage, VkMemoryPropertyFlags iproperties, VkImageAspectFlags iaspectFlags,
     VkImageLayout iinitialLayout, bool iisDepthBuffer)
-    : vulkan(ivulkan)
+    : vulkan(ivulkan), imageMemory(VulkanSingleAllocation(nullptr,0,0))
 {
     width = iwidth;
     height = iheight;
@@ -36,17 +39,19 @@ VulkanImage::VulkanImage(VulkanToolkit * ivulkan, uint32_t iwidth, uint32_t ihei
 
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(vulkan->device, image, &memRequirements);
-
+    /*
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = vulkan->findMemoryType(memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = vulkan->findMemoryType(memRequirements.memoryTypeBits, properties);*/
 
+    imageMemory = vulkan->memoryManager->bindImageMemory(vulkan->findMemoryType(memRequirements.memoryTypeBits, properties), image, memRequirements.size);
+    /*
     if (vkAllocateMemory(vulkan->device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate image memory!");
     }
 
-    vkBindImageMemory(vulkan->device, image, imageMemory, 0);
+    vkBindImageMemory(vulkan->device, image, imageMemory, 0);*/
 
     VkImageViewCreateInfo viewInfo = {};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -72,10 +77,12 @@ VulkanImage::~VulkanImage()
     }
     vkDestroyImageView(vulkan->device, imageView, nullptr);
     vkDestroyImage(vulkan->device, image, nullptr);
-    vkFreeMemory(vulkan->device, imageMemory, nullptr);
+    imageMemory.free();
+   // vkFreeMemory(vulkan->device, imageMemory, nullptr);
 }
 
 VulkanImage::VulkanImage(VkFormat iformat, VkImage imageHandle, VkImageView viewHandle)
+ : imageMemory(VulkanSingleAllocation(nullptr, 0, 0))
 {
     iformat = format;
     image = imageHandle;
