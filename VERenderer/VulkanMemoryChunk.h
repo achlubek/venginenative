@@ -18,6 +18,7 @@ private:
     VkDeviceSize chunkSize;
     std::vector<VulkanSingleAllocation> allActiveAllocations;
     VkDeviceSize allAllocationsSize;
+    volatile bool inUse = false;
 };
 
 struct VulkanSingleAllocation {

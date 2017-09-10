@@ -37,7 +37,7 @@ void EditorApp::initialize()
 
 void EditorApp::onRenderFrame(float elapsed)
 {
-    app->ui->texts[0]->updateText(std::to_string(app->time));
+    app->ui->texts[0]->updateText(std::to_string((float)rand()));
     physics->simulationStep(1.0 / 60.0);
     //app->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setPosition(glm::vec3(sin(app->time), cos(app->time * 1.2), sin(app->time * 1.6)));
     //app->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setSize(glm::vec3(sin(app->time) * 0.5 + 1.5));
@@ -607,6 +607,10 @@ void EditorApp::onChatSendText(std::string s)
         if (cmd == "help") {
             chat->printMessage(UIColor(0.1, 1.0, 0.1, 1.0), "*** Welcome to the Tester project!");
             chat->printMessage(UIColor(0.1, 1.0, 0.1, 1.0), "*** Hope you enjoy.");
+            return;
+        }
+        if (cmd == "q") {
+            app->shouldClose = true;
             return;
         }
         chat->printMessage(UIColor(1.0, 1.0, 0.0, 1.0), "* Invalid command.");

@@ -33,7 +33,7 @@ Chat::Chat(UIRenderer* irenderer, Keyboard* ikeyboard)
             if (ignoreCharsCount-- > 0) return;
             if (c == '\n') return;
             inputString += c;
-            updateRenders();
+            input->updateText(inputString + " ");
         }
     });
     keyboard->onKeyPress.add([&](int c) {
@@ -42,6 +42,7 @@ Chat::Chat(UIRenderer* irenderer, Keyboard* ikeyboard)
                 inputEnabled = false;
                 auto s = inputString;
                 inputString = "";
+                input->updateText(inputString + " ");
                 onSendText.invoke(s);
             }
         }
@@ -99,5 +100,4 @@ void Chat::updateRenders()
         lines[i]->color = linesColors[i];
         lines[i]->updateText(linesStrings[i] + " ");
     }
-    input->updateText(inputString + " ");
 }
