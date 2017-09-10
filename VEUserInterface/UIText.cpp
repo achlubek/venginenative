@@ -110,6 +110,7 @@ void UIText::updateText(std::string text)
         int kern;
         kern = stbtt_GetCodepointKernAdvance(font, word[i], word[i + 1]);
         nx += kern * scale;
+        nx += 2;
     }
     unsigned char* bitmap = new unsigned char[nx * maxy];
     for (int i = 0; i < nx * maxy; i++)bitmap[i] = 0;
@@ -138,6 +139,7 @@ void UIText::updateText(std::string text)
         int kern;
         kern = stbtt_GetCodepointKernAdvance(font, word[i], word[i + 1]);
         nx += kern * scale;
+        nx += 2;
     }
 
    // free(fontBuffer);

@@ -33,7 +33,6 @@ VulkanSingleAllocation VulkanMemoryChunk::bindBufferMemory(VkBuffer buffer, VkDe
 
 VulkanSingleAllocation VulkanMemoryChunk::bindImageMemory(VkImage image, VkDeviceSize size, VkDeviceSize offset)
 {
-    printf("Allocating %d %d\n", size, offset);
     vkBindImageMemory(vulkan->device, image, handle, offset);
     auto va = VulkanSingleAllocation(this, size, offset);
     allActiveAllocations.push_back(va);
@@ -58,7 +57,6 @@ bool VulkanMemoryChunk::findFreeMemoryOffset(VkDeviceSize size, VkDeviceSize &ou
 {
     if (isFreeSpace(0, size)) {
         outOffset = 0;
-        printf("FOUND AT BEGGING\n");
         return true;
     }
     int allocscount = allActiveAllocations.size();
@@ -66,11 +64,9 @@ bool VulkanMemoryChunk::findFreeMemoryOffset(VkDeviceSize size, VkDeviceSize &ou
         auto a = allActiveAllocations[i];
         if (isFreeSpace(a.offset + a.size, size)) {
             outOffset = a.offset + a.size;
-            printf("FOUND SUMEWHERE %d", outOffset);
             return true;
         }
     }
-    printf("FAILED TO FIND SIUTABLE\n");
     return false;
 }
 

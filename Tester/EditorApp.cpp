@@ -16,6 +16,7 @@
 #include "UIBitmap.h"
 #include "UIText.h"
 #include "UIRenderer.h"
+#include "UIColor.h"
 #include "Chat.h"
 
 #undef max
@@ -369,6 +370,9 @@ void EditorApp::onBind()
     app->ui->texts.push_back(txt);
 
     chat = new Chat(app->ui, keyboard);
+    chat->onSendText.add([&](std::string s) {
+        onChatSendText(s);
+    });
 
     car = {};
     cam = new Camera();
@@ -594,4 +598,19 @@ void EditorApp::switchMode(int mode)
     }
     lastMode = currentMode;
     currentMode = mode;
+}
+
+void EditorApp::onChatSendText(std::string s)
+{
+    if (s[0] == '/') {
+        std::string cmd = s.substr(1);
+        if (cmd == "help") {
+            chat->printMessage(UIColor(0.1, 1.0, 0.1, 1.0), "*** Welcome to the Tester project!");
+            chat->printMessage(UIColor(0.1, 1.0, 0.1, 1.0), "*** Hope you enjoy.");
+            return;
+        }
+        chat->printMessage(UIColor(1.0, 1.0, 0.0, 1.0), "* Invalid command.");
+        return;
+    }
+    chat->printMessage(UIColor(0.5, 0.5, 0.5, 1.0), s);
 }

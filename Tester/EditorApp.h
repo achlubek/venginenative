@@ -33,6 +33,7 @@ public:
     Physics* physics;
 
     Chat* chat;
+    void onChatSendText(std::string s);
 
     int currentMode = EDITOR_MODE_IDLE;
     int lastMode = EDITOR_MODE_IDLE;

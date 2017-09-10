@@ -9,8 +9,9 @@
 Chat::Chat(UIRenderer* irenderer, Keyboard* ikeyboard)
     : renderer(irenderer), keyboard(ikeyboard)
 {
+    onSendText = EventHandler<std::string>();
     float y = 0.0;
-    int fontsize = 16;
+    int fontsize = 20;
     float lineheight = (float)(fontsize + 2) / (float)renderer->height;
     y += lineheight;
     lines = {};
@@ -20,6 +21,7 @@ Chat::Chat(UIRenderer* irenderer, Keyboard* ikeyboard)
         lines.push_back(txt);
         renderer->texts.push_back(txt);
         linesStrings.push_back("");
+        linesColors.push_back(UIColor(0,0,0,0));
         y += lineheight;
     }
     y += lineheight;
@@ -40,7 +42,7 @@ Chat::Chat(UIRenderer* irenderer, Keyboard* ikeyboard)
                 inputEnabled = false;
                 auto s = inputString;
                 inputString = "";
-                printMessage(s);
+                onSendText.invoke(s);
             }
         }
     });
@@ -52,12 +54,14 @@ Chat::~Chat()
 {
 }
 
-void Chat::printMessage(std::string msg)
+void Chat::printMessage(UIColor color, std::string msg)
 {
     for (int i = 0; i < 9; i++) {
         linesStrings[i] = linesStrings[i + 1];
+        linesColors[i] = linesColors[i + 1];
     }
     linesStrings[linesStrings.size() - 1] = msg;
+    linesColors[linesColors.size() - 1] = color;
     updateRenders();
 }
 
@@ -88,10 +92,11 @@ bool Chat::isInputEnabled()
 {
     return inputEnabled;
 }
-
+ 
 void Chat::updateRenders()
 {
     for (int i = 0; i < 10; i++) {
+        lines[i]->color = linesColors[i];
         lines[i]->updateText(linesStrings[i] + " ");
     }
     input->updateText(inputString + " ");

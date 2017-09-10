@@ -6,7 +6,7 @@
 VulkanImage::VulkanImage(VulkanToolkit * ivulkan, uint32_t iwidth, uint32_t iheight, VkFormat iformat, VkImageTiling itiling,
     VkImageUsageFlags iusage, VkMemoryPropertyFlags iproperties, VkImageAspectFlags iaspectFlags,
     VkImageLayout iinitialLayout, bool iisDepthBuffer)
-    : vulkan(ivulkan), imageMemory(VulkanSingleAllocation(nullptr,0,0))
+    : vulkan(ivulkan)
 {
     width = iwidth;
     height = iheight;
@@ -82,7 +82,6 @@ VulkanImage::~VulkanImage()
 }
 
 VulkanImage::VulkanImage(VkFormat iformat, VkImage imageHandle, VkImageView viewHandle)
- : imageMemory(VulkanSingleAllocation(nullptr, 0, 0))
 {
     iformat = format;
     image = imageHandle;

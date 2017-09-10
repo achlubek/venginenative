@@ -1,11 +1,12 @@
 #pragma once 
 class VulkanToolkit;
+#include "VulkanMemoryChunk.h"
 class VulkanGenericBuffer
 {
 public:
     VulkanToolkit * vulkan;
     VkBuffer buffer;
-    VkDeviceMemory bufferMemory;
+    VulkanSingleAllocation bufferMemory;
     VkDeviceSize size; 
     VulkanGenericBuffer(VulkanToolkit * vulkan, VkBufferUsageFlags usage, VkDeviceSize s);
     ~VulkanGenericBuffer();
