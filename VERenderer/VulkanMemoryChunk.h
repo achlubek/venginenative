@@ -11,13 +11,13 @@ public:
     void freeBindMemory(VulkanSingleAllocation allocation);
     bool findFreeMemoryOffset(VkDeviceSize size, VkDeviceSize &outOffset);
     VkDeviceMemory handle;
+    VkDeviceSize allAllocationsSize;
 private:
     bool isFreeSpace(VkDeviceSize offset, VkDeviceSize size);
     VulkanToolkit* vulkan;
     uint32_t type;
     VkDeviceSize chunkSize;
     std::vector<VulkanSingleAllocation> allActiveAllocations;
-    VkDeviceSize allAllocationsSize;
     volatile bool inUse = false;
 };
 

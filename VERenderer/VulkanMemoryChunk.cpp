@@ -55,7 +55,7 @@ void VulkanMemoryChunk::freeBindMemory(VulkanSingleAllocation allocation)
         auto a = allActiveAllocations[i];
         if (a.offset == allocation.offset && a.size == allocation.size) {
             allActiveAllocations.erase(allActiveAllocations.begin() + i);
-            allAllocationsSize -= a.size;
+            allAllocationsSize -= allocation.size;
             break;
         }
     }

@@ -18,6 +18,8 @@
 #include "UIRenderer.h"
 #include "UIColor.h"
 #include "Chat.h"
+#include "VulkanMemoryChunk.h"
+#include "VulkanMemoryManager.h"
 
 #undef max
 
@@ -37,6 +39,7 @@ void EditorApp::initialize()
 
 void EditorApp::onRenderFrame(float elapsed)
 {
+    walker->update();
     app->ui->texts[0]->updateText(std::to_string((float)rand()));
     physics->simulationStep(1.0 / 60.0);
     //app->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setPosition(glm::vec3(sin(app->time), cos(app->time * 1.2), sin(app->time * 1.6)));
@@ -360,6 +363,17 @@ void EditorApp::onChar(unsigned int c)
 
 void EditorApp::onBind()
 {
+    walker = new SimpleWalker(physics, new TransformationManager());
+    app->scene->addMesh3d(walker->mesh_body);
+    app->scene->addMesh3d(walker->mesh_left_arm_down);
+    app->scene->addMesh3d(walker->mesh_left_arm_up);
+    app->scene->addMesh3d(walker->mesh_left_leg_down);
+    app->scene->addMesh3d(walker->mesh_left_leg_up);
+    app->scene->addMesh3d(walker->mesh_right_arm_down);
+    app->scene->addMesh3d(walker->mesh_right_arm_up);
+    app->scene->addMesh3d(walker->mesh_right_leg_down);
+    app->scene->addMesh3d(walker->mesh_right_leg_up);
+    app->scene->addMesh3d(walker->debug_marker);
     auto box = new UIBox(app->ui, 0.1, 0.1, 0.5, 0.5, UIColor(1, 0, 1, 0.5));
     auto box2 = new UIBox(app->ui, 0.2, 0.2, 0.5, 0.5, UIColor(1, 0, 0, 0.5));
     auto img1 = new UIBitmap(app->ui, 0.1, 0.2, 0.3, 0.3, app->asset->loadTextureFile("witcher_icon.png"), UIColor(1, 0, 0, 0.5));
@@ -404,7 +418,7 @@ void EditorApp::onBind()
             //t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColor = glm::vec3(1.0);
             //  t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColorTex = diftex;
             /// t->getMesh3ds()[i]->getLodLevel(0)->material->bumpTex = bumtex;
-        //    app->world->scene->addMesh3d(t->getMesh3ds()[i]);
+           // app->scene->addMesh3d(t->getMesh3ds()[i]);
     }
 
     /*
@@ -607,6 +621,15 @@ void EditorApp::onChatSendText(std::string s)
         if (cmd == "help") {
             chat->printMessage(UIColor(0.1, 1.0, 0.1, 1.0), "*** Welcome to the Tester project!");
             chat->printMessage(UIColor(0.1, 1.0, 0.1, 1.0), "*** Hope you enjoy.");
+            return;
+        }
+        if (cmd == "memory") {
+            for (auto typex : app->vulkan->memoryManager->allAllocationsByType) {
+                auto chunks = app->vulkan->memoryManager->allAllocationsByType[typex.first];
+                for (auto chunk : chunks) {
+                    chat->printMessage(UIColor(0.1, 1.0, 1.0, 1.0), "* type(" + std::to_string(typex.first) + ") usage(" + std::to_string((float)chunk->allAllocationsSize / 1024.0f / 1024.0f) + " MB)");
+                }
+            }
             return;
         }
         if (cmd == "q") {

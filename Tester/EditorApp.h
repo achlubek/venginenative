@@ -1,7 +1,8 @@
 #pragma once
 #include "AbstractApp.h" 
 
-#include "Car.h";
+#include "Car.h"
+#include "SimpleWalker.h"
 class Chat;
 class Sound3d;
 
@@ -34,6 +35,7 @@ public:
 
     Chat* chat;
     void onChatSendText(std::string s);
+    SimpleWalker* walker;
 
     int currentMode = EDITOR_MODE_IDLE;
     int lastMode = EDITOR_MODE_IDLE;
