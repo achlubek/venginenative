@@ -81,6 +81,42 @@ void EditorApp::onRenderFrame(float elapsed)
             w += 1.0;
         }
 
+        if (keyboard->getKeyStatus(GLFW_KEY_UP) == GLFW_PRESS) {
+            auto walkerpos = walker->walkerScene->transformation->getPosition();
+            auto walkerdir = glm::inverse(walker->walkerScene->transformation->getOrientation()) * glm::vec3(0.0, 0.0, 1.0);
+            if (keyboard->getKeyStatus(GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+                walker->run(walkerpos + walkerdir * 2.0f);
+            }
+            else {
+                walker->walk(walkerpos + walkerdir * 2.0f);
+            }
+            
+        } else 
+        if (keyboard->getKeyStatus(GLFW_KEY_DOWN) == GLFW_PRESS) {
+            auto walkerpos = walker->walkerScene->transformation->getPosition();
+            auto walkerdir = glm::inverse(walker->walkerScene->transformation->getOrientation()) * glm::vec3(0.0, 0.0, 1.0);
+            if (keyboard->getKeyStatus(GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+                walker->run(walkerpos - walkerdir * 2.0f);
+            }
+            else {
+                walker->walk(walkerpos - walkerdir * 2.0f);
+            }
+        }
+        else {
+            walker->stop();
+        }
+
+        if (keyboard->getKeyStatus(GLFW_KEY_LEFT) == GLFW_PRESS) {
+            walker->walkerScene->transformation->rotate(
+                glm::quat(glm::rotate(glm::mat4(1.0f), -0.01f, glm::vec3(0.0f, 1.0f, 0.0f)))
+            );
+        }
+        if (keyboard->getKeyStatus(GLFW_KEY_RIGHT) == GLFW_PRESS) {
+            walker->walkerScene->transformation->rotate(
+                glm::quat(glm::rotate(glm::mat4(1.0f), 0.01f, glm::vec3(0.0f, 1.0f, 0.0f)))
+            );
+        }
+
         glm::vec3 a = dw / w;
         //dir = mix(dir, w > 0.0 ? a : dw, 0.02);
         glm::vec3 dir = w > 0.0 ? a : dw;
@@ -155,7 +191,7 @@ void EditorApp::onRenderFrame(float elapsed)
         auto campos = cam->transformation->getPosition();
 
         auto rot = glm::angleAxis(app->time * 0.4f, glm::vec3(0.0, 1.0, 0.0));
-
+        /*
         ocean1->transformation->setPosition(campos + rot * glm::vec3(4.0, 0.0, 0.0));
         ocean1->update(cam->transformation);
         ocean2->transformation->setPosition(campos + rot * glm::vec3(0.0, 0.0, 4.0));
@@ -170,7 +206,7 @@ void EditorApp::onRenderFrame(float elapsed)
         ocean2->setVolume(oceanvol);
         ocean3->setVolume(oceanvol);
         ocean4->setVolume(oceanvol);
-
+        */
         int acnt = 0;
         const float * axes = glfwGetJoystickAxes(0, &acnt);
         if (acnt >= 1) {
@@ -253,7 +289,7 @@ void EditorApp::onKeyPress(int key)
         return;
     }
     else if (key == GLFW_KEY_T && currentMode != EDITOR_MODE_WRITING_TEXT) {
-        switchMode(EDITOR_MODE_WRITING_TEXT); 
+        switchMode(EDITOR_MODE_WRITING_TEXT);
         chat->enableInput();
         return;
     }
@@ -363,24 +399,15 @@ void EditorApp::onChar(unsigned int c)
 
 void EditorApp::onBind()
 {
-    walker = new SimpleWalker(physics, new TransformationManager());
-    app->scene->addMesh3d(walker->mesh_body);
-    app->scene->addMesh3d(walker->mesh_left_arm_down);
-    app->scene->addMesh3d(walker->mesh_left_arm_up);
-    app->scene->addMesh3d(walker->mesh_left_leg_down);
-    app->scene->addMesh3d(walker->mesh_left_leg_up);
-    app->scene->addMesh3d(walker->mesh_right_arm_down);
-    app->scene->addMesh3d(walker->mesh_right_arm_up);
-    app->scene->addMesh3d(walker->mesh_right_leg_down);
-    app->scene->addMesh3d(walker->mesh_right_leg_up);
-    app->scene->addMesh3d(walker->debug_marker);
+    walker = new SimpleWalker(physics, new TransformationManager(glm::vec3(3.0, 3.0, 3.0)));
+    app->scene->addScene(walker->walkerScene);
     auto box = new UIBox(app->ui, 0.1, 0.1, 0.5, 0.5, UIColor(1, 0, 1, 0.5));
     auto box2 = new UIBox(app->ui, 0.2, 0.2, 0.5, 0.5, UIColor(1, 0, 0, 0.5));
     auto img1 = new UIBitmap(app->ui, 0.1, 0.2, 0.3, 0.3, app->asset->loadTextureFile("witcher_icon.png"), UIColor(1, 0, 0, 0.5));
     auto txt = new UIText(app->ui, 0.2, 0.2, UIColor(1, 0, 0, 0.5), Media::getPath("font.ttf"), 16, "Hello World!!");
- //   app->ui->boxes.push_back(box);
-  //  app->ui->boxes.push_back(box2);
-  //  app->ui->bitmaps.push_back(img1);
+    //   app->ui->boxes.push_back(box);
+     //  app->ui->boxes.push_back(box2);
+     //  app->ui->bitmaps.push_back(img1);
     app->ui->texts.push_back(txt);
 
     chat = new Chat(app->ui, keyboard);
@@ -395,8 +422,8 @@ void EditorApp::onBind()
     app->onWindowResize.add([&](int zero) {
         cam->createProjectionPerspective(FOV, (float)app->width / (float)app->height, 0.01f, 10000);
     });
-    cam->transformation->translate(glm::vec3(16, 16, 16));
-    glm::quat rot = glm::quat_cast(glm::lookAt(cam->transformation->getPosition(), glm::vec3(0), glm::vec3(0, 1, 0)));
+    cam->transformation->translate(glm::vec3(7, 0, 0));
+    glm::quat rot = glm::quat_cast(glm::lookAt(glm::vec3(0), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0)));
     cam->transformation->setOrientation(rot);
     app->mainDisplayCamera = cam;
 
@@ -405,6 +432,7 @@ void EditorApp::onBind()
     auto t = app->asset->loadSceneFile("sp.scene");
     //auto diftex = new Texture2d("2222.jpg");
     //auto bumtex = new Texture2d("1111.jpg");
+    Scene* sponza2 = new Scene();
     for (int i = 0; i < t->getMesh3ds().size(); i++) {
         //    t->getMesh3ds()[i]->getInstance(0)->transformation->translate(vec3(0.0, 1.5, 0.0));
             //t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(40.0, 0.0, 23.0))));
@@ -418,187 +446,192 @@ void EditorApp::onBind()
             //t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColor = glm::vec3(1.0);
             //  t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColorTex = diftex;
             /// t->getMesh3ds()[i]->getLodLevel(0)->material->bumpTex = bumtex;
-           // app->scene->addMesh3d(t->getMesh3ds()[i]);
+        sponza2->addMesh3d(t->getMesh3ds()[i]);
     }
-
-    /*
-    auto s = app->asset->loadMeshFile("grass_base.mesh3d");
-    s->getLodLevel(0)->disableFaceCulling = true;
-    s->getLodLevel(1)->disableFaceCulling = true;
-    s->getLodLevel(2)->disableFaceCulling = true;
-    s->getLodLevel(3)->disableFaceCulling = true;
-    srand(static_cast <unsigned> (time(0)));
-    float fx = 0.0f, fy = 0.0f;
-    for (int x = 0; x < 200; x++) {
-    for (int y = 0; y < 400; y++) {
-    float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-    float r2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-    float r3 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-    r2 = r2 * 2.0 * 1.0;
-    r3 = r3 * 2.0 * 1.0;
-    auto rot = glm::angleAxis(deg2rad(r * 3.1415f * 2.0f), glm::vec3(0.0, 1.0, 0.0));
-    float noize = noise3d(vec3(fx * 0.2f, fy * 0.2f, 0.0));
-    s->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(fx * 20.0f + 1.0f * r2, 20.0f + noize * 20.0f, fy * 20.0f + 1.0f * r3), rot)));
-    fx += 0.1f;
-    }
-    fy += 0.1f;
-    fx = 0.0f;
-    }
-    app->world->scene->addMesh3d(s);*/
-    /*
-    auto s = app->asset->loadMeshFile("terr_grass.mesh3d");
-    auto grasses = s->getInstances();
-    int grassess = grasses.size();
-    for (int i = 0; i < grassess; i++) {
-    auto pos = grasses[i]->transformation->getPosition();
-    grasses[i]->transformation->setSize(glm::vec3(1.0f));
-    grasses[i]->transformation->setPosition(glm::vec3(pos.x * 1.0f + 500.0f, pos.y * 4.0f - 10.0f, pos.z * 1.0f + 500.0f));
-    }
-    //app->world->scene->addMesh3d(s);
-    */
-
-    /*
-    int terrainparts = 10;
-    float fullsize = 3612.0;
-    float partsize = fullsize / 10.0;
-    //auto tex = new Texture2d("terrain_diffuse.png");
-    for (int x = 0; x < 10; x++) {
-        for (int y = 0; y < 10; y++) {
-            stringstream ss0;
-            ss0 << "real_terr_lod0_" << x << "x" << y << ".raw";
-            stringstream ss1;
-            ss1 << "real_terr_lod1_" << x << "x" << y << ".raw";
-            stringstream ss2;
-            ss2 << "real_terr_lod2_" << x << "x" << y << ".raw";
-            auto mat = new Material();
-            //   mat->diffuseColorTex = tex;
-            Mesh3d* m = Mesh3d::create(app->asset->loadObject3dInfoFile(ss0.str()), mat);
-            m->getInstance(0)->transformation->setPosition(vec3(partsize * x * 1.0f, -220.5, partsize*y * 1.0f));
-            m->getInstance(0)->transformation->setSize(vec3(1.0f, 20.0f, 1.0f));
-            m->getLodLevel(0)->distanceStart = 0.0f;
-            m->getLodLevel(0)->distanceEnd = 650.0f;
-            m->addLodLevel(new Mesh3dLodLevel(app->asset->loadObject3dInfoFile(ss1.str()), mat, 650.0f, 3350.0f));
-            m->addLodLevel(new Mesh3dLodLevel(app->asset->loadObject3dInfoFile(ss2.str()), mat, 3350.0f, 11150.0f));
-            app->scene->addMesh3d(m);
-        }
-    }*/
-
-
-
-    //  t->name = "flagbase";
-    // app->world->scene->addMesh(t);
-    //auto t1 = new TransformationManager(glm::vec3(8.0, 6.0, 8.0));
-    // car.push_back(new Car(t1));
-    //  auto t2 = new TransformationManager(glm::vec3(-8.0, 6.0, -8.0));
-    // car.push_back(new Car(t2));
-
-
-
-    auto xt = app->asset->loadMeshFile("icosphere.mesh3d");
-    xt->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, 10.0, 0.0))));
-    xt->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, -10.0, 0.0))));
-    auto abody = physics->createBody(0.1f, xt->getInstance(0)->transformation, new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
-
-    app->scene->addMesh3d(xt);
-    physics->addBody(abody);
-    //auto abody2 = Game::instance->world->physics->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btStaticPlaneShape(btVector3(0.0, 1.0, 0.0), 5.0));
-    //abody2->enable();
-   //  app->world-->scene->addMesh3d(app->asset->loadMeshFile("gory.mesh3d"));
-    auto groundpb = physics->createBody(0.0f, xt->getInstance(1)->transformation, new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
-    // groundpb->getCollisionObject()->setFriction(4);
-    physics->addBody(groundpb);
-    app->invoke([&]() {/*
-        auto phys = Game::instance->world->physics;
-
-        vector<float> vertices = {};
-        vector<int> indices = {};
-        auto wterrobj = app->asset->loadObject3dInfoFile("weirdterrain.raw");
-        auto wterr3d = Mesh3d::create(wterrobj, new Material());
-        //app->world->scene->addMesh3d(wterr3d);
-        int ix = 0;
-        auto str = new btTriangleMesh();
-        for (int i = 0; i < wterrobj->vbo.size(); i += 12 * 3) {
-            // indices.push_back(ix++);
-            //   vertices.push_back(wterrobj->vbo[i]);
-            //   vertices.push_back(wterrobj->vbo[i+1]);
-            //   vertices.push_back(wterrobj->vbo[i+2]);
-            str->addTriangle(
-                btVector3(wterrobj->vbo[i], wterrobj->vbo[i + 1], wterrobj->vbo[i + 2]),
-                btVector3(wterrobj->vbo[i + 12], wterrobj->vbo[i + 1 + 12], wterrobj->vbo[i + 2 + 12]),
-                btVector3(wterrobj->vbo[i + 24], wterrobj->vbo[i + 1 + 24], wterrobj->vbo[i + 2 + 24]),
-                true
-            );
-            str->addIndex(ix++);
-        }
-        // auto shape = new btBvhTriangleMeshShape(str, true, true);
-        unsigned char* bytes;
-        int bytescount = Media::readBinary("SAfull.hmap", &bytes);
-        float maxh = 0.0;
-        float minh = 1231230.0;
-        float *bytes2 = new float[bytescount / 2];
-        for (int i = 0; i < bytescount; i += 2) {
-            int halfi = i / 2;
-            int x = halfi % 6000;
-            int y = halfi / 6000;
-            float bs = 0.0, bw = 0.0;
-            for (int ix = -5; ix < 5; ix++) {
-                for (int iy = -5; iy < 5; iy++) {
-                    int xx = (halfi % 6000) + ix;
-                    int xy = (halfi / 6000) + iy;
-                    if (xx < 0)xx = 0;
-                    if (xx >= 6000) xx = 5999;
-                    if (xy < 0)xy = 0;
-                    if (xy >= 6000) xy = 5999;
-                    bw += 1.0;
-                    int coord = (xy * 6000 + xx) * 2;
-                    unsigned short sh = (bytes[coord + 1] << 8) | bytes[coord];
-                    bs += ((float)sh / 65535.0f) * 512.0f;
-                }
-            }
-            bs /= bw;
-            bytes2[y * 6000 + x] = bs;
-            maxh = glm::max(maxh, bs);
-            minh = glm::min(minh, bs);
-        }
-        auto terrashape = new btHeightfieldTerrainShape(6000, 6000, bytes2, 1.0, minh, maxh, 1, PHY_FLOAT, false);
-        */
-        //  auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(3000.0 - 300.0, -0.5 + maxh * 0.5, 3000.0 - 300.0), glm::quat(), glm::vec3(1.0, 1.0, 1.0)), terrashape);
-
-
+    app->scene->addScene(sponza2);
+    app->onRenderFrame.add([=](int temp) {
+        sponza2->transformation->rotate(glm::rotate(mat4(1), 0.01f, glm::vec3(0.0, 1.0, 0.0)));
+        sponza2->transformation->setPosition(glm::vec3(sin(app->time), 0.0, 0.0));
     });
 
-    // virtualbox = app->world->physics->createBody(0.0f, new TransformationManager(), new btBoxShape(btVector3(6.0, 6.0, 6.0)));
-    // virtualbox->enable();
+        /*
+        auto s = app->asset->loadMeshFile("grass_base.mesh3d");
+        s->getLodLevel(0)->disableFaceCulling = true;
+        s->getLodLevel(1)->disableFaceCulling = true;
+        s->getLodLevel(2)->disableFaceCulling = true;
+        s->getLodLevel(3)->disableFaceCulling = true;
+        srand(static_cast <unsigned> (time(0)));
+        float fx = 0.0f, fy = 0.0f;
+        for (int x = 0; x < 200; x++) {
+        for (int y = 0; y < 400; y++) {
+        float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+        float r2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+        float r3 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+        r2 = r2 * 2.0 * 1.0;
+        r3 = r3 * 2.0 * 1.0;
+        auto rot = glm::angleAxis(deg2rad(r * 3.1415f * 2.0f), glm::vec3(0.0, 1.0, 0.0));
+        float noize = noise3d(vec3(fx * 0.2f, fy * 0.2f, 0.0));
+        s->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(fx * 20.0f + 1.0f * r2, 20.0f + noize * 20.0f, fy * 20.0f + 1.0f * r3), rot)));
+        fx += 0.1f;
+        }
+        fy += 0.1f;
+        fx = 0.0f;
+        }
+        app->world->scene->addMesh3d(s);*/
+        /*
+        auto s = app->asset->loadMeshFile("terr_grass.mesh3d");
+        auto grasses = s->getInstances();
+        int grassess = grasses.size();
+        for (int i = 0; i < grassess; i++) {
+        auto pos = grasses[i]->transformation->getPosition();
+        grasses[i]->transformation->setSize(glm::vec3(1.0f));
+        grasses[i]->transformation->setPosition(glm::vec3(pos.x * 1.0f + 500.0f, pos.y * 4.0f - 10.0f, pos.z * 1.0f + 500.0f));
+        }
+        //app->world->scene->addMesh3d(s);
+        */
 
-    testsound = new Sound3d("engine.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
-    testsound->setLoop(true);
-    testsound2 = new Sound3d("brown_noise.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
-    testsound2->setLoop(true);
-    wind = new Sound3d("brown_noise.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
-    wind->setLoop(true);
-    ocean1 = new Sound3d("ocean1.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
-    ocean1->setLoop(true);
-    ocean2 = new Sound3d("ocean2.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
-    ocean2->setLoop(true);
-    ocean3 = new Sound3d("ocean3.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
-    ocean3->setLoop(true);
-    ocean4 = new Sound3d("ocean4.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
-    ocean4->setLoop(true);
+        /*
+        int terrainparts = 10;
+        float fullsize = 3612.0;
+        float partsize = fullsize / 10.0;
+        //auto tex = new Texture2d("terrain_diffuse.png");
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
+                stringstream ss0;
+                ss0 << "real_terr_lod0_" << x << "x" << y << ".raw";
+                stringstream ss1;
+                ss1 << "real_terr_lod1_" << x << "x" << y << ".raw";
+                stringstream ss2;
+                ss2 << "real_terr_lod2_" << x << "x" << y << ".raw";
+                auto mat = new Material();
+                //   mat->diffuseColorTex = tex;
+                Mesh3d* m = Mesh3d::create(app->asset->loadObject3dInfoFile(ss0.str()), mat);
+                m->getInstance(0)->transformation->setPosition(vec3(partsize * x * 1.0f, -220.5, partsize*y * 1.0f));
+                m->getInstance(0)->transformation->setSize(vec3(1.0f, 20.0f, 1.0f));
+                m->getLodLevel(0)->distanceStart = 0.0f;
+                m->getLodLevel(0)->distanceEnd = 650.0f;
+                m->addLodLevel(new Mesh3dLodLevel(app->asset->loadObject3dInfoFile(ss1.str()), mat, 650.0f, 3350.0f));
+                m->addLodLevel(new Mesh3dLodLevel(app->asset->loadObject3dInfoFile(ss2.str()), mat, 3350.0f, 11150.0f));
+                app->scene->addMesh3d(m);
+            }
+        }*/
 
-    ocean1->setPitch(0.7f);
-    ocean2->setPitch(0.7f);
-    ocean3->setPitch(0.7f);
-    ocean4->setPitch(0.7f);
 
-    ocean1->play();
-    ocean2->play();
-    ocean3->play();
-    ocean4->play();
 
-    //cursor3dArrow = Mesh3d::create(app->asset->loadObject3dInfoFile("deferredsphere.raw"), new Material());
-    //cursor3dArrow->clearInstances();
-    // cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0), glm::quat(), glm::vec3(7.0))));
-    car.push_back(new Car(physics, "fiesta.car", new TransformationManager(glm::vec3(0.0))));
+        //  t->name = "flagbase";
+        // app->world->scene->addMesh(t);
+        //auto t1 = new TransformationManager(glm::vec3(8.0, 6.0, 8.0));
+        // car.push_back(new Car(t1));
+        //  auto t2 = new TransformationManager(glm::vec3(-8.0, 6.0, -8.0));
+        // car.push_back(new Car(t2));
+
+
+
+       // auto xt = app->asset->loadMeshFile("icosphere.mesh3d");
+       // xt->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, 10.0, 0.0))));
+       // xt->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, -10.0, 0.0))));
+       // auto abody = physics->createBody(0.1f, xt->getInstance(0)->transformation, new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
+
+       // app->scene->addMesh3d(xt);
+        //physics->addBody(abody);
+        //auto abody2 = Game::instance->world->physics->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btStaticPlaneShape(btVector3(0.0, 1.0, 0.0), 5.0));
+        //abody2->enable();
+       //  app->world-->scene->addMesh3d(app->asset->loadMeshFile("gory.mesh3d"));
+        auto groundpb = physics->createBody(0.0f, new TransformationManager(glm::vec3(0.0, -10.0, 0.0)), new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
+        // groundpb->getCollisionObject()->setFriction(4);
+        physics->addBody(groundpb);
+        app->invoke([&]() {/*
+            auto phys = Game::instance->world->physics;
+
+            vector<float> vertices = {};
+            vector<int> indices = {};
+            auto wterrobj = app->asset->loadObject3dInfoFile("weirdterrain.raw");
+            auto wterr3d = Mesh3d::create(wterrobj, new Material());
+            //app->world->scene->addMesh3d(wterr3d);
+            int ix = 0;
+            auto str = new btTriangleMesh();
+            for (int i = 0; i < wterrobj->vbo.size(); i += 12 * 3) {
+                // indices.push_back(ix++);
+                //   vertices.push_back(wterrobj->vbo[i]);
+                //   vertices.push_back(wterrobj->vbo[i+1]);
+                //   vertices.push_back(wterrobj->vbo[i+2]);
+                str->addTriangle(
+                    btVector3(wterrobj->vbo[i], wterrobj->vbo[i + 1], wterrobj->vbo[i + 2]),
+                    btVector3(wterrobj->vbo[i + 12], wterrobj->vbo[i + 1 + 12], wterrobj->vbo[i + 2 + 12]),
+                    btVector3(wterrobj->vbo[i + 24], wterrobj->vbo[i + 1 + 24], wterrobj->vbo[i + 2 + 24]),
+                    true
+                );
+                str->addIndex(ix++);
+            }
+            // auto shape = new btBvhTriangleMeshShape(str, true, true);
+            unsigned char* bytes;
+            int bytescount = Media::readBinary("SAfull.hmap", &bytes);
+            float maxh = 0.0;
+            float minh = 1231230.0;
+            float *bytes2 = new float[bytescount / 2];
+            for (int i = 0; i < bytescount; i += 2) {
+                int halfi = i / 2;
+                int x = halfi % 6000;
+                int y = halfi / 6000;
+                float bs = 0.0, bw = 0.0;
+                for (int ix = -5; ix < 5; ix++) {
+                    for (int iy = -5; iy < 5; iy++) {
+                        int xx = (halfi % 6000) + ix;
+                        int xy = (halfi / 6000) + iy;
+                        if (xx < 0)xx = 0;
+                        if (xx >= 6000) xx = 5999;
+                        if (xy < 0)xy = 0;
+                        if (xy >= 6000) xy = 5999;
+                        bw += 1.0;
+                        int coord = (xy * 6000 + xx) * 2;
+                        unsigned short sh = (bytes[coord + 1] << 8) | bytes[coord];
+                        bs += ((float)sh / 65535.0f) * 512.0f;
+                    }
+                }
+                bs /= bw;
+                bytes2[y * 6000 + x] = bs;
+                maxh = glm::max(maxh, bs);
+                minh = glm::min(minh, bs);
+            }
+            auto terrashape = new btHeightfieldTerrainShape(6000, 6000, bytes2, 1.0, minh, maxh, 1, PHY_FLOAT, false);
+            */
+            //  auto groundpb = phys->createBody(0.0f, new TransformationManager(glm::vec3(3000.0 - 300.0, -0.5 + maxh * 0.5, 3000.0 - 300.0), glm::quat(), glm::vec3(1.0, 1.0, 1.0)), terrashape);
+
+
+        });
+
+        // virtualbox = app->world->physics->createBody(0.0f, new TransformationManager(), new btBoxShape(btVector3(6.0, 6.0, 6.0)));
+        // virtualbox->enable();
+
+        testsound = new Sound3d("engine.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+        testsound->setLoop(true);
+        testsound2 = new Sound3d("brown_noise.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+        testsound2->setLoop(true);
+        wind = new Sound3d("brown_noise.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+        wind->setLoop(true);
+        /*ocean1 = new Sound3d("ocean1.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+        ocean1->setLoop(true);
+        ocean2 = new Sound3d("ocean2.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+        ocean2->setLoop(true);
+        ocean3 = new Sound3d("ocean3.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+        ocean3->setLoop(true);
+        ocean4 = new Sound3d("ocean4.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+        ocean4->setLoop(true);
+
+        ocean1->setPitch(0.7f);
+        ocean2->setPitch(0.7f);
+        ocean3->setPitch(0.7f);
+        ocean4->setPitch(0.7f);
+
+        ocean1->play();
+        ocean2->play();
+        ocean3->play();
+        ocean4->play();
+        */
+        //cursor3dArrow = Mesh3d::create(app->asset->loadObject3dInfoFile("deferredsphere.raw"), new Material());
+        //cursor3dArrow->clearInstances();
+        // cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0), glm::quat(), glm::vec3(7.0))));
+        car.push_back(new Car(physics, "fiesta.car", new TransformationManager(glm::vec3(0.0))));
 }
 
 void EditorApp::switchMode(int mode)

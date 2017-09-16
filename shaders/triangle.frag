@@ -14,15 +14,22 @@ layout(location = 2) out float outDistance;
 #include sharedBuffers.glsl
 
 struct ModelInfo{
-    vec4 Rotation;
-    vec4 Translation;
-    vec4 Scale;
+    mat4 Transformation;
     uvec4 idAnd4Empty;
 };
 layout(set = 1, binding = 0) buffer UniformBufferObject3 {
     ModelInfo ModelInfos[];
 } modelData;
 
+vec3 transform_vertex(vec3 vertex){
+    ModelInfo o = modelData.ModelInfos[inInstanceId];
+    return (o.Transformation * vec4(vertex, 1.0)).xyz;
+}
+
+vec3 transform_normal(vec3 normal){
+    ModelInfo o = modelData.ModelInfos[inInstanceId];
+    return (o.Transformation * vec4(normal, 0.0)).xyz;
+}
 layout(set = 2, binding = 0) uniform UniformBufferObject6 {
     vec4 RoughnessMetalness_ZeroZero;
     vec4 DiffuseColor_Zero;
@@ -64,16 +71,13 @@ float normalTexMipMap = 0.0;
 #define material_adjusted_roughness_bump() (bumpTexMipMap / textureQueryLevels(bumpTex))
 #define material_adjusted_roughness_normal() (bumpTexMipMap / textureQueryLevels(normalTex))
 
-vec3 quat_mul_vec( vec4 q, vec3 v ){
-    return v + 2.0*cross(cross(v, q.xyz ) + q.w*v, q.xyz);
-}
 float ParallaxHeightMultiplier = 1.03;
 float newParallaxHeight = 0;
 float parallaxScale = 0.04 * ParallaxHeightMultiplier;
 // modded http://sunandblackcat.com/tipFullView.php?topicid=28
 vec2 adjustParallaxUV(vec2 uv){
-    vec3 twpos = quat_mul_vec(modelData.ModelInfos[inInstanceId].Rotation, normalize(inTangent.xyz));
-    vec3 nwpos = quat_mul_vec(modelData.ModelInfos[inInstanceId].Rotation, normalize(inNormal));
+    vec3 twpos = transform_normal(normalize(inTangent.xyz));
+    vec3 nwpos = transform_normal(normalize(inNormal));
     vec3 bwpos =  normalize(cross(twpos, nwpos)) * inTangent.w;
     vec3 eyevec = ((CameraPosition - inWorldPos));
     vec3 V = normalize(vec3(
@@ -175,7 +179,7 @@ void outputMaterial(){
         normal = TBN * normalmap;//normalize(mix(TBN * normalmap, normal, max(material_adjusted_roughness_normal(), material_adjusted_roughness_bump())));
 
     }
-    normal = quat_mul_vec(modelData.ModelInfos[inInstanceId].Rotation, normal);
+    normal = transform_normal(normal);
 
     normal = normalize(normal);
     roughness = min(1.0, roughness + qr * 0.5);

@@ -48,7 +48,7 @@ public:
     TransformationManager(glm::quat iorientation);
     TransformationManager(glm::quat iorientation, glm::vec3 isize);
     ~TransformationManager();
-
+     
     volatile bool needsUpdate = false;
 
     glm::vec3 getPosition();

@@ -38,8 +38,8 @@ void Mesh3dLodLevel::initialize()
     modelInfosBuffer = new VulkanGenericBuffer(Application::instance->vulkan, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, 64 * kb1);
 
     id = Application::instance->getNextId();
-    Application::instance->registerId(id, this); 
-    int i = 0; 
+    Application::instance->registerId(id, this);
+    int i = 0;
 
     descriptorSet = Application::instance->meshModelsDataLayout->generateDescriptorSet();
     descriptorSet->bindStorageBuffer(0, modelInfosBuffer);
@@ -60,7 +60,7 @@ void Mesh3dLodLevel::draw(VulkanRenderStage* stage, const Mesh3d* mesh)
 
 }
 
-void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstance*> &instances)
+void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, glm::mat4 transform, const vector<Mesh3dInstance*> &instances)
 {
     // next frame it runs current buffer to 1, next buffer will be 
 
@@ -71,7 +71,7 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
     bool changed = false;
     for (int i = 0; i < instances.size(); i++) {
         float dst = distance(cameraPos, instances[i]->transformation->getPosition());
-        if (instances[i]->visible && dst >= distanceStart && dst < distanceEnd && checkIntersection(instances[i])) {
+        if (instances[i]->visible && dst >= distanceStart && dst < distanceEnd && checkIntersection(transform, instances[i])) {
             filtered.push_back(instances[i]);
             newids.push_back(instances[i]->id);
             if (instances[i]->transformation->needsUpdate) changed = true;
@@ -90,47 +90,32 @@ void Mesh3dLodLevel::updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstanc
     }
     lastIdMap.clear();
     lastIdMap = newids;
-     
+
     /*layout rotation f4 translation f3+1 scale f3+1 =>> 12 floats*/
     // Urgently transfrom it into permament mapped buffer 
 
     int fint = filtered.size();
     instancesFiltered = fint;
 
-    //changed = true;
+    changed = true;
     if (changed) {
 
-
         if (fint > 0) {
-            void* modelbufferpt = nullptr;
-            modelInfosBuffer->map(0, 4 * 16 * fint, &modelbufferpt);
-            int a = 0;
+            VulkanBinaryBufferBuilder bb = VulkanBinaryBufferBuilder();
             for (unsigned int i = 0; i < fint; i++) {
                 TransformationManager *mgr = filtered[i]->transformation;
-                quat q = mgr->getOrientation();
-                vec3 p = mgr->getPosition();
-                vec3 s = mgr->getSize();
+                glm::mat4 trans = transform * mgr->getWorldTransform();
 
-                ((float*)modelbufferpt)[a++] = q.x;
-                ((float*)modelbufferpt)[a++] = q.y;
-                ((float*)modelbufferpt)[a++] = q.z;
-                ((float*)modelbufferpt)[a++] = q.w;
-
-                ((float*)modelbufferpt)[a++] = p.x;
-                ((float*)modelbufferpt)[a++] = p.y;
-                ((float*)modelbufferpt)[a++] = p.z;
-                ((float*)modelbufferpt)[a++] = 1.0f;
-
-                ((float*)modelbufferpt)[a++] = s.x;
-                ((float*)modelbufferpt)[a++] = s.y;
-                ((float*)modelbufferpt)[a++] = s.z;
-                ((float*)modelbufferpt)[a++] = 1.0f;
-                
-                ((int*)modelbufferpt)[a++] = filtered[i]->id;
-                ((int*)modelbufferpt)[a++] = filtered[i]->id;
-                ((int*)modelbufferpt)[a++] = filtered[i]->id;
-                ((int*)modelbufferpt)[a++] = filtered[i]->id;
+                bb.emplaceGeneric((unsigned char*)&trans, sizeof(glm::mat4));
+                bb.emplaceInt32(filtered[i]->id);
+                bb.emplaceInt32(filtered[i]->id);
+                bb.emplaceInt32(filtered[i]->id);
+                bb.emplaceInt32(filtered[i]->id);
             }
+            void* modelbufferpt = nullptr;
+            modelInfosBuffer->map(0, bb.buffer.size(), &modelbufferpt);
+
+            memcpy(modelbufferpt, bb.getPointer(), bb.buffer.size());
 
             modelInfosBuffer->unmap();
         }
@@ -154,9 +139,9 @@ vec4 projectvdao2(mat4 mat, vec3 pos) {
 }
 #undef max
 
-bool Mesh3dLodLevel::checkIntersection(Mesh3dInstance * instance)
+bool Mesh3dLodLevel::checkIntersection(glm::mat4 transform, Mesh3dInstance * instance)
 {
-    //return true;//debug
+    return true;//debug
     if (ignoreFrustumCulling) return true;
     auto size = instance->transformation->getSize();
     float radius = info3d->radius * glm::max(glm::max(size.x, size.y), size.z);

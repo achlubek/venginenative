@@ -37,7 +37,7 @@ class SimpleWalker
 public:
     SimpleWalker(Physics* physics, TransformationManager * spawn);
     ~SimpleWalker();
-    char state = SIMPLEWALKER_STATE_IDLE;
+    char state = SIMPLEWALKER_STATE_WALKING;
 
     TransformationManager * left_shoulder;
     TransformationManager * left_elbow;
@@ -63,6 +63,22 @@ public:
     Simple2PointAlignment bone_right_leg_down;
 
 
+
+    Scene* walkerScene;
+
+    Physics* physics;
+    PhysicalBody* physicalEntity;
+
+    glm::vec3 target = glm::vec3(0.0);
+
+    void update();
+
+    void run(glm::vec3 position);
+    void walk(glm::vec3 position);
+    void stop();
+    void die();
+private:
+
     Mesh3d * mesh_left_arm_up;
     Mesh3d * mesh_left_arm_down;
     Mesh3d * mesh_right_arm_up;
@@ -76,12 +92,5 @@ public:
     Mesh3d * mesh_body;
 
     Mesh3d * debug_marker;
-
-    void update();
-
-    void run(glm::vec3 position);
-    void walk(glm::vec3 position);
-    void stop();
-    void die();
 };
 

@@ -20,9 +20,9 @@ public:
     Mesh3dLodLevel *getLodLevel(int index);
     void removeInstance(Mesh3dInstance* instance);
     void removeLodLevel(Mesh3dLodLevel* level);
-    void updateBuffers();
+    void updateBuffers(glm::mat4 transform);
     void draw(VulkanRenderStage* stage);
-    void setUniforms();
+    void setUniforms(glm::mat4 transform);
     unsigned int id;
     string name = "";
     int lastUpdateFrameId;

@@ -19,13 +19,13 @@ public:
     bool visible = true;
     bool ignoreFrustumCulling = false; 
     void draw(VulkanRenderStage* stage, const Mesh3d* mesh);
-    void updateBuffer(const Mesh3d* mesh, const vector<Mesh3dInstance*> &instances); 
+    void updateBuffer(const Mesh3d* mesh, glm::mat4 transform, const vector<Mesh3dInstance*> &instances);
     void initialize(); 
     VulkanDescriptorSet* descriptorSet;
 private:
     VulkanGenericBuffer *modelInfosBuffer;
 
-    bool checkIntersection(Mesh3dInstance* instance);
+    bool checkIntersection(glm::mat4 transform, Mesh3dInstance* instance);
 
     size_t instancesFiltered;
     vector<unsigned int> lastIdMap = vector<unsigned int>{};

@@ -162,7 +162,7 @@ void TransformationManager::rotate(quat value)
 mat4 TransformationManager::getWorldTransform()
 {
     if (needsUpdate) updateJoints();
-    mat4 rotmat = glm::mat4_cast(orientation);
+    mat4 rotmat = glm::mat4_cast(inverse(orientation));
     mat4 transmat = glm::translate(mat4(1), position);
     mat4 scalemat = glm::scale(mat4(1), size);
     return transmat * rotmat * scalemat;

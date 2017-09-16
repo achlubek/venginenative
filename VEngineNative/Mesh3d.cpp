@@ -83,10 +83,10 @@ void Mesh3d::removeLodLevel(Mesh3dLodLevel* level)
     }
 }
 
-void Mesh3d::updateBuffers()
+void Mesh3d::updateBuffers(glm::mat4 transform)
 {
     for (int i = 0; i < lodLevels.size(); i++) {
-        lodLevels[i]->updateBuffer(this, instances);
+        lodLevels[i]->updateBuffer(this, transform, instances);
     }
 }
 
@@ -97,10 +97,10 @@ void Mesh3d::draw(VulkanRenderStage* stage)
     }
 }
 
-void Mesh3d::setUniforms()
+void Mesh3d::setUniforms(glm::mat4 transform)
 {
     if (lastUpdateFrameId != Application::instance->frame) {
-        updateBuffers();
+        updateBuffers(transform);
         lastUpdateFrameId = Application::instance->frame;
     }
 }

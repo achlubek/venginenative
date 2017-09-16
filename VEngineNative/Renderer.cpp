@@ -170,8 +170,8 @@ void Renderer::renderToSwapChain(Camera *camera)
     glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
     camera->cone->update(inverse(rpmatrix));
     
-    Application::instance->scene->prepareFrame();
+    Application::instance->scene->prepareFrame(glm::mat4(1));
     renderer->beginDrawing();
-    Application::instance->scene->draw(renderer->getMesh3dStage());
+    Application::instance->scene->draw(glm::mat4(1), renderer->getMesh3dStage());
     renderer->endDrawing();
 }

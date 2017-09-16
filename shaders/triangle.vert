@@ -8,9 +8,7 @@ out gl_PerVertex {
 #include sharedBuffers.glsl
 
 struct ModelInfo{
-    vec4 Rotation;
-    vec4 Translation;
-    vec4 Scale;
+    mat4 Transformation;
     uvec4 idAnd4Empty;
 };
 layout(set = 1, binding = 0) buffer UniformBufferObject3 {
@@ -28,25 +26,9 @@ layout(set = 2, binding = 0) uniform UniformBufferObject6 {
     uvec4 MeshId_LodLevelId_ZeroZero;
 } materialData;
 
-vec3 quat_mul_vec( vec4 q, vec3 v ){
-    return v + 2.0*cross(cross(v, q.xyz ) + q.w*v, q.xyz);
-}
-
-vec3 transform_vertex(int info, vec3 vertex){
-    vec3 result = vertex;
-    ModelInfo o = modelData.ModelInfos[info];
-    result *= o.Scale.xyz;
-    result = quat_mul_vec(o.Rotation, result);
-    result += o.Translation.xyz;
-    return result;
-}
-
 vec3 transform_normal(int info, vec3 normal){
-    vec3 result = normal;
     ModelInfo o = modelData.ModelInfos[info];
-    result = quat_mul_vec(o.Rotation, result);
-    result *= 1.0 / o.Scale.xyz;
-    return result;
+    return (o.Transformation * vec4(normal, 0.0)).xyz;
 }
 
 
@@ -64,8 +46,11 @@ layout(location = 4) out vec3 outWorldPos;
 
 void main() {
 
-    vec3 WorldPos = transform_vertex(int(gl_InstanceIndex), inPosition.xyz);
-    vec4 opo = (hiFreq.VPMatrix) * vec4(WorldPos, 1.0);
+    vec3 WorldPos = (modelData.ModelInfos[int(gl_InstanceIndex)].Transformation
+        * vec4(inPosition.xyz, 1.0)).rgb;
+    vec4 opo = (hiFreq.VPMatrix)
+        * modelData.ModelInfos[int(gl_InstanceIndex)].Transformation
+        * vec4(inPosition.xyz, 1.0);
     vec3 Normal = transform_normal(int(gl_InstanceIndex), inNormal);
     outNormal = normalize(Normal);
     outTangent = clamp(vec4(normalize(transform_normal(int(gl_InstanceIndex), inTangent.xyz)), inTangent.w), -1.0, 1.0);
