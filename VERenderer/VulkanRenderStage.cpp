@@ -132,7 +132,7 @@ void VulkanRenderStage::compile()
     framebuffer = new VulkanFramebuffer(vulkan, viewport.width, viewport.height, renderPass, attachmentsViews);
 
     pipeline = new VulkanGraphicsPipeline(vulkan, viewport.width, viewport.height,
-        setLayouts, shaderStages, renderPass, foundDepthBuffer, alphaBlending);
+        setLayouts, shaderStages, renderPass, foundDepthBuffer, alphaBlending, additiveBlending);
 }
 
 VulkanRenderStage* VulkanRenderStage::copy()

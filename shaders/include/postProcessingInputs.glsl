@@ -8,5 +8,6 @@ layout(binding = 4) uniform sampler2D texDistance;
 
 layout(binding = 5) uniform sampler2D texAmbient;
 layout(binding = 6) uniform sampler2D texUi;
+layout(binding = 7) uniform sampler2D shadowMap;
 
 #include sharedBuffers.glsl

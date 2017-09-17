@@ -24,6 +24,12 @@ float fresnelf(vec3 direction, vec3 normal) {
 void main() {
     vec3 diffuse = texture(texDiffuse, UV).rgb;
     vec3 normal = normalize(texture(texNormal, UV).rgb);
+
+    vec3 worldPos = ToCameraSpace(reconstructCameraSpaceDistance(UV, texture(texDistance, UV).r));
+
     vec3 res = diffuse * (0.02 + 0.98 * max(0.0, dot(vec3(0.0, 1.0, 0.0), normal)));
+    vec3 mapper = vec3(2.991431, 4.548709, 3.439944);
+    float expected = distance(mapper, worldPos);
+    //float shadow = step(0.01, expected - texture(shadowMap));
     outColor = vec4(res, 1.0);
 }

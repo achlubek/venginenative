@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "FrustumCone.h"
 #include "Media.h"
+#include "ShadowMapRenderer.h"
 
 Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
     : vulkan(ivulkan)
@@ -63,6 +64,8 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
     meshRenderStage->addOutputImage(depthImage);
     meshRenderStage->meshSharedSet = sharedSet;
 
+    highResShadowMapper = new ShadowMapRenderer(vulkan, 1024, 1024);
+
     //####//
 
     auto ppvertShaderModule = new VulkanShaderModule(vulkan, "../../shaders/compiled/pp.vert.spv");
@@ -76,6 +79,7 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
     ppSetLayout->addField(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     ppSetLayout->addField(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     ppSetLayout->addField(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    ppSetLayout->addField(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     ppSetLayout->compile();
 
     //##########################//
@@ -111,6 +115,7 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
     postProcessSet->bindImageViewSampler(4, distanceImage);
     postProcessSet->bindImageViewSampler(5, ambientImage);
     postProcessSet->bindImageViewSampler(6, Application::instance->ui->outputImage);
+    postProcessSet->bindImageViewSampler(7, highResShadowMapper->distanceImage);
     postProcessSet->update();
 
     renderer = new VulkanRenderer(vulkan);
@@ -119,7 +124,11 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
     renderer->setOutputStage(post_process_zygote);
     renderer->setPostProcessingDescriptorSet(postProcessSet);
     renderer->compile();
-    
+ 
+    shadowTestCamera = new Camera();
+    shadowTestCamera->createProjectionPerspective(90.0f, 1.0f, 0.01f, 10000);
+    shadowTestCamera->transformation->setPosition(glm::vec3(2.991431, 4.548709, 3.439944));
+    shadowTestCamera->transformation->setOrientation(glm::quat(0.935260, -0.291301, 0.191981, 0.059795));
 }
 
 Renderer::~Renderer()
@@ -128,6 +137,10 @@ Renderer::~Renderer()
 
 void Renderer::renderToSwapChain(Camera *camera)
 {
+
+    Application::instance->scene->prepareFrame(glm::mat4(1));
+
+    highResShadowMapper->render(shadowTestCamera);
 
     //if (Game::instance->world->scene->getMesh3ds().size() == 0) return;
     VulkanBinaryBufferBuilder bb = VulkanBinaryBufferBuilder();
@@ -170,7 +183,6 @@ void Renderer::renderToSwapChain(Camera *camera)
     glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
     camera->cone->update(inverse(rpmatrix));
     
-    Application::instance->scene->prepareFrame(glm::mat4(1));
     renderer->beginDrawing();
     Application::instance->scene->draw(glm::mat4(1), renderer->getMesh3dStage());
     renderer->endDrawing();

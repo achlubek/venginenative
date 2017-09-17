@@ -6,6 +6,7 @@ class VulkanGenericBuffer;
 class VulkanImage;
 class VulkanRenderer;
 class Camera;
+class ShadowMapRenderer;
 class VulkanToolkit;
 
 class Renderer
@@ -29,6 +30,9 @@ public:
     VulkanImage* depthImage;
 
     VulkanRenderer* renderer;
+
+    ShadowMapRenderer* highResShadowMapper;
+    Camera* shadowTestCamera;
      
     void renderToSwapChain(Camera *camera);
     int width;

@@ -20,8 +20,15 @@
 #include "Chat.h"
 #include "VulkanMemoryChunk.h"
 #include "VulkanMemoryManager.h"
+#include <time.h>
 
 #undef max
+
+void writeLog(std::string s) {
+    std::ofstream log("log.txt", std::ios_base::app | std::ios_base::out);
+    auto t = time(0);
+    log << ctime(&t) << ": " << s << endl;
+}
 
 EditorApp::EditorApp()
 {
@@ -42,6 +49,9 @@ void EditorApp::onRenderFrame(float elapsed)
     walker->update();
     app->ui->texts[0]->updateText(std::to_string((float)rand()));
     physics->simulationStep(1.0 / 60.0);
+    for (int i = 0; i < players.size(); i++) {
+        players[i]->nextFrame();
+    }
     //app->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setPosition(glm::vec3(sin(app->time), cos(app->time * 1.2), sin(app->time * 1.6)));
     //app->world->scene->getMesh3ds()[0]->getInstance(0)->transformation->setSize(glm::vec3(sin(app->time) * 0.5 + 1.5));
     if (currentMode == EDITOR_MODE_WRITING_TEXT && chat->isInputEnabled() == false) {
@@ -399,7 +409,50 @@ void EditorApp::onChar(unsigned int c)
 
 void EditorApp::onBind()
 {
-    walker = new SimpleWalker(physics, new TransformationManager(glm::vec3(3.0, 3.0, 3.0)));
+    debug_marker = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("icos.raw"), new Material());
+
+    for (int y = 0; y < 31; y++) {
+        debug_marker->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0, 0.0, 0), glm::vec3(5.0))));
+    }
+    app->scene->addMesh3d(debug_marker);
+
+    players = {}; 
+    int yy = 0;
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "head.anim"));
+    players.push_back(new AnimationPlayer(walker->left_shoulder, "lclavicle.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lfemur.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lfingers.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lfoot.anim"));
+    players.push_back(new AnimationPlayer(walker->left_hand, "lhand.anim"));
+    players.push_back(new AnimationPlayer(walker->left_hip, "lhipjoint.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lhumerus.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lowerback.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lowerneck.anim"));
+    players.push_back(new AnimationPlayer(walker->left_elbow, "lradius.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lthumb.anim"));
+    players.push_back(new AnimationPlayer(walker->left_knee, "ltibia.anim"));
+    players.push_back(new AnimationPlayer(walker->left_foot, "ltoes.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lwrist.anim"));
+    players.push_back(new AnimationPlayer(walker->right_shoulder, "rclavicle.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "rfemur.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "rfingers.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "rfoot.anim"));
+    players.push_back(new AnimationPlayer(walker->right_hand, "rhand.anim"));
+    players.push_back(new AnimationPlayer(walker->right_hip, "rhipjoint.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "rhumerus.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "root.anim"));
+    players.push_back(new AnimationPlayer(walker->right_elbow, "rradius.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "rthumb.anim"));
+    players.push_back(new AnimationPlayer(walker->right_knee, "rtibia.anim"));
+    players.push_back(new AnimationPlayer(walker->right_foot, "rtoes.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "rwrist.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "thorax.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "upperback.anim"));
+    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "upperneck.anim"));
+
+
+
+    walker = new SimpleWalker(physics, new TransformationManager(glm::vec3(3.0, 6.0, 3.0)));
     app->scene->addScene(walker->walkerScene);
     auto box = new UIBox(app->ui, 0.1, 0.1, 0.5, 0.5, UIColor(1, 0, 1, 0.5));
     auto box2 = new UIBox(app->ui, 0.2, 0.2, 0.5, 0.5, UIColor(1, 0, 0, 0.5));
@@ -428,7 +481,7 @@ void EditorApp::onBind()
     app->mainDisplayCamera = cam;
 
     mouse->setCursorMode(GLFW_CURSOR_NORMAL);
-
+    /*
     auto t = app->asset->loadSceneFile("sp.scene");
     //auto diftex = new Texture2d("2222.jpg");
     //auto bumtex = new Texture2d("1111.jpg");
@@ -452,7 +505,7 @@ void EditorApp::onBind()
     app->onRenderFrame.add([=](int temp) {
         sponza2->transformation->rotate(glm::rotate(mat4(1), 0.01f, glm::vec3(0.0, 1.0, 0.0)));
         sponza2->transformation->setPosition(glm::vec3(sin(app->time), 0.0, 0.0));
-    });
+    });*/
 
         /*
         auto s = app->asset->loadMeshFile("grass_base.mesh3d");
@@ -536,8 +589,10 @@ void EditorApp::onBind()
         //physics->addBody(abody);
         //auto abody2 = Game::instance->world->physics->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btStaticPlaneShape(btVector3(0.0, 1.0, 0.0), 5.0));
         //abody2->enable();
-       //  app->world-->scene->addMesh3d(app->asset->loadMeshFile("gory.mesh3d"));
-        auto groundpb = physics->createBody(0.0f, new TransformationManager(glm::vec3(0.0, -10.0, 0.0)), new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
+        auto groundplane = app->asset->loadMeshFile("2dplane.mesh3d");
+        groundplane->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, 1.0, 0.0), glm::vec3(100.0, 1.0, 100.0))));
+        app->scene->addMesh3d(groundplane);
+        auto groundpb = physics->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
         // groundpb->getCollisionObject()->setFriction(4);
         physics->addBody(groundpb);
         app->invoke([&]() {/*
@@ -631,7 +686,7 @@ void EditorApp::onBind()
         //cursor3dArrow = Mesh3d::create(app->asset->loadObject3dInfoFile("deferredsphere.raw"), new Material());
         //cursor3dArrow->clearInstances();
         // cursor3dArrow->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0), glm::quat(), glm::vec3(7.0))));
-        car.push_back(new Car(physics, "fiesta.car", new TransformationManager(glm::vec3(0.0))));
+        car.push_back(new Car(physics, "fiesta.car", new TransformationManager(glm::vec3(0.0, 5.0, 0.0))));
 }
 
 void EditorApp::switchMode(int mode)
@@ -663,6 +718,14 @@ void EditorApp::onChatSendText(std::string s)
                     chat->printMessage(UIColor(0.1, 1.0, 1.0, 1.0), "* type(" + std::to_string(typex.first) + ") usage(" + std::to_string((float)chunk->allAllocationsSize / 1024.0f / 1024.0f) + " MB)");
                 }
             }
+            return;
+        }
+        if (cmd == "save") {
+            auto pos = cam->transformation->getPosition();
+            auto rot = cam->transformation->getOrientation();
+            writeLog("position: [" + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z) + "]");
+            writeLog("orientation: [" + std::to_string(rot.x) + ", " + std::to_string(rot.y) + ", " + std::to_string(rot.z) + ", " + std::to_string(rot.w) + "]");
+            chat->printMessage(UIColor(0.1, 1.0, 0.1, 1.0), "*** Saved!");
             return;
         }
         if (cmd == "q") {

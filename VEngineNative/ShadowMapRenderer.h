@@ -12,14 +12,17 @@ public:
     ~ShadowMapRenderer();
     VulkanToolkit * vulkan;
     VulkanDescriptorSetLayout* meshSetLayout;
-    
+
+    VulkanDescriptorSet* sharedSet;
+
     VulkanGenericBuffer* uboHighFrequencyBuffer;
     VulkanGenericBuffer* uboLowFrequencyBuffer;
     VulkanImage* depthImage;
+    VulkanImage* distanceImage;
 
     VulkanRenderer* renderer;
 
-    void renderToSwapChain(Camera *camera);
+    void render(Camera *camera);
     int width;
     int height;
 };

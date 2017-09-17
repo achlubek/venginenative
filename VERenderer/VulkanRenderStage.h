@@ -32,8 +32,9 @@ public:
     void endDrawing();
     void drawMesh(Object3dInfo *info, std::vector<VulkanDescriptorSet*> sets, size_t instances);
     void compile();
-    VulkanRenderStage* copy(); 
+    VulkanRenderStage* copy();
     bool alphaBlending = false;
+    bool additiveBlending = false;
 
     void submit(std::vector<VkSemaphore> waitSemaphores);
 

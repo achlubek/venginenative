@@ -82,7 +82,7 @@ SimpleWalker::SimpleWalker(Physics * iphysics, TransformationManager * spawn)
     walkerScene->addMesh3d(debug_marker);
 
 
-    physicalEntity = physics->createBody(2.1, new TransformationManager(spawn->getPosition()), new btSphereShape(1.0f));
+    physicalEntity = physics->createBody(2.1, new TransformationManager(spawn->getPosition()), new btSphereShape(2.8f));
     physics->addBody(physicalEntity);
 }
 
@@ -130,7 +130,7 @@ void SimpleWalker::update()
     auto trans = getThatSpecialTransform(mesh_body->getInstance(0)->transformation);
     trans = glm::scale(trans, 1.0f / mesh_body->getInstance(0)->transformation->getSize());
 #define transformvector(a) fromvec4(trans*glm::vec4(a,1.0))
-    float speed = 1.0;
+    float speed = 1.0;/*
     if (state == SIMPLEWALKER_STATE_IDLE) {
         physicalEntity->getRigidBody()->setLinearVelocity(physicalEntity->getRigidBody()->getLinearVelocity() * 0.7f);
         left_shoulder->setPosition(glm::vec3(0.3, 0.2, 0.0));
@@ -225,7 +225,7 @@ void SimpleWalker::update()
 
         left_foot->setPosition(glm::vec3(0.2, -2.8 + abs(s2) * abs(s2) * 0.3, -0.2 + 1.7 * s2));
         right_foot->setPosition(glm::vec3(-0.2, -2.8 + abs(s4) * abs(s4) * 0.3, -0.2 + 1.7 * s4));
-    }
+    }*/
 
     glm::vec3 pos = glmify3(physicalEntity->getRigidBody()->getCenterOfMassPosition());
     walkerScene->transformation->setPosition(pos);

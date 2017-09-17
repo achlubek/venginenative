@@ -1,7 +1,7 @@
 #include "stdafx.h" 
 
 VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int viewportwidth, int viewportheight, std::vector<VkDescriptorSetLayout> setlayouts,
-    std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass* renderpass, bool enableDepthTest, bool alphablend)
+    std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass* renderpass, bool enableDepthTest, bool alphablend, bool additive_blend)
     : vulkan(ivulkan)
 {
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = Object3dInfo::getVertexInputStateCreateInfo();
@@ -54,10 +54,10 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int view
     depthStencil.depthCompareOp = enableDepthTest ? VK_COMPARE_OP_LESS : VK_COMPARE_OP_ALWAYS;
     depthStencil.depthBoundsTestEnable = VK_FALSE;
     depthStencil.stencilTestEnable = VK_FALSE;
-     
+
     std::vector<VkPipelineColorBlendAttachmentState> atts = {  };
 
-    
+
     for (int i = 0; i < renderpass->attachments.size(); i++) {
         if (!renderpass->attachments[i].image->isDepthBuffer) {
             VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
@@ -69,6 +69,15 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int view
                 colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
                 colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
                 colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+                colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+            }
+            else if (additive_blend) {
+                colorBlendAttachment.blendEnable = VK_TRUE;
+                colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+                colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+                colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+                colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+                colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
                 colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
             }
             else {
@@ -122,6 +131,6 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int view
 }
 
 
-    VulkanGraphicsPipeline::~VulkanGraphicsPipeline()
+VulkanGraphicsPipeline::~VulkanGraphicsPipeline()
 {
 }

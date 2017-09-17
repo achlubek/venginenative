@@ -11,8 +11,11 @@ ShadowMapRenderer::ShadowMapRenderer(VulkanToolkit * ivulkan, int iwidth, int ih
     width = iwidth;
     height = iheight;
 
-    depthImage = new VulkanImage(vulkan, width, height, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
+    depthImage = new VulkanImage(vulkan, width, height, VK_FORMAT_D16_UNORM, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, true);
+
+    distanceImage = new VulkanImage(vulkan, width, height, VK_FORMAT_R32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
     uboHighFrequencyBuffer = new VulkanGenericBuffer(vulkan, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
     uboLowFrequencyBuffer = new VulkanGenericBuffer(vulkan, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
@@ -24,18 +27,15 @@ ShadowMapRenderer::ShadowMapRenderer(VulkanToolkit * ivulkan, int iwidth, int ih
     auto vertShaderModule = VulkanShaderModule(vulkan, "../../shaders/compiled/depthonly.vert.spv");
     auto fragShaderModule = VulkanShaderModule(vulkan, "../../shaders/compiled/depthonly.frag.spv");
 
-    meshSetLayout = new VulkanDescriptorSetLayout(vulkan);
+    auto meshSetLayout = new VulkanDescriptorSetLayout(vulkan);
     meshSetLayout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
     meshSetLayout->addField(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
-    meshSetLayout->addField(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
-    meshSetLayout->addField(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
-
-    meshSetLayout->addField(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    meshSetLayout->addField(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    meshSetLayout->addField(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    meshSetLayout->addField(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    meshSetLayout->addField(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     meshSetLayout->compile();
+
+    sharedSet = meshSetLayout->generateDescriptorSet();
+    sharedSet->bindUniformBuffer(0, uboHighFrequencyBuffer);
+    sharedSet->bindUniformBuffer(1, uboLowFrequencyBuffer);
+    sharedSet->update();
 
     auto meshRenderStage = new VulkanRenderStage(vulkan);
     VkExtent2D ext = VkExtent2D();
@@ -45,19 +45,22 @@ ShadowMapRenderer::ShadowMapRenderer(VulkanToolkit * ivulkan, int iwidth, int ih
     meshRenderStage->addShaderStage(vertShaderModule.createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
     meshRenderStage->addShaderStage(fragShaderModule.createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
     meshRenderStage->addDescriptorSetLayout(meshSetLayout->layout);
+    meshRenderStage->addDescriptorSetLayout(Application::instance->meshModelsDataLayout->layout);
+    meshRenderStage->addDescriptorSetLayout(Application::instance->materialLayout->layout);
+    meshRenderStage->addOutputImage(distanceImage);
     meshRenderStage->addOutputImage(depthImage);
+    meshRenderStage->meshSharedSet = sharedSet;
 
     renderer = new VulkanRenderer(vulkan);
     renderer->setMeshStage(meshRenderStage);
     renderer->compile();
-
 }
 
 ShadowMapRenderer::~ShadowMapRenderer()
 {
 }
 
-void ShadowMapRenderer::renderToSwapChain(Camera *camera)
+void ShadowMapRenderer::render(Camera *camera)
 {
 
     //if (Game::instance->world->scene->getMesh3ds().size() == 0) return;
@@ -103,5 +106,8 @@ void ShadowMapRenderer::renderToSwapChain(Camera *camera)
     glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
     camera->cone->update(inverse(rpmatrix));
 
-   // renderer->draw();
+    //Application::instance->scene->prepareFrame(glm::mat4(1));
+    renderer->beginDrawing();
+    Application::instance->scene->draw(glm::mat4(1), renderer->getMesh3dStage());
+    renderer->endDrawing();
 }
