@@ -22,8 +22,8 @@ public:
     }
 
     glm::quat getOrientation() {
-        auto a = glm::lookAt(glm::vec3(0.0), glm::normalize(p2->getPosition() - p1->getPosition()), glm::vec3(0.0, 0.001, 1.0));
-        return glm::quat(a);
+        auto a = glm::lookAt(glm::vec3(0.0), glm::normalize(p2->getPosition() - p1->getPosition()), glm::vec3(0.0, 0.001, -1.0));
+        return glm::slerp(p1->getOrientation(), p2->getOrientation(), 0.5f);// *glm::quat(a);
     }
 
     glm::vec3 getCenter() {
@@ -51,6 +51,10 @@ public:
     TransformationManager * right_hip;
     TransformationManager * right_knee;
     TransformationManager * right_foot;
+    TransformationManager * head;
+    TransformationManager * ass;
+
+    Simple2PointAlignment bone_body;
 
     Simple2PointAlignment bone_left_arm_up;
     Simple2PointAlignment bone_left_arm_down;
@@ -70,15 +74,14 @@ public:
     PhysicalBody* physicalEntity;
 
     glm::vec3 target = glm::vec3(0.0);
-
+    
     void update();
 
     void run(glm::vec3 position);
     void walk(glm::vec3 position);
     void stop();
     void die();
-private:
-
+    Mesh3d * mesh_body;
     Mesh3d * mesh_left_arm_up;
     Mesh3d * mesh_left_arm_down;
     Mesh3d * mesh_right_arm_up;
@@ -89,7 +92,8 @@ private:
     Mesh3d * mesh_right_leg_up;
     Mesh3d * mesh_right_leg_down;
 
-    Mesh3d * mesh_body;
+private:
+
 
     Mesh3d * debug_marker;
 };

@@ -416,44 +416,28 @@ void EditorApp::onBind()
     }
     app->scene->addMesh3d(debug_marker);
 
+    walker = new SimpleWalker(physics, new TransformationManager(glm::vec3(13.0, 6.0, 3.0)));
+    app->scene->addScene(walker->walkerScene);
     players = {}; 
     int yy = 0;
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "head.anim"));
-    players.push_back(new AnimationPlayer(walker->left_shoulder, "lclavicle.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lfemur.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lfingers.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lfoot.anim"));
-    players.push_back(new AnimationPlayer(walker->left_hand, "lhand.anim"));
-    players.push_back(new AnimationPlayer(walker->left_hip, "lhipjoint.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lhumerus.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lowerback.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lowerneck.anim"));
-    players.push_back(new AnimationPlayer(walker->left_elbow, "lradius.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lthumb.anim"));
-    players.push_back(new AnimationPlayer(walker->left_knee, "ltibia.anim"));
-    players.push_back(new AnimationPlayer(walker->left_foot, "ltoes.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "lwrist.anim"));
-    players.push_back(new AnimationPlayer(walker->right_shoulder, "rclavicle.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "rfemur.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "rfingers.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "rfoot.anim"));
-    players.push_back(new AnimationPlayer(walker->right_hand, "rhand.anim"));
-    players.push_back(new AnimationPlayer(walker->right_hip, "rhipjoint.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "rhumerus.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "root.anim"));
-    players.push_back(new AnimationPlayer(walker->right_elbow, "rradius.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "rthumb.anim"));
-    players.push_back(new AnimationPlayer(walker->right_knee, "rtibia.anim"));
-    players.push_back(new AnimationPlayer(walker->right_foot, "rtoes.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "rwrist.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "thorax.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "upperback.anim"));
-    players.push_back(new AnimationPlayer(debug_marker->getInstance(yy++)->transformation, "upperneck.anim"));
+    players.push_back(new AnimationPlayer(walker->left_shoulder,    "lhumerus.anim"));
+    players.push_back(new AnimationPlayer(walker->left_elbow,       "lradius.anim"));
+    players.push_back(new AnimationPlayer(walker->left_hand,        "lhand.anim"));
+    players.push_back(new AnimationPlayer(walker->left_hip,         "lfemur.anim"));
+    players.push_back(new AnimationPlayer(walker->left_knee,        "ltibia.anim"));
+    players.push_back(new AnimationPlayer(walker->left_foot,        "ltoes.anim"));
+    players.push_back(new AnimationPlayer(walker->right_shoulder,   "rhumerus.anim"));
+    players.push_back(new AnimationPlayer(walker->right_elbow,      "rradius.anim"));
+    players.push_back(new AnimationPlayer(walker->right_hand,       "rhand.anim"));
+    players.push_back(new AnimationPlayer(walker->right_hip,        "rfemur.anim"));
+    players.push_back(new AnimationPlayer(walker->right_knee,       "rtibia.anim"));
+    players.push_back(new AnimationPlayer(walker->right_foot,       "rtoes.anim"));
+    players.push_back(new AnimationPlayer(walker->ass,              "thorax.anim"));
+    players.push_back(new AnimationPlayer(walker->head,             "head.anim"));
+   // players.push_back(new AnimationPlayer(walker->walkerScene->transformation, "root.anim"));
 
 
 
-    walker = new SimpleWalker(physics, new TransformationManager(glm::vec3(3.0, 6.0, 3.0)));
-    app->scene->addScene(walker->walkerScene);
     auto box = new UIBox(app->ui, 0.1, 0.1, 0.5, 0.5, UIColor(1, 0, 1, 0.5));
     auto box2 = new UIBox(app->ui, 0.2, 0.2, 0.5, 0.5, UIColor(1, 0, 0, 0.5));
     auto img1 = new UIBitmap(app->ui, 0.1, 0.2, 0.3, 0.3, app->asset->loadTextureFile("witcher_icon.png"), UIColor(1, 0, 0, 0.5));

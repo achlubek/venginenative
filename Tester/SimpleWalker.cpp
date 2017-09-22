@@ -28,6 +28,11 @@ SimpleWalker::SimpleWalker(Physics * iphysics, TransformationManager * spawn)
     left_foot = new TransformationManager();
     right_foot = new TransformationManager();
 
+    head = new TransformationManager();
+    ass = new TransformationManager();
+
+    bone_body = Simple2PointAlignment(ass, head);
+
     bone_left_arm_up = Simple2PointAlignment(left_elbow, left_shoulder);
     bone_left_arm_down = Simple2PointAlignment(left_hand, left_elbow);
     bone_right_arm_up = Simple2PointAlignment(right_elbow, right_shoulder);
@@ -69,7 +74,7 @@ SimpleWalker::SimpleWalker(Physics * iphysics, TransformationManager * spawn)
     for (int i = 0; i < debug_marker->getInstances().size(); i++) {
         debug_marker->getInstance(i)->transformation->setSize(glm::vec3(0.05));
     }
-
+    
     walkerScene->addMesh3d(mesh_left_arm_up);
     walkerScene->addMesh3d(mesh_left_arm_down);
     walkerScene->addMesh3d(mesh_right_arm_up);
@@ -80,7 +85,7 @@ SimpleWalker::SimpleWalker(Physics * iphysics, TransformationManager * spawn)
     walkerScene->addMesh3d(mesh_right_leg_down);
     walkerScene->addMesh3d(mesh_body);
     walkerScene->addMesh3d(debug_marker);
-
+    
 
     physicalEntity = physics->createBody(2.1, new TransformationManager(spawn->getPosition()), new btSphereShape(2.8f));
     physics->addBody(physicalEntity);
@@ -235,16 +240,23 @@ void SimpleWalker::update()
     auto oriento = walkerScene->transformation->getOrientation();
     
     glm::mat4 a = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-    auto rotatefix = glm::quat(glm::rotate(a, PI / 2.0f, glm::vec3(1.0f, 0.0f, 0.0f)));
+    auto rotatefix = glm::quat(glm::rotate(a, 0.0f * PI / 2.0f, glm::vec3(1.0f, 0.0f, 0.0f)));
 
     auto legstranslatefix = glm::vec3(0.0, -0.45, 0.0);
     auto shoulderposfixL = glm::vec3(-0.1, 0.2, 0.0);
     auto shoulderposfixR = (shoulderposfixL * glm::vec3(-1.0, 1.0, 1.0));
 
-    auto Zrotfix1L = glm::quat(glm::rotate(a, 0.1f, glm::vec3(0.0f, 0.0f, 1.0f)));
-    auto Zrotfix1R = glm::quat(glm::rotate(a, -0.1f, glm::vec3(0.0f, 0.0f, 1.0f)));
-    auto Z2rotfix1L = glm::quat(glm::rotate(a, 0.4f, glm::vec3(0.0f, 0.0f, 1.0f)));
-    auto Z2rotfix1R = glm::quat(glm::rotate(a, -0.4f, glm::vec3(0.0f, 0.0f, 1.0f)));
+    auto Zrotfix1L = glm::quat(glm::rotate(a,-1.1f, glm::vec3(0.0f, 0.0f, 1.0f)));
+    auto Zrotfix1R = glm::quat(glm::rotate(a, 1.1f, glm::vec3(0.0f, 0.0f, 1.0f)));
+    auto Z2rotfix1L = glm::quat(glm::rotate(a, -0.8f, glm::vec3(0.0f, 0.0f, 1.0f)));
+    auto Z2rotfix1R = glm::quat(glm::rotate(a, 0.8f, glm::vec3(0.0f, 0.0f, 1.0f)));
+
+
+    auto Z2rotfix2L = glm::quat(glm::rotate(a, -0.4f, glm::vec3(0.0f, 0.0f, 1.0f)));
+    auto Z2rotfix2R = glm::quat(glm::rotate(a, 0.4f, glm::vec3(0.0f, 0.0f, 1.0f)));
+    
+    auto Z2rotfix3L = glm::quat(glm::rotate(a, -0.4f, glm::vec3(0.0f, 0.0f, 1.0f)));
+    auto Z2rotfix3R = glm::quat(glm::rotate(a, 0.4f, glm::vec3(0.0f, 0.0f, 1.0f)));
 
     auto Xrotfix1 = glm::quat(glm::rotate(a, -0.3f, glm::vec3(1.0f, 0.0f, 0.0f)));
 
@@ -265,22 +277,24 @@ void SimpleWalker::update()
     mesh_right_arm_down->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
 
 
-    mesh_left_leg_up->getInstance(0)->transformation->setOrientation(rotatefix * bone_left_leg_up.getOrientation());
+    mesh_left_leg_up->getInstance(0)->transformation->setOrientation(Z2rotfix2L * rotatefix * bone_left_leg_up.getOrientation());
     mesh_left_leg_up->getInstance(0)->transformation->setPosition(bone_left_leg_up.getCenter());
     mesh_left_leg_up->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
 
-    mesh_left_leg_down->getInstance(0)->transformation->setOrientation(rotatefix * bone_left_leg_down.getOrientation());
+    mesh_left_leg_down->getInstance(0)->transformation->setOrientation(Z2rotfix3L * rotatefix * bone_left_leg_down.getOrientation());
     mesh_left_leg_down->getInstance(0)->transformation->setPosition(legstranslatefix + bone_left_leg_down.getCenter());
     mesh_left_leg_down->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
 
-    mesh_right_leg_up->getInstance(0)->transformation->setOrientation(rotatefix * bone_right_leg_up.getOrientation());
+    mesh_right_leg_up->getInstance(0)->transformation->setOrientation(Z2rotfix2R * rotatefix * bone_right_leg_up.getOrientation());
     mesh_right_leg_up->getInstance(0)->transformation->setPosition(bone_right_leg_up.getCenter());
     mesh_right_leg_up->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
 
-    mesh_right_leg_down->getInstance(0)->transformation->setOrientation(rotatefix * bone_right_leg_down.getOrientation());
+    mesh_right_leg_down->getInstance(0)->transformation->setOrientation(Z2rotfix3R * rotatefix * bone_right_leg_down.getOrientation());
     mesh_right_leg_down->getInstance(0)->transformation->setPosition(legstranslatefix + bone_right_leg_down.getCenter());
     mesh_right_leg_down->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
 
+    mesh_body->getInstance(0)->transformation->setOrientation(rotatefix * bone_body.getOrientation());
+    mesh_body->getInstance(0)->transformation->setPosition(bone_body.getCenter());
     mesh_body->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
 }
 
