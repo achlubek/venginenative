@@ -54,7 +54,9 @@ void main() {
         * (1.0 - step(1.0, lightuv.x))
         * (1.0 - step(1.0, lightuv.x))
         * clip(worldPos)
-        * (1.0 - step(0.1, expected - shadowdata));
+        * (1.0 - smoothstep(0.0, 0.001, expected - shadowdata));
 
-    outColor = vec4(dt * shadow * diffuse * lightData.Color.xyz, 1.0);
+    vec3 attenuated_diffuse = diffuse / (expected*expected+1.0);
+
+    outColor = vec4(dt * shadow * attenuated_diffuse * lightData.Color.xyz, 1.0);
 }

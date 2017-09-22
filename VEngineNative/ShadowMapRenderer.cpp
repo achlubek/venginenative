@@ -115,9 +115,9 @@ void ShadowMapRenderer::render(Camera *camera)
     lightdata.emplaceFloat32(campos.z);
     lightdata.emplaceFloat32(0.0f);
 
-    lightdata.emplaceFloat32(1.0f);
-    lightdata.emplaceFloat32(1.0f);
-    lightdata.emplaceFloat32(1.0f);
+    lightdata.emplaceFloat32(10.0f);
+    lightdata.emplaceFloat32(10.0f);
+    lightdata.emplaceFloat32(10.0f);
     lightdata.emplaceFloat32(0.0f);
 
     lightDataBuffer->map(0, lightdata.buffer.size(), &data);

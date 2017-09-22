@@ -422,18 +422,18 @@ void EditorApp::onBind()
     int yy = 0;
     players.push_back(new AnimationPlayer(walker->left_shoulder,    "lhumerus.anim"));
     players.push_back(new AnimationPlayer(walker->left_elbow,       "lradius.anim"));
-    players.push_back(new AnimationPlayer(walker->left_hand,        "lhand.anim"));
+    players.push_back(new AnimationPlayer(walker->left_hand,        "lfingers.anim"));
     players.push_back(new AnimationPlayer(walker->left_hip,         "lfemur.anim"));
     players.push_back(new AnimationPlayer(walker->left_knee,        "ltibia.anim"));
-    players.push_back(new AnimationPlayer(walker->left_foot,        "ltoes.anim"));
+    players.push_back(new AnimationPlayer(walker->left_foot,        "lfoot.anim"));
     players.push_back(new AnimationPlayer(walker->right_shoulder,   "rhumerus.anim"));
     players.push_back(new AnimationPlayer(walker->right_elbow,      "rradius.anim"));
-    players.push_back(new AnimationPlayer(walker->right_hand,       "rhand.anim"));
+    players.push_back(new AnimationPlayer(walker->right_hand,       "rfingers.anim"));
     players.push_back(new AnimationPlayer(walker->right_hip,        "rfemur.anim"));
     players.push_back(new AnimationPlayer(walker->right_knee,       "rtibia.anim"));
-    players.push_back(new AnimationPlayer(walker->right_foot,       "rtoes.anim"));
-    players.push_back(new AnimationPlayer(walker->ass,              "thorax.anim"));
-    players.push_back(new AnimationPlayer(walker->head,             "head.anim"));
+    players.push_back(new AnimationPlayer(walker->right_foot,       "rfoot.anim"));
+    players.push_back(new AnimationPlayer(walker->ass,              "lowerback.anim"));
+    players.push_back(new AnimationPlayer(walker->head,             "lowerneck.anim"));
    // players.push_back(new AnimationPlayer(walker->walkerScene->transformation, "root.anim"));
 
 

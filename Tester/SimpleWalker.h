@@ -23,7 +23,7 @@ public:
 
     glm::quat getOrientation() {
         auto a = glm::lookAt(glm::vec3(0.0), glm::normalize(p2->getPosition() - p1->getPosition()), glm::vec3(0.0, 0.001, -1.0));
-        return glm::slerp(p1->getOrientation(), p2->getOrientation(), 0.5f);// *glm::quat(a);
+        return glm::slerp(p1->getOrientation(), p2->getOrientation(), 1.0f);// *glm::quat(a);
     }
 
     glm::vec3 getCenter() {
