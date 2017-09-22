@@ -10,10 +10,12 @@ class ShadowMapRenderer
 public:
     ShadowMapRenderer(VulkanToolkit * vulkan, int width, int height);
     ~ShadowMapRenderer();
-    VulkanToolkit * vulkan;
-    VulkanDescriptorSetLayout* meshSetLayout;
+    VulkanToolkit * vulkan; 
 
     VulkanDescriptorSet* sharedSet;
+    VulkanDescriptorSet* lightDataSet;
+
+    VulkanGenericBuffer* lightDataBuffer;
 
     VulkanGenericBuffer* uboHighFrequencyBuffer;
     VulkanGenericBuffer* uboLowFrequencyBuffer;

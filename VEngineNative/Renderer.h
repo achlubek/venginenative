@@ -27,11 +27,17 @@ public:
     VulkanImage* normalImage;
     VulkanImage* distanceImage;
     VulkanImage* ambientImage;
+    VulkanImage* deferredResolvedImage;
     VulkanImage* depthImage;
 
     VulkanRenderer* renderer;
+    VulkanRenderStage* shadowMapGenericStage;
 
-    ShadowMapRenderer* highResShadowMapper;
+    std::vector<ShadowMapRenderer*> lightsMappers;
+
+    void deferredDraw();
+    void deferredResolve();
+
     Camera* shadowTestCamera;
      
     void renderToSwapChain(Camera *camera);

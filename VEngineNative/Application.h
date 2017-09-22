@@ -43,6 +43,7 @@ public:
     glm::mat4 viewProjMatrix;
     VulkanDescriptorSetLayout* meshModelsDataLayout;
     VulkanDescriptorSetLayout* materialLayout;
+    VulkanDescriptorSetLayout* shadowMapDataLayout;
 private:
 
     unsigned int lastId = 1;

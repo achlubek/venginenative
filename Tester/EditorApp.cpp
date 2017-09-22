@@ -416,7 +416,7 @@ void EditorApp::onBind()
     }
     app->scene->addMesh3d(debug_marker);
 
-    walker = new SimpleWalker(physics, new TransformationManager(glm::vec3(13.0, 6.0, 3.0)));
+    walker = new SimpleWalker(physics, new TransformationManager(glm::vec3(13.0, 0.0, 3.0)));
     app->scene->addScene(walker->walkerScene);
     players = {}; 
     int yy = 0;

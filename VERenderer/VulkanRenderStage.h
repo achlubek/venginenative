@@ -37,6 +37,7 @@ public:
     bool additiveBlending = false;
 
     void submit(std::vector<VkSemaphore> waitSemaphores);
+    void submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores);
 
 };
 

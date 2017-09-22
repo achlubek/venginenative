@@ -32,6 +32,11 @@ Application::Application(int windowwidth, int windowheight)
     meshModelsDataLayout->addField(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
     meshModelsDataLayout->compile();
 
+    shadowMapDataLayout = new VulkanDescriptorSetLayout(vulkan);
+    shadowMapDataLayout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+    shadowMapDataLayout->addField(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    shadowMapDataLayout->compile();
+
     materialLayout = new VulkanDescriptorSetLayout(vulkan);
 
     materialLayout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);

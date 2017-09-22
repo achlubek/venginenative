@@ -24,6 +24,9 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
 
     ambientImage = new VulkanImage(vulkan, width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
+    
+    deferredResolvedImage = new VulkanImage(vulkan, width, height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
     depthImage = new VulkanImage(vulkan, width, height, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, true);
@@ -63,8 +66,8 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
     meshRenderStage->addOutputImage(distanceImage);
     meshRenderStage->addOutputImage(depthImage);
     meshRenderStage->meshSharedSet = sharedSet;
-
-    highResShadowMapper = new ShadowMapRenderer(vulkan, 1024, 1024);
+    lightsMappers = {};
+    lightsMappers.push_back(new ShadowMapRenderer(vulkan, 1024, 1024));
 
     //####//
 
@@ -96,6 +99,24 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
 
     //##########################//
 
+    auto ppdeferredresolveShaderModule = new VulkanShaderModule(vulkan, "../../shaders/compiled/pp-deferred-resolve.frag.spv");
+
+    shadowMapGenericStage = new VulkanRenderStage(vulkan);
+
+    VkExtent2D shadowmapext = VkExtent2D();
+    shadowmapext.width = 1024;
+    shadowmapext.height = 1024;
+    shadowMapGenericStage->setViewport(ext);
+    shadowMapGenericStage->addShaderStage(ppvertShaderModule->createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
+    shadowMapGenericStage->addShaderStage(ppdeferredresolveShaderModule->createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
+    shadowMapGenericStage->addDescriptorSetLayout(ppSetLayout->layout);
+    shadowMapGenericStage->addDescriptorSetLayout(Application::instance->shadowMapDataLayout->layout);
+    shadowMapGenericStage->addOutputImage(deferredResolvedImage);
+    //shadowMapGenericStage->additiveBlending = true;
+    shadowMapGenericStage->compile();
+
+    //##########################//
+
     auto ppoutputfragShaderModule = new VulkanShaderModule(vulkan, "../../shaders/compiled/pp-output.frag.spv");
 
     auto post_process_zygote = new VulkanRenderStage(vulkan);
@@ -115,7 +136,7 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
     postProcessSet->bindImageViewSampler(4, distanceImage);
     postProcessSet->bindImageViewSampler(5, ambientImage);
     postProcessSet->bindImageViewSampler(6, Application::instance->ui->outputImage);
-    postProcessSet->bindImageViewSampler(7, highResShadowMapper->distanceImage);
+    postProcessSet->bindImageViewSampler(7, deferredResolvedImage);
     postProcessSet->update();
 
     renderer = new VulkanRenderer(vulkan);
@@ -127,12 +148,32 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
  
     shadowTestCamera = new Camera();
     shadowTestCamera->createProjectionPerspective(90.0f, 1.0f, 0.01f, 10000);
-    shadowTestCamera->transformation->setPosition(glm::vec3(2.991431, 4.548709, 3.439944));
-    shadowTestCamera->transformation->setOrientation(glm::quat(0.935260, -0.291301, 0.191981, 0.059795));
+    shadowTestCamera->transformation->setPosition(glm::vec3(1.333080, 9.693623, 8.664752));
+    shadowTestCamera->transformation->setOrientation(glm::inverse(glm::quat(0.241280, 0.615887, 0.206073, -0.721112)));
 }
 
 Renderer::~Renderer()
 { 
+}
+
+void Renderer::deferredDraw()
+{
+    for (int i = 0; i < lightsMappers.size(); i++) {
+        lightsMappers[i]->render(shadowTestCamera);
+    }
+}
+
+void Renderer::deferredResolve()
+{
+    shadowMapGenericStage->beginDrawing();
+    for (int i = 0; i < lightsMappers.size(); i++) {
+        shadowMapGenericStage->drawMesh(vulkan->fullScreenQuad3dInfo, { postProcessSet, lightsMappers[i]->lightDataSet }, 1);
+    }
+    shadowMapGenericStage->endDrawing();
+    vkQueueWaitIdle(vulkan->mainQueue);
+    for (int i = 0; i < lightsMappers.size(); i++) {
+        shadowMapGenericStage->submitNoSemaphores({});
+    }
 }
 
 void Renderer::renderToSwapChain(Camera *camera)
@@ -140,7 +181,6 @@ void Renderer::renderToSwapChain(Camera *camera)
 
     Application::instance->scene->prepareFrame(glm::mat4(1));
 
-    highResShadowMapper->render(shadowTestCamera);
 
     //if (Game::instance->world->scene->getMesh3ds().size() == 0) return;
     VulkanBinaryBufferBuilder bb = VulkanBinaryBufferBuilder();
@@ -152,6 +192,11 @@ void Renderer::renderToSwapChain(Camera *camera)
         0.0f, 0.0f, 0.5f, 0.0f,
         0.0f, 0.0f, 0.5f, 1.0f);
     glm::mat4 vpmatrix = clip * camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
+
+    glm::mat4 cameraViewMatrix = camera->transformation->getInverseWorldTransform();
+    glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
+    glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
+    camera->cone->update(inverse(rpmatrix));
 
     bb.emplaceFloat32((float)glfwGetTime());
     bb.emplaceFloat32(0.0f);
@@ -177,13 +222,13 @@ void Renderer::renderToSwapChain(Camera *camera)
     uboLowFrequencyBuffer->map(0, bb.buffer.size(), &data);
     memcpy(data, bb.getPointer(), bb.buffer.size());
     uboLowFrequencyBuffer->unmap();
-    
-    glm::mat4 cameraViewMatrix = camera->transformation->getInverseWorldTransform(); 
-    glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
-    glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
-    camera->cone->update(inverse(rpmatrix));
+
+
+    deferredDraw();
     
     renderer->beginDrawing();
     Application::instance->scene->draw(glm::mat4(1), renderer->getMesh3dStage());
     renderer->endDrawing();
+
+    deferredResolve();
 }
