@@ -9,70 +9,27 @@
 SimpleWalker::SimpleWalker(Physics * iphysics, TransformationManager * spawn)
     : physics(iphysics)
 {
-    walkerScene = new Scene(spawn);
-    left_shoulder = new TransformationManager();
-    right_shoulder = new TransformationManager();
-
-    left_elbow = new TransformationManager();
-    right_elbow = new TransformationManager();
-
-    left_hand = new TransformationManager();
-    right_hand = new TransformationManager();
-
-    left_hip = new TransformationManager();
-    right_hip = new TransformationManager();
-
-    left_knee = new TransformationManager();
-    right_knee = new TransformationManager();
-
-    left_foot = new TransformationManager();
-    right_foot = new TransformationManager();
-
-    head = new TransformationManager();
-    ass = new TransformationManager();
-
-    bone_body = Simple2PointAlignment(ass, head);
-
-    bone_left_arm_up = Simple2PointAlignment(left_elbow, left_shoulder);
-    bone_left_arm_down = Simple2PointAlignment(left_hand, left_elbow);
-    bone_right_arm_up = Simple2PointAlignment(right_elbow, right_shoulder);
-    bone_right_arm_down = Simple2PointAlignment(right_hand, right_elbow);
-
-    bone_left_leg_up = Simple2PointAlignment(left_knee, left_hip);
-    bone_left_leg_down = Simple2PointAlignment(left_foot, left_knee);
-    bone_right_leg_up = Simple2PointAlignment(right_knee, right_hip);
-    bone_right_leg_down = Simple2PointAlignment(right_foot, right_knee);
-
+    walkerScene = new Scene(spawn);  
     auto material = new Material();
-    mesh_left_arm_up    = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_arm_up_left.raw"), material);
-    mesh_left_arm_down  = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_arm_down_left.raw"), material);
-    mesh_right_arm_up   = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_arm_up_right.raw"), material);
-    mesh_right_arm_down = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_arm_down_right.raw"), material);
+    mesh_left_arm_up    = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_arm.raw"), material);
+    mesh_left_arm_down  = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_hand.raw"), material);
+    mesh_left_leg_up    = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_hip.raw"), material);
+    mesh_left_leg_down  = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_leg.raw"), material);
 
-    mesh_left_leg_up    = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_leg_up_left.raw"), material);
-    mesh_left_leg_down  = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_leg_down_left.raw"), material);
-    mesh_right_leg_up   = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_leg_up_right.raw"), material);
-    mesh_right_leg_down = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_leg_down_right.raw"), material);
+    mesh_right_arm_up = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_arm.raw"), material);
+    mesh_right_arm_down = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_hand.raw"), material);
+    mesh_right_leg_up = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_hip.raw"), material);
+    mesh_right_leg_down = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_leg.raw"), material);
 
 
     mesh_body = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_body.raw"), material);
+    mesh_head = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("skeleton_head.raw"), material);
      
 
     debug_marker = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("icos.raw"), material);
-    debug_marker->addInstance(new Mesh3dInstance(left_shoulder));
-    debug_marker->addInstance(new Mesh3dInstance(right_shoulder));
-    debug_marker->addInstance(new Mesh3dInstance(left_elbow));
-    debug_marker->addInstance(new Mesh3dInstance(right_elbow));
-    debug_marker->addInstance(new Mesh3dInstance(left_hand));
-    debug_marker->addInstance(new Mesh3dInstance(right_hand));
-    debug_marker->addInstance(new Mesh3dInstance(left_hip));
-    debug_marker->addInstance(new Mesh3dInstance(right_hip));
-    debug_marker->addInstance(new Mesh3dInstance(left_knee));
-    debug_marker->addInstance(new Mesh3dInstance(right_knee));
-    debug_marker->addInstance(new Mesh3dInstance(left_foot));
-    debug_marker->addInstance(new Mesh3dInstance(right_foot));
+
     for (int i = 0; i < debug_marker->getInstances().size(); i++) {
-        debug_marker->getInstance(i)->transformation->setSize(glm::vec3(0.05));
+  //      debug_marker->getInstance(i)->transformation->setSize(glm::vec3(0.05));
     }
     
     walkerScene->addMesh3d(mesh_left_arm_up);
@@ -84,7 +41,8 @@ SimpleWalker::SimpleWalker(Physics * iphysics, TransformationManager * spawn)
     walkerScene->addMesh3d(mesh_right_leg_up);
     walkerScene->addMesh3d(mesh_right_leg_down);
     walkerScene->addMesh3d(mesh_body);
-    walkerScene->addMesh3d(debug_marker);
+    walkerScene->addMesh3d(mesh_head);
+   // walkerScene->addMesh3d(debug_marker);
     
 
     physicalEntity = physics->createBody(2.1, new TransformationManager(spawn->getPosition()), new btSphereShape(2.8f));
@@ -232,71 +190,21 @@ void SimpleWalker::update()
         right_foot->setPosition(glm::vec3(-0.2, -2.8 + abs(s4) * abs(s4) * 0.3, -0.2 + 1.7 * s4));
     }*/
 
-    glm::vec3 pos = glmify3(physicalEntity->getRigidBody()->getCenterOfMassPosition());
-    walkerScene->transformation->setPosition(pos);
+   // glm::vec3 pos = glmify3(physicalEntity->getRigidBody()->getCenterOfMassPosition());
+   // walkerScene->transformation->setPosition(pos);
    // auto lookat = glm::lookAt(glm::vec3(pos.x, target.y, pos.z), target, glm::vec3(0.0, 1.0, 0.0));
    // walkerScene->transformation->setOrientation(glm::quat(lookat));
-
-    auto oriento = walkerScene->transformation->getOrientation();
-    
-    glm::mat4 a = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-    auto rotatefix = glm::quat(glm::rotate(a, 0.0f * PI / 2.0f, glm::vec3(1.0f, 0.0f, 0.0f)));
-
-    auto legstranslatefix = glm::vec3(0.0, -0.45, 0.0);
-    auto shoulderposfixL = glm::vec3(-0.1, 0.2, 0.0);
-    auto shoulderposfixR = (shoulderposfixL * glm::vec3(-1.0, 1.0, 1.0));
-
-    auto Zrotfix1L = glm::quat(glm::rotate(a,-1.1f, glm::vec3(0.0f, 0.0f, 1.0f)));
-    auto Zrotfix1R = glm::quat(glm::rotate(a, 1.1f, glm::vec3(0.0f, 0.0f, 1.0f)));
-    auto Z2rotfix1L = glm::quat(glm::rotate(a, -0.8f, glm::vec3(0.0f, 0.0f, 1.0f)));
-    auto Z2rotfix1R = glm::quat(glm::rotate(a, 0.8f, glm::vec3(0.0f, 0.0f, 1.0f)));
-
-
-    auto Z2rotfix2L = glm::quat(glm::rotate(a, -0.4f, glm::vec3(0.0f, 0.0f, 1.0f)));
-    auto Z2rotfix2R = glm::quat(glm::rotate(a, 0.4f, glm::vec3(0.0f, 0.0f, 1.0f)));
-    
-    auto Z2rotfix3L = glm::quat(glm::rotate(a, -0.4f, glm::vec3(0.0f, 0.0f, 1.0f)));
-    auto Z2rotfix3R = glm::quat(glm::rotate(a, 0.4f, glm::vec3(0.0f, 0.0f, 1.0f)));
-
-    auto Xrotfix1 = glm::quat(glm::rotate(a, 0.3f, glm::vec3(1.0f, 0.0f, 0.0f)));
-    auto Xrotfix2arms = glm::quat(glm::rotate(a, -0.5f, glm::vec3(1.0f, 0.0f, 0.0f)));
-
-    mesh_left_arm_up->getInstance(0)->transformation->setOrientation(Zrotfix1L * rotatefix * bone_left_arm_up.getOrientation());
-    mesh_left_arm_up->getInstance(0)->transformation->setPosition(shoulderposfixL + bone_left_arm_up.getCenter());
     mesh_left_arm_up->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
-
-    mesh_left_arm_down->getInstance(0)->transformation->setOrientation(Xrotfix2arms * Z2rotfix1L * rotatefix * bone_left_arm_down.getOrientation());
-    mesh_left_arm_down->getInstance(0)->transformation->setPosition( bone_left_arm_down.getCenter());
     mesh_left_arm_down->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
-
-    mesh_right_arm_up->getInstance(0)->transformation->setOrientation(Zrotfix1R * rotatefix * bone_right_arm_up.getOrientation());
-    mesh_right_arm_up->getInstance(0)->transformation->setPosition(shoulderposfixR + bone_right_arm_up.getCenter());
-    mesh_right_arm_up->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
-
-    mesh_right_arm_down->getInstance(0)->transformation->setOrientation(Xrotfix2arms * Z2rotfix1R * rotatefix * bone_right_arm_down.getOrientation());
-    mesh_right_arm_down->getInstance(0)->transformation->setPosition(bone_right_arm_down.getCenter());
-    mesh_right_arm_down->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
-
-
-    mesh_left_leg_up->getInstance(0)->transformation->setOrientation(Z2rotfix2L * rotatefix * bone_left_leg_up.getOrientation());
-    mesh_left_leg_up->getInstance(0)->transformation->setPosition(bone_left_leg_up.getCenter());
     mesh_left_leg_up->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
-
-    mesh_left_leg_down->getInstance(0)->transformation->setOrientation(Xrotfix1 * Z2rotfix3L * rotatefix * bone_left_leg_down.getOrientation());
-    mesh_left_leg_down->getInstance(0)->transformation->setPosition(legstranslatefix + bone_left_leg_down.getCenter());
     mesh_left_leg_down->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
-
-    mesh_right_leg_up->getInstance(0)->transformation->setOrientation(Z2rotfix2R * rotatefix * bone_right_leg_up.getOrientation());
-    mesh_right_leg_up->getInstance(0)->transformation->setPosition(bone_right_leg_up.getCenter());
-    mesh_right_leg_up->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
-
-    mesh_right_leg_down->getInstance(0)->transformation->setOrientation(Xrotfix1 * Z2rotfix3R * rotatefix * bone_right_leg_down.getOrientation());
-    mesh_right_leg_down->getInstance(0)->transformation->setPosition(legstranslatefix + bone_right_leg_down.getCenter());
-    mesh_right_leg_down->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
-
-    mesh_body->getInstance(0)->transformation->setOrientation(rotatefix * bone_body.getOrientation());
-    mesh_body->getInstance(0)->transformation->setPosition(glm::vec3(0.0f, 0.4f, 0.0f) + bone_body.getCenter());
+    mesh_right_arm_up->getInstance(0)->transformation->setSize(glm::vec3(-0.1f, 0.1f, 0.1f));
+    mesh_right_arm_down->getInstance(0)->transformation->setSize(glm::vec3(-0.1f, 0.1f, 0.1f));
+    mesh_right_leg_up->getInstance(0)->transformation->setSize(glm::vec3(-0.1f, 0.1f, 0.1f));
+    mesh_right_leg_down->getInstance(0)->transformation->setSize(glm::vec3(-0.1f, 0.1f, 0.1f));
     mesh_body->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
+    mesh_head->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
+return; //todo
 }
 
 void SimpleWalker::run(glm::vec3 position)

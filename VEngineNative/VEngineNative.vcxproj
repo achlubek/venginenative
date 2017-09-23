@@ -248,6 +248,8 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AnimationPack.h" />
+    <ClInclude Include="AnimationPlayer.h" />
     <ClInclude Include="AssetLoader.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="FrustumCone.h" />
@@ -265,6 +267,8 @@
     <ClInclude Include="VEngine.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnimationPack.cpp" />
+    <ClCompile Include="AnimationPlayer.cpp" />
     <ClCompile Include="AssetLoader.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="FrustumCone.cpp" />

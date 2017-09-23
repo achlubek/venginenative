@@ -20,6 +20,8 @@
 #include "Chat.h"
 #include "VulkanMemoryChunk.h"
 #include "VulkanMemoryManager.h"
+#include "AnimationPack.h"
+#include "AnimationPlayer.h"
 #include <time.h>
 
 #undef max
@@ -414,27 +416,24 @@ void EditorApp::onBind()
     for (int y = 0; y < 31; y++) {
         debug_marker->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0, 0.0, 0), glm::vec3(5.0))));
     }
-    app->scene->addMesh3d(debug_marker);
+    //app->scene->addMesh3d(debug_marker);
 
-    walker = new SimpleWalker(physics, new TransformationManager(glm::vec3(13.0, 0.0, 3.0)));
+    walker = new SimpleWalker(physics, new TransformationManager(glm::vec3(13.0, 6.0, 3.0)));
     app->scene->addScene(walker->walkerScene);
     players = {}; 
     int yy = 0;
-    players.push_back(new AnimationPlayer(walker->left_shoulder,    "lhumerus.anim"));
-    players.push_back(new AnimationPlayer(walker->left_elbow,       "lradius.anim"));
-    players.push_back(new AnimationPlayer(walker->left_hand,        "lfingers.anim"));
-    players.push_back(new AnimationPlayer(walker->left_hip,         "lfemur.anim"));
-    players.push_back(new AnimationPlayer(walker->left_knee,        "ltibia.anim"));
-    players.push_back(new AnimationPlayer(walker->left_foot,        "lfoot.anim"));
-    players.push_back(new AnimationPlayer(walker->right_shoulder,   "rhumerus.anim"));
-    players.push_back(new AnimationPlayer(walker->right_elbow,      "rradius.anim"));
-    players.push_back(new AnimationPlayer(walker->right_hand,       "rfingers.anim"));
-    players.push_back(new AnimationPlayer(walker->right_hip,        "rfemur.anim"));
-    players.push_back(new AnimationPlayer(walker->right_knee,       "rtibia.anim"));
-    players.push_back(new AnimationPlayer(walker->right_foot,       "rfoot.anim"));
-    players.push_back(new AnimationPlayer(walker->ass,              "lowerback.anim"));
-    players.push_back(new AnimationPlayer(walker->head,             "lowerneck.anim"));
-   // players.push_back(new AnimationPlayer(walker->walkerScene->transformation, "root.anim"));
+    AnimationPack* animpack = new AnimationPack("untitled.animconf");
+    players.push_back(animpack->createPlayer(walker->mesh_left_arm_up->getInstance(0)->transformation, "lhumerus"));
+    players.push_back(animpack->createPlayer(walker->mesh_left_arm_down->getInstance(0)->transformation, "lradius"));
+    players.push_back(animpack->createPlayer(walker->mesh_left_leg_up->getInstance(0)->transformation, "lfemur"));
+    players.push_back(animpack->createPlayer(walker->mesh_left_leg_down->getInstance(0)->transformation, "ltibia"));
+    players.push_back(animpack->createPlayer(walker->mesh_right_arm_up->getInstance(0)->transformation, "rhumerus"));
+    players.push_back(animpack->createPlayer(walker->mesh_right_arm_down->getInstance(0)->transformation, "rradius"));
+    players.push_back(animpack->createPlayer(walker->mesh_right_leg_up->getInstance(0)->transformation, "rfemur"));
+    players.push_back(animpack->createPlayer(walker->mesh_right_leg_down->getInstance(0)->transformation, "rtibia"));
+    players.push_back(animpack->createPlayer(walker->mesh_body->getInstance(0)->transformation, "thorax"));
+    players.push_back(animpack->createPlayer(walker->mesh_head->getInstance(0)->transformation, "head"));
+    players.push_back(animpack->createPlayer(walker->walkerScene->transformation, "root"));
 
 
 
@@ -575,7 +574,7 @@ void EditorApp::onBind()
         //abody2->enable();
         auto groundplane = app->asset->loadMeshFile("2dplane.mesh3d");
         groundplane->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, 1.0, 0.0), glm::vec3(100.0, 1.0, 100.0))));
-        app->scene->addMesh3d(groundplane);
+       // app->scene->addMesh3d(groundplane);
         auto groundpb = physics->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
         // groundpb->getCollisionObject()->setFriction(4);
         physics->addBody(groundpb);

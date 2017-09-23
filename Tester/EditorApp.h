@@ -5,6 +5,7 @@
 #include "SimpleWalker.h"
 class Chat;
 class Sound3d;
+class AnimationPlayer;
 
 #define EDITOR_MODE_IDLE 0
 #define EDITOR_MODE_MOVE_CAMERA 1
@@ -12,14 +13,14 @@ class Sound3d;
 #define EDITOR_MODE_EDITING 3
 #define EDITOR_MODE_WRITING_TEXT 4
 
-class AnimationPlayer {
+class AnimationPlayerX {
 public:
     TransformationManager* trans;
     float * floats = nullptr;
     int framecount = 0;
     int frame = 0;
     int delay = 0;
-    AnimationPlayer(TransformationManager* t, string file) {
+    AnimationPlayerX(TransformationManager* t, string file) {
         trans = t;
         unsigned char* bytes;
         int bytescount = Media::readBinary(file, &bytes);
@@ -30,7 +31,7 @@ public:
 
     void nextFrame() {
         delay++;
-        if (delay > 8) {
+        if (delay > 3) {
             delay = 0;
             int O = 0;
             glm::mat4 mat = glm::mat4(1);
