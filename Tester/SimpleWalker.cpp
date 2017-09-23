@@ -194,14 +194,15 @@ void SimpleWalker::update()
    // walkerScene->transformation->setPosition(pos);
    // auto lookat = glm::lookAt(glm::vec3(pos.x, target.y, pos.z), target, glm::vec3(0.0, 1.0, 0.0));
    // walkerScene->transformation->setOrientation(glm::quat(lookat));
-    mesh_left_arm_up->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
-    mesh_left_arm_down->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
-    mesh_left_leg_up->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
-    mesh_left_leg_down->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
-    mesh_right_arm_up->getInstance(0)->transformation->setSize(glm::vec3(-0.1f, 0.1f, 0.1f));
-    mesh_right_arm_down->getInstance(0)->transformation->setSize(glm::vec3(-0.1f, 0.1f, 0.1f));
-    mesh_right_leg_up->getInstance(0)->transformation->setSize(glm::vec3(-0.1f, 0.1f, 0.1f));
-    mesh_right_leg_down->getInstance(0)->transformation->setSize(glm::vec3(-0.1f, 0.1f, 0.1f));
+    mesh_left_arm_up->getInstance(0)->transformation->setSize(glm::vec3(0.2f, 0.2f, 0.2f));
+    mesh_left_arm_down->getInstance(0)->transformation->setSize(glm::vec3(0.2f, 0.2f, 0.2f));
+    mesh_left_leg_up->getInstance(0)->transformation->setSize(glm::vec3(-0.1f, 0.1f, 0.1f));
+    mesh_left_leg_down->getInstance(0)->transformation->setSize(glm::vec3(-0.1f, 0.1f, 0.1f));
+
+    mesh_right_arm_up->getInstance(0)->transformation->setSize(glm::vec3(-0.2f, 0.2f, 0.2f));
+    mesh_right_arm_down->getInstance(0)->transformation->setSize(glm::vec3(-0.2f, 0.2f, 0.2f));
+    mesh_right_leg_up->getInstance(0)->transformation->setSize(glm::vec3(0.1f, 0.1f, 0.1f));
+    mesh_right_leg_down->getInstance(0)->transformation->setSize(glm::vec3(0.1f, 0.1f, 0.1f));
     mesh_body->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
     mesh_head->getInstance(0)->transformation->setSize(glm::vec3(0.1f));
 return; //todo

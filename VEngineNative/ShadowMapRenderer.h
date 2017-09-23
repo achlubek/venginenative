@@ -13,9 +13,7 @@ public:
     VulkanToolkit * vulkan; 
 
     VulkanDescriptorSet* sharedSet;
-    VulkanDescriptorSet* lightDataSet;
 
-    VulkanGenericBuffer* lightDataBuffer;
 
     VulkanGenericBuffer* uboHighFrequencyBuffer;
     VulkanGenericBuffer* uboLowFrequencyBuffer;
@@ -24,7 +22,7 @@ public:
 
     VulkanRenderer* renderer;
 
-    void render(Camera *camera);
+    void render(Camera *camera, glm::vec3 color);
     int width;
     int height;
 };

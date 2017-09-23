@@ -10,6 +10,7 @@ layout(set = 1, binding = 0) uniform shadowmapubo {
     vec4 Position;
     vec4 Color;
 } lightData;
+#define isShadowMappingEnabled (lightData.Position.a > 0.5)
 layout(set = 1, binding = 1) uniform sampler2D shadowMap;
 
 #include camera.glsl
@@ -49,12 +50,15 @@ void main() {
     float expected = distance(lightData.Position.xyz, worldPos);
     vec3 to_light_dir = normalize(lightData.Position.xyz - worldPos);
     float dt = max(0.0, dot(normal, to_light_dir));
-    float shadow = step(0.0, lightuv.x)
-        * step(0.0, lightuv.y)
-        * (1.0 - step(1.0, lightuv.x))
-        * (1.0 - step(1.0, lightuv.x))
-        * clip(worldPos)
-        * (1.0 - smoothstep(0.0, 0.001, expected - shadowdata));
+    float shadow = 1.0;
+    if(isShadowMappingEnabled){
+        shadow = step(0.0, lightuv.x)
+            * step(0.0, lightuv.y)
+            * (1.0 - step(1.0, lightuv.x))
+            * (1.0 - step(1.0, lightuv.x))
+            * clip(worldPos)
+            * (1.0 - smoothstep(0.0, 0.001, expected - shadowdata));
+    }
 
     vec3 attenuated_diffuse = diffuse / (expected*expected+1.0);
 

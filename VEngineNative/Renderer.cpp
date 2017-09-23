@@ -5,6 +5,7 @@
 #include "FrustumCone.h"
 #include "Media.h"
 #include "ShadowMapRenderer.h"
+#include "SpotLight.h"
 
 Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
     : vulkan(ivulkan)
@@ -66,8 +67,8 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
     meshRenderStage->addOutputImage(distanceImage);
     meshRenderStage->addOutputImage(depthImage);
     meshRenderStage->meshSharedSet = sharedSet;
-    lightsMappers = {};
-    lightsMappers.push_back(new ShadowMapRenderer(vulkan, 1024, 1024));
+
+    lights = {};
 
     //####//
 
@@ -112,7 +113,7 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
     shadowMapGenericStage->addDescriptorSetLayout(ppSetLayout->layout);
     shadowMapGenericStage->addDescriptorSetLayout(Application::instance->shadowMapDataLayout->layout);
     shadowMapGenericStage->addOutputImage(deferredResolvedImage);
-    //shadowMapGenericStage->additiveBlending = true;
+    shadowMapGenericStage->additiveBlending = true;
     shadowMapGenericStage->compile();
 
     //##########################//
@@ -146,10 +147,6 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
     renderer->setPostProcessingDescriptorSet(postProcessSet);
     renderer->compile();
  
-    shadowTestCamera = new Camera();
-    shadowTestCamera->createProjectionPerspective(90.0f, 1.0f, 0.01f, 10000);
-    shadowTestCamera->transformation->setPosition(glm::vec3(1.333080, 9.693623, 8.664752));
-    shadowTestCamera->transformation->setOrientation(glm::inverse(glm::quat(0.241280, 0.615887, 0.206073, -0.721112)));
 }
 
 Renderer::~Renderer()
@@ -158,22 +155,20 @@ Renderer::~Renderer()
 
 void Renderer::deferredDraw()
 {
-    for (int i = 0; i < lightsMappers.size(); i++) {
-        lightsMappers[i]->render(shadowTestCamera);
+    for (int i = 0; i < lights.size(); i++) {
+        lights[i]->update();
     }
 }
 
 void Renderer::deferredResolve()
 {
     shadowMapGenericStage->beginDrawing();
-    for (int i = 0; i < lightsMappers.size(); i++) {
-        shadowMapGenericStage->drawMesh(vulkan->fullScreenQuad3dInfo, { postProcessSet, lightsMappers[i]->lightDataSet }, 1);
+    for (int i = 0; i < lights.size(); i++) {
+        lights[i]->recordResolveCommands(shadowMapGenericStage, postProcessSet);
     }
     shadowMapGenericStage->endDrawing();
     vkQueueWaitIdle(vulkan->mainQueue);
-    for (int i = 0; i < lightsMappers.size(); i++) {
-        shadowMapGenericStage->submitNoSemaphores({});
-    }
+    shadowMapGenericStage->submitNoSemaphores({});//todo no synchronization
 }
 
 void Renderer::renderToSwapChain(Camera *camera)

@@ -19,7 +19,6 @@ ShadowMapRenderer::ShadowMapRenderer(VulkanToolkit * ivulkan, int iwidth, int ih
 
     uboHighFrequencyBuffer = new VulkanGenericBuffer(vulkan, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
     uboLowFrequencyBuffer = new VulkanGenericBuffer(vulkan, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
-    lightDataBuffer = new VulkanGenericBuffer(vulkan, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 200);
 
     //setManager = VulkanDescriptorSetsManager();
 
@@ -38,10 +37,6 @@ ShadowMapRenderer::ShadowMapRenderer(VulkanToolkit * ivulkan, int iwidth, int ih
     sharedSet->bindUniformBuffer(1, uboLowFrequencyBuffer);
     sharedSet->update();
 
-    lightDataSet = Application::instance->shadowMapDataLayout->generateDescriptorSet();
-    lightDataSet->bindUniformBuffer(0, lightDataBuffer);
-    lightDataSet->bindImageViewSampler(1, distanceImage);
-    lightDataSet->update();
 
     auto meshRenderStage = new VulkanRenderStage(vulkan);
     VkExtent2D ext = VkExtent2D();
@@ -66,7 +61,7 @@ ShadowMapRenderer::~ShadowMapRenderer()
 {
 }
 
-void ShadowMapRenderer::render(Camera *camera)
+void ShadowMapRenderer::render(Camera *camera, glm::vec3 color)
 {
 
     //if (Game::instance->world->scene->getMesh3ds().size() == 0) return;
@@ -79,6 +74,11 @@ void ShadowMapRenderer::render(Camera *camera)
         0.0f, 0.0f, 0.5f, 0.0f,
         0.0f, 0.0f, 0.5f, 1.0f);
     glm::mat4 vpmatrix = clip * camera->projectionMatrix * camera->transformation->getInverseWorldTransform();
+
+    glm::mat4 cameraViewMatrix = camera->transformation->getInverseWorldTransform();
+    glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
+    glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
+    camera->cone->update(inverse(rpmatrix));
 
     bb.emplaceFloat32((float)glfwGetTime());
     bb.emplaceFloat32(0.0f);
@@ -105,33 +105,6 @@ void ShadowMapRenderer::render(Camera *camera)
     memcpy(data, bb.getPointer(), bb.buffer.size());
     uboLowFrequencyBuffer->unmap();
 
-    VulkanBinaryBufferBuilder lightdata = VulkanBinaryBufferBuilder();
-
-    lightdata.emplaceGeneric((unsigned char*)&vpmatrix, sizeof(vpmatrix));
-
-    auto campos = camera->transformation->getPosition();
-    lightdata.emplaceFloat32(campos.x);
-    lightdata.emplaceFloat32(campos.y);
-    lightdata.emplaceFloat32(campos.z);
-    lightdata.emplaceFloat32(0.0f);
-
-    lightdata.emplaceFloat32(10.0f);
-    lightdata.emplaceFloat32(10.0f);
-    lightdata.emplaceFloat32(10.0f);
-    lightdata.emplaceFloat32(0.0f);
-
-    lightDataBuffer->map(0, lightdata.buffer.size(), &data);
-    memcpy(data, lightdata.getPointer(), lightdata.buffer.size());
-    lightDataBuffer->unmap();
-
-    uint32_t imageIndex;
-
-    glm::mat4 cameraViewMatrix = camera->transformation->getInverseWorldTransform();
-    glm::mat4 cameraRotMatrix = camera->transformation->getRotationMatrix();
-    glm::mat4 rpmatrix = camera->projectionMatrix * inverse(cameraRotMatrix);
-    camera->cone->update(inverse(rpmatrix));
-
-    //Application::instance->scene->prepareFrame(glm::mat4(1));
     renderer->beginDrawing();
     Application::instance->scene->draw(glm::mat4(1), renderer->getMesh3dStage());
     renderer->endDrawing();

@@ -22,6 +22,7 @@
 #include "VulkanMemoryManager.h"
 #include "AnimationPack.h"
 #include "AnimationPlayer.h"
+#include "SpotLight.h"
 #include <time.h>
 
 #undef max
@@ -48,6 +49,13 @@ void EditorApp::initialize()
 
 void EditorApp::onRenderFrame(float elapsed)
 {
+    app->renderer->lights[0]->transformation->rotate(glm::angleAxis(0.01f, glm::vec3(0.0, 1.0, 0.0)));
+    app->renderer->lights[0]->transformation->setPosition(glm::vec3(0.0, 10.0, 10.0f * sin(app->time)));
+    app->renderer->lights[1]->transformation->rotate(glm::angleAxis(0.02f, glm::vec3(0.0, 1.0, 0.0)));
+    app->renderer->lights[1]->transformation->setPosition(glm::vec3(0.0, 10.0, 20.0f * sin(1.234f * app->time)));
+  //  app->renderer->lights[0]->transformation->rotate(glm::angleAxis(0.007f, glm::vec3(1.0, 0.0, 0.0)));
+  //  app->renderer->lights[0]->transformation->rotate(glm::angleAxis(0.003f, glm::vec3(0.0, 0.0, 1.0)));
+
     walker->update();
     app->ui->texts[0]->updateText(std::to_string((float)rand()));
     physics->simulationStep(1.0 / 60.0);
@@ -411,6 +419,19 @@ void EditorApp::onChar(unsigned int c)
 
 void EditorApp::onBind()
 {
+    SpotLight* spot = new SpotLight(app->vulkan, glm::vec3(100.0f), new TransformationManager(
+        glm::vec3(1.333080, 9.693623, 8.664752),
+        glm::inverse(glm::quat(0.241280, 0.615887, 0.206073, -0.721112))
+    ));
+    spot->enableShadowMapping(1024, 1024);
+    SpotLight* spot2 = new SpotLight(app->vulkan, glm::vec3(0.0f, 100.0f, 0.0f), new TransformationManager(
+        glm::vec3(1.333080, 9.693623, 8.664752),
+        glm::inverse(glm::quat(0.241280, 0.615887, 0.206073, -0.721112))
+    ));
+    //spot2->enableShadowMapping(1024, 1024);
+    app->renderer->lights.push_back(spot);
+    app->renderer->lights.push_back(spot2);
+
     debug_marker = Mesh3d::create(Application::instance->asset->loadObject3dInfoFile("icos.raw"), new Material());
 
     for (int y = 0; y < 31; y++) {
@@ -464,7 +485,7 @@ void EditorApp::onBind()
     app->mainDisplayCamera = cam;
 
     mouse->setCursorMode(GLFW_CURSOR_NORMAL);
-    /*
+    
     auto t = app->asset->loadSceneFile("sp.scene");
     //auto diftex = new Texture2d("2222.jpg");
     //auto bumtex = new Texture2d("1111.jpg");
@@ -484,11 +505,8 @@ void EditorApp::onBind()
             /// t->getMesh3ds()[i]->getLodLevel(0)->material->bumpTex = bumtex;
         sponza2->addMesh3d(t->getMesh3ds()[i]);
     }
+    sponza2->transformation->scale(glm::vec3(10.0f));
     app->scene->addScene(sponza2);
-    app->onRenderFrame.add([=](int temp) {
-        sponza2->transformation->rotate(glm::rotate(mat4(1), 0.01f, glm::vec3(0.0, 1.0, 0.0)));
-        sponza2->transformation->setPosition(glm::vec3(sin(app->time), 0.0, 0.0));
-    });*/
 
         /*
         auto s = app->asset->loadMeshFile("grass_base.mesh3d");
@@ -574,7 +592,8 @@ void EditorApp::onBind()
         //abody2->enable();
         auto groundplane = app->asset->loadMeshFile("2dplane.mesh3d");
         groundplane->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, 1.0, 0.0), glm::vec3(100.0, 1.0, 100.0))));
-       // app->scene->addMesh3d(groundplane);
+        groundplane->getLodLevel(0)->material->diffuseColor = glm::vec3(1.0f);
+      //  app->scene->addMesh3d(groundplane);
         auto groundpb = physics->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
         // groundpb->getCollisionObject()->setFriction(4);
         physics->addBody(groundpb);

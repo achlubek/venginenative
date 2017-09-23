@@ -8,6 +8,7 @@ class VulkanRenderer;
 class Camera;
 class ShadowMapRenderer;
 class VulkanToolkit;
+class SpotLight;
 
 class Renderer
 {
@@ -33,7 +34,7 @@ public:
     VulkanRenderer* renderer;
     VulkanRenderStage* shadowMapGenericStage;
 
-    std::vector<ShadowMapRenderer*> lightsMappers;
+    std::vector<SpotLight*> lights;
 
     void deferredDraw();
     void deferredResolve();
