@@ -19,6 +19,7 @@ using namespace std;
 #include "VulkanGenericBuffer.h"
 #include "VulkanDescriptorSet.h"
 #include "VulkanRenderStage.h"
+#include "VulkanComputeStage.h"
 #include "VulkanRenderer.h"
 
 #include "VulkanSwapChain.h"

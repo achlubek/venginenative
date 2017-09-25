@@ -35,6 +35,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VEUserInterface", "VEUserIn
 		{588A34FB-5137-4A09-B272-439764A4C5A8} = {588A34FB-5137-4A09-B272-439764A4C5A8}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Example_Compute", "Example_Compute\Example_Compute.vcxproj", "{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -193,6 +195,22 @@ Global
 		{EB4FF021-B17B-4CD1-8B6F-A8D4A1603B1A}.Release|x64.Build.0 = Release|x64
 		{EB4FF021-B17B-4CD1-8B6F-A8D4A1603B1A}.Release|x86.ActiveCfg = Release|Win32
 		{EB4FF021-B17B-4CD1-8B6F-A8D4A1603B1A}.Release|x86.Build.0 = Release|Win32
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.Debug|x64.ActiveCfg = Debug|x64
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.Debug|x64.Build.0 = Debug|x64
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.Debug|x86.ActiveCfg = Debug|Win32
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.Debug|x86.Build.0 = Debug|Win32
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.debugmaybe|x64.ActiveCfg = Debug|x64
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.debugmaybe|x64.Build.0 = Debug|x64
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.debugmaybe|x86.ActiveCfg = Debug|Win32
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.debugmaybe|x86.Build.0 = Debug|Win32
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.NotOptimization|x64.ActiveCfg = Release|x64
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.NotOptimization|x64.Build.0 = Release|x64
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.NotOptimization|x86.ActiveCfg = Release|Win32
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.NotOptimization|x86.Build.0 = Release|Win32
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.Release|x64.ActiveCfg = Release|x64
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.Release|x64.Build.0 = Release|x64
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.Release|x86.ActiveCfg = Release|Win32
+		{4ECCDD62-C148-4BE9-98A9-61965A99D0E8}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

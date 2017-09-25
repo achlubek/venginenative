@@ -66,19 +66,12 @@ void VulkanToolkit::initialize(int width, int height)
     pdevice = physicalDevices[chosenDeviceId];
     createLogicalDevice(physicalDevices[chosenDeviceId], createInfo);
 
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    window = glfwCreateWindow(width, height, "VEngine", NULL, NULL);
 
-    VkResult result;
-    result = glfwCreateWindowSurface(instance, window, NULL, &surface);
-    
     vkGetDeviceQueue(device, chosenQFId, 0, &mainQueue);
 
     memoryManager = new VulkanMemoryManager(this);
 
-    VkBool32 supported = false;
-    vkGetPhysicalDeviceSurfaceSupportKHR(pdevice, chosenQFId, surface, &supported);
-    swapChain = new VulkanSwapChain(this, width, height);
+
 
     VkCommandPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -122,6 +115,18 @@ void VulkanToolkit::initialize(int width, int height)
     vector<GLfloat> flo(floats, floats + floatsCount);
 
     fullScreenQuad3dInfo = new Object3dInfo(this, flo);
+
+    if (width > 0 && height > 0) {
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        window = glfwCreateWindow(width, height, "VEngine", NULL, NULL);
+
+        VkResult result;
+        result = glfwCreateWindowSurface(instance, window, NULL, &surface);
+
+        VkBool32 supported = false;
+        vkGetPhysicalDeviceSurfaceSupportKHR(pdevice, chosenQFId, surface, &supported);
+        swapChain = new VulkanSwapChain(this, width, height);
+    }
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(

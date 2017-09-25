@@ -130,6 +130,30 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int view
     }
 }
 
+VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * vulkan, std::vector<VkDescriptorSetLayout> setlayouts, 
+    VkPipelineShaderStageCreateInfo shader)
+{
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutInfo.setLayoutCount = setlayouts.size();
+    pipelineLayoutInfo.pSetLayouts = setlayouts.data();
+    pipelineLayoutInfo.pushConstantRangeCount = 0;
+
+    if (vkCreatePipelineLayout(vulkan->device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create pipeline layout!");
+    }
+
+    VkComputePipelineCreateInfo pipelineInfo = {};
+    pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+    pipelineInfo.stage = shader;
+    pipelineInfo.layout = pipelineLayout;
+    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+    // todo maybe exclude it from this class
+    if (vkCreateComputePipelines(vulkan->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create compute pipeline!");
+    }
+}
+
 
 VulkanGraphicsPipeline::~VulkanGraphicsPipeline()
 {

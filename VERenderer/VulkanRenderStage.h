@@ -1,6 +1,5 @@
 #pragma once
-class Object3dInfo;
-class VulkanRenderStage;
+class Object3dInfo; 
 class VulkanToolkit;
 class VulkanRenderStage
 {

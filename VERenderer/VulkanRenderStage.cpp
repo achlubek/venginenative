@@ -41,12 +41,7 @@ void VulkanRenderStage::addShaderStage(VkPipelineShaderStageCreateInfo ss)
 {
     shaderStages.push_back(ss);
 }
-
-// limit eg 2 so values 0 1 2
-int getLastIndex(int current, int limit) {
-    return current == 0 ? limit : current - 1;
-}
-
+ 
 void VulkanRenderStage::beginDrawing()
 {
     cmdMeshesCounts = 0;

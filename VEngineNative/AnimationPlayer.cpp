@@ -18,7 +18,7 @@ AnimationPlayer::~AnimationPlayer()
 void AnimationPlayer::nextFrame()
 {
     delay++;
-    if (delay > 18) {
+    if (delay > 6) {
         delay = 0;
         int O = 0;
         glm::mat4 mat = glm::mat4(1);
