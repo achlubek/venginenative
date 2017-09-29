@@ -660,11 +660,11 @@ void EditorApp::onBind()
         // virtualbox = app->world->physics->createBody(0.0f, new TransformationManager(), new btBoxShape(btVector3(6.0, 6.0, 6.0)));
         // virtualbox->enable();
 
-        testsound = new Sound3d("engine.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+        testsound = new Sound3d(Media::getPath("engine.flac"), new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
         testsound->setLoop(true);
-        testsound2 = new Sound3d("brown_noise.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+        testsound2 = new Sound3d(Media::getPath("brown_noise.flac"), new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
         testsound2->setLoop(true);
-        wind = new Sound3d("brown_noise.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
+        wind = new Sound3d(Media::getPath("brown_noise.flac"), new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
         wind->setLoop(true);
         /*ocean1 = new Sound3d("ocean1.flac", new TransformationManager(glm::vec3(0.0, 20.0, 0.0)));
         ocean1->setLoop(true);

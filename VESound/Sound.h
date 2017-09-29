@@ -3,7 +3,7 @@
 class Sound
 {
 public:
-    Sound(string mediakey);
+    Sound(std::string path);
     ~Sound();
 
     void play();

@@ -4,7 +4,7 @@ struct SimpleToken {
 public:
     int type;
     int idata;
-    string strdata;
+    std::string strdata;
 };
 
 class SimpleParser

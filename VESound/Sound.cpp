@@ -1,16 +1,15 @@
 #include "stdafx.h"
 #include "Sound.h"
 #include "Media.h"
-
-
-Sound::Sound(string mediakey)
+ 
+Sound::Sound(std::string path)
 {
-    if (buffer.loadFromFile(Media::getPath(mediakey))) {
+    if (buffer.loadFromFile(path)) {
         sound.setBuffer(buffer);
         ready = true;
     }
     else {
-        printf("SOUND LOADING ERROR %s\n", mediakey.c_str());
+        printf("SOUND LOADING ERROR %s\n", path.c_str());
     }
 }
 
@@ -22,13 +21,7 @@ Sound::~Sound()
 void Sound::play()
 {
     if (ready && sound.getStatus() != sound.Playing) {
-       // auto t = thread([&]()
-       // {
-        // SMFL kick off thread on its own
-            sound.play();
-           // while (sound.getStatus() == sound.Playing);
-       // });
-    //    t.detach();
+        sound.play();
     }
 }
 

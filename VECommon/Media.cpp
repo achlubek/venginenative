@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+using namespace std;
+
 map<string, string> Media::mediaMap = {};
 map<string, void*> Media::cache = {};
 

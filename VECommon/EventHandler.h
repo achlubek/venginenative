@@ -8,7 +8,7 @@ public:
     }
     ~EventHandler() {}
 
-    void add(function<void(EventT)> e) {
+    void add(std::function<void(EventT)> e) {
         handlers.push_back(e);
     }
 
@@ -17,5 +17,5 @@ public:
     }
 
 private:
-    vector<function<void(EventT)>> handlers;
+    std::vector<std::function<void(EventT)>> handlers;
 };

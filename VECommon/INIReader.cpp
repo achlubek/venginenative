@@ -1,4 +1,5 @@
 #include "stdafx.h"
+using namespace std;
 
 INIReader::INIReader(string mediakey)
 {

@@ -1,14 +1,8 @@
-// stdafx.h : include file for standard system include files,
-// or project specific include files that are used frequently, but
-// are changed infrequently
-//
-
 #pragma once
-#pragma warning(disable:4067)
+
+#define WIN32_LEAN_AND_MEAN
 
 //#define V_DEBUG 1
-
-#include "targetver.h"
 
 #include <stdio.h>
 #include <tchar.h>
@@ -31,13 +25,10 @@
 #include <unordered_map>
 #include <array>
 #include <fstream>
-using namespace std;
 
-//#include "glad.h"
-//#include <GLFW\glfw3.h>
 #include <GLFW\glfw3native.h>
 
-#include "vulkan.h"
+#include <vulkan.h>
 #include <GLFW/glfw3.h>
 #include <memory>
 //#define GLM_FORCE_DEPTH_ZERO_TO_ONE 1
@@ -54,21 +45,6 @@ using namespace std;
 #include "VEUserInterface.h"
 #include "VEngine.h"
 
-#define glAssert() {if(glGetError() != GL_NO_ERROR) printf("ERROR ON LINE [%d] %s", __LINE__, __FILE__);}
-
-
-//#include "stb_image.h"
-
 #define PI 3.141592f
 #define rad2deg(a) (a * (180.0f / PI))
 #define deg2rad(a) (a * (PI / 180.0f))
-/*
-#include "gli/gli.hpp"
-#include "gli/texture.hpp"
-#include "gli/texture2d.hpp"
-#include "gli/convert.hpp"
-#include "gli/generate_mipmaps.hpp"
-#include "gli/load.hpp"*/
-
-//#include "btBulletCollisionCommon.h"
-//#include "btBulletDynamicsCommon.h"

@@ -5,10 +5,10 @@ layout(local_size_x = 4, local_size_y = 1, local_size_z = 1) in;
 
 layout(binding = 0, std430) buffer test_buffer
 {
-float[] data;
+    float[] data;
 } testBuffer;
 
 void main()
 {
-testBuffer.data[gl_GlobalInvocationID.x] = testBuffer.data[gl_GlobalInvocationID.x] * 2.0;
+    testBuffer.data[gl_GlobalInvocationID.x] = testBuffer.data[gl_GlobalInvocationID.x] * 2.0;
 }

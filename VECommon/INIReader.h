@@ -2,15 +2,15 @@
 class INIReader
 {
 public:
-    INIReader(string mediakey);
-    float getf(string key);
-    glm::vec2 getv2(string key);
-    glm::vec3 getv3(string key);
-    void splitBySpaces(vector<string>& output, string src);
-    int geti(string key);
-    string gets(string key);
+    INIReader(std::string mediakey);
+    float getf(std::string key);
+    glm::vec2 getv2(std::string key);
+    glm::vec3 getv3(std::string key);
+    void splitBySpaces(std::vector<std::string>& output, std::string src);
+    int geti(std::string key);
+    std::string gets(std::string key);
     ~INIReader();
 private:
-    unordered_map<string, string> data;
-    void readString(string str);
+    std::unordered_map<std::string, std::string> data;
+    void readString(std::string str);
 };

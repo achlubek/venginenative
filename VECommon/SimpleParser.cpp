@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+using namespace std;
 
 SimpleParser::SimpleParser()
 {

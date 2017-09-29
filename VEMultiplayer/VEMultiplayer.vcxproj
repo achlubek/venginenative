@@ -20,9 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{AAA73204-2C8B-41B1-BCCE-5DC8868BBE88}</ProjectGuid>
+    <ProjectGuid>{90363B5D-1716-4CB5-8CEC-966A1055D8C8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>VEPhysics</RootNamespace>
+    <RootNamespace>VEMultiplayer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -79,7 +79,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Code\bullet3-2.86.1\src;C:\Code\glm-0.9.9-a1;C:\Code\VEngineNative\VECommon</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Code\SFML-2.4.2\include;C:\Code\VEngineNative\VECommon</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -125,16 +125,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="PhysicalBody.h" />
-    <ClInclude Include="PhysicalConstraint.h" />
-    <ClInclude Include="Physics.h" />
+    <ClInclude Include="AbsGlobalData.h" />
+    <ClInclude Include="AbsPlayerData.h" />
+    <ClInclude Include="AbsPlayerFactory.h" />
+    <ClInclude Include="MultiplayerClient.h" />
+    <ClInclude Include="MultiplayerServer.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="VEPhysics.h" />
+    <ClInclude Include="VEMultiplayer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="PhysicalBody.cpp" />
-    <ClCompile Include="PhysicalConstraint.cpp" />
-    <ClCompile Include="Physics.cpp" />
+    <ClCompile Include="AbsGlobalData.cpp" />
+    <ClCompile Include="AbsPlayerData.cpp" />
+    <ClCompile Include="AbsPlayerFactory.cpp" />
+    <ClCompile Include="MultiplayerClient.cpp" />
+    <ClCompile Include="MultiplayerServer.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -125,11 +125,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
     <ClInclude Include="UIBitmap.h" />
     <ClInclude Include="UIBox.h" />
     <ClInclude Include="UIColor.h" />
