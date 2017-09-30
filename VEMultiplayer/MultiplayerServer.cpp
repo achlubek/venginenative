@@ -3,13 +3,35 @@
 #include "AbsPlayerData.h"
 #include "AbsGlobalData.h"
 #include "AbsPlayerFactory.h"
+#include <vector>
 
 
-MultiplayerServer::MultiplayerServer(unsigned short port, unsigned int version)
+MultiplayerServer::MultiplayerServer(unsigned short iport, unsigned int version)
 {
     apiVersion = version;
+    port = iport;
     onPlayerConnect = EventHandler<AbsPlayerData*>();
     onPlayerDisconnect = EventHandler<AbsPlayerData*>();
+
+}
+
+
+MultiplayerServer::~MultiplayerServer()
+{
+}
+
+void MultiplayerServer::setGlobalData(AbsGlobalData * data)
+{
+    globalData = data;
+}
+
+void MultiplayerServer::setPlayerFactory(AbsPlayerFactory * factory)
+{
+    playerFactory = factory;
+}
+
+void MultiplayerServer::start()
+{
 
     if (listener.listen(port) != sf::Socket::Done)
     {
@@ -23,12 +45,12 @@ MultiplayerServer::MultiplayerServer(unsigned short port, unsigned int version)
             {
                 printf("Couldn't accept incoming connection\n");
             }
-            else { 
+            else {
                 // send handshake and receive handshake
 
                 printf("Verifying client connection\n");
                 unsigned int handshake[2] = { 0xFF00FF00, apiVersion };
-                 
+
                 if (client->send(handshake, 2 * sizeof(unsigned int)) != sf::Socket::Done)
                 {
                     printf("Couldn't send handshake\n");
@@ -70,19 +92,27 @@ MultiplayerServer::MultiplayerServer(unsigned short port, unsigned int version)
         }
     });
     t.detach();
-}
+    std::thread t2 = std::thread([&]() {
+        while (true) {
+            sf::Packet globalDataPacket = sf::Packet();
+            globalDataPacket << static_cast<unsigned char>(packetType::globalData);
+            auto globdata = globalData->serialize();
+            for (int i = 0; i < globdata.size(); i++) globalDataPacket << globdata[i];
+            // broadcast to everyone
+            for (int i = 0; i < playerDataAndSockets.size(); i++) playerDataAndSockets[i].socket->send(globalDataPacket);
 
-
-MultiplayerServer::~MultiplayerServer()
-{
+            sf::Packet allPlayersDataPacket = sf::Packet();
+            allPlayersDataPacket << static_cast<unsigned char>(packetType::allPlayersData);
+            allPlayersDataPacket << static_cast<unsigned char>(playerDataAndSockets.size());
+            for (int i = 0; i < playerDataAndSockets.size(); i++) {
+                auto playerdata = playerDataAndSockets[i].data->serialize();
+                for (int i = 0; i < playerdata.size(); i++) allPlayersDataPacket << playerdata[i];
+            }
+            for (int i = 0; i < playerDataAndSockets.size(); i++) playerDataAndSockets[i].socket->send(allPlayersDataPacket);
+            printf("Broadcasted %d players\n", playerDataAndSockets.size());
+        }
+        // i have bad feelings about this (especially about fragmentation)
+    });
+    t2.detach();
 }
-
-void MultiplayerServer::setGlobalData(AbsGlobalData * data)
-{
-    globalData = data;
-}
-
-void MultiplayerServer::setPlayerFactory(AbsPlayerFactory * factory)
-{
-    playerFactory = factory;
-}
+ 

@@ -35,3 +35,6 @@
 shaders_opengl
 x64
 media
+tmp
+*.filters
+*.suo

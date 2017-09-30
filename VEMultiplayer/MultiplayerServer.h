@@ -11,9 +11,12 @@ public:
     ~MultiplayerServer();
     void setGlobalData(AbsGlobalData* data);
     void setPlayerFactory(AbsPlayerFactory* factory);
+    void start();
     EventHandler<AbsPlayerData*> onPlayerConnect;
     EventHandler<AbsPlayerData*> onPlayerDisconnect;
 private:
+    int port;
+    enum class packetType { invalid, allPlayersData, singlePlayerData, globalData, command };
     AbsGlobalData* globalData;
     AbsPlayerFactory* playerFactory;
     struct SinglePlayerDescriptor {
@@ -26,6 +29,6 @@ private:
     };
     std::vector<SinglePlayerDescriptor> playerDataAndSockets{ {} }; //dat syntax
     sf::TcpListener listener;
-    unsigned int apiVersion;
+    unsigned int apiVersion; 
 };
 

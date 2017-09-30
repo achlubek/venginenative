@@ -35,6 +35,11 @@ class TestPlayerFactory : public AbsPlayerFactory {
     {
         return new TestPlayerData(nextId());
     }
+
+    virtual size_t getPlayerDataLength() override
+    {
+        return sizeof(unsigned int);
+    }
 };
 class TestGlobalData : public AbsGlobalData {
     
@@ -67,7 +72,12 @@ int main(int argc, char* argv[])
     // just testing mp
     MultiplayerServer* server = new MultiplayerServer(8111, 123);
     server->setPlayerFactory(new TestPlayerFactory());
-    MultiplayerClient* client = new MultiplayerClient("127.0.0.1", 8111, 123);
+    server->setGlobalData(new TestGlobalData());
+    server->start();
+    MultiplayerClient* client = new MultiplayerClient(123);
+    client->setPlayerFactory(new TestPlayerFactory());
+    client->setGlobalData(new TestGlobalData());
+    client->connect("127.0.0.1", 8111);
 
     EditorApp* app = new EditorApp();
     app->initialize();
