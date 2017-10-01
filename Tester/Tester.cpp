@@ -64,16 +64,22 @@ int main(int argc, char* argv[])
     }
     */
 
-
     Media::loadFileMap("../../media");
     Media::loadFileMap("../../shaders");
-    Application *game = new Application(800, 600);
+
 
     // just testing mp
-    MultiplayerServer* server = new MultiplayerServer(8111, 123);
-    server->setPlayerFactory(new TestPlayerFactory());
-    server->setGlobalData(new TestGlobalData());
-    server->start();
+    if (argc > 1 && strcmp(argv[1], "server") == 0) {
+        MultiplayerServer* server = new MultiplayerServer(8111, 123);
+        server->setPlayerFactory(new TestPlayerFactory());
+        server->setGlobalData(new TestGlobalData());
+        server->start();
+        while (true)getchar();
+        return 0;
+    }
+
+    Application *game = new Application(800, 600);
+
     MultiplayerClient* client = new MultiplayerClient(123);
     client->setPlayerFactory(new TestPlayerFactory());
     client->setGlobalData(new TestGlobalData());
