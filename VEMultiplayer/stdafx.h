@@ -24,6 +24,7 @@
 #include <array>
 #include <fstream> 
 
+#define mySleep(a) std::this_thread::sleep_for(std::chrono::milliseconds(a));
 #include <SFML/Network.hpp>
 /*
 let me think

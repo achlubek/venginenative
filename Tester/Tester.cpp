@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 
     Media::loadFileMap("../../media");
     Media::loadFileMap("../../shaders");
-    Application *game = new Application(1920, 1010);
+    Application *game = new Application(800, 600);
 
     // just testing mp
     MultiplayerServer* server = new MultiplayerServer(8111, 123);

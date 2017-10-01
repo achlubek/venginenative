@@ -21,5 +21,7 @@ private:
     void handleGlobalDataPacket(const void* data, size_t datalength);
     void handleCommandPacket(const void* data, size_t datalength);
     enum class packetType { invalid, allPlayersData, singlePlayerData, globalData, command };
+    void receiveThread();
+    void sendThread();
 };
 

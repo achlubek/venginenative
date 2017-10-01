@@ -4,6 +4,7 @@
 #include "AbsGlobalData.h"
 #include "AbsPlayerFactory.h"
 
+
 MultiplayerClient::MultiplayerClient(unsigned int version)
 {
     apiVersion = version;
@@ -29,8 +30,8 @@ void MultiplayerClient::handleAllPlayersDataPacket(const void * data, size_t dat
     for (unsigned char i = 0; i < playersCount; i++) {
         std::vector<unsigned char> bytes = {};
         bytes.resize(singlePlayerLength);
-        memcpy(bytes.data(), ucharpointer + offset, singlePlayerLength);
-        unsigned int id = ((unsigned int*)(bytes.data()))[0]; // static cast doesnt trust me here
+        memcpy(bytes.data(), ucharpointer + offset, singlePlayerLength); 
+        unsigned int id = (reinterpret_cast<unsigned int*>(bytes.data()))[0];
         allPlayersData[i]->deserialize(bytes);
         offset += singlePlayerLength; // i find it crazy as fuck but it should work
     }
@@ -49,6 +50,59 @@ void MultiplayerClient::handleGlobalDataPacket(const void * data, size_t datalen
 void MultiplayerClient::handleCommandPacket(const void * data, size_t datalength)
 {
     // not implemented yet but it will involve a handler and parsing like globalData
+}
+
+void MultiplayerClient::receiveThread()
+{
+    while (true) {
+        sf::Packet packet;
+        std::size_t received;
+        sf::SocketSelector selector;
+        sf::Time timeout = sf::Time(sf::seconds(1));
+        selector.add(client);
+        if (selector.wait(timeout)) {
+            if (client.receive(packet) != sf::Socket::Done)
+            {
+                printf("Couldn't receive packet from server\n");
+            }
+            else {
+                printf("Received packet from server\n");
+                const void* data = packet.getData();
+                const unsigned char* bytes = static_cast<const unsigned char*>(data);
+                size_t size = packet.getDataSize();
+                if (size > 0) {
+                    // got a packet with some length
+                    packetType type = static_cast<packetType>(bytes[0]);
+                    switch (type) {
+                    case packetType::allPlayersData:
+                        handleAllPlayersDataPacket(data, size);
+                        break;
+                    case packetType::globalData:
+                        handleGlobalDataPacket(data, size);
+                        break;
+                    case packetType::command:
+                        handleCommandPacket(data, size);
+                        break;
+                    }
+                }
+                // delete data;
+            }
+        }
+    }
+}
+
+void MultiplayerClient::sendThread()
+{
+    while (true) {
+        sf::Packet playerDataPacket = sf::Packet();
+        playerDataPacket << static_cast<unsigned char>(packetType::singlePlayerData);
+        auto playerdata = clientPlayerData->serialize();
+        for (int i = 0; i < playerdata.size(); i++) playerDataPacket << playerdata[i];
+        
+        client.send(playerDataPacket);
+        printf("Broadcasted client data\n");
+        mySleep(100);
+    }
 }
 
 void MultiplayerClient::setGlobalData(AbsGlobalData * data)
@@ -95,45 +149,15 @@ void MultiplayerClient::connect(std::string ip, unsigned short port)
                 printf("Couldn't send handshake\n");
             }
             else {
+                clientPlayerData = playerFactory->createPlayer();
                 std::thread t2 = std::thread([&]() {
-
-                    while (true) {
-                        sf::Packet packet;
-                        std::size_t received;
-                        sf::SocketSelector selector;
-                        sf::Time timeout = sf::Time(sf::seconds(1));
-                        selector.add(client);
-                        if (selector.wait(timeout)) {
-                            if (client.receive(packet) != sf::Socket::Done)
-                            {
-                                printf("Couldn't receive packet from server\n");
-                            }
-                            else {
-                                printf("Received packet from server\n");
-                                const void* data = packet.getData();
-                                const unsigned char* bytes = static_cast<const unsigned char*>(data);
-                                size_t size = packet.getDataSize();
-                                if (size > 0) {
-                                    // got a packet with some length
-                                    packetType type = static_cast<packetType>(bytes[0]);
-                                    switch (type) {
-                                    case packetType::allPlayersData:
-                                        handleAllPlayersDataPacket(data, size);
-                                        break;
-                                    case packetType::globalData:
-                                        handleGlobalDataPacket(data, size);
-                                        break;
-                                    case packetType::command:
-                                        handleCommandPacket(data, size);
-                                        break;
-                                    }
-                                }
-                               // delete data;
-                            }
-                        }
-                    }
+                    receiveThread();
                 });
                 t2.detach();
+                std::thread t3 = std::thread([&]() {
+                    sendThread();
+                });
+                t3.detach();
             }
         }
     }

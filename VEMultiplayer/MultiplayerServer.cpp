@@ -93,26 +93,95 @@ void MultiplayerServer::start()
     });
     t.detach();
     std::thread t2 = std::thread([&]() {
-        while (true) {
-            sf::Packet globalDataPacket = sf::Packet();
-            globalDataPacket << static_cast<unsigned char>(packetType::globalData);
-            auto globdata = globalData->serialize();
-            for (int i = 0; i < globdata.size(); i++) globalDataPacket << globdata[i];
-            // broadcast to everyone
-            for (int i = 0; i < playerDataAndSockets.size(); i++) playerDataAndSockets[i].socket->send(globalDataPacket);
-
-            sf::Packet allPlayersDataPacket = sf::Packet();
-            allPlayersDataPacket << static_cast<unsigned char>(packetType::allPlayersData);
-            allPlayersDataPacket << static_cast<unsigned char>(playerDataAndSockets.size());
-            for (int i = 0; i < playerDataAndSockets.size(); i++) {
-                auto playerdata = playerDataAndSockets[i].data->serialize();
-                for (int i = 0; i < playerdata.size(); i++) allPlayersDataPacket << playerdata[i];
-            }
-            for (int i = 0; i < playerDataAndSockets.size(); i++) playerDataAndSockets[i].socket->send(allPlayersDataPacket);
-            printf("Broadcasted %d players\n", playerDataAndSockets.size());
-        }
-        // i have bad feelings about this (especially about fragmentation)
+        receiveThread();
     });
     t2.detach();
+    std::thread t3 = std::thread([&]() {
+        sendThread();
+    });
+    t3.detach();
+}
+
+void MultiplayerServer::handleSinglePlayerPacket(unsigned int sourceId, const void * data, size_t datalength)
+{
+    size_t offset = 1;
+    auto ucharpointer = static_cast<const unsigned char*>(data);
+    size_t singlePlayerLength = playerFactory->getPlayerDataLength();
+    for (int i = 0; i < playerDataAndSockets.size(); i++) {
+        if (sourceId == playerDataAndSockets[i].data->id) {
+            std::vector<unsigned char> bytes = {};
+            bytes.resize(singlePlayerLength);
+            memcpy(bytes.data(), ucharpointer + offset, singlePlayerLength);
+            unsigned int id = (reinterpret_cast<unsigned int*>(bytes.data()))[0];
+            playerDataAndSockets[i].data->deserialize(bytes);
+            break;
+        }
+    }
+}
+
+void MultiplayerServer::handleCommandPacket(unsigned int sourceId, const void * data, size_t datalength)
+{
+}
+
+void MultiplayerServer::receiveThread()
+{
+    while (true) {
+        for (int i = 0; i < playerDataAndSockets.size(); i++) {
+            auto client = playerDataAndSockets[i].socket;
+            sf::Packet packet;
+            std::size_t received;
+            sf::SocketSelector selector;
+            sf::Time timeout = sf::Time(sf::milliseconds(100));
+            selector.add(*client);
+            if (selector.wait(timeout)) {
+                if (client->receive(packet) != sf::Socket::Done)
+                {
+                    printf("Couldn't receive packet from client\n");
+                }
+                else {
+                    printf("Received packet from client\n");
+                    const void* data = packet.getData();
+                    const unsigned char* bytes = static_cast<const unsigned char*>(data);
+                    size_t size = packet.getDataSize();
+                    if (size > 0) {
+                        // got a packet with some length
+                        packetType type = static_cast<packetType>(bytes[0]);
+                        switch (type) {
+                        case packetType::singlePlayerData:
+                            handleSinglePlayerPacket(playerDataAndSockets[i].data->id, data, size);
+                            break;
+                        case packetType::command:
+                            handleCommandPacket(playerDataAndSockets[i].data->id, data, size);
+                            break;
+                        }
+                    }
+                    // delete data;
+                }
+            }
+        }
+    }
+}
+
+void MultiplayerServer::sendThread()
+{
+    while (true) {
+        sf::Packet globalDataPacket = sf::Packet();
+        globalDataPacket << static_cast<unsigned char>(packetType::globalData);
+        auto globdata = globalData->serialize();
+        for (int i = 0; i < globdata.size(); i++) globalDataPacket << globdata[i];
+        // broadcast to everyone
+        for (int i = 0; i < playerDataAndSockets.size(); i++) playerDataAndSockets[i].socket->send(globalDataPacket);
+
+        sf::Packet allPlayersDataPacket = sf::Packet();
+        allPlayersDataPacket << static_cast<unsigned char>(packetType::allPlayersData);
+        allPlayersDataPacket << static_cast<unsigned char>(playerDataAndSockets.size());
+        for (int i = 0; i < playerDataAndSockets.size(); i++) {
+            auto playerdata = playerDataAndSockets[i].data->serialize();
+            for (int i = 0; i < playerdata.size(); i++) allPlayersDataPacket << playerdata[i];
+        }
+        for (int i = 0; i < playerDataAndSockets.size(); i++) playerDataAndSockets[i].socket->send(allPlayersDataPacket);
+        printf("Broadcasted %d players\n", playerDataAndSockets.size());
+        mySleep(100);
+    }
 }
  

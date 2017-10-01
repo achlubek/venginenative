@@ -29,6 +29,10 @@ private:
     };
     std::vector<SinglePlayerDescriptor> playerDataAndSockets{ {} }; //dat syntax
     sf::TcpListener listener;
-    unsigned int apiVersion; 
+    unsigned int apiVersion;
+    void handleSinglePlayerPacket(unsigned int sourceId, const void* data, size_t datalength);
+    void handleCommandPacket(unsigned int sourceId, const void* data, size_t datalength);
+    void receiveThread();
+    void sendThread();
 };
 
