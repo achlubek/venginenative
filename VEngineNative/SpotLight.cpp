@@ -60,7 +60,7 @@ void SpotLight::setFov(float ifov)
 void SpotLight::update()
 {
     if (isShadowMappingEnabled()) {
-        shadowMapRenderer->render(shadowMapCamera, color);
+        shadowMapRenderer->render(shadowMapCamera);
     }
 }
 

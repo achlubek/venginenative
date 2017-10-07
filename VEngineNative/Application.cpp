@@ -6,6 +6,7 @@ Application * Application::instance = nullptr;
 
 Application::Application(int windowwidth, int windowheight)
 {
+    mainDisplayCamera = new Camera();
     instance = this;
     frame = 0;
     width = windowwidth;

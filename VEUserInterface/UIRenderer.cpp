@@ -58,6 +58,7 @@ void UIRenderer::draw() {
         bitmaps[i]->updateBuffer();
     }
     for (int i = 0; i < texts.size(); i++) {
+        if (texts[i]->width == 0.0 && texts[i]->height == 0.0) continue;
         texts[i]->updateBuffer();
     }
 
@@ -71,6 +72,7 @@ void UIRenderer::draw() {
         stage->drawMesh(vulkan->fullScreenQuad3dInfo, { bitmaps[i]->set }, 1);
     }
     for (int i = 0; i < texts.size(); i++) {
+        if (texts[i]->width == 0.0 && texts[i]->height == 0.0) continue;
         stage->drawMesh(vulkan->fullScreenQuad3dInfo, { texts[i]->set }, 1);
     }
 

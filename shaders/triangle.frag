@@ -28,7 +28,7 @@ vec3 transform_vertex(vec3 vertex){
 
 vec3 transform_normal(vec3 normal){
     ModelInfo o = modelData.ModelInfos[inInstanceId];
-    return (o.Transformation * vec4(normal, 0.0)).xyz;
+    return mat3(o.Transformation) * normal;
 }
 layout(set = 2, binding = 0) uniform UniformBufferObject6 {
     vec4 RoughnessMetalness_ZeroZero;
@@ -176,17 +176,17 @@ void outputMaterial(){
         metalness = texture(metalnessTexture, UV * metalnessTexScale).r;
     }
     if(useNormalTexInt > 0 || useBumpTexInt > 0){
-        normal = TBN * normalmap;//normalize(mix(TBN * normalmap, normal, max(material_adjusted_roughness_normal(), material_adjusted_roughness_bump())));
+    //    normal = TBN * normalmap;//normalize(mix(TBN * normalmap, normal, max(material_adjusted_roughness_normal(), material_adjusted_roughness_bump())));
 
     }
     normal = transform_normal(normal);
 
     normal = normalize(normal);
     roughness = min(1.0, roughness + qr * 0.5);
-    normal = mix(normal, normalize(inNormal), qr);
+    //normal = mix(normal, normalize(inNormal), qr);
 
     outAlbedoRoughness = vec4(diffuseColor, roughness);
-    outNormalsMetalness = vec4(normalize(normal), metalness);
+    outNormalsMetalness = vec4(normal, metalness);
 
     outDistance = max(0.01, distance(CameraPosition, worldPos));
     //gl_FragDepth = toLogDepth(outDistance, 20000.0);

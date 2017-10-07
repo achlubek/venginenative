@@ -70,6 +70,9 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
 
     lights = {};
 
+    ambientShadowRenderer = new ShadowMapRenderer(vulkan, 1024, 1024);
+    ambientShadowCamera = new Camera();
+    ambientShadowCamera->createProjectionOrthogonal(-10.0, 10.0, -10.0, 10.0, -1000.0, 1000.0);
     //####//
 
     auto ppvertShaderModule = new VulkanShaderModule(vulkan, "../../shaders/compiled/pp.vert.spv");
@@ -218,6 +221,7 @@ void Renderer::renderToSwapChain(Camera *camera)
     memcpy(data, bb.getPointer(), bb.buffer.size());
     uboLowFrequencyBuffer->unmap();
 
+    ambientShadowRenderer->render(ambientShadowCamera);
 
     deferredDraw();
     

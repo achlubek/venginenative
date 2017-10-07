@@ -2,6 +2,10 @@
 class AbsPlayerData;
 class AbsGlobalData;
 class AbsPlayerFactory;
+class AbsCommand;
+class AbsServerToClientCommand;
+class AbsClientToServerCommand;
+#include <EventHandler.h>
 class MultiplayerClient
 {
 public:
@@ -10,17 +14,22 @@ public:
     void setGlobalData(AbsGlobalData* data);
     void setPlayerFactory(AbsPlayerFactory* factory);
     void connect(std::string ip, unsigned short port);
+    std::vector<AbsPlayerData*> allPlayersData;
+    AbsPlayerData* clientPlayerData;
+    EventHandler<MultiplayerClient*> onSuccessfulConnect;
+    EventHandler<MultiplayerClient*> onFailedConnect;
+    EventHandler<MultiplayerClient*> onDisconnect;
+    std::vector<AbsServerToClientCommand*> enabledCommands;
+    unsigned int clientId;
+    void sendPacket(sf::Packet p);
 private:
     unsigned int apiVersion;
     sf::TcpSocket client;
     AbsGlobalData* globalData;
     AbsPlayerFactory* playerFactory;
-    AbsPlayerData* clientPlayerData;
-    std::vector<AbsPlayerData*> allPlayersData;
     void handleAllPlayersDataPacket(const void* data, size_t datalength);
     void handleGlobalDataPacket(const void* data, size_t datalength);
     void handleCommandPacket(const void* data, size_t datalength);
-    enum class packetType { invalid, allPlayersData, singlePlayerData, globalData, command };
     void receiveThread();
     void sendThread();
 };

@@ -3,11 +3,18 @@
 #include "AbsPlayerData.h"
 #include "AbsGlobalData.h"
 #include "AbsPlayerFactory.h"
+#include "MultiplayerHelper.h"
+#include "AbsCommand.h"
+#include "AbsClientToServerCommand.h"
+#include "AbsServerToClientCommand.h"
+#include "SetIdCommand.h"
 
 
 MultiplayerClient::MultiplayerClient(unsigned int version)
 {
     apiVersion = version;
+    auto setidcmd = new SetIdCommand(this);
+    enabledCommands = { setidcmd };
 }
 
 
@@ -15,12 +22,16 @@ MultiplayerClient::~MultiplayerClient()
 {
 }
 
+void MultiplayerClient::sendPacket(sf::Packet p)
+{
+    client.send(p);
+}
+
 void MultiplayerClient::handleAllPlayersDataPacket(const void * data, size_t datalength)
 {
     size_t offset = 2;
     auto ucharpointer = static_cast<const unsigned char*>(data);
     unsigned char playersCount = ucharpointer[1];
-    size_t singlePlayerLength = playerFactory->getPlayerDataLength();
     while (allPlayersData.size() < playersCount) {// adjust array sizes and initialize by the way
         allPlayersData.push_back(playerFactory->createPlayer());
     }
@@ -28,12 +39,14 @@ void MultiplayerClient::handleAllPlayersDataPacket(const void * data, size_t dat
         allPlayersData.pop_back(); // deletes automatically spec says, this is all important because this deconstruct is responsible for all freeing in custom class
     }
     for (unsigned char i = 0; i < playersCount; i++) {
+        auto uintpointer = reinterpret_cast<const unsigned int*>(ucharpointer + offset);
         std::vector<unsigned char> bytes = {};
-        bytes.resize(singlePlayerLength);
-        memcpy(bytes.data(), ucharpointer + offset, singlePlayerLength); 
+        bytes.resize(uintpointer[0]);
+        offset += sizeof(unsigned int);
+        memcpy(bytes.data(), ucharpointer + offset, uintpointer[0]);
         unsigned int id = (reinterpret_cast<unsigned int*>(bytes.data()))[0];
         allPlayersData[i]->deserialize(bytes);
-        offset += singlePlayerLength; // i find it crazy as fuck but it should work
+        offset += uintpointer[0]; // i find it crazy as fuck but it should work
     }
 }
 
@@ -49,7 +62,26 @@ void MultiplayerClient::handleGlobalDataPacket(const void * data, size_t datalen
 
 void MultiplayerClient::handleCommandPacket(const void * data, size_t datalength)
 {
-    // not implemented yet but it will involve a handler and parsing like globalData
+    size_t offset = 1 + sizeof(unsigned int);
+    std::vector<unsigned char> bytes = {};
+    bytes.resize(datalength);
+    auto ucharpointer = static_cast<const unsigned char*>(data);
+    unsigned int commandNumber = reinterpret_cast<const unsigned int*>((static_cast<const unsigned char*>(data) + 1))[0];
+    memcpy(bytes.data(), ucharpointer + offset, datalength - offset);
+    for (int i = 0; i < enabledCommands.size(); i++) {
+        if (enabledCommands[i]->getIdentificator() == commandNumber) {
+            enabledCommands[i]->handle(clientId, bytes);
+        }
+    }/*
+    size_t offset = 1 + sizeof(unsigned int);
+    unsigned int commandNumber = reinterpret_cast<const unsigned int*>((static_cast<const unsigned char*>(data) + 1))[0];
+
+    // casting marathon god damn it
+    if (commandNumber == static_cast<unsigned int>(MultiplayerHelper::builtInCommands::setId)) {
+        unsigned int id = reinterpret_cast<const unsigned int*>((static_cast<const unsigned char*>(data) + 1))[1];
+        printf("Received command SET ID %d\n", id);
+        clientId = id;
+    }*/
 }
 
 void MultiplayerClient::receiveThread()
@@ -64,23 +96,25 @@ void MultiplayerClient::receiveThread()
             if (client.receive(packet) != sf::Socket::Done)
             {
                 printf("Couldn't receive packet from server\n");
+                onDisconnect.invoke(this);
+                return;
             }
             else {
-                printf("Received packet from server\n");
+              //  printf("Received packet from server\n");
                 const void* data = packet.getData();
                 const unsigned char* bytes = static_cast<const unsigned char*>(data);
                 size_t size = packet.getDataSize();
                 if (size > 0) {
                     // got a packet with some length
-                    packetType type = static_cast<packetType>(bytes[0]);
+                    auto type = static_cast<MultiplayerHelper::packetType>(bytes[0]);
                     switch (type) {
-                    case packetType::allPlayersData:
+                    case MultiplayerHelper::packetType::allPlayersData:
                         handleAllPlayersDataPacket(data, size);
                         break;
-                    case packetType::globalData:
+                    case MultiplayerHelper::packetType::globalData:
                         handleGlobalDataPacket(data, size);
                         break;
-                    case packetType::command:
+                    case MultiplayerHelper::packetType::command:
                         handleCommandPacket(data, size);
                         break;
                     }
@@ -94,13 +128,11 @@ void MultiplayerClient::receiveThread()
 void MultiplayerClient::sendThread()
 {
     while (true) {
-        sf::Packet playerDataPacket = sf::Packet();
-        playerDataPacket << static_cast<unsigned char>(packetType::singlePlayerData);
-        auto playerdata = clientPlayerData->serialize();
-        for (int i = 0; i < playerdata.size(); i++) playerDataPacket << playerdata[i];
+        sf::Packet playerDataPacket = MultiplayerHelper::createPacketRaw(MultiplayerHelper::packetType::singlePlayerData);
+        MultiplayerHelper::appendToPacket(playerDataPacket, clientPlayerData->serialize());
         
         client.send(playerDataPacket);
-        printf("Broadcasted client data\n");
+       // printf("Broadcasted client data\n");
         mySleep(100);
     }
 }
@@ -122,6 +154,7 @@ void MultiplayerClient::connect(std::string ip, unsigned short port)
     if (status != sf::Socket::Done)
     {
         printf("Couldn't connect to server\n");
+        onFailedConnect.invoke(this);
     }
     else {
         unsigned int handshakeResponse[2] = { 0, 0 };
@@ -130,15 +163,19 @@ void MultiplayerClient::connect(std::string ip, unsigned short port)
         if (client.receive(handshakeResponse, 2 * sizeof(unsigned int), received) != sf::Socket::Done)
         {
             printf("Couldn't receive handshake response from server\n");
+            onFailedConnect.invoke(this);
         }
         else if (received != 2 * sizeof(unsigned int)) {
             printf("Handshake response size is invalid\n");
+            onFailedConnect.invoke(this);
         }
         else if (handshakeResponse[0] != 0xFF00FF00) {
             printf("Handshake response is invalid\n");
+            onFailedConnect.invoke(this);
         }
         else if (handshakeResponse[1] != apiVersion) {
             printf("Handshake api version of server is invalid\n");
+            onFailedConnect.invoke(this);
         }
         else {
 
@@ -147,6 +184,7 @@ void MultiplayerClient::connect(std::string ip, unsigned short port)
             if (client.send(handshake, 2 * sizeof(unsigned int)) != sf::Socket::Done)
             {
                 printf("Couldn't send handshake\n");
+                onFailedConnect.invoke(this);
             }
             else {
                 clientPlayerData = playerFactory->createPlayer();
@@ -158,6 +196,7 @@ void MultiplayerClient::connect(std::string ip, unsigned short port)
                     sendThread();
                 });
                 t3.detach();
+                onSuccessfulConnect.invoke(this);
             }
         }
     }

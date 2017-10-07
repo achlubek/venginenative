@@ -35,6 +35,8 @@ public:
     VulkanRenderStage* shadowMapGenericStage;
 
     std::vector<SpotLight*> lights;
+    ShadowMapRenderer* ambientShadowRenderer;
+    Camera* ambientShadowCamera;
 
     void deferredDraw();
     void deferredResolve();

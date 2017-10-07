@@ -125,20 +125,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AbsClientToServerCommand.h" />
+    <ClInclude Include="AbsCommand.h" />
     <ClInclude Include="AbsGlobalData.h" />
     <ClInclude Include="AbsPlayerData.h" />
     <ClInclude Include="AbsPlayerFactory.h" />
+    <ClInclude Include="AbsServerToClientCommand.h" />
     <ClInclude Include="MultiplayerClient.h" />
+    <ClInclude Include="MultiplayerHelper.h" />
     <ClInclude Include="MultiplayerServer.h" />
+    <ClInclude Include="SetIdCommand.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="VEMultiplayer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AbsClientToServerCommand.cpp" />
+    <ClCompile Include="AbsCommand.cpp" />
     <ClCompile Include="AbsGlobalData.cpp" />
     <ClCompile Include="AbsPlayerData.cpp" />
     <ClCompile Include="AbsPlayerFactory.cpp" />
+    <ClCompile Include="AbsServerToClientCommand.cpp" />
     <ClCompile Include="MultiplayerClient.cpp" />
+    <ClCompile Include="MultiplayerHelper.cpp" />
     <ClCompile Include="MultiplayerServer.cpp" />
+    <ClCompile Include="SetIdCommand.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

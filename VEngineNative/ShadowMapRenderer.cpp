@@ -61,7 +61,7 @@ ShadowMapRenderer::~ShadowMapRenderer()
 {
 }
 
-void ShadowMapRenderer::render(Camera *camera, glm::vec3 color)
+void ShadowMapRenderer::render(Camera *camera)
 {
 
     //if (Game::instance->world->scene->getMesh3ds().size() == 0) return;

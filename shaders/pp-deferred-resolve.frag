@@ -38,6 +38,26 @@ float clip(vec3 pos){
     return step(0.0, tmp.z);
 }
 
+float rand2s(vec2 co){
+    return fract(sin(dot(co.xy * hiFreq.Time,vec2(12.9898,78.233))) * 43758.5453);
+}
+float getShadow(vec3 camera, vec3 worldpos, vec2 centeruv){
+    float expected = distance(camera, worldpos);
+    vec2 pixel = vec2(1.0) / vec2(textureSize(shadowMap, 0));
+    centeruv += pixel * 0.5;
+    float vis = 0.0;
+    vis += smoothstep(0.001, 0.002, expected - textureLod(shadowMap, centeruv + pixel * vec2(-1.0, -1.0), 0.0).r);
+    vis += smoothstep(0.001, 0.002, expected - textureLod(shadowMap, centeruv + pixel * vec2(-1.0,  0.0), 0.0).r);
+    vis += smoothstep(0.001, 0.002, expected - textureLod(shadowMap, centeruv + pixel * vec2(-1.0,  1.0), 0.0).r);
+    vis += smoothstep(0.001, 0.002, expected - textureLod(shadowMap, centeruv + pixel * vec2(0.0,  -1.0), 0.0).r);
+    vis += smoothstep(0.001, 0.002, expected - textureLod(shadowMap, centeruv + pixel * vec2(0.0,   0.0), 0.0).r);
+    vis += smoothstep(0.001, 0.002, expected - textureLod(shadowMap, centeruv + pixel * vec2(0.0,   1.0), 0.0).r);
+    vis += smoothstep(0.001, 0.002, expected - textureLod(shadowMap, centeruv + pixel * vec2(1.0,  -1.0), 0.0).r);
+    vis += smoothstep(0.001, 0.002, expected - textureLod(shadowMap, centeruv + pixel * vec2(1.0,   0.0), 0.0).r);
+    vis += smoothstep(0.001, 0.002, expected - textureLod(shadowMap, centeruv + pixel * vec2(1.0,   1.0), 0.0).r);
+    return 1.0 - vis / 9.0f;
+}
+
 void main() {
     vec3 diffuse = texture(texDiffuse, UV).rgb;
     vec3 normal = normalize(texture(texNormal, UV).rgb);
@@ -57,7 +77,7 @@ void main() {
             * (1.0 - step(1.0, lightuv.x))
             * (1.0 - step(1.0, lightuv.x))
             * clip(worldPos)
-            * (1.0 - smoothstep(0.0, 0.001, expected - shadowdata));
+            * getShadow(lightData.Position.xyz, worldPos, lightuv);
     }
 
     vec3 attenuated_diffuse = diffuse / (expected*expected+1.0);

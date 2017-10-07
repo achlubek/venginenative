@@ -19,5 +19,8 @@ public:
     unsigned char* fontBuffer;
     int fontsize = 64;
     void updateText(std::string text);
+    std::string currentText = "";
+    enum class Alignment {left, center, right};
+    Alignment alignment = Alignment::left;
 };
 

@@ -84,6 +84,8 @@ public:
     virtual void onChar(unsigned int c) override;
     virtual void onBind() override;
 
+    void updatePhysics();
+    volatile bool physicsNeedsUpdate = false;
     void switchMode(int mode);
 
     Physics* physics;

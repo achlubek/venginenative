@@ -22,7 +22,7 @@ public:
 
     VulkanRenderer* renderer;
 
-    void render(Camera *camera, glm::vec3 color);
+    void render(Camera *camera);
     int width;
     int height;
 };

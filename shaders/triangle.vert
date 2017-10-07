@@ -28,7 +28,7 @@ layout(set = 2, binding = 0) uniform UniformBufferObject6 {
 
 vec3 transform_normal(int info, vec3 normal){
     ModelInfo o = modelData.ModelInfos[info];
-    return (o.Transformation * vec4(normal, 0.0)).xyz;
+    return mat3(o.Transformation) * normal;
 }
 
 
@@ -51,7 +51,7 @@ void main() {
     vec4 opo = (hiFreq.VPMatrix)
         * modelData.ModelInfos[int(gl_InstanceIndex)].Transformation
         * vec4(inPosition.xyz, 1.0);
-    vec3 Normal = transform_normal(int(gl_InstanceIndex), inNormal);
+    vec3 Normal = inNormal;
     outNormal = normalize(Normal);
     outTangent = clamp(vec4(normalize(transform_normal(int(gl_InstanceIndex), inTangent.xyz)), inTangent.w), -1.0, 1.0);
     outTexCoord = inTexCoord;

@@ -2,6 +2,10 @@
 class AbsPlayerData;
 class AbsGlobalData;
 class AbsPlayerFactory;
+class AbsCommand;
+class AbsServerToClientCommand;
+class AbsClientToServerCommand;
+class SetIdCommand;
 #include <EventHandler.h>
 
 class MultiplayerServer
@@ -12,9 +16,14 @@ public:
     void setGlobalData(AbsGlobalData* data);
     void setPlayerFactory(AbsPlayerFactory* factory);
     void start();
+    void sendSetIdCommandToPlayer(unsigned int id);
+    void sendCommandToAll(unsigned int commandNumber, std::vector<unsigned char> bytes);
     EventHandler<AbsPlayerData*> onPlayerConnect;
     EventHandler<AbsPlayerData*> onPlayerDisconnect;
+    std::vector<AbsClientToServerCommand*> enabledCommands;
+    AbsPlayerData* getPlayer(unsigned int id);
 private:
+    SetIdCommand* setIdCommand;
     int port;
     enum class packetType { invalid, allPlayersData, singlePlayerData, globalData, command };
     AbsGlobalData* globalData;
@@ -34,5 +43,8 @@ private:
     void handleCommandPacket(unsigned int sourceId, const void* data, size_t datalength);
     void receiveThread();
     void sendThread();
+
+    void broadcastPacket(sf::Packet packet);
+    void sendPacketToId(sf::Packet packet, unsigned int id);
 };
 

@@ -44,7 +44,17 @@ UIText::~UIText()
 void UIText::updateBuffer()
 {
     VulkanBinaryBufferBuilder bb = VulkanBinaryBufferBuilder();
-    bb.emplaceFloat32(x);
+    
+    if (alignment == Alignment::left) {
+        bb.emplaceFloat32(x);
+    }
+    else if(alignment == Alignment::center) {
+        bb.emplaceFloat32(x - 0.5f * width);
+    }
+    else if(alignment == Alignment::right) {
+        bb.emplaceFloat32(x - width);
+    }
+
     bb.emplaceFloat32(y);
     bb.emplaceFloat32(width);
     bb.emplaceFloat32(height);
@@ -72,6 +82,9 @@ void UIText::updateBuffer()
 
 void UIText::updateText(std::string text)
 { 
+    if (currentText == text) return;
+    currentText = text;
+
     int l_h = fontsize;  
      
     float scale = stbtt_ScaleForPixelHeight(font, l_h);
@@ -111,6 +124,11 @@ void UIText::updateText(std::string text)
         kern = stbtt_GetCodepointKernAdvance(font, word[i], word[i + 1]);
         nx += kern * scale;
         nx += 2;
+    }
+    if (nx * maxy == 0) {
+        width = 0;
+        height = 0;
+        return;
     }
     unsigned char* bitmap = new unsigned char[nx * maxy];
     for (int i = 0; i < nx * maxy; i++)bitmap[i] = 0;
