@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Object3dInfo.h"
+#include "Object3dInfo.h"
 
 VulkanRenderStage::VulkanRenderStage(VulkanToolkit * ivulkan)
     : vulkan(ivulkan)
@@ -10,8 +11,15 @@ VulkanRenderStage::VulkanRenderStage(VulkanToolkit * ivulkan)
 }
 
 
+#define safedelete(a) if(a!=nullptr){delete a;a=nullptr;}
 VulkanRenderStage::~VulkanRenderStage()
 {
+    //vkDestroySemaphore(vulkan->device, signalSemaphore, nullptr);
+    safedelete(renderPass);
+    safedelete(framebuffer);
+
+    safedelete(pipeline);
+    safedelete(commandBuffer);
 }
 
 void VulkanRenderStage::addDescriptorSetLayout(VkDescriptorSetLayout lay)

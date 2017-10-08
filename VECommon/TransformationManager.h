@@ -23,7 +23,7 @@ public:
     TransformStruct(glm::vec3 iposition, glm::quat iorientation, glm::vec3 isize);
     TransformStruct(glm::vec3 iposition, glm::vec3 isize);
     TransformStruct(glm::quat iorientation);
-    TransformStruct(glm::quat iorientation, glm::vec3 isize);    
+    TransformStruct(glm::quat iorientation, glm::vec3 isize);
     TransformStruct& operator*=(const TransformStruct& rhs)
     {
         position += rhs.position;
@@ -48,6 +48,9 @@ public:
     TransformationManager(glm::quat iorientation);
     TransformationManager(glm::quat iorientation, glm::vec3 isize);
     ~TransformationManager();
+
+    void copyTo(TransformationManager* v);
+    void copyFrom(TransformationManager* v);
      
     volatile bool needsUpdate = false;
 

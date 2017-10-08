@@ -16,8 +16,11 @@ public:
     Renderer(VulkanToolkit * vulkan, int iwidth, int iheight);
     ~Renderer(); 
 
+    void rebuild(bool destroy);
+
     VulkanToolkit * vulkan;
     VulkanDescriptorSetLayout* meshSetLayout;
+    VulkanDescriptorSetLayout* ppSetLayout;
     VulkanDescriptorSet* postProcessSet;
     VulkanDescriptorSet* sharedSet;
     Mesh3d* dummyMesh;
@@ -33,6 +36,9 @@ public:
 
     VulkanRenderer* renderer;
     VulkanRenderStage* shadowMapGenericStage;
+    VulkanRenderStage* meshRenderStage;
+    VulkanRenderStage* ppShadeAmbientStage;
+    VulkanRenderStage* postProcessZygoteStage;
 
     std::vector<SpotLight*> lights;
     ShadowMapRenderer* ambientShadowRenderer;

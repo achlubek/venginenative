@@ -11,8 +11,63 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
     : vulkan(ivulkan)
 {
     width = iwidth;
-    height = iheight; 
+    height = iheight;
 
+    uboHighFrequencyBuffer = new VulkanGenericBuffer(vulkan, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
+    uboLowFrequencyBuffer = new VulkanGenericBuffer(vulkan, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
+
+    meshSetLayout = new VulkanDescriptorSetLayout(vulkan);
+    meshSetLayout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+    meshSetLayout->addField(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+    meshSetLayout->compile();
+
+    sharedSet = meshSetLayout->generateDescriptorSet();
+    sharedSet->bindUniformBuffer(0, uboHighFrequencyBuffer);
+    sharedSet->bindUniformBuffer(1, uboLowFrequencyBuffer);
+    sharedSet->update();
+
+    lights = {};
+
+    ppSetLayout = new VulkanDescriptorSetLayout(vulkan);
+    ppSetLayout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+    ppSetLayout->addField(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+
+    ppSetLayout->addField(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    ppSetLayout->addField(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    ppSetLayout->addField(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    ppSetLayout->addField(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    ppSetLayout->addField(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    ppSetLayout->addField(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    ppSetLayout->addField(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    ppSetLayout->compile();
+
+    rebuild(false);
+}
+
+Renderer::~Renderer()
+{
+}
+#define safedelete(a) if(a!=nullptr){delete a;a=nullptr;}
+void Renderer::rebuild(bool destroy)
+{
+    vkDeviceWaitIdle(vulkan->device);
+    if (destroy) {
+        safedelete(shadowMapGenericStage);
+        safedelete(ambientShadowRenderer);
+        safedelete(meshRenderStage);
+        safedelete(ppShadeAmbientStage);
+        safedelete(postProcessZygoteStage);
+        safedelete(renderer);
+        safedelete(postProcessSet);
+        vkDeviceWaitIdle(vulkan->device);
+        safedelete(diffuseImage);
+        safedelete(normalImage);
+        safedelete(distanceImage);
+        safedelete(ambientImage);
+        safedelete(deferredResolvedImage);
+        safedelete(depthImage);
+    }
+    vkDeviceWaitIdle(vulkan->device);
     diffuseImage = new VulkanImage(vulkan, width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
@@ -25,15 +80,13 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
 
     ambientImage = new VulkanImage(vulkan, width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
-    
+
     deferredResolvedImage = new VulkanImage(vulkan, width, height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
     depthImage = new VulkanImage(vulkan, width, height, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, true);
 
-    uboHighFrequencyBuffer = new VulkanGenericBuffer(vulkan, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
-    uboLowFrequencyBuffer = new VulkanGenericBuffer(vulkan, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
 
     //setManager = VulkanDescriptorSetsManager();
 
@@ -42,17 +95,8 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
     auto vertShaderModule = VulkanShaderModule(vulkan, "../../shaders/compiled/triangle.vert.spv");
     auto fragShaderModule = VulkanShaderModule(vulkan, "../../shaders/compiled/triangle.frag.spv");
 
-    meshSetLayout = new VulkanDescriptorSetLayout(vulkan);
-    meshSetLayout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
-    meshSetLayout->addField(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
-    meshSetLayout->compile();
 
-    sharedSet = meshSetLayout->generateDescriptorSet();
-    sharedSet->bindUniformBuffer(0, uboHighFrequencyBuffer);
-    sharedSet->bindUniformBuffer(1, uboLowFrequencyBuffer);
-    sharedSet->update();
-
-    auto meshRenderStage = new VulkanRenderStage(vulkan);
+    meshRenderStage = new VulkanRenderStage(vulkan);
     VkExtent2D ext = VkExtent2D();
     ext.width = width;
     ext.height = height;
@@ -68,38 +112,27 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
     meshRenderStage->addOutputImage(depthImage);
     meshRenderStage->meshSharedSet = sharedSet;
 
-    lights = {};
 
-    ambientShadowRenderer = new ShadowMapRenderer(vulkan, 1024, 1024);
+    ambientShadowRenderer = new ShadowMapRenderer(vulkan, 1024, 1024, "worldposY");
     ambientShadowCamera = new Camera();
-    ambientShadowCamera->createProjectionOrthogonal(-10.0, 10.0, -10.0, 10.0, -1000.0, 1000.0);
+    ambientShadowCamera->createProjectionOrthogonal(-50.0, 50.0, -50.0, 50.0, -50.0, 50.0);
+    ambientShadowCamera->transformation->setOrientation(glm::inverse(glm::lookAt(glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, -1.0))));
     //####//
 
     auto ppvertShaderModule = new VulkanShaderModule(vulkan, "../../shaders/compiled/pp.vert.spv");
 
-    auto ppSetLayout = new VulkanDescriptorSetLayout(vulkan);
-    ppSetLayout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
-    ppSetLayout->addField(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
-
-    ppSetLayout->addField(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    ppSetLayout->addField(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    ppSetLayout->addField(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    ppSetLayout->addField(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    ppSetLayout->addField(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    ppSetLayout->addField(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    ppSetLayout->compile();
 
     //##########################//
 
     auto ppshadefragShaderModule = new VulkanShaderModule(vulkan, "../../shaders/compiled/pp-shade-ambient.frag.spv");
 
-    auto ppShadeAmbientStage = new VulkanRenderStage(vulkan);
-     
+    ppShadeAmbientStage = new VulkanRenderStage(vulkan);
+
     ppShadeAmbientStage->setViewport(ext);
     ppShadeAmbientStage->addShaderStage(ppvertShaderModule->createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
     ppShadeAmbientStage->addShaderStage(ppshadefragShaderModule->createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
     ppShadeAmbientStage->addDescriptorSetLayout(ppSetLayout->layout);
-    ppShadeAmbientStage->addOutputImage(ambientImage); 
+    ppShadeAmbientStage->addOutputImage(ambientImage);
 
     //##########################//
 
@@ -123,12 +156,12 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
 
     auto ppoutputfragShaderModule = new VulkanShaderModule(vulkan, "../../shaders/compiled/pp-output.frag.spv");
 
-    auto post_process_zygote = new VulkanRenderStage(vulkan);
+    postProcessZygoteStage = new VulkanRenderStage(vulkan);
 
-    post_process_zygote->setViewport(ext);
-    post_process_zygote->addShaderStage(ppvertShaderModule->createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
-    post_process_zygote->addShaderStage(ppoutputfragShaderModule->createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
-    post_process_zygote->addDescriptorSetLayout(ppSetLayout->layout);
+    postProcessZygoteStage->setViewport(ext);
+    postProcessZygoteStage->addShaderStage(ppvertShaderModule->createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
+    postProcessZygoteStage->addShaderStage(ppoutputfragShaderModule->createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
+    postProcessZygoteStage->addDescriptorSetLayout(ppSetLayout->layout);
 
     //##########################//
 
@@ -141,19 +174,15 @@ Renderer::Renderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
     postProcessSet->bindImageViewSampler(5, ambientImage);
     postProcessSet->bindImageViewSampler(6, Application::instance->ui->outputImage);
     postProcessSet->bindImageViewSampler(7, deferredResolvedImage);
+    postProcessSet->bindImageViewSampler(8, ambientShadowRenderer->distanceImage);
     postProcessSet->update();
 
     renderer = new VulkanRenderer(vulkan);
     renderer->setMeshStage(meshRenderStage);
     renderer->addPostProcessingStage(ppShadeAmbientStage);
-    renderer->setOutputStage(post_process_zygote);
+    renderer->setOutputStage(postProcessZygoteStage);
     renderer->setPostProcessingDescriptorSet(postProcessSet);
     renderer->compile();
- 
-}
-
-Renderer::~Renderer()
-{ 
 }
 
 void Renderer::deferredDraw()
@@ -184,7 +213,7 @@ void Renderer::renderToSwapChain(Camera *camera)
     VulkanBinaryBufferBuilder bb = VulkanBinaryBufferBuilder();
     double xpos, ypos;
     glfwGetCursorPos(vulkan->window, &xpos, &ypos);
-     
+
     glm::mat4 clip(1.0f, 0.0f, 0.0f, 0.0f,
         0.0f, -1.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 0.5f, 0.0f,
@@ -221,10 +250,12 @@ void Renderer::renderToSwapChain(Camera *camera)
     memcpy(data, bb.getPointer(), bb.buffer.size());
     uboLowFrequencyBuffer->unmap();
 
-    ambientShadowRenderer->render(ambientShadowCamera);
+
+    //ambientShadowCamera->transformation->setPosition(camera->transformation->getPosition());
+   // ambientShadowRenderer->render(ambientShadowCamera);
 
     deferredDraw();
-    
+
     renderer->beginDrawing();
     Application::instance->scene->draw(glm::mat4(1), renderer->getMesh3dStage());
     renderer->endDrawing();

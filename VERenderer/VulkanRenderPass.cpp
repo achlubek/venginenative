@@ -26,4 +26,5 @@ VulkanRenderPass::VulkanRenderPass(VulkanToolkit * ivulkan, std::vector<VulkanAt
 
 VulkanRenderPass::~VulkanRenderPass()
 {
+    vkDestroyRenderPass(vulkan->device, handle, nullptr);
 }

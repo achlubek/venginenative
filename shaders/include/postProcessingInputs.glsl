@@ -9,5 +9,6 @@ layout(set = 0, binding = 4) uniform sampler2D texDistance;
 layout(set = 0, binding = 5) uniform sampler2D texAmbient;
 layout(set = 0, binding = 6) uniform sampler2D texUi;
 layout(set = 0, binding = 7) uniform sampler2D texDeferredResolved;
+layout(set = 0, binding = 8) uniform sampler2D texAboveDistance;
 
 #include sharedBuffers.glsl

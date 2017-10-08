@@ -25,14 +25,19 @@ public:
         auto bytes = std::vector<unsigned char>();
         bytes.resize(sizeof(float) * 2);
         memcpy(bytes.data(), const_cast<float*>(&testposition.x), sizeof(float) * 2);
+        for (int i = 0; i < nick.length(); i++)bytes.push_back(nick[i]);
       //  printf("serializing %f\n", testposition.x);
         return bytes;
     }
     virtual void deserialize(std::vector<unsigned char> data) override
     {
         float* ptr = reinterpret_cast<float*>(data.data());
+        auto ptr2 = reinterpret_cast<unsigned char*>(data.data());
         testposition.x = ptr[0];
         testposition.y = ptr[1];
+        std::string n = "";
+        for (int i = 2 * sizeof(float); i < data.size(); i++)n = n + string(1, ptr2[i]);
+        nick = n;
       //  printf("Deseializing %f\n", testposition.x);
     }
 };
@@ -130,7 +135,7 @@ int main(int argc, char* argv[])
     client->setGlobalData(clientgdata);
     client->onSuccessfulConnect.add([&](MultiplayerClient* client) {
         auto player = static_cast<TestPlayerData*>(client->clientPlayerData);
-        player->nick = "O kurde";
+        player->nick = argv[1];
         sf::Packet dataPacket = MultiplayerHelper::createPacketRaw(MultiplayerHelper::packetType::command);
         MultiplayerHelper::appendToPacket(dataPacket, nickcmd->getIdentificator());
         nickcmd->prepare(player->nick);

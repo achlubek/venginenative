@@ -5,7 +5,7 @@
 #include "FrustumCone.h"
 #include "Media.h"
 
-ShadowMapRenderer::ShadowMapRenderer(VulkanToolkit * ivulkan, int iwidth, int iheight)
+ShadowMapRenderer::ShadowMapRenderer(VulkanToolkit * ivulkan, int iwidth, int iheight, std::string fragmentModule)
     : vulkan(ivulkan)
 {
     width = iwidth;
@@ -25,7 +25,7 @@ ShadowMapRenderer::ShadowMapRenderer(VulkanToolkit * ivulkan, int iwidth, int ih
     //##########################//
 
     auto vertShaderModule = VulkanShaderModule(vulkan, "../../shaders/compiled/depthonly.vert.spv");
-    auto fragShaderModule = VulkanShaderModule(vulkan, "../../shaders/compiled/depthonly.frag.spv");
+    auto fragShaderModule = VulkanShaderModule(vulkan, "../../shaders/compiled/"+ fragmentModule +".frag.spv");
 
     auto meshSetLayout = new VulkanDescriptorSetLayout(vulkan);
     meshSetLayout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);

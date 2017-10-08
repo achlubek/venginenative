@@ -29,7 +29,7 @@ void SpotLight::enableShadowMapping(int width, int height)
     if (isShadowMappingEnabled()) {
         delete shadowMapRenderer;
     }
-    shadowMapRenderer = new ShadowMapRenderer(vulkan, width, height);
+    shadowMapRenderer = new ShadowMapRenderer(vulkan, width, height, "depthonly");
     lightDataSet->bindImageViewSampler(1, shadowMapRenderer->distanceImage);
     lightDataSet->update();
     shadowMappingEnabled = true;
@@ -70,6 +70,10 @@ void SpotLight::recordResolveCommands(VulkanRenderStage* stage, VulkanDescriptor
 
     VulkanBinaryBufferBuilder lightdata = VulkanBinaryBufferBuilder();
 
+    glm::mat4 cameraViewMatrix = shadowMapCamera->transformation->getInverseWorldTransform();
+    glm::mat4 cameraRotMatrix = shadowMapCamera->transformation->getRotationMatrix();
+    glm::mat4 rpmatrix = shadowMapCamera->projectionMatrix * inverse(cameraRotMatrix);
+    shadowMapCamera->cone->update(inverse(rpmatrix));
     glm::mat4 clip(1.0f, 0.0f, 0.0f, 0.0f,
         0.0f, -1.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 0.5f, 0.0f,
@@ -85,6 +89,13 @@ void SpotLight::recordResolveCommands(VulkanRenderStage* stage, VulkanDescriptor
     lightdata.emplaceFloat32(color.x);
     lightdata.emplaceFloat32(color.y);
     lightdata.emplaceFloat32(color.z);
+    lightdata.emplaceFloat32(0.0f);    
+    
+    lightdata.emplaceGeneric((unsigned char*)&(shadowMapCamera->cone->leftBottom), sizeof(shadowMapCamera->cone->leftBottom));
+    lightdata.emplaceFloat32(0.0f);
+    lightdata.emplaceGeneric((unsigned char*)&(shadowMapCamera->cone->rightBottom - shadowMapCamera->cone->leftBottom), sizeof(shadowMapCamera->cone->leftBottom));
+    lightdata.emplaceFloat32(0.0f);
+    lightdata.emplaceGeneric((unsigned char*)&(shadowMapCamera->cone->leftTop - shadowMapCamera->cone->leftBottom), sizeof(shadowMapCamera->cone->leftBottom));
     lightdata.emplaceFloat32(0.0f);
 
     void* data;

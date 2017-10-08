@@ -54,7 +54,6 @@ float rand2s(vec2 co){
 float rand2sTime(vec2 co){
     return fract(sin(dot(co.xy * hiFreq.Time,vec2(12.9898,78.233))) * 43758.5453);
 }
-#line 55
 float ambientocclusion(){
     vec3 diffuse = texture(texDiffuse, UV).rgb;
     vec3 normal = normalize(texture(texNormal, UV).rgb);
@@ -91,6 +90,44 @@ float ambientocclusion(){
     return clamp((ao * 2.0) / w, 0.0, 1.0);
 }
 
+#line 94
+float aboveao(){
+    vec3 diffuse = texture(texDiffuse, UV).rgb;
+    vec3 normal = normalize(texture(texNormal, UV).rgb);
+    float dist = texture(texDistance, UV).r;
+    vec3 worldPos = FromCameraSpace(reconstructCameraSpaceDistance(UV, dist));
+    vec2 xzsp = (worldPos.xz - CameraPosition.xz) * vec2(1.0, -1.0);
+    vec2 aboveuv = (xzsp / 50.0) * 0.5 + 0.5; //rendered scale from -50 to 50 units
+
+    float average = 0.0;
+    float averagew = 0.0;
+
+    for(float a = rand2sTime(UV) * 0.112 ; a < 3.1415 * 2.0;a += 0.112){
+        float r = rand2sTime(UV + a * 1233.0);
+        vec2 displace = vec2(sin(a), cos(a)) * r * 0.023;// * normalize(vec2(length(worldPosDFX), length(worldPosDFY)));
+        vec2 newwposxz = ((aboveuv + displace) * 2.0 - 1.0) * 50.0 * vec2(1.0, -1.0) +  CameraPosition.xz;
+        vec3 newwpos = vec3(newwposxz.x, texture(texAboveDistance, aboveuv + displace).r, newwposxz.y);
+        float attenuation = 1.0 / pow(distance(newwpos, worldPos)*0.8 + 0.5, 2.0);
+        average += max(0.0, dot(normalize(newwpos - worldPos), vec3(0.0, 1.0, 0.0))) * attenuation;
+        averagew += 1.0;
+    }
+
+    average /= averagew;
+    return pow(1.0 - clamp(average, 0.0, 1.0), 4.0);
+}
+vec3 extra_cheap_atmosphere(vec3 raydir, vec3 sundir){
+	sundir.y = max(sundir.y, -0.07);
+	float special_trick = 1.0 / (raydir.y * 1.0 + 0.1);
+	float special_trick2 = 1.0 / (sundir.y * 11.0 + 1.0);
+	float raysundt = pow(abs(dot(sundir, raydir)), 2.0);
+	float sundt = pow(max(0.0, dot(sundir, raydir)), 8.0);
+	float mymie = sundt * special_trick * 0.2;
+	vec3 suncolor = mix(vec3(1.0), max(vec3(0.0), vec3(1.0) - vec3(5.5, 13.0, 22.4) / 22.4), special_trick2);
+	vec3 bluesky= vec3(5.5, 13.0, 22.4) / 22.4 * suncolor;
+	vec3 bluesky2 = max(vec3(0.0), bluesky - vec3(5.5, 13.0, 22.4) * 0.004 * (special_trick + -6.0 * sundir.y * sundir.y));
+	bluesky2 *= special_trick * (0.24 + raysundt * 0.24);
+	return bluesky2 + mymie * suncolor;
+}
 void main() {
     vec3 diffuse = texture(texDiffuse, UV).rgb;
     vec3 normal = normalize(texture(texNormal, UV).rgb);
@@ -98,7 +135,7 @@ void main() {
 
 //    vec3 dir =
 
-    vec3 res = vec3(1.0) * (1.0 - ambientocclusion());// * (0.02 + 0.98 * max(0.0, dot(vec3(0.0, 1.0, 0.0), normal)));
+    vec3 res = vec3(0.05) * diffuse;// * aboveao();// * (1.0 - ambientocclusion());// * (0.02 + 0.98 * max(0.0, dot(vec3(0.0, 1.0, 0.0), normal)));
     vec3 mapper = vec3(2.991431, 4.548709, 3.439944);
     float expected = distance(mapper, worldPos);
     //float shadow = step(0.01, expected - texture(shadowMap));

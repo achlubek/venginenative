@@ -1,6 +1,7 @@
 #pragma once
-class Object3dInfo; 
+class Object3dInfo;
 class VulkanToolkit;
+class VulkanShaderModule;
 class VulkanRenderStage
 {
 public:
@@ -9,10 +10,10 @@ public:
 
     VulkanToolkit * vulkan;
     VkSemaphore signalSemaphore;
-    VulkanRenderPass* renderPass;
-    VulkanFramebuffer* framebuffer;
-    VulkanGraphicsPipeline* pipeline;
-    VulkanCommandBuffer* commandBuffer;
+    VulkanRenderPass* renderPass = nullptr;
+    VulkanFramebuffer* framebuffer = nullptr;
+    VulkanGraphicsPipeline* pipeline = nullptr;
+    VulkanCommandBuffer* commandBuffer = nullptr;
     std::vector<VkDescriptorSetLayout> setLayouts;
     std::vector<VulkanImage*> outputImages;
     VkExtent2D viewport;

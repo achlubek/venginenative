@@ -8,7 +8,7 @@ class Camera;
 class ShadowMapRenderer
 {
 public:
-    ShadowMapRenderer(VulkanToolkit * vulkan, int width, int height);
+    ShadowMapRenderer(VulkanToolkit * vulkan, int width, int height, std::string fragmentModule);
     ~ShadowMapRenderer();
     VulkanToolkit * vulkan; 
 

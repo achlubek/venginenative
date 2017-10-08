@@ -159,6 +159,20 @@ void TransformationManager::rotate(quat value)
     needsUpdate = true;
 }
 
+void TransformationManager::copyFrom(TransformationManager* v)
+{
+    setPosition(v->getPosition());
+    setOrientation(v->getOrientation());
+    setSize(v->getSize());
+}
+
+void TransformationManager::copyTo(TransformationManager* v)
+{
+    v->setPosition(getPosition());
+    v->setOrientation(getOrientation());
+    v->setSize(getSize());
+}
+
 mat4 TransformationManager::getWorldTransform()
 {
     if (needsUpdate) updateJoints();

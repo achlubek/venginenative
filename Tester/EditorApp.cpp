@@ -50,8 +50,8 @@ void EditorApp::initialize()
 void EditorApp::onRenderFrame(float elapsed)
 {
     physicsNeedsUpdate = true;
-    app->renderer->lights[0]->transformation->setOrientation(glm::inverse(glm::lookAt(
-        app->renderer->lights[0]->transformation->getPosition(),
+    app->renderer->lights[1]->transformation->setOrientation(glm::inverse(glm::lookAt(
+        app->renderer->lights[1]->transformation->getPosition(),
         car[0]->getTransformation()->getPosition(), 
         glm::vec3(0.0, 1.0, 0.0)
     )));
@@ -309,10 +309,11 @@ void EditorApp::onKeyPress(int key)
     }
     else if (key == GLFW_KEY_F3) {
         //    switchMode(EDITOR_MODE_EDITING);
+        app->renderer->lights[0]->transformation->copyFrom(cam->transformation);
         return;
     }
     else if (key == GLFW_KEY_PAUSE) {
-        //    app->renderer->recompileShaders();
+            app->renderer->rebuild(true);
         return;
     }
     else if (key == GLFW_KEY_T && currentMode != EDITOR_MODE_WRITING_TEXT) {
@@ -425,11 +426,11 @@ void EditorApp::onChar(unsigned int c)
 }
 
 void EditorApp::updatePhysics() {
-    double lasttime = app->time;
-    while (!app->shouldClose) {
+    double lasttime = glfwGetTime();
+    while (true) {
         if (physicsNeedsUpdate) {
-            physics->simulationStep(app->time - lasttime);
-            lasttime = app->time;
+            physics->simulationStep(glfwGetTime() - lasttime);
+            lasttime = glfwGetTime();
             physicsNeedsUpdate = false;
         }
     }
@@ -509,11 +510,11 @@ void EditorApp::onBind()
 
     mouse->setCursorMode(GLFW_CURSOR_NORMAL);
     
-   // auto t = app->asset->loadSceneFile("sp.scene");
+    auto t = app->asset->loadSceneFile("sp.scene");
     //auto diftex = new Texture2d("2222.jpg");
     //auto bumtex = new Texture2d("1111.jpg");
-  //  Scene* sponza2 = new Scene();
-  //  for (int i = 0; i < t->getMesh3ds().size(); i++) {
+    Scene* sponza2 = new Scene();
+    for (int i = 0; i < t->getMesh3ds().size(); i++) {
         //    t->getMesh3ds()[i]->getInstance(0)->transformation->translate(vec3(0.0, 1.5, 0.0));
             //t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(40.0, 0.0, 23.0))));
             //t->getMesh3ds()[i]->addInstance(new Mesh3dInstance(new TransformationManager(t->getMesh3ds()[i]->getInstance(0)->transformation->getPosition() + vec3(-80.0, 0.0, -72.0))));
@@ -526,10 +527,10 @@ void EditorApp::onBind()
             //t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColor = glm::vec3(1.0);
             //  t->getMesh3ds()[i]->getLodLevel(0)->material->diffuseColorTex = diftex;
             /// t->getMesh3ds()[i]->getLodLevel(0)->material->bumpTex = bumtex;
-      //  sponza2->addMesh3d(t->getMesh3ds()[i]);
-   // }
+        sponza2->addMesh3d(t->getMesh3ds()[i]);
+    }
     //sponza2->transformation->scale(glm::vec3(10.0f));
-   // app->scene->addScene(sponza2);
+    app->scene->addScene(sponza2);
 
         /*
         auto s = app->asset->loadMeshFile("grass_base.mesh3d");
@@ -616,7 +617,7 @@ void EditorApp::onBind()
         auto groundplane = app->asset->loadMeshFile("2dplane.mesh3d");
         groundplane->addInstance(new Mesh3dInstance(new TransformationManager(glm::vec3(0.0, 1.0, 0.0), glm::vec3(10.0, 10.0, 10.0))));
         groundplane->getLodLevel(0)->material->diffuseColor = glm::vec3(1.0f);
-        app->scene->addMesh3d(groundplane);
+       // app->scene->addMesh3d(groundplane);
         auto groundpb = physics->createBody(0.0f, new TransformationManager(glm::vec3(0.0, 0.0, 0.0)), new btBoxShape(btVector3(1000.0f, 1.0f, 1000.0f)));
         // groundpb->getCollisionObject()->setFriction(4);
         physics->addBody(groundpb);
