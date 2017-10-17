@@ -11,5 +11,5 @@ void main() {
     vec4 stars = texture(texStars, UV);
     vec4 planets = texture(texPlanets, UV);
     vec3 color = mix(stars.rgb, planets.rgb, planets.a);
-    outColor = vec4(planets.rgb, 1.0);
+    outColor = vec4(color, 1.0);
 }
