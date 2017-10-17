@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
     Media::loadFileMap("../../media");
     Media::loadFileMap("../../shaders");
     
-    Application *game = new Application(1920, 1020);
+    Application *game = new Application(1600, 900);
     
     EditorApp* app = new EditorApp();
     app->initialize();

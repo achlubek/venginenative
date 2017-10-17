@@ -60,5 +60,7 @@ public:
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+    void transitionImageLayoutExistingCommandBuffer(VkCommandBuffer buffer, uint32_t mipmap, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout
+        , VkPipelineStageFlags sourceStage, VkPipelineStageFlags destinationStage);
     void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 };

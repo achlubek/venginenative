@@ -29,6 +29,7 @@ public:
 
     VkSampler getSampler();
     VulkanAttachment getAttachment();
+    void generateMipMaps();
     ~VulkanImage();
 private:
     bool samplerCreated = false;

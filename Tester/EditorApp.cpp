@@ -568,9 +568,9 @@ void EditorApp::onBind()
         //app->world->scene->addMesh3d(s);
         */
 
-        /*
+        
         int terrainparts = 10;
-        float fullsize = 3612.0;
+        float fullsize = 4819.0;
         float partsize = fullsize / 10.0;
         //auto tex = new Texture2d("terrain_diffuse.png");
         for (int x = 0; x < 10; x++) {
@@ -585,14 +585,14 @@ void EditorApp::onBind()
                 //   mat->diffuseColorTex = tex;
                 Mesh3d* m = Mesh3d::create(app->asset->loadObject3dInfoFile(ss0.str()), mat);
                 m->getInstance(0)->transformation->setPosition(vec3(partsize * x * 1.0f, -220.5, partsize*y * 1.0f));
-                m->getInstance(0)->transformation->setSize(vec3(1.0f, 20.0f, 1.0f));
+                m->getInstance(0)->transformation->setSize(vec3(1.0f, 1.0f, 1.0f));
                 m->getLodLevel(0)->distanceStart = 0.0f;
-                m->getLodLevel(0)->distanceEnd = 650.0f;
-                m->addLodLevel(new Mesh3dLodLevel(app->asset->loadObject3dInfoFile(ss1.str()), mat, 650.0f, 3350.0f));
-                m->addLodLevel(new Mesh3dLodLevel(app->asset->loadObject3dInfoFile(ss2.str()), mat, 3350.0f, 11150.0f));
+                m->getLodLevel(0)->distanceEnd = 450.0f;
+                m->addLodLevel(new Mesh3dLodLevel(app->asset->loadObject3dInfoFile(ss1.str()), mat, 450.0f, 1750.0f));
+                m->addLodLevel(new Mesh3dLodLevel(app->asset->loadObject3dInfoFile(ss2.str()), mat, 1750.0f, 11150.0f));
                 app->scene->addMesh3d(m);
             }
-        }*/
+        }
 
 
 

@@ -296,6 +296,7 @@ VulkanImage* VulkanToolkit::createTexture(const ImageData &img, VkFormat format)
 
     delete stagingBuffer;
 
+    res->generateMipMaps();
     return res;
 }
 
@@ -391,6 +392,98 @@ void VulkanToolkit::transitionImageLayout(VkImage image, VkFormat format, VkImag
 
     endSingleTimeCommands(commandBuffer);
 }
+
+
+void VulkanToolkit::transitionImageLayoutExistingCommandBuffer(VkCommandBuffer buffer, uint32_t mipmap, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout
+    , VkPipelineStageFlags sourceStage, VkPipelineStageFlags destinationStage) {
+
+    VkImageMemoryBarrier barrier = {};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.oldLayout = oldLayout;
+    barrier.newLayout = newLayout;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.image = image;
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.baseMipLevel = mipmap;
+    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+
+
+    switch (oldLayout)
+    {
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+        barrier.srcAccessMask = 0;
+        break;
+
+    case VK_IMAGE_LAYOUT_PREINITIALIZED:
+        barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+        barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        break;
+
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        break;
+    default:
+        break;
+    }
+    switch (newLayout)
+    {
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+        barrier.dstAccessMask = barrier.dstAccessMask | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        if (barrier.srcAccessMask == 0)
+        {
+            barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+        }
+        if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        }
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        break;
+    default: 
+        break;
+    }
+
+    vkCmdPipelineBarrier(
+        buffer,
+        sourceStage, destinationStage,
+        0,
+        0, nullptr,
+        0, nullptr,
+        1, &barrier
+    );
+}
+
 
 
 void VulkanToolkit::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {

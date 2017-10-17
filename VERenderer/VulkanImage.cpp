@@ -12,19 +12,26 @@ VulkanImage::VulkanImage(VulkanToolkit * ivulkan, uint32_t iwidth, uint32_t ihei
     height = iheight;
     format = iformat;
     tiling = itiling;
-    usage = iusage;
+    usage = iusage | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     properties = iproperties;
     aspectFlags = iaspectFlags;
     initialLayout = iinitialLayout;
     isDepthBuffer = iisDepthBuffer;
 
+    unsigned int sz = min(width, height) / 2;
+    int mipmaps = 1;
+   // for (int32_t i = 1; sz > 1; i++)
+    //{
+   //     mipmaps++;
+   //     sz /= 2;
+   // }
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
     imageInfo.extent.width = width;
     imageInfo.extent.height = height;
     imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = 1;
+    imageInfo.mipLevels = mipmaps;
     imageInfo.arrayLayers = 1;
     imageInfo.format = format;
     imageInfo.tiling = tiling;
@@ -60,7 +67,7 @@ VulkanImage::VulkanImage(VulkanToolkit * ivulkan, uint32_t iwidth, uint32_t ihei
     viewInfo.format = format;
     viewInfo.subresourceRange.aspectMask = aspectFlags;
     viewInfo.subresourceRange.baseMipLevel = 0;
-    viewInfo.subresourceRange.levelCount = 1;
+    viewInfo.subresourceRange.levelCount = mipmaps;
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
@@ -95,6 +102,13 @@ VkSampler VulkanImage::getSampler()
     if (samplerCreated) {
         return sampler;
     }
+    unsigned int sz = min(width, height) / 2;
+    int mipmaps = 1;
+    for (int32_t i = 1; sz > 1; i++)
+    {
+        mipmaps++;
+        sz /= 2;
+    }
    // sampler = new VkSampler();
     VkSamplerCreateInfo samplerInfo = {};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -103,13 +117,15 @@ VkSampler VulkanImage::getSampler()
     samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.anisotropyEnable = VK_TRUE;
+    samplerInfo.anisotropyEnable = VK_FALSE;
     samplerInfo.maxAnisotropy = 16;
     samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
     samplerInfo.compareEnable = VK_FALSE;
     samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR; 
+    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    samplerInfo.mipLodBias = 0.0f;
+    samplerInfo.maxLod = mipmaps;
     if (vkCreateSampler(vulkan->device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
         throw std::runtime_error("failed to create texture sampler!");
     }
@@ -123,4 +139,92 @@ VulkanAttachment VulkanImage::getAttachment()
         VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
         VK_IMAGE_LAYOUT_UNDEFINED, isPresentReady ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR  : (isDepthBuffer ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL));
+}
+
+void VulkanImage::generateMipMaps()
+{
+    return;
+
+    VkCommandBuffer blitCmd = vulkan->beginSingleTimeCommands();
+
+    vulkan->transitionImageLayoutExistingCommandBuffer(blitCmd, 0, image, format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
+        VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+
+    // Copy down mips from n-1 to n
+    unsigned int sz = min(width, height) / 2;
+    for (int32_t i = 1; sz > 1; i++)
+    {
+        sz /= 2;
+        VkImageBlit imageBlit{};
+
+        // Source
+        imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageBlit.srcSubresource.layerCount = 1;
+        imageBlit.srcSubresource.mipLevel = i - 1;
+        imageBlit.srcOffsets[1].x = int32_t(width >> (i - 1));
+        imageBlit.srcOffsets[1].y = int32_t(height >> (i - 1));
+        imageBlit.srcOffsets[1].z = 1;
+
+        // Destination
+        imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageBlit.dstSubresource.layerCount = 1;
+        imageBlit.dstSubresource.mipLevel = i;
+        imageBlit.dstOffsets[1].x = int32_t(width >> i);
+        imageBlit.dstOffsets[1].y = int32_t(height >> i);
+        imageBlit.dstOffsets[1].z = 1;
+
+        VkImageSubresourceRange mipSubRange = {};
+        mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        mipSubRange.baseMipLevel = i;
+        mipSubRange.levelCount = 1;
+        mipSubRange.layerCount = 1;
+
+        // Transiton current mip level to transfer dest
+        vulkan->transitionImageLayoutExistingCommandBuffer(
+            blitCmd, i,
+            image,
+            format, 
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+
+        // Blit from previous level
+        vkCmdBlitImage(
+            blitCmd,
+            image,
+            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            image,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            1,
+            &imageBlit,
+            VK_FILTER_LINEAR);
+
+        // Transiton current mip level to transfer source for read in next iteration
+        vulkan->transitionImageLayoutExistingCommandBuffer(
+            blitCmd, i,
+            image,
+            format,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+    }
+    sz = min(width, height);
+    for (int32_t i = 0; sz > 1; i++)
+    {
+        vulkan->transitionImageLayoutExistingCommandBuffer(
+            blitCmd, i,
+            image,
+            format,
+            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 
+            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+        sz /= 2;
+    }
+
+
+    vulkan->endSingleTimeCommands(blitCmd);
+
 }

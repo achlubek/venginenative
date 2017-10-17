@@ -253,6 +253,7 @@
     <ClInclude Include="Chat.h" />
     <ClInclude Include="EditorApp.h" />
     <ClInclude Include="MultiplayerTester.h" />
+    <ClInclude Include="PlanetRenderer.h" />
     <ClInclude Include="SimpleWalker.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
@@ -262,6 +263,7 @@
     <ClCompile Include="Chat.cpp" />
     <ClCompile Include="EditorApp.cpp" />
     <ClCompile Include="MultiplayerTester.cpp" />
+    <ClCompile Include="PlanetRenderer.cpp" />
     <ClCompile Include="SimpleWalker.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

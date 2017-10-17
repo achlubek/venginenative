@@ -66,14 +66,17 @@ void UIRenderer::draw() {
 
     auto stage = renderer->getMesh3dStage();
     for (int i = 0; i < boxes.size(); i++) {
-        stage->drawMesh(vulkan->fullScreenQuad3dInfo, { boxes[i]->set }, 1);
+        stage->setSets({ boxes[i]->set });
+        stage->drawMesh(vulkan->fullScreenQuad3dInfo, 1);
     }
     for (int i = 0; i < bitmaps.size(); i++) {
-        stage->drawMesh(vulkan->fullScreenQuad3dInfo, { bitmaps[i]->set }, 1);
+        stage->setSets({ bitmaps[i]->set });
+        stage->drawMesh(vulkan->fullScreenQuad3dInfo, 1);
     }
     for (int i = 0; i < texts.size(); i++) {
         if (texts[i]->width == 0.0 && texts[i]->height == 0.0) continue;
-        stage->drawMesh(vulkan->fullScreenQuad3dInfo, { texts[i]->set }, 1);
+        stage->setSets({ texts[i]->set });
+        stage->drawMesh(vulkan->fullScreenQuad3dInfo, 1);
     }
 
     renderer->endDrawing();

@@ -139,5 +139,6 @@ void main() {
     vec3 mapper = vec3(2.991431, 4.548709, 3.439944);
     float expected = distance(mapper, worldPos);
     //float shadow = step(0.01, expected - texture(shadowMap));
+    res = diffuse * (dot(normal, vec3(0.0, 1.0, 0.0)) * 0.5 + 0.5);
     outColor = vec4(res, 1.0);
 }

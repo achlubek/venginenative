@@ -8,6 +8,7 @@ VulkanRenderStage::VulkanRenderStage(VulkanToolkit * ivulkan)
     setLayouts = {};
     outputImages = {};
     shaderStages = {};
+    sets = {};
 }
 
 
@@ -89,7 +90,12 @@ void VulkanRenderStage::endDrawing()
     commandBuffer->end();
 }
 
-void VulkanRenderStage::drawMesh(Object3dInfo * info, std::vector<VulkanDescriptorSet*> sets, size_t instances)
+void VulkanRenderStage::setSets(std::vector<VulkanDescriptorSet*> isets)
+{
+    sets = isets;
+}
+
+void VulkanRenderStage::drawMesh(Object3dInfo * info, size_t instances)
 {
     info->drawInstanced(pipeline, sets, commandBuffer->handle, instances);
     cmdMeshesCounts++;
@@ -145,6 +151,7 @@ VulkanRenderStage* VulkanRenderStage::copy()
     v->outputImages = outputImages;
     v->shaderStages = shaderStages;
     v->viewport = viewport;
+    v->sets = sets;
     return v;
 }
 

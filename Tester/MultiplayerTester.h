@@ -16,7 +16,7 @@
 
 class TestPlayerData : public AbsPlayerData {
 public:
-    volatile glm::vec2 testposition = glm::vec2(0.5, 0.5);
+    volatile glm::vec3 testposition = glm::vec3(0.5, 0.5, 0.5);
     std::string nick = "";
     TestPlayerData(unsigned int i) : AbsPlayerData(i) {
 
@@ -24,8 +24,8 @@ public:
     virtual std::vector<unsigned char> serialize() override
     {
         auto bytes = std::vector<unsigned char>();
-        bytes.resize(sizeof(float) * 2);
-        memcpy(bytes.data(), const_cast<float*>(&testposition.x), sizeof(float) * 2);
+        bytes.resize(sizeof(float) * 3);
+        memcpy(bytes.data(), const_cast<float*>(&testposition.x), sizeof(float) * 3);
         //  printf("serializing %f\n", testposition.x);
         return bytes;
     }
@@ -34,6 +34,7 @@ public:
         float* ptr = reinterpret_cast<float*>(data.data());
         testposition.x = ptr[0];
         testposition.y = ptr[1];
+        testposition.z = ptr[2];
         //  printf("Deseializing %f\n", testposition.x);
     }
 };

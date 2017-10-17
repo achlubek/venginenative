@@ -56,7 +56,8 @@ void Mesh3dLodLevel::draw(VulkanRenderStage* stage, const Mesh3d* mesh)
 
     if (!mesh->visible) return;
     if (!visible) return;
-    stage->drawMesh(info3d, { stage->meshSharedSet, descriptorSet, material->descriptorSet }, instancesFiltered);
+    stage->setSets({ stage->meshSharedSet, descriptorSet, material->descriptorSet });
+    stage->drawMesh(info3d, instancesFiltered);
 
 }
 

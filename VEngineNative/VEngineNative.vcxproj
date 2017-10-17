@@ -252,6 +252,7 @@
     <ClInclude Include="AnimationPlayer.h" />
     <ClInclude Include="AssetLoader.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Environment.h" />
     <ClInclude Include="FrustumCone.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="Material.h" />
@@ -270,6 +271,7 @@
     <ClCompile Include="AnimationPlayer.cpp" />
     <ClCompile Include="AssetLoader.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Environment.cpp" />
     <ClCompile Include="FrustumCone.cpp" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Material.cpp" />

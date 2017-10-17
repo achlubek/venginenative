@@ -32,9 +32,10 @@ int main()
     set->bindUniformBuffer(0, buffer); 
     set->update();
 
+    stage->setSets({ set });
+
     auto renderer = new VulkanRenderer(toolkit);
     renderer->setOutputStage(stage);
-    renderer->setPostProcessingDescriptorSet(set);
     renderer->compile();
 
     while (!toolkit->shouldCloseWindow()) {

@@ -10,8 +10,7 @@ public:
 
     void setMeshStage(VulkanRenderStage* stage);
     void setOutputStage(VulkanRenderStage* stage);
-    void addPostProcessingStage(VulkanRenderStage* stage);
-    void setPostProcessingDescriptorSet(VulkanDescriptorSet* set);
+    void addPostProcessingStage(VulkanRenderStage* stage); 
     VulkanRenderStage* getMesh3dStage();
     void compile();
     void beginDrawing();
@@ -26,8 +25,7 @@ private:
     bool ppRecorded = false;
     bool usingMeshStage = false;
     Object3dInfo* postprocessmesh;
-    VulkanRenderStage* meshStage = nullptr;
-    VulkanDescriptorSet* postProcessSet = nullptr;
+    VulkanRenderStage* meshStage = nullptr; 
     std::vector<VulkanRenderStage*> postProcessingStages;
     std::vector<VulkanRenderStage*> outputStages;
     VulkanRenderStage* outputStageZygote = nullptr;

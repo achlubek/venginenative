@@ -177,11 +177,13 @@ void Renderer::rebuild(bool destroy)
     postProcessSet->bindImageViewSampler(8, ambientShadowRenderer->distanceImage);
     postProcessSet->update();
 
+    ppShadeAmbientStage->setSets({ postProcessSet });
+    postProcessZygoteStage->setSets({ postProcessSet });
+
     renderer = new VulkanRenderer(vulkan);
     renderer->setMeshStage(meshRenderStage);
     renderer->addPostProcessingStage(ppShadeAmbientStage);
     renderer->setOutputStage(postProcessZygoteStage);
-    renderer->setPostProcessingDescriptorSet(postProcessSet);
     renderer->compile();
 }
 
@@ -199,7 +201,7 @@ void Renderer::deferredResolve()
         lights[i]->recordResolveCommands(shadowMapGenericStage, postProcessSet);
     }
     shadowMapGenericStage->endDrawing();
-    vkQueueWaitIdle(vulkan->mainQueue);
+    //vkQueueWaitIdle(vulkan->mainQueue);
     shadowMapGenericStage->submitNoSemaphores({});//todo no synchronization
 }
 
@@ -255,9 +257,9 @@ void Renderer::renderToSwapChain(Camera *camera)
    // ambientShadowRenderer->render(ambientShadowCamera);
 
     deferredDraw();
-
     renderer->beginDrawing();
     Application::instance->scene->draw(glm::mat4(1), renderer->getMesh3dStage());
+    
     renderer->endDrawing();
 
     deferredResolve();

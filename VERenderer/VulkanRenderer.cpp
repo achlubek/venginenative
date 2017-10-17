@@ -30,10 +30,6 @@ void VulkanRenderer::addPostProcessingStage(VulkanRenderStage * stage)
     postProcessingStages.push_back(stage);
 }
 
-void VulkanRenderer::setPostProcessingDescriptorSet(VulkanDescriptorSet * set)
-{
-    postProcessSet = set;
-}
 VulkanRenderStage * VulkanRenderer::getMesh3dStage()
 {
     return meshStage;
@@ -147,12 +143,12 @@ void VulkanRenderer::endDrawing()
     if (!ppRecorded) {
         for (int i = 0; i < postProcessingStages.size(); i++) {
             postProcessingStages[i]->beginDrawing();
-            postProcessingStages[i]->drawMesh(postprocessmesh, { postProcessSet }, 1);
+            postProcessingStages[i]->drawMesh(postprocessmesh, 1);
             postProcessingStages[i]->endDrawing();
         }
         for (int i = 0; i < outputStages.size(); i++) {
             outputStages[i]->beginDrawing();
-            outputStages[i]->drawMesh(postprocessmesh, { postProcessSet }, 1);
+            outputStages[i]->drawMesh(postprocessmesh, 1);
             outputStages[i]->endDrawing();
         }
 

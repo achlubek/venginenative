@@ -15,6 +15,7 @@ public:
     VulkanGraphicsPipeline* pipeline = nullptr;
     VulkanCommandBuffer* commandBuffer = nullptr;
     std::vector<VkDescriptorSetLayout> setLayouts;
+    std::vector<VulkanDescriptorSet*> sets;
     std::vector<VulkanImage*> outputImages;
     VkExtent2D viewport;
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
@@ -30,7 +31,8 @@ public:
     int cmdMeshesCounts = 0;
     void beginDrawing();
     void endDrawing();
-    void drawMesh(Object3dInfo *info, std::vector<VulkanDescriptorSet*> sets, size_t instances);
+    void setSets(std::vector<VulkanDescriptorSet*> sets);
+    void drawMesh(Object3dInfo *info, size_t instances);
     void compile();
     VulkanRenderStage* copy();
     bool alphaBlending = false;

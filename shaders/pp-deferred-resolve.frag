@@ -12,6 +12,7 @@ layout(set = 1, binding = 0) uniform shadowmapubo {
     vec4 inFrustumConeLeftBottom;
     vec4 inFrustumConeBottomLeftToBottomRight;
     vec4 inFrustumConeBottomLeftToTopLeft;
+//    vec4 distance_StartXEndY_
 } lightData;
 #define isShadowMappingEnabled (lightData.Position.a > 0.5)
 layout(set = 1, binding = 1) uniform sampler2D shadowMap;
@@ -84,13 +85,13 @@ float getShadow(vec3 camera, vec3 worldpos, vec2 centeruv){
     float vw = 0.0;
     seed = UV;
     vec3 normal = normalize(texture(texNormal, UV).rgb);
-    scale = pixel.x + pre * pixel.x * 0.4;
+    scale = pixel.x + pre * pixel.x * 0.004;
     for(int i=0;i<16;i++){
         vec2 newuv = clamp(centeruv + scale * (vec2(rand2s(seed), rand2s(seed + 121.0)) * 2.0 - 1.0), 0.0, 1.0);
         float shadowdata = textureLod(shadowMap, newuv, 0.0).r;
         vec3 dir = reconstructLightDistance(newuv, 1.0);
         float dst = intersectPlane(lightData.Position.xyz, dir, worldpos, normal);
-        v += smoothstep(0.01, 0.02, dst - shadowdata);
+        v += smoothstep(0.01, 0.02, expected - shadowdata);
         seed += 12.0;
         vw += 1.0;
     }
@@ -99,7 +100,7 @@ float getShadow(vec3 camera, vec3 worldpos, vec2 centeruv){
 }
 
 void main() {
-    vec3 diffuse = texture(texDiffuse, UV).rgb;
+    vec3 diffuse = textureLod(texDiffuse, UV, 0.0 + step(1.5, UV.x)).rgb;
     vec3 normal = normalize(texture(texNormal, UV).rgb);
 
     vec3 worldPos = FromCameraSpace(reconstructCameraSpaceDistance(UV, texture(texDistance, UV).r));
@@ -112,13 +113,13 @@ void main() {
     float dt = max(0.0, dot(normal, to_light_dir));
     float shadow = 0.0;
     if(isShadowMappingEnabled){
-        if(lightuv.x > 0.0 && lightuv.x < 1.0 && lightuv.y > 0.0 && lightuv.y < 2.0){
+        if(lightuv.x > 0.0 && lightuv.x < 1.0 && lightuv.y > 0.0 && lightuv.y < 1.0){
             shadow = clip(worldPos)
                 * getShadow(lightData.Position.xyz, worldPos, lightuv);
         }
     }
 
-    vec3 attenuated_diffuse = diffuse / (expected*expected+1.0) ;
+    vec3 attenuated_diffuse = diffuse;// / (expected*expected+1.0) ;
 
     outColor = vec4(dt * shadow * attenuated_diffuse * lightData.Color.xyz, 1.0);
 }

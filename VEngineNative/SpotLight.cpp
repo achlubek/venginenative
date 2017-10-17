@@ -103,6 +103,7 @@ void SpotLight::recordResolveCommands(VulkanRenderStage* stage, VulkanDescriptor
     memcpy(data, lightdata.getPointer(), lightdata.buffer.size());
     lightDataBuffer->unmap();
 
-    stage->drawMesh(vulkan->fullScreenQuad3dInfo, { postProcessingSet, lightDataSet }, 1);
+    stage->setSets({ postProcessingSet, lightDataSet });
+    stage->drawMesh(vulkan->fullScreenQuad3dInfo, 1);
 }
 
