@@ -31,14 +31,14 @@ int main()
     PlanetInfo planet2 = PlanetInfo();
     planet2.position = glm::dvec3(5.0, 3.0, 4.0);
     planet2.size = 1.0;
-    planet2.noiseSeed = 123.0;
+    planet2.noiseSeed = 1123.0;
     planet2.starDistance = 10.0;
     cosmosRenderer->planets.push_back(planet2);
 
     PlanetInfo planet3 = PlanetInfo();
     planet3.position = glm::dvec3(1.0, -3.0, 6.0);
     planet3.size = 1.0;
-    planet3.noiseSeed = 123.0;
+    planet3.noiseSeed = 223.0;
     planet3.starDistance = 10.0;
     cosmosRenderer->planets.push_back(planet3);
 
@@ -47,8 +47,16 @@ int main()
     float pitch = 0.0;
     float yaw = 0.0;
     int lastcx = 0, lastcy = 0;
-
+    int frames = 0;
+    double lastTime = 0.0;
     while (!toolkit->shouldCloseWindow()) {
+        frames++;
+        double nowtime = floor(glfwGetTime());
+        if (nowtime != lastTime) {
+            printf("FPS %d\n", frames);
+            frames = 0;
+        }
+        lastTime = nowtime;
 
 
         float speed = 0.1f;

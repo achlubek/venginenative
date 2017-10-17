@@ -135,10 +135,42 @@ Sphere atmosphere;
 Ray cameraRay;
 vec2 uvseed;
 
+float atmosphereThickness = 0.0;
+vec3 atmosphereAbsorbCoeff = vec3(0.0);
+float atmosphereAbsorbtionStrength = 0.0;
+
+vec3 planetPosition = vec3(0.0);
+#line 144
+vec3 extra_cheap_atmosphere(float raylen, float sunraylen, float absorbstrength, vec3 absorbcolor, float sunraydot){
+	//sundir.y = max(sundir.y, -0.07);
+    sunraydot = max(0.0, sunraydot);
+	raylen *= absorbstrength;
+	sunraylen *= absorbstrength;
+	float special_trick = raylen;
+	float special_trick2 = sunraylen;
+	float raysundt = pow(abs(sunraydot), 2.0);
+	float sundt = pow(max(0.0, sunraydot), 8.0);
+	float mymie = sundt * special_trick * 0.2;
+	vec3 suncolor = mix(vec3(1.0), max(vec3(0.0), vec3(1.0) - absorbcolor), special_trick2);
+	vec3 bluesky= absorbcolor * suncolor;
+	vec3 bluesky2 = max(vec3(0.0), bluesky - absorbcolor * 0.08 * (special_trick));
+	bluesky2 *= special_trick * (0.24 + raysundt * 0.24);
+	return bluesky2 + mymie * suncolor;
+}
 vec4 tracePlanetAtmosphere(vec3 start, vec3 end, float lengthstart, float lengthstop){
 	vec4 result = vec4(0.0);
-
-	return result;
+    float raylen = distance(start, end);
+    vec3 sundir = normalize(planetBuf.closestStarPosition.rgb - end);
+	vec2 hit_Atmosphere = rsi2(Ray(end, sundir), atmosphere);
+    vec3 planetdir1 = normalize(start - planetPosition);
+    vec3 planetdir2 = normalize(end - planetPosition);
+    float planetdirsundt1 = dot(sundir, planetdir1);
+    float planetdirsundt2 = dot(sundir, planetdir2);
+    float descent1 = smoothstep(-0.1, 0.2, planetdirsundt1);
+    float descent2 = smoothstep(-0.1, 0.2, planetdirsundt2);
+    float descent = (descent1 + descent2) * 0.5;
+    vec3 atm = descent * extra_cheap_atmosphere(raylen, hit_Atmosphere.x, 15.0 * atmosphereAbsorbtionStrength, atmosphereAbsorbCoeff, max(0.0, dot(normalize(end - start), sundir)));
+	return vec4(atm, 1.0);
 }
 float planetSize = 0.0;
 float planetterrain = 0.05;
@@ -162,6 +194,7 @@ vec3 getplanetnormal(vec3 dir){
 #define hits(a) (a>0.0&&a<999.0)
 #define seed 13.0
 vec4 tracePlanet(vec3 position, float size, float atmospheresize){
+    planetPosition = position;
 	surface = Sphere(position, size);
 	atmosphere = Sphere(position, atmospheresize);
 	vec3 color = vec3(0.0);
@@ -179,28 +212,39 @@ vec4 tracePlanet(vec3 position, float size, float atmospheresize){
 	if(!hits(hit_Surface) && !hits(hit_Atmosphere.x)) return vec4(0.0);
 	if(!hits(hit_Surface) && hits(hit_Atmosphere.x)){
 		// Only ATMOSPHERE hit
-	//	vec4 atm = tracePlanetAtmosphere(cameraRay.o + cameraRay.d * hit_Atmosphere.x, cameraRay.o + cameraRay.d * hit_Atmosphere.y, size, atmospheresize);
-		//color = atm.xyz * 0.0;
-		//coverage = atm.a;
+		vec4 atm = tracePlanetAtmosphere(cameraRay.d * hit_Atmosphere.x, cameraRay.d * hit_Atmosphere.y, size, atmospheresize);
+		color = atm.rgb;
+		coverage = 1.0;
 	}
 	if(hits(hit_Surface) && hits(hit_Atmosphere.x)) {
-		vec4 atm = tracePlanetAtmosphere(cameraRay.o + cameraRay.d * hit_Atmosphere.x, cameraRay.o + cameraRay.d * hit_Surface, size, atmospheresize);
-		vec3 norm = getplanetnormal(normalize((cameraRay.o + cameraRay.d * hit_Surface) - position));
-		color = mix(max(0.0, dot(norm, normalize(vec3(planetBuf.closestStarPosition.rgb) - (cameraRay.o + cameraRay.d * hit_Surface)))) * vec3(1.0), atm.xyz, atm.w);
+		vec4 atm = tracePlanetAtmosphere(cameraRay.d * hit_Atmosphere.x, cameraRay.d * hit_Surface, size, atmospheresize);
+		vec3 norm = getplanetnormal(normalize((cameraRay.d * hit_Surface) - position));
+        float plhei = getplanetheight(normalize((cameraRay.d * hit_Surface) - position));
+        float plheidelta = (plhei - size) / planetterrain;
+        vec3 newdir = plhei * normalize((cameraRay.d * hit_Surface) - position);
+        vec3 sundir = normalize(planetBuf.closestStarPosition.rgb - cameraRay.d * hit_Surface);
+    	vec2 hit_Atmosphere2 = rsi2(Ray(newdir, sundir), atmosphere);
+        float shadow = smoothstep(-0.2 * plheidelta, 0.2, dot(sundir, newdir));
+		color = atm.rgb + shadow * max(0.0, dot(norm, normalize(vec3(planetBuf.closestStarPosition.rgb) - (cameraRay.d * hit_Surface))));
 		coverage = 1.0;
 	}
 
 
+    color += (1.0 / 128.0) * vec3(rand2s(uvseed));
 	return vec4(color, coverage);
 }
 
 void main() {
 	uvseed = UV;
-	cameraRay = Ray(CameraPosition, reconstructCameraSpaceDistance(UV, 1.0));
+	cameraRay = Ray(vec3(0.0), reconstructCameraSpaceDistance(UV, 1.0));
     vec4 oz = vec4(0.0);
     for(int i=0;i<planetBuf.planetsCount.x;i++){
         planetSize = planetBuf.planets[i].seed_size_stardistance_zero.g;
-        vec4 pl = tracePlanet(planetBuf.planets[i].position.xyz, planetBuf.planets[i].seed_size_stardistance_zero.g, planetBuf.planets[i].seed_size_stardistance_zero.g + 0.1);
+        float seeed = planetBuf.planets[i].seed_size_stardistance_zero.r;
+        atmosphereThickness = hash(seeed) * 0.05;
+        atmosphereAbsorbCoeff = vec3(hash(seeed + 10.0), hash(seeed + 100.0), hash(seeed + 200.0));
+        atmosphereAbsorbtionStrength = hash(seeed + 20.0) * 2.0;
+        vec4 pl = tracePlanet(planetBuf.planets[i].position.xyz, planetBuf.planets[i].seed_size_stardistance_zero.g, planetBuf.planets[i].seed_size_stardistance_zero.g + atmosphereThickness);
         oz.rgb = mix(oz.rgb, pl.rgb, pl.a);
         oz.a += pl.a;
     }
