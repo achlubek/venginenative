@@ -10,6 +10,15 @@ layout(set = 0, binding = 1) uniform sampler2D texPlanets;
 void main() {
     vec4 stars = texture(texStars, UV);
     vec4 planets = texture(texPlanets, UV);
-    vec3 color = mix(stars.rgb, planets.rgb, planets.a);
-    outColor = vec4(color, 1.0);
+    vec3 result = vec3(0.0);
+    result += mix(stars.rgb, planets.rgb, step(0.0, planets.a - stars.a));
+    if(planets.a == 0.0){
+        result = stars.rgb;
+    } else if(planets.a < stars.a){
+        result = planets.rgb;
+    } else if(stars.a < planets.a){
+        result = planets.rgb + stars.rgb;
+    }
+    if(planets.a < 0.0) result += planets.rgb;
+    outColor = vec4(result, 1.0);
 }

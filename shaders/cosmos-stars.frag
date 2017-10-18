@@ -166,7 +166,7 @@ vec4 traceStar(vec3 position, float size, float atmospheresize){
 	starColor = vec3(0.7)+0.3 * vec3(hash(seed), hash(seed + 100.0), hash(seed + 200.0));
 
 	float hit_Surface = rsi2(cameraRay, surface).x;
-	vec2 hit_Atmosphere = rsi2(cameraRay, atmosphere);
+	vec2 hit_Atmosphere = vec2(hit_Surface);//rsi2(cameraRay, atmosphere);
 	/*3 possible scenarios:
 	nothing hit
 	only atmosphere hit
@@ -178,12 +178,16 @@ vec4 traceStar(vec3 position, float size, float atmospheresize){
     float dotf = dtraw * 0.5 + 0.5;
 
     float sqrlen = length(position) * length(position);
-    float specialtrick1 = 1.0 / (0.5 + 1.0 * sqrlen * (1.0 - dotz));
+    float specialtrick1 = 1.0 / (1.0 + 1.0 * sqrlen * (1.0 - dotz));
 
-    color += specialtrick1 * starColor * 5.0;
     color += (1.0 / 128.0) * vec3(rand2s(uvseed));
 
-	if(!hits(hit_Surface) && !hits(hit_Atmosphere.x)) return vec4(color, coverage);
+	if(!hits(hit_Surface) && !hits(hit_Atmosphere.x)) {
+
+        color += specialtrick1 * starColor * 5.0;
+        return vec4(color, length(position));
+
+    }
 	if(!hits(hit_Surface) && hits(hit_Atmosphere.x)){
 		// Only ATMOSPHERE hit
 		//vec4 atm = traceStarAtmosphere(cameraRay.o + cameraRay.d * hit_Atmosphere.x, cameraRay.o + cameraRay.d * hit_Atmosphere.y, size, atmospheresize);
@@ -192,14 +196,14 @@ vec4 traceStar(vec3 position, float size, float atmospheresize){
 	}
 	if(hits(hit_Surface) && hits(hit_Atmosphere.x)) {
 		//vec4 atm = traceStarAtmosphere(cameraRay.o + cameraRay.d * hit_Atmosphere.x, cameraRay.o + cameraRay.d * hit_Surface, size, atmospheresize);
-		vec3 directsun = starColor * 1.0 * (1.0 - smoothstep(0.65, 0.7, FBM4(vec4(((cameraRay.o + cameraRay.d * hit_Surface) - position) * 4.0, Time * 0.1), 2, 2.0)));
+		vec3 directsun = starColor * 5.0 * (1.0 - smoothstep(0.65, 0.7, FBM4(vec4(((cameraRay.o + cameraRay.d * hit_Surface) - position) * 4.0, Time * 0.1), 2, 2.0)));
 		//color = mix(directsun, atm.xyz, atm.w);
         color += directsun;
 		coverage = 1.0;
 	}
 
 
-	return vec4(color, coverage);
+	return vec4(color, length(position));
 }
 
 float starSize = StarSize;
@@ -228,14 +232,13 @@ float fbmHI2d(vec3 p, float dx){
 	}
 	return a / wc;// + noise(p * 100.0) * 11;
 }
-float mod289(float x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
-vec4 mod289(vec4 x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
+float mod289(float x){return mod(x, 289.0);}
+vec4 mod289(vec4 x){return mod(x, 289.0);}
 vec4 perm(vec4 x){return mod289(((x * 34.0) + 1.0) * x);}
 
 float noise(vec3 p){
     vec3 a = floor(p);
-    vec3 d = p - a;
-    d = d * d * (3.0 - 2.0 * d);
+    vec3 d = smoothstep(0.0, 1.0, p - a);
 
     vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
     vec4 k1 = perm(b.xyxy);
@@ -245,8 +248,8 @@ float noise(vec3 p){
     vec4 k3 = perm(c);
     vec4 k4 = perm(c + 1.0);
 
-    vec4 o1 = fract(k3 * (1.0 / 41.0));
-    vec4 o2 = fract(k4 * (1.0 / 41.0));
+    vec4 o1 = fract(k3 * (0.02439024));
+    vec4 o2 = fract(k4 * (0.02439024));
 
     vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
     vec2 o4 = o3.yw * d.x + o3.xz * (1.0 - d.x);
@@ -257,7 +260,7 @@ float stars(vec3 seedd, float intensity){
     float stepstart = 1.0 - intensity*0.3;
     float stepend = min(1.0, stepstart + 0.1);
 	return smoothstep(stepstart, stepend, noise(-seedd * 600.0));
-}
+}/*
 vec3 stars(vec3 uv){
 	float intensityred = (1.0 / (1.0 + 30.0 * abs(uv.y))) * fbmHI2d(uv * 30.0, 3.0) * (1.0 - abs(uv.x ));
 	float intensitywhite = (1.0 / (1.0 + 20.0 * abs(uv.y))) * fbmHI2d(uv * 30.0 + 120.0, 3.0) * (1.0 - abs(uv.x ));
@@ -267,9 +270,9 @@ vec3 stars(vec3 uv){
 	intensityred = 1.0 - pow(1.0 - intensityred, 3.0) * 0.73;
 	intensitywhite = 1.0 - pow(1.0 - intensitywhite, 3.0) * 0.73;
 	intensityblue = 1.0 - pow(1.0 - intensityblue, 3.0) * 0.73;
-	float redlights = stars(uv - 9100.0, intensityred );
+	float redlights = stars(uv - 500.0, intensityred );
 	float whitelights = stars(uv, intensitywhite );
-	float bluelights = stars(uv - 19200.0, intensityblue );
+	float bluelights = stars(uv - 200.0, intensityblue );
 	vec3 starscolor = vec3(1.0, 0.8, 0.5) * redlights + vec3(1.0) * whitelights + vec3(0.6, 0.7, 1.0) * bluelights;
 	vec3 dustinner = vec3(0.8, 0.9, 1.0);
 	vec3 dustouter = vec3(0.2, 0.1, 0.0);
@@ -277,14 +280,14 @@ vec3 stars(vec3 uv){
 	vec3 bloom = dustinner * (1.0 / (1.0 + 30.0 * abs(uv.y))) * fbmHI2d(uv * 3.0, 3.0) * (1.0 - abs(uv.x ));
 	vec3 allmix = mix(dustouter, innermix + bloom, 1.0 - galaxydust2);
 	return allmix + bloom;
-}
+}*/
 
 vec3 milkyway(vec3 uv){
     mat3 r = rotationMatrix(vec3(1.0), 12.1244);
-	return stars(r * uv) * 0.3;
+	return vec3(1.0) * stars(r * uv, 0.8) * 0.3;
 }
 void main() {
 	uvseed = UV;
 	cameraRay = Ray(vec3(0.0), reconstructCameraSpaceDistance(UV, 1.0));
-	outColor = traceStar(starPosition, starSize, starAtmosphere) + vec4(milkyway(cameraRay.d), 0.0);
+	outColor = traceStar(starPosition, starSize, starAtmosphere);// + vec4(milkyway(cameraRay.d), 0.0);
 }

@@ -193,6 +193,7 @@ vec3 getplanetnormal(vec3 dir){
 
 #define hits(a) (a>0.0&&a<999.0)
 #define seed 13.0
+float alphaMix = 0.0;
 vec4 tracePlanet(vec3 position, float size, float atmospheresize){
     planetPosition = position;
 	surface = Sphere(position, size);
@@ -209,11 +210,12 @@ vec4 tracePlanet(vec3 position, float size, float atmospheresize){
 	atmosphere and surface hit
 	nothing is going to hit from the inside, you are not going into the star ok..
 	*/
-	if(!hits(hit_Surface) && !hits(hit_Atmosphere.x)) return vec4(0.0);
+	if(!hits(hit_Surface) && !hits(hit_Atmosphere.x)) return vec4(9999999991.0);
 	if(!hits(hit_Surface) && hits(hit_Atmosphere.x)){
 		// Only ATMOSPHERE hit
 		vec4 atm = tracePlanetAtmosphere(cameraRay.d * hit_Atmosphere.x, cameraRay.d * hit_Atmosphere.y, size, atmospheresize);
 		color = atm.rgb;
+        alphaMix = -1.0;
 		coverage = 1.0;
 	}
 	if(hits(hit_Surface) && hits(hit_Atmosphere.x)) {
@@ -226,18 +228,19 @@ vec4 tracePlanet(vec3 position, float size, float atmospheresize){
     	vec2 hit_Atmosphere2 = rsi2(Ray(newdir, sundir), atmosphere);
         float shadow = smoothstep(-0.2 * plheidelta, 0.2, dot(sundir, newdir));
 		color = atm.rgb + shadow * max(0.0, dot(norm, normalize(vec3(planetBuf.closestStarPosition.rgb) - (cameraRay.d * hit_Surface))));
-		coverage = 1.0;
+		alphaMix = 1.0;
 	}
 
 
     color += (1.0 / 128.0) * vec3(rand2s(uvseed));
-	return vec4(color, coverage);
+	return vec4(color, min(hit_Surface, hit_Atmosphere.x));
 }
 
 void main() {
 	uvseed = UV;
 	cameraRay = Ray(vec3(0.0), reconstructCameraSpaceDistance(UV, 1.0));
     vec4 oz = vec4(0.0);
+    float lastdistance = 9999999990.0;
     for(int i=0;i<planetBuf.planetsCount.x;i++){
         planetSize = planetBuf.planets[i].seed_size_stardistance_zero.g;
         float seeed = planetBuf.planets[i].seed_size_stardistance_zero.r;
@@ -245,9 +248,13 @@ void main() {
         atmosphereAbsorbCoeff = vec3(hash(seeed + 10.0), hash(seeed + 100.0), hash(seeed + 200.0));
         atmosphereAbsorbtionStrength = hash(seeed + 20.0) * 2.0;
         vec4 pl = tracePlanet(planetBuf.planets[i].position.xyz, planetBuf.planets[i].seed_size_stardistance_zero.g, planetBuf.planets[i].seed_size_stardistance_zero.g + atmosphereThickness);
-        oz.rgb = mix(oz.rgb, pl.rgb, pl.a);
-        oz.a += pl.a;
+        if(pl.a < lastdistance){
+            oz.rgb = pl.rgb;
+            lastdistance = pl.a;
+            oz.a = lastdistance * alphaMix;
+        }
+        //oz.a += pl.a;
     }
-    oz.a = min(1.0, oz.a);
+    //oz.a = min(1.0, oz.a);
 	outColor = oz;
 }

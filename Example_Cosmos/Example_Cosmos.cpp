@@ -3,12 +3,19 @@
 
 #include "stdafx.h"
 #include "CosmosRenderer.h"
+#include "GalaxyGenerator.h"
 
 
 int main()
 {
+    GalaxyGenerator* galaxy = new GalaxyGenerator();
+    for (int i = 0; i < 10000000; i++) {
+        galaxy->generateStar(-1000, -1000, -1000, 1000, 1000, 1000, i);
+    }
+    GeneratedStarInfo starinfo = galaxy->generateStarInfo(123);
     auto toolkit = new VulkanToolkit();
     toolkit->initialize(1920, 1000);
+
 
     auto cosmosRenderer = new CosmosRenderer(toolkit, toolkit->windowWidth, toolkit->windowHeight);
 
