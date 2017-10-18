@@ -2,20 +2,24 @@
 #include <random>
 #include <limits>
 struct SingleStar {
+public:
     int64_t x;
     int64_t y;
     int64_t z;
     uint64_t seed;
 };
 struct GeneratedMoonInfo {
+public:
     double radius; // real units idk
     double terrainMaxLevel; //0->1 
     glm::vec3 orbitPlane;
     double orbitSpeed; //0->1
+    double planetDistance; //0->1
     glm::vec3 preferredColor;//0->1
 };
 
 struct GeneratedPlanetInfo {
+public:
     double radius; // real units 12 742
     double terrainMaxLevel; //0->1
     double fluidMaxLevel; //0->1
@@ -31,6 +35,8 @@ struct GeneratedPlanetInfo {
 };
 
 struct GeneratedStarInfo {
+public:
+    SingleStar starData;
     double radius; // real units like 1 391 000
     glm::vec3 color; //0->maybe 10? maybe 100?
     double age; //0->1
@@ -49,7 +55,7 @@ public:
     std::mt19937_64 eng;
     uint64_t randu64(uint64_t min, uint64_t max);
     int64_t randi64(int64_t min, int64_t max);
-    size_t findClosestStar();
+    size_t findClosestStar(int64_t x, int64_t y, int64_t z);
     double drandnorm();
     void generateStar(int64_t minx, int64_t miny, int64_t minz, int64_t maxx, int64_t maxy, int64_t maxz, uint64_t seed);
     void addStar(SingleStar s);

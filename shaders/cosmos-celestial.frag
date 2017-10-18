@@ -15,15 +15,42 @@ layout(set = 0, binding = 0) uniform UniformBufferObject1 {
     vec4 inFrustumConeBottomLeftToTopLeft;
 } hiFreq;
 
-struct PlanetInfo{
-        vec4 position;
-        vec4 seed_size_stardistance_zero;
+struct GeneratedStarInfo {
+    vec4 position_radius;
+    vec4 color_age; //0->maybe 10? maybe 100?
+    vec4 orbitPlane_rotationSpeed;
+    vec4 spotsIntensity_zero_zero_zero; //0->1
 };
-layout(set = 0, binding = 1) uniform UniformBufferObject2 {
-    ivec4 planetsCount;
-    vec4 closestStarPosition;
-    PlanetInfo planets[10];
-} planetBuf;
+
+struct GeneratedPlanetInfo {
+    vec4 position_radius;
+    vec4 terrainMaxLevel_fluidMaxLevel_starDistance_zero;
+    vec4 habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength;
+    vec4 preferredColor_zero;//0->1
+    vec4 atmosphereAbsorbColor_zero;//0->1
+};
+
+struct GeneratedMoonInfo {
+    vec4 position_radius;
+    vec4 orbitPlane_orbitSpeed;
+    vec4 preferredColor_terrainMaxLevel;//0->1
+    vec4 planetDistance_zero_zero_zero; //0->1
+};
+
+layout(set = 0, binding = 1) buffer StarsStorageBuffer {
+    ivec4 count;
+    GeneratedStarInfo stars[];
+} starsBuffer;
+
+layout(set = 0, binding = 2) buffer PlanetsStorageBuffer {
+    ivec4 count;
+    GeneratedPlanetInfo planets[];
+} planetsBuffer;
+
+layout(set = 0, binding = 3) buffer MoonsStorageBuffer {
+    ivec4 count;
+    GeneratedMoonInfo moons[];
+} moonsBuffer;
 
 float Time = hiFreq.Time;
 

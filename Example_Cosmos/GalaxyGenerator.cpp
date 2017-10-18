@@ -27,6 +27,26 @@ int64_t GalaxyGenerator::randi64(int64_t min, int64_t max) {
     return distr(eng);
 }
 
+size_t GalaxyGenerator::findClosestStar(int64_t x, int64_t y, int64_t z)
+{
+    size_t cnt = stars.size();
+    int64_t mindist = 0;
+    size_t choosenIndex = 0;
+    for (int i = 0; i < cnt; i++) {
+        int64_t dx = stars[i].x - x;
+        int64_t dy = stars[i].y - y;
+        int64_t dz = stars[i].z - z;
+        int64_t brief = abs(dx) + abs(dy) + abs(dz);
+        if (i == 0 || brief < mindist) {
+            mindist = brief;
+            choosenIndex = i;
+            printf("%d\n", i);
+        }
+        //int64_t dist = sqrt(pow(dx, 2i64) + pow(dy, 2i64) + pow(dz, 2i64));
+    }
+    return choosenIndex;
+}
+
 double GalaxyGenerator::drandnorm() {
     std::uniform_int_distribution<uint64_t> distr = std::uniform_int_distribution<uint64_t>();
     return ((double)distr(eng)) / ((double)UINT64_MAX);
@@ -53,6 +73,7 @@ GeneratedStarInfo GalaxyGenerator::generateStarInfo(size_t index)
     auto s = stars[index];
     eng.seed(s.seed);
     GeneratedStarInfo star = {};
+    star.starData = s;
     star.radius = 391000 + randu64(0, 1000000);
     star.color = glm::vec3(0.5 + drandnorm(), 0.5 + drandnorm(), 0.5 + drandnorm());
     star.age = drandnorm();
@@ -83,6 +104,7 @@ GeneratedStarInfo GalaxyGenerator::generateStarInfo(size_t index)
             moon.terrainMaxLevel = drandnorm();
             moon.orbitPlane = glm::normalize(glm::vec3(drandnorm(), drandnorm(), drandnorm()) * 2.0f - 1.0f);
             moon.orbitSpeed = drandnorm();
+            moon.planetDistance = planet.radius * 3.0 + planet.radius * drandnorm() * 3.0;
             moon.preferredColor = glm::vec3(0.1 + drandnorm(), 0.1 + drandnorm(), 0.1 + drandnorm());
             planet.moons.push_back(moon);
         }

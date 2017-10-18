@@ -9,10 +9,13 @@
 int main()
 {
     GalaxyGenerator* galaxy = new GalaxyGenerator();
-    for (int i = 0; i < 10000000; i++) {
+    printf("gen");
+    int64_t galaxyedge = 149600000;
+    for (int i = 0; i < 1000000; i++) {
         galaxy->generateStar(-1000, -1000, -1000, 1000, 1000, 1000, i);
     }
-    GeneratedStarInfo starinfo = galaxy->generateStarInfo(123);
+    printf("sea");
+    GeneratedStarInfo starinfo = galaxy->generateStarInfo(galaxy->findClosestStar(1, 1, 1));
     auto toolkit = new VulkanToolkit();
     toolkit->initialize(1920, 1000);
 
@@ -21,33 +24,6 @@ int main()
 
     auto camera = new Camera();
     camera->createProjectionPerspective(40.0f, (float)toolkit->windowWidth / (float)toolkit->windowHeight, 0.01f, 10000);
-
-    StarInfo centralStar = StarInfo();
-    centralStar.position = glm::dvec3(10.0, 10.0, 10.0);
-    centralStar.size = 2.0;
-    centralStar.noiseSeed = 123.0;
-    cosmosRenderer->stars.push_back(centralStar);
-
-    PlanetInfo planet1 = PlanetInfo();
-    planet1.position = glm::dvec3(1.0, 3.0, 4.0);
-    planet1.size = 1.0;
-    planet1.noiseSeed = 123.0;
-    planet1.starDistance = 10.0;
-    cosmosRenderer->planets.push_back(planet1);
-
-    PlanetInfo planet2 = PlanetInfo();
-    planet2.position = glm::dvec3(5.0, 3.0, 4.0);
-    planet2.size = 1.0;
-    planet2.noiseSeed = 1123.0;
-    planet2.starDistance = 10.0;
-    cosmosRenderer->planets.push_back(planet2);
-
-    PlanetInfo planet3 = PlanetInfo();
-    planet3.position = glm::dvec3(1.0, -3.0, 6.0);
-    planet3.size = 1.0;
-    planet3.noiseSeed = 223.0;
-    planet3.starDistance = 10.0;
-    cosmosRenderer->planets.push_back(planet3);
 
     Mouse* mouse = new Mouse(toolkit->window);
     Keyboard* keyboard = new Keyboard(toolkit->window);
