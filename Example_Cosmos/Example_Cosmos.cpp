@@ -8,7 +8,12 @@
 
 int main()
 {
-    GalaxyGenerator* galaxy = new GalaxyGenerator();
+    auto toolkit = new VulkanToolkit();
+    toolkit->initialize(1920, 1000);
+
+    auto cosmosRenderer = new CosmosRenderer(toolkit, toolkit->windowWidth, toolkit->windowHeight);
+
+    GalaxyGenerator* galaxy = cosmosRenderer->galaxy;
     printf("gen");
     int64_t galaxyedge = 149600000;
     for (int i = 0; i < 1000000; i++) {
@@ -16,11 +21,8 @@ int main()
     }
     printf("sea");
     GeneratedStarInfo starinfo = galaxy->generateStarInfo(galaxy->findClosestStar(1, 1, 1));
-    auto toolkit = new VulkanToolkit();
-    toolkit->initialize(1920, 1000);
 
 
-    auto cosmosRenderer = new CosmosRenderer(toolkit, toolkit->windowWidth, toolkit->windowHeight);
 
     auto camera = new Camera();
     camera->createProjectionPerspective(40.0f, (float)toolkit->windowWidth / (float)toolkit->windowHeight, 0.01f, 10000);

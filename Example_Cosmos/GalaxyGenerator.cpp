@@ -85,7 +85,7 @@ GeneratedStarInfo GalaxyGenerator::generateStarInfo(size_t index)
     double stardisthelper = star.radius * 10.0;
     for (int i = 0; i < star.planetsCount; i++) {
         GeneratedPlanetInfo planet = {};
-        planet.radius = 1742 + randu64(0, 50000);
+        planet.radius = 1742 + randu64(0, 500000);
         planet.terrainMaxLevel = drandnorm();
         planet.fluidMaxLevel = drandnorm() * planet.terrainMaxLevel; // no fully water planets
         planet.starDistance = stardisthelper;
