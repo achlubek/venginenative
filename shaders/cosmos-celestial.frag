@@ -99,60 +99,60 @@ float noise2d( in vec2 x ){
     vec2 f = smoothstep(0.0, 1.0, fract(x));
     float n = p.x + p.y*57.0;
     return mix(
-	    mix(hash(n+0.0),hash(n+1.0),f.x),
-	    mix(hash(n+57.0),hash(n+58.0),f.x),
-	    f.y
-	   );
+        mix(hash(n+0.0),hash(n+1.0),f.x),
+        mix(hash(n+57.0),hash(n+58.0),f.x),
+        f.y
+       );
 }
 float noise3d( in vec3 x ){
-	vec3 p = floor(x);
-    	vec3 f = smoothstep(0.0, 1.0, fract(x));
-	float n = p.x + p.y*157.0 + 113.0*p.z;
+    vec3 p = floor(x);
+        vec3 f = smoothstep(0.0, 1.0, fract(x));
+    float n = p.x + p.y*157.0 + 113.0*p.z;
 
-	return mix(mix(	mix( hash(n+0.0), hash(n+1.0),f.x),
-			mix( hash(n+157.0), hash(n+158.0),f.x),f.y),
-		   mix(	mix( hash(n+113.0), hash(n+114.0),f.x),
-			mix( hash(n+270.0), hash(n+271.0),f.x),f.y),f.z);
+    return mix(mix(	mix( hash(n+0.0), hash(n+1.0),f.x),
+            mix( hash(n+157.0), hash(n+158.0),f.x),f.y),
+           mix(	mix( hash(n+113.0), hash(n+114.0),f.x),
+            mix( hash(n+270.0), hash(n+271.0),f.x),f.y),f.z);
 }
 // YOU ARE WELCOME! 4d NOISE
 float noise4d(vec4 x){
-	vec4 p=floor(x);
-	vec4 f=smoothstep(0.,1.,fract(x));
-	float n=p.x+p.y*157.+p.z*113.+p.w*971.;
-	return mix(mix(mix(mix(hash(n),hash(n+1.),f.x),mix(hash(n+157.),hash(n+158.),f.x),f.y),
-	mix(mix(hash(n+113.),hash(n+114.),f.x),mix(hash(n+270.),hash(n+271.),f.x),f.y),f.z),
-	mix(mix(mix(hash(n+971.),hash(n+972.),f.x),mix(hash(n+1128.),hash(n+1129.),f.x),f.y),
-	mix(mix(hash(n+1084.),hash(n+1085.),f.x),mix(hash(n+1241.),hash(n+1242.),f.x),f.y),f.z),f.w);
+    vec4 p=floor(x);
+    vec4 f=smoothstep(0.,1.,fract(x));
+    float n=p.x+p.y*157.+p.z*113.+p.w*971.;
+    return mix(mix(mix(mix(hash(n),hash(n+1.),f.x),mix(hash(n+157.),hash(n+158.),f.x),f.y),
+    mix(mix(hash(n+113.),hash(n+114.),f.x),mix(hash(n+270.),hash(n+271.),f.x),f.y),f.z),
+    mix(mix(mix(hash(n+971.),hash(n+972.),f.x),mix(hash(n+1128.),hash(n+1129.),f.x),f.y),
+    mix(mix(hash(n+1084.),hash(n+1085.),f.x),mix(hash(n+1241.),hash(n+1242.),f.x),f.y),f.z),f.w);
 }
 float FBM2(vec2 p, int octaves, float dx){
-	float a = 0.0;
-    	float w = 0.5;
-	for(int i=0;i<octaves;i++){
-		a += noise2d(p) * w;
-        	w *= 0.5;
-		p *= dx;
-	}
-	return a;
+    float a = 0.0;
+        float w = 0.5;
+    for(int i=0;i<octaves;i++){
+        a += noise2d(p) * w;
+            w *= 0.5;
+        p *= dx;
+    }
+    return a;
 }
 float FBM3(vec3 p, int octaves, float dx){
-	float a = 0.0;
-    	float w = 0.5;
-	for(int i=0;i<octaves;i++){
-		a += noise3d(p) * w;
-        	w *= 0.5;
-		p *= dx;
-	}
-	return a;
+    float a = 0.0;
+        float w = 0.5;
+    for(int i=0;i<octaves;i++){
+        a += noise3d(p) * w;
+            w *= 0.5;
+        p *= dx;
+    }
+    return a;
 }
 float FBM4(vec4 p, int octaves, float dx){
-	float a = 0.0;
-    	float w = 0.5;
-	for(int i=0;i<octaves;i++){
-		a += noise4d(p) * w;
-        	w *= 0.5;
-		p *= dx;
-	}
-	return a;
+    float a = 0.0;
+        float w = 0.5;
+    for(int i=0;i<octaves;i++){
+        a += noise4d(p) * w;
+            w *= 0.5;
+        p *= dx;
+    }
+    return a;
 }
 
 float rand2s(vec2 co){
@@ -167,28 +167,28 @@ GeneratedPlanetInfo currentPlanet;
 GeneratedStarInfo planetHostStar;
 
 vec3 extra_cheap_atmosphere(float raylen, float sunraylen, float absorbstrength, vec3 absorbcolor, float sunraydot){
-	//sundir.y = max(sundir.y, -0.07);
+    //sundir.y = max(sundir.y, -0.07);
     sunraydot = max(0.0, sunraydot);
-	raylen *= absorbstrength * 0.001;
-	sunraylen *= absorbstrength * 0.001;
-	float special_trick = raylen;
-	float special_trick2 = sunraylen;
-	float raysundt = pow(abs(sunraydot), 2.0);
-	float sundt = pow(max(0.0, sunraydot), 8.0);
-	float mymie = sundt * special_trick * 0.2;
-	vec3 suncolor = mix(vec3(1.0), max(vec3(0.0), vec3(1.0) - absorbcolor), special_trick2);
-	vec3 bluesky= absorbcolor * suncolor;
-	vec3 bluesky2 = max(vec3(0.0), bluesky - absorbcolor * 0.08 * (special_trick));
-	bluesky2 *= special_trick * (0.24 + raysundt * 0.24);
-	return bluesky2 + mymie * suncolor;
+    raylen *= absorbstrength * 0.001;
+    sunraylen *= absorbstrength * 0.001;
+    float special_trick = raylen;
+    float special_trick2 = sunraylen;
+    float raysundt = pow(abs(sunraydot), 2.0);
+    float sundt = pow(max(0.0, sunraydot), 8.0);
+    float mymie = sundt * special_trick * 0.2;
+    vec3 suncolor = mix(vec3(1.0), max(vec3(0.0), vec3(1.0) - absorbcolor), special_trick2);
+    vec3 bluesky= absorbcolor * suncolor;
+    vec3 bluesky2 = max(vec3(0.0), bluesky - absorbcolor * 0.08 * (special_trick));
+    bluesky2 *= special_trick * (0.24 + raysundt * 0.24);
+    return bluesky2 + mymie * suncolor;
 }
 vec4 tracePlanetAtmosphere(vec3 start, vec3 end, float lengthstart, float lengthstop){
-	vec4 result = vec4(0.0);
+    vec4 result = vec4(0.0);
     float raylen = distance(start, end);
     vec3 sundir = normalize(planetHostStar.position_radius.rgb - end);
     Sphere atmosphere = Sphere(currentPlanet.position_radius.rgb,
         currentPlanet.position_radius.a + currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.b);
-	vec2 hit_Atmosphere = rsi2(Ray(end, sundir), atmosphere);
+    vec2 hit_Atmosphere = rsi2(Ray(end, sundir), atmosphere);
     vec3 planetdir1 = normalize(start - currentPlanet.position_radius.rgb);
     vec3 planetdir2 = normalize(end - currentPlanet.position_radius.rgb);
     float planetdirsundt1 = dot(sundir, planetdir1);
@@ -201,78 +201,78 @@ vec4 tracePlanetAtmosphere(vec3 start, vec3 end, float lengthstart, float length
             * currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.a,
             currentPlanet.atmosphereAbsorbColor_zero.rgb,
             max(0.0, dot(normalize(end - start), sundir)));
-	return vec4(atm, 1.0);
+    return vec4(atm, 1.0);
 }
 
 float getplanetheight(vec3 dir){
-	return currentPlanet.position_radius.a
+    return currentPlanet.position_radius.a
         + (1.0 - 2.0 * abs(0.5 - FBM3(dir * 10.0, 6, 2.1)))
         * currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_zero.r;
 }
 vec3 getplanetnormal(vec3 dir){
     vec3 tangdir = normalize(cross(dir, vec3(0.0, 1.0, 0.0)));
     vec3 bitangdir = normalize(cross(tangdir, dir));
-	mat3 normrotmat1 = rotationMatrix(tangdir, 0.002);
-	mat3 normrotmat2 = rotationMatrix(bitangdir, 0.002);
-	vec3 dir2 = normrotmat1 * dir;
-	vec3 dir3 = normrotmat2 * dir;
-	vec3 p1 = dir * getplanetheight(dir);
-	vec3 p2 = dir2 * getplanetheight(dir2);
-	vec3 p3 = dir3 * getplanetheight(dir3);
-	return normalize(cross(normalize(p3 - p1), normalize(p2 - p1)));
+    mat3 normrotmat1 = rotationMatrix(tangdir, 0.002);
+    mat3 normrotmat2 = rotationMatrix(bitangdir, 0.002);
+    vec3 dir2 = normrotmat1 * dir;
+    vec3 dir3 = normrotmat2 * dir;
+    vec3 p1 = dir * getplanetheight(dir);
+    vec3 p2 = dir2 * getplanetheight(dir2);
+    vec3 p3 = dir3 * getplanetheight(dir3);
+    return normalize(cross(normalize(p3 - p1), normalize(p2 - p1)));
 }
 
 #define hits(a) (a>0.0&&a<99999.0)
 #line 227
 vec4 tracePlanet(Ray ray){
-	Sphere surface = Sphere(currentPlanet.position_radius.rgb, currentPlanet.position_radius.a);
-	Sphere atmosphere = Sphere(currentPlanet.position_radius.rgb,
+    Sphere surface = Sphere(currentPlanet.position_radius.rgb, currentPlanet.position_radius.a);
+    Sphere atmosphere = Sphere(currentPlanet.position_radius.rgb,
         currentPlanet.position_radius.a + currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.b);
-	vec3 color = vec3(0.0);
-	float coverage = 0.0;
-	//starColor = vec3(0.7)+vec3(hash(seed), hash(seed + 100.0), hash(seed + 200.0));
+    vec3 color = vec3(0.0);
+    float coverage = 0.0;
+    //starColor = vec3(0.7)+vec3(hash(seed), hash(seed + 100.0), hash(seed + 200.0));
 
-	float hit_Surface = rsi2(ray, surface).x;
-	vec2 hit_Atmosphere = rsi2(ray, atmosphere);
-	/*3 possible scenarios:
-	nothing hit
-	only atmosphere hit
-	atmosphere and surface hit
-	nothing is going to hit from the inside, you are not going into the star ok..
-	*/
-	if(!hits(hit_Surface) && !hits(hit_Atmosphere.x)) return vec4(0.0, 0.0, 0.0, 9999999991.0);
-	if(!hits(hit_Surface) && hits(hit_Atmosphere.x)){
-		// Only ATMOSPHERE hit
-		vec4 atm = tracePlanetAtmosphere(ray.d * hit_Atmosphere.x, ray.d * hit_Atmosphere.y,
+    float hit_Surface = rsi2(ray, surface).x;
+    vec2 hit_Atmosphere = rsi2(ray, atmosphere);
+    /*3 possible scenarios:
+    nothing hit
+    only atmosphere hit
+    atmosphere and surface hit
+    nothing is going to hit from the inside, you are not going into the star ok..
+    */
+    if(!hits(hit_Surface) && !hits(hit_Atmosphere.x)) return vec4(0.0, 0.0, 0.0, 9999999991.0);
+    if(!hits(hit_Surface) && hits(hit_Atmosphere.x)){
+        // Only ATMOSPHERE hit
+        vec4 atm = tracePlanetAtmosphere(ray.d * hit_Atmosphere.x, ray.d * hit_Atmosphere.y,
             currentPlanet.position_radius.a,
             currentPlanet.position_radius.a
             + currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.b);
-		color = atm.rgb;
+        color = atm.rgb;
         //alphaMix = -1.0;
-	//	coverage = 1.0;
-	}
-	if(hits(hit_Surface) && hits(hit_Atmosphere.x)) {
-		vec4 atm = tracePlanetAtmosphere(ray.d * hit_Atmosphere.x, ray.d * hit_Surface,
+    //	coverage = 1.0;
+    }
+    if(hits(hit_Surface) && hits(hit_Atmosphere.x)) {
+        vec4 atm = tracePlanetAtmosphere(ray.d * hit_Atmosphere.x, ray.d * hit_Surface,
             currentPlanet.position_radius.a, currentPlanet.position_radius.a + currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.b);
-		vec3 norm = getplanetnormal(normalize((ray.d * hit_Surface) - currentPlanet.position_radius.rgb));
+        vec3 norm = getplanetnormal(normalize((ray.d * hit_Surface) - currentPlanet.position_radius.rgb));
         float plhei = getplanetheight(normalize((ray.d * hit_Surface) - currentPlanet.position_radius.rgb));
         float plheidelta = (plhei - currentPlanet.position_radius.a) / currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_zero.r;
         vec3 newdir = plhei * normalize((ray.d * hit_Surface) - currentPlanet.position_radius.rgb);
         vec3 sundir = normalize(planetHostStar.position_radius.rgb - ray.d * hit_Surface);
-    	vec2 hit_Atmosphere2 = rsi2(Ray(newdir, sundir), atmosphere);
+        vec2 hit_Atmosphere2 = rsi2(Ray(newdir, sundir), atmosphere);
         float shadow = smoothstep(-0.2 * plheidelta, 0.2, dot(sundir, newdir));
-		color = atm.rgb + shadow * vec3(currentPlanet.preferredColor_zero.rgb) * max(0.0, dot(norm, normalize(planetHostStar.position_radius.rgb - (ray.d * hit_Surface))));
-		//alphaMix = 1.0;
-	}
+        color = atm.rgb + shadow * vec3(currentPlanet.preferredColor_zero.rgb) * max(0.0, dot(norm, normalize(planetHostStar.position_radius.rgb - (ray.d * hit_Surface))));
+        //alphaMix = 1.0;
+    }
 
 
     color += (1.0 / 128.0) * vec3(rand2s(UV));
-	return vec4(color, min(hit_Surface, hit_Atmosphere.x));
+    return vec4(color, min(hit_Surface, hit_Atmosphere.x));
 }
 // END PLANET RENDERING
 
 void main() {
-	Ray cameraRay = Ray(vec3(0.0), reconstructCameraSpaceDistance(UV, 1.0));
+    Ray cameraRay = Ray(vec3(0.0), reconstructCameraSpaceDistance(UV, 1.0));
     vec4 oz = vec4(0.0);
     float lastdistance = 9999999990.0;
     for(int i=0;i<planetsBuffer.count.x;i++){
@@ -288,5 +288,5 @@ void main() {
         //oz.a += pl.a;
     }
     //oz.a = min(1.0, oz.a);
-	outColor = oz;
+    outColor = oz;
 }
