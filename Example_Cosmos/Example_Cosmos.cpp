@@ -11,13 +11,17 @@ int main()
     auto toolkit = new VulkanToolkit();
     toolkit->initialize(1920, 1000);
 
+    Media::loadFileMap("../../media");
+    Media::loadFileMap("../../shaders");
+
     auto cosmosRenderer = new CosmosRenderer(toolkit, toolkit->windowWidth, toolkit->windowHeight);
 
     GalaxyGenerator* galaxy = cosmosRenderer->galaxy;
     printf("gen");
-    int64_t galaxyedge = 149600000;
+    int64_t galaxyedge = 1496000000;
+    int64_t galaxythickness = 149600000;
     for (int i = 0; i < 1000000; i++) {
-        galaxy->generateStar(-1000, -1000, -1000, 1000, 1000, 1000, i);
+        galaxy->generateStar(-galaxyedge, -galaxythickness, -galaxyedge, galaxyedge, galaxythickness, galaxyedge, i);
     }
     printf("sea");
     GeneratedStarInfo starinfo = galaxy->generateStarInfo(galaxy->findClosestStar(1, 1, 1));
@@ -25,7 +29,7 @@ int main()
 
 
     auto camera = new Camera();
-    camera->createProjectionPerspective(40.0f, (float)toolkit->windowWidth / (float)toolkit->windowHeight, 0.01f, 10000);
+    camera->createProjectionPerspective(40.0f, (float)toolkit->windowWidth / (float)toolkit->windowHeight, 0.01f, 1000000);
 
     Mouse* mouse = new Mouse(toolkit->window);
     Keyboard* keyboard = new Keyboard(toolkit->window);
@@ -34,17 +38,21 @@ int main()
     int lastcx = 0, lastcy = 0;
     int frames = 0;
     double lastTime = 0.0;
+    double lastRawTime = 0.0;
     while (!toolkit->shouldCloseWindow()) {
         frames++;
-        double nowtime = floor(glfwGetTime());
+        double time = glfwGetTime();
+        double nowtime = floor(time);
         if (nowtime != lastTime) {
             printf("FPS %d\n", frames);
             frames = 0;
         }
+        float elapsed_x100 = (float)(100.0 * (time - lastRawTime));
+        lastRawTime = time;
         lastTime = nowtime;
 
 
-        float speed = 0.1f;
+        float speed = 1.1f * elapsed_x100;
         if (keyboard->getKeyStatus(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
             speed *= 0.1f;
         }
@@ -52,7 +60,7 @@ int main()
             speed *= 10;
         }
         if (keyboard->getKeyStatus(GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-            speed *= 30.1f;
+            speed *= 730.1f;
         }/*
          if (app->getKeyStatus(GLFW_KEY_F1) == GLFW_PRESS) {
          light->transformation->position = cam->transformation->position;

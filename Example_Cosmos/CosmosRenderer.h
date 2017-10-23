@@ -13,6 +13,7 @@ public:
     GalaxyGenerator* galaxy;
 
     std::vector<GeneratedStarInfo> nearbyStars;
+    Camera* internalCamera;
 
     int width{ 0 };
     int height{ 0 };
@@ -24,6 +25,10 @@ public:
     VulkanDescriptorSetLayout* celestialLayout{ nullptr };
     VulkanDescriptorSet* celestialSet{ nullptr };
 
+    VulkanRenderStage* starsStage{ nullptr };
+   // VulkanDescriptorSetLayout* starsLayout{ nullptr };
+   // VulkanDescriptorSet* starsSet{ nullptr };
+
     VulkanRenderStage* combineStage{ nullptr };
     VulkanDescriptorSetLayout* combineLayout{ nullptr };
     VulkanDescriptorSet* combineSet{ nullptr };
@@ -34,7 +39,11 @@ public:
     VulkanGenericBuffer* moonsDataBuffer;
 
     VulkanImage* celestialImage;
+    VulkanImage* starsImage;
     VulkanImage* outputImage;
+    Object3dInfo* cube3dInfo;
+
+    const double scale = 0.01;
 
     void updateClosestPlanetsAndStar(Camera * camera);
 

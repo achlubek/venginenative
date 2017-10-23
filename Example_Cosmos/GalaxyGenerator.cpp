@@ -74,7 +74,7 @@ GeneratedStarInfo GalaxyGenerator::generateStarInfo(size_t index)
     eng.seed(s.seed);
     GeneratedStarInfo star = {};
     star.starData = s;
-    star.radius = 391000 + randu64(0, 1000000);
+    star.radius = 391000 + randu64(0, 1000000); // sun is 695700 so this range is from 391 000 to 1 391 000 pretty much covers shit
     star.color = glm::vec3(0.5 + drandnorm(), 0.5 + drandnorm(), 0.5 + drandnorm());
     star.age = drandnorm();
     star.spotsIntensity = drandnorm();
@@ -85,7 +85,7 @@ GeneratedStarInfo GalaxyGenerator::generateStarInfo(size_t index)
     double stardisthelper = star.radius * 10.0;
     for (int i = 0; i < star.planetsCount; i++) {
         GeneratedPlanetInfo planet = {};
-        planet.radius = 1742 + randu64(0, 500000);
+        planet.radius = 3742 + randu64(0, 50000); // ranges from mercury to jupiter
         planet.terrainMaxLevel = drandnorm();
         planet.fluidMaxLevel = drandnorm() * planet.terrainMaxLevel; // no fully water planets
         planet.starDistance = stardisthelper;
