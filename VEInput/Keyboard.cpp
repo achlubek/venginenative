@@ -6,7 +6,7 @@ Keyboard * Keyboard::instance = nullptr;
 Keyboard::Keyboard(GLFWwindow* win)
 {
     window = win;
-    instance = this;
+    instance = this; 
 
     onKeyPress = EventHandler<int>();
     onKeyRelease = EventHandler<int>();
