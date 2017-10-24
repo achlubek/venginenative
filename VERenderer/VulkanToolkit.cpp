@@ -114,7 +114,9 @@ void VulkanToolkit::initialize(int width, int height)
     int floatsCount = bytescount / 4;
     vector<GLfloat> flo(floats, floats + floatsCount);
 
-    fullScreenQuad3dInfo = new Object3dInfo(this, flo);
+    fullScreenQuad3dInfo = new Object3dInfo(this, flo); 
+
+    singlePoint3dInfo = new Object3dInfo(this, std::vector<float>{0,0,0, 0,0, 0,0,-1, 0,1,0,1});
 
     if (width > 0 && height > 0) {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);

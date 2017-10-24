@@ -3,6 +3,7 @@
 
 out gl_PerVertex {
     vec4 gl_Position;
+    float gl_PointSize;
 };
 
 layout(location = 0) in vec3 inPosition;
@@ -21,6 +22,7 @@ layout(set = 0, binding = 0) uniform UniformBufferObject1 {
     vec4 inFrustumConeLeftBottom;
     vec4 inFrustumConeBottomLeftToBottomRight;
     vec4 inFrustumConeBottomLeftToTopLeft;
+    vec2 Resolution;
 } hiFreq;
 
 struct GeneratedStarInfo {
@@ -37,12 +39,13 @@ layout(set = 0, binding = 1) buffer StarsStorageBuffer {
 
 void main() {
     inInstanceId = gl_InstanceIndex;
-    outWorldPos = starsBuffer.stars[gl_InstanceIndex].position_radius.xyz
-     + inPosition.xyz * starsBuffer.stars[gl_InstanceIndex].position_radius.a * 7.0;
+    vec4 posradius = starsBuffer.stars[gl_InstanceIndex].position_radius;
+    float dist = min(90000000.0, length(posradius.xyz));
+    outWorldPos = normalize(posradius.xyz) * dist + inPosition.xyz * posradius.a * 10.0;
+    // + inPosition.xyz * starsBuffer.stars[gl_InstanceIndex].position_radius.a * 7.0;
     vec4 opo = (hiFreq.VPMatrix) * vec4(outWorldPos, 1.0);
     opo.y *= -1.0;
     vec2 newuv = (opo.xy / opo.w) * 0.5 + 0.5;
     outTexCoord = newuv;
-    gl_Position = opo;
-    //    gl_Position = vec4(inPosition.xyz, 1.0);
+    gl_Position = opo; //    gl_Position = vec4(inPosition.xyz, 1.0);
 }

@@ -37,6 +37,8 @@ public:
     VulkanRenderStage* copy();
     bool alphaBlending = false;
     bool additiveBlending = false;
+    VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; 
+    VkCullModeFlags cullFlags = 0;
 
     void submit(std::vector<VkSemaphore> waitSemaphores);
     void submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores);

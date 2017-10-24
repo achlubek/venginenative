@@ -15,6 +15,7 @@ Object3dInfo::Object3dInfo(VulkanToolkit * ivulkan, vector<GLfloat> &vboin)
     vbo = move(vboin);
     generated = false;
     vertexCount = (GLsizei)(vbo.size() / 12);
+    if (vertexCount == 0 && vbo.size() > 0) vertexCount = 1;
     updateRadius();
 }
 

@@ -1,14 +1,15 @@
 #include "stdafx.h" 
 
 VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int viewportwidth, int viewportheight, std::vector<VkDescriptorSetLayout> setlayouts,
-    std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass* renderpass, bool enableDepthTest, bool alphablend, bool additive_blend)
+    std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass* renderpass, bool enableDepthTest, 
+    bool alphablend, bool additive_blend, VkPrimitiveTopology topology, VkCullModeFlags cullflags)
     : vulkan(ivulkan)
 {
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = Object3dInfo::getVertexInputStateCreateInfo();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    inputAssembly.topology = topology;
     inputAssembly.primitiveRestartEnable = VK_FALSE;
 
     VkViewport viewport = {};
@@ -38,7 +39,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int view
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
-    rasterizer.cullMode = enableDepthTest ? VK_CULL_MODE_FRONT_BIT : 0;
+    rasterizer.cullMode = cullflags;// enableDepthTest ? VK_CULL_MODE_FRONT_BIT : 0;
     rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
 

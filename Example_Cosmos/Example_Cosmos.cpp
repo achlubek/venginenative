@@ -18,10 +18,10 @@ int main()
 
     GalaxyGenerator* galaxy = cosmosRenderer->galaxy;
     printf("gen");
-    int64_t galaxyedge = 1496000000;
-    int64_t galaxythickness = 149600000;
-    for (int i = 0; i < 1000000; i++) {
-        galaxy->generateStar(-galaxyedge, -galaxythickness, -galaxyedge, galaxyedge, galaxythickness, galaxyedge, i);
+    int64_t galaxyedge = 2496000000;
+    int64_t galaxythickness = 2496000000;
+    for (int i = 0; i < 10000; i++) {
+        galaxy->generateStar(galaxyedge, galaxythickness, 1.0, i);
     }
     printf("sea");
     GeneratedStarInfo starinfo = galaxy->generateStarInfo(galaxy->findClosestStar(1, 1, 1));
@@ -39,6 +39,13 @@ int main()
     int frames = 0;
     double lastTime = 0.0;
     double lastRawTime = 0.0;
+    cosmosRenderer->updateClosestPlanetsAndStar(camera);
+    std::thread background = std::thread([&]() {
+        //while (true) {
+            cosmosRenderer->updateObjectsBuffers(camera);
+      //  }
+    });
+    background.detach();
     while (!toolkit->shouldCloseWindow()) {
         frames++;
         double time = glfwGetTime();
@@ -117,8 +124,6 @@ int main()
         camera->transformation->setPosition(glm::mix(newpos, camera->transformation->getPosition(), 0.8f));
 
         cosmosRenderer->updateCameraBuffer(camera);
-        cosmosRenderer->updateClosestPlanetsAndStar(camera);
-        cosmosRenderer->updateObjectsBuffers(camera);
         cosmosRenderer->draw();
         toolkit->poolEvents();
     }

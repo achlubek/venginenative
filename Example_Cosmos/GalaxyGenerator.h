@@ -57,7 +57,7 @@ public:
     int64_t randi64(int64_t min, int64_t max);
     size_t findClosestStar(int64_t x, int64_t y, int64_t z);
     double drandnorm();
-    void generateStar(int64_t minx, int64_t miny, int64_t minz, int64_t maxx, int64_t maxy, int64_t maxz, uint64_t seed);
+    void generateStar(int64_t galaxyradius, int64_t centerThickness, double centerGravity, uint64_t seed);
     void addStar(SingleStar s);
     GeneratedStarInfo generateStarInfo(size_t index);
 private:

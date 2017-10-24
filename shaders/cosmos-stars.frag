@@ -15,6 +15,7 @@ layout(set = 0, binding = 0) uniform UniformBufferObject1 {
     vec4 inFrustumConeLeftBottom;
     vec4 inFrustumConeBottomLeftToBottomRight;
     vec4 inFrustumConeBottomLeftToTopLeft;
+    vec2 Resolution;
 } hiFreq;
 
 struct GeneratedStarInfo {
@@ -85,14 +86,19 @@ vec3 traceStarGlow(Ray ray){
 
     float camdist = length(currentStar.position_radius.rgb);
     camdist *= 0.001;
-    camdist = min(camdist, 4000.0);
+    float dim = 1.0 - smoothstep(1000.0, 20000.0, camdist);
+    camdist = min(camdist, 1000.0);
     float sqrlen = camdist * camdist;
     float specialtrick1 = 1.0 / (1.0 + 10.0 * sqrlen * (1.0 - dotz));
 
-    return specialtrick1 * currentStar.color_age.xyz * 3.0;
+    return dim * specialtrick1 * currentStar.color_age.xyz * 3.0;
 }
 void main() {
+    vec2 point = gl_PointCoord.xy * 2.0 - 1.0;
     currentStar = starsBuffer.stars[inInstanceId];
-    Ray cameraRay = Ray(vec3(0.0), normalize(inWorldPos));
+    outColor = vec4(currentStar.color_age.xyz * (1.0 - smoothstep(0.7, 1.0, length(point))), 1.0);
+
+    Ray cameraRay = Ray(vec3(0.0), reconstructCameraSpaceDistance(gl_FragCoord.xy / hiFreq.Resolution, 1.0));
     outColor = vec4(traceStarGlow(cameraRay), 1.0);
+
 }

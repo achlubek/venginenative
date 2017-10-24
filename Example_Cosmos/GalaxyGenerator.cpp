@@ -52,14 +52,19 @@ double GalaxyGenerator::drandnorm() {
     return ((double)distr(eng)) / ((double)UINT64_MAX);
 }
 
-void GalaxyGenerator::generateStar(int64_t minx, int64_t miny, int64_t minz, int64_t maxx, int64_t maxy, int64_t maxz, uint64_t seed)
+void GalaxyGenerator::generateStar(int64_t galaxyradius, int64_t centerThickness, double centerGravity,  uint64_t seed)
 {
     SingleStar s = {};
     s.seed = seed;
     eng.seed(seed);
-    s.x = randi64(minx, maxx);
-    s.y = randi64(miny, maxy);
-    s.z = randi64(minz, maxz);
+    s.x = randi64(-galaxyradius, galaxyradius);
+    s.z = randi64(-galaxyradius, galaxyradius);
+    uint64_t len = (abs(s.x) + abs(s.z)) / 2;
+    double gravity = (1.0 / (1.0 + static_cast<double>(len) / 125600000.0));
+   // s.x *= gravity;
+  //  s.z *= gravity;
+
+    s.y = centerThickness / (1.0 + static_cast<double>(len) /125600000.0) * (drandnorm()* 2.0 - 1.0);
     stars.push_back(s);
 }
 

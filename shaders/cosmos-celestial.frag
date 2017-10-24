@@ -13,6 +13,7 @@ layout(set = 0, binding = 0) uniform UniformBufferObject1 {
     vec4 inFrustumConeLeftBottom;
     vec4 inFrustumConeBottomLeftToBottomRight;
     vec4 inFrustumConeBottomLeftToTopLeft;
+    vec2 Resolution;
 } hiFreq;
 
 struct GeneratedStarInfo {
@@ -163,40 +164,48 @@ float infinity = 1.0 / 0.0;
 Ray cameraRay;
 #define hits(a) (a > 0.0 && a < infinity)
 
-// BEGIN STAR RENDERING
+// BEGIN MOON RENDERING
+GeneratedMoonInfo currentMoon;
+GeneratedStarInfo moonHostStar;
+GeneratedPlanetInfo moonHostPlanet;
 
-GeneratedStarInfo currentStar;
+// END MOON RENDERING
 
-vec3 traceStarGlow(Ray ray){
-    float dtraw = dot(normalize(currentStar.position_radius.rgb - ray.o), ray.d);
-    float dotz = max(0.0, dtraw);
-
-    float camdist = length(currentStar.position_radius.rgb);
-    camdist *= 0.001;
-    float sqrlen = camdist * camdist;
-    float specialtrick1 = 1.0 / (1.0 + 10.0 * sqrlen * (1.0 - dotz));
-
-    return specialtrick1 * currentStar.color_age.xyz * 3.0;
+float getmoonheight(vec3 dir){
+    return currentMoon.position_radius.a
+        + (1.0 - 2.0 * abs(0.5 - FBM3(dir * 10.0, 6, 2.1)))
+        * currentMoon.preferredColor_terrainMaxLevel.a;
 }
-vec4 traceStar(Ray ray){
-    Sphere surface = Sphere(currentStar.position_radius.rgb, currentStar.position_radius.a);
+vec3 getmoonnormal(vec3 dir){
+    vec3 tangdir = normalize(cross(dir, vec3(0.0, 1.0, 0.0)));
+    vec3 bitangdir = normalize(cross(tangdir, dir));
+    mat3 normrotmat1 = rotationMatrix(tangdir, 0.002);
+    mat3 normrotmat2 = rotationMatrix(bitangdir, 0.002);
+    vec3 dir2 = normrotmat1 * dir;
+    vec3 dir3 = normrotmat2 * dir;
+    vec3 p1 = dir * getmoonheight(dir);
+    vec3 p2 = dir2 * getmoonheight(dir2);
+    vec3 p3 = dir3 * getmoonheight(dir3);
+    return normalize(cross(normalize(p3 - p1), normalize(p2 - p1)));
+}
+vec4 traceMoon(Ray ray){
+    Sphere surface = Sphere(currentMoon.position_radius.rgb, currentMoon.position_radius.a);
+    vec3 color = vec3(0.0);
+    float coverage = 0.0;
     float hit_Surface = rsi2(ray, surface).x;
 
-    vec3 color = vec3(0.0);
-    color += traceStarGlow(ray);
+    if(!hits(hit_Surface) ) return vec4(0.0, 0.0, 0.0, -1.0);
+    vec3 norm = getmoonnormal(normalize((ray.d * hit_Surface) - currentMoon.position_radius.rgb));
+    float plhei = getmoonheight(normalize((ray.d * hit_Surface) - currentMoon.position_radius.rgb));
+    float plheidelta = (plhei - currentMoon.position_radius.a) / currentMoon.preferredColor_terrainMaxLevel.a;
+    vec3 newdir = plhei * normalize((ray.d * hit_Surface) - currentMoon.position_radius.rgb);
+    vec3 sundir = normalize(moonHostStar.position_radius.rgb - ray.d * hit_Surface);
+    float shadow = smoothstep(-0.2 * plheidelta, 0.2, dot(sundir, newdir));
+    color = shadow * vec3(currentMoon.preferredColor_terrainMaxLevel.rgb) * max(0.0, dot(norm, normalize(moonHostStar.position_radius.rgb - (ray.d * hit_Surface))));
+    coverage = 1.0;
 
-    if(!hits(hit_Surface)) return vec4(color, -1.0);
-    if(hits(hit_Surface)) {
-        vec3 norm = normalize((ray.d * hit_Surface) - currentStar.position_radius.rgb);
-
-        color += currentStar.color_age.xyz * (0.3 + (1.0 - max(0.0, dot(ray.d, -norm))));
-    }
-
-    return vec4(color, 1.0);
+    return vec4(color, coverage);
 }
-
-// END STAR RENDERING
-
 // BEGIN PLANET RENDERING
 
 GeneratedPlanetInfo currentPlanet;
@@ -311,6 +320,23 @@ void main() {
         //if(dist * dist > 99999.0) continue;
         planetHostStar = starsBuffer.stars[currentPlanet.hoststarindex_zero_zero_zero.x];
         vec4 pl = tracePlanet(cameraRay);
+        if(pl.a < -0.9) continue;
+        if(dist < lastdistance){ // current planet is closer than everything rendered yet
+            oz.rgb = mix(oz.rgb, pl.rgb, pl.a);
+            oz.a = pl.a;
+            lastdistance = dist;
+        } else {// current planet is not closer -> results is last color, as we dont have any info where it fits
+            oz.rgb = mix(pl.rgb, oz.rgb,  oz.a);
+            oz.a = 1.0;
+        }
+    }
+    for(int i=0;i<moonsBuffer.count.x;i++){
+        currentMoon = moonsBuffer.moons[i];
+        moonHostPlanet = planetsBuffer.planets[currentMoon.hostplanetindex_zero_zero_zero.x];
+        moonHostStar = starsBuffer.stars[moonHostPlanet.hoststarindex_zero_zero_zero.x];
+        float dist = length(currentMoon.position_radius.rgb);
+        //if(dist * dist > 99999.0) continue;
+        vec4 pl = traceMoon(cameraRay);
         if(pl.a < -0.9) continue;
         if(dist < lastdistance){ // current planet is closer than everything rendered yet
             oz.rgb = mix(oz.rgb, pl.rgb, pl.a);
