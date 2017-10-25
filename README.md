@@ -13,4 +13,4 @@
 
 The software is licensed under MIT license.
 
-Discord channel for discussions: https://discord.gg/JdFQMw
+Discord channel for discussions: https://discord.gg/mdSxNr9
