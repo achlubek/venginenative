@@ -171,7 +171,9 @@ void CosmosRenderer::updateObjectsBuffers(Camera * camera)
     starsDataBuffer->map(0, starsDataBuffer->size, &data1);
     planetsDataBuffer->map(0, planetsDataBuffer->size, &data2);
     moonsDataBuffer->map(0, moonsDataBuffer->size, &data3);
+    lastGravity = glm::vec3(0.0);
     while (true) {
+        glm::vec3 newGravity = glm::vec3(0.0);
         float time = glfwGetTime() + 100.0;
         VulkanBinaryBufferBuilder starsBB = VulkanBinaryBufferBuilder();
         VulkanBinaryBufferBuilder planetsBB = VulkanBinaryBufferBuilder();
@@ -224,6 +226,9 @@ void CosmosRenderer::updateObjectsBuffers(Camera * camera)
 
             glm::dvec3 starpos = glm::dvec3(star.starData.x * scale, star.starData.y * scale, star.starData.z * scale);
             glm::dvec3 spos = starpos - glm::dvec3(camera->transformation->getPosition());
+            glm::vec3 sdir = glm::normalize(spos);
+            double sdistance = glm::length(spos) / scale;
+            newGravity += glm::dvec3(sdir) * galaxy->calculateGravity(sdistance, galaxy->calculateMass(star.radius, 1408.0));
 
             starsBB.emplaceFloat32((float)spos.x);
             starsBB.emplaceFloat32((float)spos.y);
@@ -253,6 +258,11 @@ void CosmosRenderer::updateObjectsBuffers(Camera * camera)
             glm::vec3 orbitplaneTangent = glm::normalize(glm::cross(cstar.orbitPlane, glm::vec3(0.0, 1.0, 0.0)));
             glm::dvec3 planetpos = starpos + glm::dvec3(glm::angleAxis((float)planet.orbitSpeed * time * 0.001f, cstar.orbitPlane) * orbitplaneTangent) * planet.starDistance * scale;
             glm::dvec3 ppos = planetpos - glm::dvec3(camera->transformation->getPosition());
+
+            glm::vec3 pdir = glm::normalize(ppos);
+            double pdistance = glm::length(ppos) / scale;
+            newGravity += glm::dvec3(pdir) * galaxy->calculateGravity(pdistance, galaxy->calculateMass(planet.radius));
+
             planetsBB.emplaceFloat32((float)ppos.x);
             planetsBB.emplaceFloat32((float)ppos.y);
             planetsBB.emplaceFloat32((float)ppos.z);
@@ -288,6 +298,11 @@ void CosmosRenderer::updateObjectsBuffers(Camera * camera)
                 glm::vec3 orbitplaneTangent = glm::normalize(glm::cross(moon.orbitPlane, glm::vec3(0.0, 1.0, 0.0)));
                 glm::dvec3 moonpos = planetpos + glm::dvec3(glm::angleAxis((float)planet.orbitSpeed * time * 0.001f, cstar.orbitPlane) * orbitplaneTangent) * moon.planetDistance * scale;
                 glm::dvec3 mpos = moonpos - glm::dvec3(camera->transformation->getPosition());
+
+                glm::vec3 mdir = glm::normalize(mpos);
+                double mdistance = glm::length(mpos) / scale;
+                newGravity += glm::dvec3(mdir) * galaxy->calculateGravity(mdistance, galaxy->calculateMass(moon.radius));
+
                 moonsBB.emplaceFloat32((float)mpos.x);
                 moonsBB.emplaceFloat32((float)mpos.y);
                 moonsBB.emplaceFloat32((float)mpos.z);
@@ -323,6 +338,7 @@ void CosmosRenderer::updateObjectsBuffers(Camera * camera)
         memcpy(data2, planetsBB.getPointer(), planetsBB.buffer.size());
 
         memcpy(data3, moonsBB.getPointer(), moonsBB.buffer.size());
+        lastGravity = newGravity;
     }
     starsDataBuffer->unmap();
     planetsDataBuffer->unmap();

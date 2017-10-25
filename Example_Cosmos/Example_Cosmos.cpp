@@ -35,6 +35,7 @@ int main()
 
     Mouse* mouse = new Mouse(toolkit->window);
     Keyboard* keyboard = new Keyboard(toolkit->window);
+    Joystick* joystick = new Joystick(toolkit->window);
     float pitch = 0.0;
     float yaw = 0.0;
     int lastcx = 0, lastcy = 0;
@@ -66,6 +67,7 @@ int main()
             frames = 0;
         }
         float elapsed_x100 = (float)(100.0 * (time - lastRawTime));
+        float elapsed = (float)((time - lastRawTime));
         lastRawTime = time;
         lastTime = nowtime;
 
@@ -124,7 +126,8 @@ int main()
         }
         else {
             spaceshipPosition += elapsed_x100 * spaceshipLinearVelocity;
-            glm::mat3 rotmat = (glm::mat3_cast(spaceshipOrientation));
+            spaceshipPosition += elapsed * cosmosRenderer->lastGravity;
+            glm::mat3 rotmat = glm::mat3_cast(spaceshipOrientation);
             spaceshipOrientation = spaceshipOrientation
                 * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.x,glm::vec3(1.0, 0.0, 0.0))
                 * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.y,glm::vec3(0.0, 1.0, 0.0))
@@ -140,8 +143,8 @@ int main()
             }
             if (keyboard->getKeyStatus(GLFW_KEY_SPACE) == GLFW_PRESS) {
                 spaceshipLinearVelocity *= 0.99f;
-                spaceshipAngularVelocity *= 0.99f;
             }
+            spaceshipAngularVelocity *= 0.99f;
             if (keyboard->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS) {
                 spaceshipAngularVelocity.z += elapsed_x100 * 0.0001;
             }
@@ -155,11 +158,19 @@ int main()
                 spaceshipAngularVelocity.x += elapsed_x100 * 0.0001;
             }
             if (keyboard->getKeyStatus(GLFW_KEY_H) == GLFW_PRESS) {
-                spaceshipAngularVelocity.y -= elapsed_x100 * 0.0001;
-            }
-            if (keyboard->getKeyStatus(GLFW_KEY_K) == GLFW_PRESS) {
                 spaceshipAngularVelocity.y += elapsed_x100 * 0.0001;
             }
+            if (keyboard->getKeyStatus(GLFW_KEY_K) == GLFW_PRESS) {
+                spaceshipAngularVelocity.y -= elapsed_x100 * 0.0001;
+            }
+            if (joystick->isPresent(0)) {
+                auto axes = joystick->getAxes(0);
+                spaceshipLinearVelocity += 70.0f * ((-axes[3]) * 0.5f + 0.5f) * elapsed_x100 * rotmat * glm::vec3(0, 0, -1);
+                spaceshipAngularVelocity.x += elapsed_x100 * 0.001 * axes[1];
+                spaceshipAngularVelocity.y += elapsed_x100 * 0.001 * -axes[2];
+                spaceshipAngularVelocity.z += elapsed_x100 * 0.001 * -axes[0];
+            }
+
         }
         cosmosRenderer->updateCameraBuffer(camera);
         cosmosRenderer->draw();

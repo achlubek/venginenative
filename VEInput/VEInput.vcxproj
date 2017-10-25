@@ -125,12 +125,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Joystick.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="VEInput.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Joystick.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="stdafx.cpp">

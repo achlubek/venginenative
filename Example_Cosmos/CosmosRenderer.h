@@ -45,6 +45,8 @@ public:
 
     const double scale = 0.01;
 
+    glm::vec3 lastGravity;
+
     void updateClosestPlanetsAndStar(Camera * camera);
 
     void updateCameraBuffer(Camera* cam);

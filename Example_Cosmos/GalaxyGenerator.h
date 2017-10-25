@@ -59,6 +59,17 @@ public:
     double drandnorm();
     void generateStar(int64_t galaxyradius, int64_t centerThickness, double centerGravity, uint64_t seed);
     void addStar(SingleStar s);
+    double calculateMass(double radius_km, double density = 5539.35 /*earth density in kg/m3*/) {
+        double radius_meters = radius_km * 1000.0;
+        double r3 = radius_meters * radius_meters * radius_meters;
+        double volume = r3 * 4.1886;
+        return density * volume;
+    }
+    double calculateGravity(double distance, float mass) {
+        double G = 0.00000000006674;
+        distance *= 1000.0;
+        return G * (mass / (1000.0 + distance * distance));
+    }
     GeneratedStarInfo generateStarInfo(size_t index);
 private:
     std::vector<SingleStar> stars;
