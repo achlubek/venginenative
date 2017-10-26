@@ -18,9 +18,9 @@ int main()
 
     GalaxyGenerator* galaxy = cosmosRenderer->galaxy;
     printf("gen");
-    int64_t galaxyedge = 24960000000;
+    int64_t galaxyedge = 2496000000;
     int64_t galaxythickness = 2496000000;
-    for (int i = 0; i < 1000000; i++) {
+    for (int i = 0; i < 10000; i++) {
         galaxy->generateStar(galaxyedge, galaxythickness, 1.0, i);
         cosmosRenderer->nearbyStars.push_back(galaxy->generateStarInfo(i));
     }
@@ -135,16 +135,18 @@ int main()
             camera->transformation->setPosition(glm::mix(newpos, camera->transformation->getPosition(), 0.8f));
         }
         else {
-            spaceshipPosition += elapsed_x100 * spaceshipLinearVelocity;
-            spaceshipPosition += elapsed * cosmosRenderer->lastGravity;
             glm::mat3 rotmat = glm::mat3_cast(spaceshipOrientation);
-            spaceshipOrientation = spaceshipOrientation
-                * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.x,glm::vec3(1.0, 0.0, 0.0))
-                * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.y,glm::vec3(0.0, 1.0, 0.0))
-                * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.z,glm::vec3(0.0, 0.0, 1.0))
-            ;
-            camera->transformation->setPosition(spaceshipPosition);
-            camera->transformation->setOrientation(spaceshipOrientation);
+            if (cosmosRenderer->closestSurfaceDistance > 100.0) {
+                spaceshipPosition += elapsed_x100 * spaceshipLinearVelocity;
+                spaceshipPosition += elapsed * cosmosRenderer->lastGravity;
+                spaceshipOrientation = spaceshipOrientation
+                    * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.x, glm::vec3(1.0, 0.0, 0.0))
+                    * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.y, glm::vec3(0.0, 1.0, 0.0))
+                    * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.z, glm::vec3(0.0, 0.0, 1.0))
+                    ;
+                camera->transformation->setPosition(spaceshipPosition);
+                camera->transformation->setOrientation(spaceshipOrientation);
+            }
             if (keyboard->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
                 spaceshipLinearVelocity += 10.0f * elapsed_x100 * rotmat * glm::vec3(0, 0, -1);
             }

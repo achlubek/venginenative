@@ -48,6 +48,9 @@ public:
     const double scale = 0.01;
 
     glm::vec3 lastGravity;
+    glm::dvec3 closestSurfacePosition;
+    glm::dvec3 closestSurfaceNormal;
+    double closestSurfaceDistance;
 
     void* starsDataBufferPointer;
     void* planetsDataBufferPointer;

@@ -262,11 +262,23 @@ void CosmosRenderer::updateGravity(Camera * camera)
 {
     float time = glfwGetTime() + 100.0;
     glm::vec3 newGravity = glm::vec3(0.0);
+    glm::vec3 newSurfacePos = glm::vec3(0.0);
+    glm::vec3 newSurfaceNorm = glm::vec3(0.0);
+    double newSurfaceDist = 99999999999999.0;
     auto star = nearestStar;
 
     glm::dvec3 starpos = glm::dvec3(star.starData.x * scale, star.starData.y * scale, star.starData.z * scale);
     glm::dvec3 spos = starpos - glm::dvec3(camera->transformation->getPosition());
     glm::vec3 sdir = glm::normalize(spos);
+
+    glm::dvec3 ssurfacepos =  starpos - glm::dvec3(sdir) * star.radius * scale;
+    double ssurfacedistance = glm::distance(glm::dvec3(camera->transformation->getPosition()), starpos) - star.radius * scale;
+    if (ssurfacedistance < newSurfaceDist) {
+        newSurfaceDist = ssurfacedistance;
+        newSurfacePos = ssurfacepos;
+        newSurfaceNorm = glm::normalize(starpos - ssurfacepos);
+    }
+
     double sdistance = glm::length(spos) / scale;
     newGravity += glm::dvec3(sdir) * galaxy->calculateGravity(sdistance, galaxy->calculateMass(star.radius, 1408.0));
 
@@ -275,8 +287,16 @@ void CosmosRenderer::updateGravity(Camera * camera)
         auto planet = star.planets[p];
         glm::dvec3 planetpos = starpos + glm::dvec3(glm::angleAxis((float)planet.orbitSpeed * time * 0.001f, star.orbitPlane) * orbitplaneTangent) * planet.starDistance * scale;
         glm::dvec3 ppos = planetpos - glm::dvec3(camera->transformation->getPosition());
-
         glm::vec3 pdir = glm::normalize(ppos);
+
+        glm::dvec3 psurfacepos = planetpos - glm::dvec3(pdir) * planet.radius * scale;
+        double psurfacedistance = glm::distance(glm::dvec3(camera->transformation->getPosition()), planetpos) - planet.radius * scale;
+        if (psurfacedistance < newSurfaceDist) {
+            newSurfaceDist = psurfacedistance;
+            newSurfacePos = psurfacepos;
+            newSurfaceNorm = glm::normalize(planetpos - psurfacepos);
+        }
+
         double pdistance = glm::length(ppos) / scale;
         newGravity += glm::dvec3(pdir) * galaxy->calculateGravity(pdistance, galaxy->calculateMass(planet.radius));
 
@@ -285,21 +305,31 @@ void CosmosRenderer::updateGravity(Camera * camera)
             glm::vec3 orbitplaneTangent = glm::normalize(glm::cross(moon.orbitPlane, glm::vec3(0.0, 1.0, 0.0)));
             glm::dvec3 moonpos = planetpos + glm::dvec3(glm::angleAxis((float)planet.orbitSpeed * time * 0.001f, star.orbitPlane) * orbitplaneTangent) * moon.planetDistance * scale;
             glm::dvec3 mpos = moonpos - glm::dvec3(camera->transformation->getPosition());
-
             glm::vec3 mdir = glm::normalize(mpos);
+
+            glm::dvec3 msurfacepos = moonpos - glm::dvec3(mdir) * moon.radius * scale;
+            double msurfacedistance = glm::distance(glm::dvec3(camera->transformation->getPosition()), moonpos) - moon.radius * scale;
+            if (msurfacedistance < newSurfaceDist) {
+                newSurfaceDist = msurfacedistance;
+                newSurfacePos = msurfacepos;
+                newSurfaceNorm = glm::normalize(moonpos - msurfacepos);
+            }
+
             double mdistance = glm::length(mpos) / scale;
             newGravity += glm::dvec3(mdir) * galaxy->calculateGravity(mdistance, galaxy->calculateMass(moon.radius));
 
         }
     }
     lastGravity = newGravity;
+    closestSurfaceDistance = newSurfaceDist;
+    closestSurfacePosition = newSurfacePos;
+    closestSurfaceNormal = newSurfaceNorm;
 }
 
 void CosmosRenderer::updateNearestStar(Camera * camera)
 {
     int closestStar = 0;
     double closestDistance = 9999999999.0;
-    if (nearbyStars.size() == 0) return;
     for (int s = 0; s < nearbyStars.size(); s++) {
         auto star = nearbyStars[s];
 
