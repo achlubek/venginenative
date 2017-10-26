@@ -27,7 +27,8 @@ int main()
     printf("sea");
     GeneratedStarInfo starinfo = galaxy->generateStarInfo(galaxy->findClosestStar(1, 1, 1));
 
-
+    auto text = new UIText(cosmosRenderer->ui, 0.1, 0.1, UIColor(1, 1, 1, 1), Media::getPath("font.ttf"), 16, " ");
+    cosmosRenderer->ui->texts.push_back(text);
 
     auto camera = new Camera();
     camera->createProjectionPerspective(40.0f, (float)toolkit->windowWidth / (float)toolkit->windowHeight, 0.01f, 1000000);
@@ -49,7 +50,7 @@ int main()
         while (true) {
             cosmosRenderer->updateNearestStar(camera);
             cosmosRenderer->updateGravity(camera);
-
+            
         }
     });
     background1.detach();
@@ -186,6 +187,7 @@ int main()
         }
         cosmosRenderer->updateCameraBuffer(camera);
         cosmosRenderer->draw();
+        text->updateText("Distance to surface:" + std::to_string(cosmosRenderer->closestSurfaceDistance));
         toolkit->poolEvents();
     }
 

@@ -11,6 +11,8 @@ CosmosRenderer::CosmosRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) 
     nearbyStars = {};
     galaxy = new GalaxyGenerator();
 
+    ui = new UIRenderer(vulkan, width, height);
+
     auto assets = AssetLoader(vulkan);
 
     cube3dInfo = assets.loadObject3dInfoFile("cube1unitradius.raw");
@@ -73,11 +75,13 @@ CosmosRenderer::CosmosRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) 
     combineLayout = new VulkanDescriptorSetLayout(vulkan);
     combineLayout->addField(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     combineLayout->addField(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    combineLayout->addField(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     combineLayout->compile();
 
     combineSet = combineLayout->generateDescriptorSet();
     combineSet->bindImageViewSampler(0, celestialImage);
     combineSet->bindImageViewSampler(1, starsImage);
+    combineSet->bindImageViewSampler(2, ui->outputImage);
     combineSet->update();
 
     outputImage = new VulkanImage(vulkan, width, height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
@@ -183,7 +187,7 @@ void CosmosRenderer::updatePlanetsAndMoon(Camera * camera)
     moonsBB.emplaceInt32(moonsCount);
     moonsBB.emplaceInt32(moonsCount);
 
-    float time = glfwGetTime() + 100.0;
+    float time = glfwGetTime()*0.1 + 10000.0;
     glm::dvec3 starpos = glm::dvec3(cstar.starData.x * scale, cstar.starData.y * scale, cstar.starData.z * scale);
     for (int p = 0; p < cstar.planets.size(); p++) {
         auto planet = cstar.planets[p];
@@ -260,7 +264,7 @@ void CosmosRenderer::updatePlanetsAndMoon(Camera * camera)
 
 void CosmosRenderer::updateGravity(Camera * camera)
 {
-    float time = glfwGetTime() + 100.0;
+    float time = glfwGetTime()*0.1 + 10000.0;
     glm::vec3 newGravity = glm::vec3(0.0);
     glm::vec3 newSurfacePos = glm::vec3(0.0);
     glm::vec3 newSurfaceNorm = glm::vec3(0.0);
@@ -396,6 +400,8 @@ void CosmosRenderer::updateCameraBuffer(Camera * camera)
 
 void CosmosRenderer::draw()
 {
+    ui->draw();
+
     starsStage->beginDrawing();
 
     starsStage->drawMesh(cube3dInfo, nearbyStars.size());

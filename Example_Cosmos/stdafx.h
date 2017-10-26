@@ -41,6 +41,7 @@ using namespace std;
 
 #include "VECommon.h"
 #include "VERenderer.h"
+#include "VEUserInterface.h"
 #include "VEInput.h"
 #include "VEngine.h"
 

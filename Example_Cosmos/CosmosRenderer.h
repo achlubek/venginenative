@@ -11,6 +11,7 @@ public:
     ~CosmosRenderer();
 
     GalaxyGenerator* galaxy;
+    UIRenderer* ui;
 
     std::vector<GeneratedStarInfo> nearbyStars;
     GeneratedStarInfo nearestStar;
