@@ -13,6 +13,8 @@ public:
     GalaxyGenerator* galaxy;
 
     std::vector<GeneratedStarInfo> nearbyStars;
+    GeneratedStarInfo nearestStar;
+    int nearestStarIndex;
     Camera* internalCamera;
 
     int width{ 0 };
@@ -47,10 +49,22 @@ public:
 
     glm::vec3 lastGravity;
 
-    void updateClosestPlanetsAndStar(Camera * camera);
+    void* starsDataBufferPointer;
+    void* planetsDataBufferPointer;
+    void* moonsDataBufferPointer;
 
-    void updateCameraBuffer(Camera* cam);
-    void updateObjectsBuffers(Camera * camera);
+    void mapBuffers();
+    void unmapBuffers();
+
+    void updateStars(Camera * camera);
+
+    void updatePlanetsAndMoon(Camera * camera);
+
+    void updateGravity(Camera * camera);
+
+    void updateNearestStar(Camera * camera);
+
+    void updateCameraBuffer(Camera* cam); 
     void draw();
 };
 

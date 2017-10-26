@@ -84,7 +84,7 @@ vec3 traceStarGlow(Ray ray){
     float dtraw = dot(normalize(currentStar.position_radius.rgb - ray.o), ray.d);
     float dotz = max(0.0, dtraw);
 
-    float camdist = length(currentStar.position_radius.rgb);
+    float camdist = distance(CameraPosition, currentStar.position_radius.rgb);
     camdist *= 0.001;
     float dim = 1.0 - smoothstep(1000.0, 20000.0, camdist);
     camdist = min(camdist, 1000.0);
@@ -98,7 +98,7 @@ void main() {
     currentStar = starsBuffer.stars[inInstanceId];
     outColor = vec4(currentStar.color_age.xyz * (1.0 - smoothstep(0.7, 1.0, length(point))), 1.0);
 
-    Ray cameraRay = Ray(vec3(0.0), reconstructCameraSpaceDistance(gl_FragCoord.xy / hiFreq.Resolution, 1.0));
+    Ray cameraRay = Ray(CameraPosition, reconstructCameraSpaceDistance(gl_FragCoord.xy / hiFreq.Resolution, 1.0));
     outColor = vec4(traceStarGlow(cameraRay), 1.0);
 
 }

@@ -18,10 +18,11 @@ int main()
 
     GalaxyGenerator* galaxy = cosmosRenderer->galaxy;
     printf("gen");
-    int64_t galaxyedge = 2496000000;
+    int64_t galaxyedge = 24960000000;
     int64_t galaxythickness = 2496000000;
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < 1000000; i++) {
         galaxy->generateStar(galaxyedge, galaxythickness, 1.0, i);
+        cosmosRenderer->nearbyStars.push_back(galaxy->generateStarInfo(i));
     }
     printf("sea");
     GeneratedStarInfo starinfo = galaxy->generateStarInfo(galaxy->findClosestStar(1, 1, 1));
@@ -42,18 +43,27 @@ int main()
     int frames = 0;
     double lastTime = 0.0;
     double lastRawTime = 0.0;
-    cosmosRenderer->updateClosestPlanetsAndStar(camera);
-    std::thread background = std::thread([&]() {
-        //while (true) {
-            cosmosRenderer->updateObjectsBuffers(camera);
-      //  }
+    cosmosRenderer->mapBuffers();
+    cosmosRenderer->updateStars(camera);
+    std::thread background1 = std::thread([&]() {
+        while (true) {
+            cosmosRenderer->updateNearestStar(camera);
+            cosmosRenderer->updateGravity(camera);
+
+        }
     });
+    background1.detach();
+    std::thread background2 = std::thread([&]() {
+        while (true) {
+            cosmosRenderer->updatePlanetsAndMoon(camera);
+        }
+    });
+    background2.detach();
     keyboard->onKeyPress.add([&](int key) {
         if (key == GLFW_KEY_ENTER) {
             spaceShipMode = !spaceShipMode;
         }
     });
-    background.detach();
     glm::vec3 spaceshipLinearVelocity = glm::vec3(0.0);
     glm::vec3 spaceshipAngularVelocity = glm::vec3(0.0);
     glm::vec3 spaceshipPosition = glm::vec3(0.0);
@@ -177,6 +187,7 @@ int main()
         toolkit->poolEvents();
     }
 
+    cosmosRenderer->unmapBuffers();
     return 0;
 }
 
