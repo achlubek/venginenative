@@ -18,9 +18,9 @@ int main()
 
     GalaxyGenerator* galaxy = cosmosRenderer->galaxy;
     printf("gen");
-    int64_t galaxyedge = 2496000000;
-    int64_t galaxythickness = 2496000000;
-    for (int i = 0; i < 10000; i++) {
+    int64_t galaxyedge = 249600000;
+    int64_t galaxythickness = 249600000;
+    for (int i = 0; i < 100; i++) {
         galaxy->generateStar(galaxyedge, galaxythickness, 1.0, i);
         cosmosRenderer->nearbyStars.push_back(galaxy->generateStarInfo(i));
     }
@@ -60,9 +60,37 @@ int main()
         }
     });
     background2.detach();
+    float speedmultiplier = 1.0;
+    float stabilizerotation = 1.0;
     keyboard->onKeyPress.add([&](int key) {
         if (key == GLFW_KEY_ENTER) {
             spaceShipMode = !spaceShipMode;
+        }
+
+        if (key == GLFW_KEY_F1) {
+            speedmultiplier = 0.05;
+        }
+        if (key == GLFW_KEY_F2) {
+            speedmultiplier = 10.0;
+        }
+        if (key == GLFW_KEY_F3) {
+            speedmultiplier = 100.0;
+        }
+        if (key == GLFW_KEY_F4) {
+            speedmultiplier = 1000.0;
+        }
+
+        if (key == GLFW_KEY_F5) {
+            stabilizerotation = 0.0;
+        }
+        if (key == GLFW_KEY_F6) {
+            stabilizerotation = 0.25;
+        }
+        if (key == GLFW_KEY_F7) {
+            stabilizerotation = 0.5;
+        }
+        if (key == GLFW_KEY_F8) {
+            stabilizerotation = 1.0;
         }
     });
     glm::vec3 spaceshipLinearVelocity = glm::vec3(0.0);
@@ -137,7 +165,7 @@ int main()
         }
         else {
             glm::mat3 rotmat = glm::mat3_cast(spaceshipOrientation);
-            if (cosmosRenderer->closestSurfaceDistance > 100.0) {
+            if (cosmosRenderer->closestSurfaceDistance > 1.0) {
                 spaceshipPosition += elapsed_x100 * spaceshipLinearVelocity;
                 spaceshipPosition += elapsed * cosmosRenderer->lastGravity;
                 spaceshipOrientation = spaceshipOrientation
@@ -148,33 +176,59 @@ int main()
                 camera->transformation->setPosition(spaceshipPosition);
                 camera->transformation->setOrientation(spaceshipOrientation);
             }
+            else {
+
+                spaceshipLinearVelocity *= 0.1f;
+                spaceshipPosition += elapsed_x100 * glm::vec3(cosmosRenderer->closestObjectLinearAbsoluteSpeed) + spaceshipLinearVelocity;
+                spaceshipPosition -= elapsed * cosmosRenderer->lastGravity;
+                spaceshipOrientation = spaceshipOrientation
+                    * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.x, glm::vec3(1.0, 0.0, 0.0))
+                    * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.y, glm::vec3(0.0, 1.0, 0.0))
+                    * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.z, glm::vec3(0.0, 0.0, 1.0))
+                    ;
+                camera->transformation->setPosition(spaceshipPosition);
+                camera->transformation->setOrientation(spaceshipOrientation);
+                spaceshipAngularVelocity *= 0.1f;
+            }
             if (keyboard->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
-                spaceshipLinearVelocity += 10.0f * elapsed_x100 * rotmat * glm::vec3(0, 0, -1);
+                spaceshipLinearVelocity += speedmultiplier * elapsed_x100 * rotmat * glm::vec3(0, 0, -1);
             }
             if (keyboard->getKeyStatus(GLFW_KEY_S) == GLFW_PRESS) {
-                spaceshipLinearVelocity += 10.0f * elapsed_x100 * rotmat * glm::vec3(0, 0, 1);
+                spaceshipLinearVelocity += speedmultiplier * elapsed_x100 * rotmat * glm::vec3(0, 0, 1);
+            }
+            if (keyboard->getKeyStatus(GLFW_KEY_R) == GLFW_PRESS) {
+                spaceshipLinearVelocity += speedmultiplier * elapsed_x100 * rotmat * glm::vec3(0, 1, 0);
+            }
+            if (keyboard->getKeyStatus(GLFW_KEY_F) == GLFW_PRESS) {
+                spaceshipLinearVelocity += speedmultiplier * elapsed_x100 * rotmat * glm::vec3(0, -1, 0);
+            }
+            if (keyboard->getKeyStatus(GLFW_KEY_Q) == GLFW_PRESS) {
+                spaceshipLinearVelocity += speedmultiplier * elapsed_x100 * rotmat * glm::vec3(-1, 0, 0);
+            }
+            if (keyboard->getKeyStatus(GLFW_KEY_E) == GLFW_PRESS) {
+                spaceshipLinearVelocity += speedmultiplier * elapsed_x100 * rotmat * glm::vec3(1, 0, 0);
             }
             if (keyboard->getKeyStatus(GLFW_KEY_SPACE) == GLFW_PRESS) {
-                spaceshipLinearVelocity *= 0.99f;
+                spaceshipLinearVelocity = glm::vec3(cosmosRenderer->closestObjectLinearAbsoluteSpeed * 0.01);
             }
-            spaceshipAngularVelocity *= 0.99f;
+            spaceshipAngularVelocity *= 1.0f - stabilizerotation * 0.01f;
             if (keyboard->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS) {
-                spaceshipAngularVelocity.z += elapsed_x100 * 0.0001;
+                spaceshipAngularVelocity.z += elapsed_x100 * 0.0005;
             }
             if (keyboard->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS) {
-                spaceshipAngularVelocity.z -= elapsed_x100 * 0.0001;
+                spaceshipAngularVelocity.z -= elapsed_x100 * 0.0005;
             }
             if (keyboard->getKeyStatus(GLFW_KEY_U) == GLFW_PRESS) {
-                spaceshipAngularVelocity.x -= elapsed_x100 * 0.0001;
+                spaceshipAngularVelocity.x -= elapsed_x100 * 0.0005;
             }
             if (keyboard->getKeyStatus(GLFW_KEY_J) == GLFW_PRESS) {
-                spaceshipAngularVelocity.x += elapsed_x100 * 0.0001;
+                spaceshipAngularVelocity.x += elapsed_x100 * 0.0005;
             }
             if (keyboard->getKeyStatus(GLFW_KEY_H) == GLFW_PRESS) {
-                spaceshipAngularVelocity.y += elapsed_x100 * 0.0001;
+                spaceshipAngularVelocity.y += elapsed_x100 * 0.0005;
             }
             if (keyboard->getKeyStatus(GLFW_KEY_K) == GLFW_PRESS) {
-                spaceshipAngularVelocity.y -= elapsed_x100 * 0.0001;
+                spaceshipAngularVelocity.y -= elapsed_x100 * 0.0005;
             }
             if (joystick->isPresent(0)) {
                 auto axes = joystick->getAxes(0);
@@ -187,7 +241,10 @@ int main()
         }
         cosmosRenderer->updateCameraBuffer(camera);
         cosmosRenderer->draw();
-        text->updateText("Distance to surface:" + std::to_string(cosmosRenderer->closestSurfaceDistance));
+        text->updateText("Distance to surface:" + std::to_string(cosmosRenderer->closestSurfaceDistance) + "| " + std::to_string(cosmosRenderer->closestObjectLinearAbsoluteSpeed.x)
+            + " , " + std::to_string(cosmosRenderer->closestObjectLinearAbsoluteSpeed.y) + " , " + std::to_string(cosmosRenderer->closestObjectLinearAbsoluteSpeed.z)
+            + "| " + std::to_string(spaceshipLinearVelocity.x)
+            + " , " + std::to_string(spaceshipLinearVelocity.y) + " , " + std::to_string(spaceshipLinearVelocity.z));
         toolkit->poolEvents();
     }
 

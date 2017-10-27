@@ -192,7 +192,7 @@ void CosmosRenderer::updatePlanetsAndMoon(Camera * camera)
     for (int p = 0; p < cstar.planets.size(); p++) {
         auto planet = cstar.planets[p];
         glm::vec3 orbitplaneTangent = glm::normalize(glm::cross(cstar.orbitPlane, glm::vec3(0.0, 1.0, 0.0)));
-        glm::dvec3 planetpos = starpos + glm::dvec3(glm::angleAxis((float)planet.orbitSpeed * time * 0.001f, cstar.orbitPlane) * orbitplaneTangent) * planet.starDistance * scale;
+        glm::dvec3 planetpos = starpos + glm::dvec3(glm::angleAxis(planet.orbitSpeed * time * 0.001, glm::dvec3(cstar.orbitPlane)) * glm::dvec3(orbitplaneTangent)) * planet.starDistance * scale;
         glm::dvec3 ppos = planetpos - glm::dvec3(camera->transformation->getPosition());
 
         planetsBB.emplaceFloat32((float)ppos.x);
@@ -203,7 +203,7 @@ void CosmosRenderer::updatePlanetsAndMoon(Camera * camera)
         planetsBB.emplaceFloat32((float)planet.terrainMaxLevel);
         planetsBB.emplaceFloat32((float)planet.fluidMaxLevel);
         planetsBB.emplaceFloat32((float)planet.starDistance * scale);
-        planetsBB.emplaceFloat32((float)0.0f);
+        planetsBB.emplaceFloat32((float)nearestStarIndex + p);
 
         planetsBB.emplaceFloat32((float)planet.habitableChance);
         planetsBB.emplaceFloat32((float)planet.orbitSpeed);
@@ -228,7 +228,7 @@ void CosmosRenderer::updatePlanetsAndMoon(Camera * camera)
         for (int m = 0; m < planet.moons.size(); m++) {
             auto moon = planet.moons[m];
             glm::vec3 orbitplaneTangent = glm::normalize(glm::cross(moon.orbitPlane, glm::vec3(0.0, 1.0, 0.0)));
-            glm::dvec3 moonpos = planetpos + glm::dvec3(glm::angleAxis((float)planet.orbitSpeed * time * 0.001f, cstar.orbitPlane) * orbitplaneTangent) * moon.planetDistance * scale;
+            glm::dvec3 moonpos = planetpos + glm::dvec3(glm::angleAxis(planet.orbitSpeed * time * 0.001, glm::dvec3(moon.orbitPlane)) * glm::dvec3(orbitplaneTangent)) * moon.planetDistance * scale;
             glm::dvec3 mpos = moonpos - glm::dvec3(camera->transformation->getPosition());
 
             moonsBB.emplaceFloat32((float)mpos.x);
@@ -264,14 +264,16 @@ void CosmosRenderer::updatePlanetsAndMoon(Camera * camera)
 
 void CosmosRenderer::updateGravity(Camera * camera)
 {
-    float time = glfwGetTime()*0.1 + 10000.0;
+    double time = glfwGetTime()*0.1 + 10000.0;
+    double timeplus1sec = (1.0 + glfwGetTime())*0.1 + 10000.0;
     glm::vec3 newGravity = glm::vec3(0.0);
     glm::vec3 newSurfacePos = glm::vec3(0.0);
     glm::vec3 newSurfaceNorm = glm::vec3(0.0);
+    glm::vec3 newClosestObjectLinearAbsoluteSpeed = glm::vec3(0.0);
     double newSurfaceDist = 99999999999999.0;
     auto star = nearestStar;
 
-    glm::dvec3 starpos = glm::dvec3(star.starData.x * scale, star.starData.y * scale, star.starData.z * scale);
+    glm::dvec3 starpos = glm::dvec3(star.starData.x * scale, star.starData.y * scale, star.starData.z * scale); 
     glm::dvec3 spos = starpos - glm::dvec3(camera->transformation->getPosition());
     glm::vec3 sdir = glm::normalize(spos);
 
@@ -281,6 +283,7 @@ void CosmosRenderer::updateGravity(Camera * camera)
         newSurfaceDist = ssurfacedistance;
         newSurfacePos = ssurfacepos;
         newSurfaceNorm = glm::normalize(starpos - ssurfacepos);
+        newClosestObjectLinearAbsoluteSpeed = glm::vec3(0.0f); // stars are not moving yet
     }
 
     double sdistance = glm::length(spos) / scale;
@@ -289,7 +292,8 @@ void CosmosRenderer::updateGravity(Camera * camera)
     glm::vec3 orbitplaneTangent = glm::normalize(glm::cross(star.orbitPlane, glm::vec3(0.0, 1.0, 0.0)));
     for (int p = 0; p < star.planets.size(); p++) {
         auto planet = star.planets[p];
-        glm::dvec3 planetpos = starpos + glm::dvec3(glm::angleAxis((float)planet.orbitSpeed * time * 0.001f, star.orbitPlane) * orbitplaneTangent) * planet.starDistance * scale;
+        glm::dvec3 planetpos = starpos + glm::dvec3(glm::angleAxis(planet.orbitSpeed * time * 0.001, glm::dvec3(star.orbitPlane)) * glm::dvec3(orbitplaneTangent)) * planet.starDistance * scale;
+        glm::dvec3 planetpos1secbefore = starpos + glm::dvec3(glm::angleAxis(planet.orbitSpeed * (timeplus1sec) * 0.001, glm::dvec3(star.orbitPlane)) * glm::dvec3(orbitplaneTangent)) * planet.starDistance * scale;
         glm::dvec3 ppos = planetpos - glm::dvec3(camera->transformation->getPosition());
         glm::vec3 pdir = glm::normalize(ppos);
 
@@ -299,6 +303,7 @@ void CosmosRenderer::updateGravity(Camera * camera)
             newSurfaceDist = psurfacedistance;
             newSurfacePos = psurfacepos;
             newSurfaceNorm = glm::normalize(planetpos - psurfacepos);
+            newClosestObjectLinearAbsoluteSpeed = planetpos1secbefore - planetpos;
         }
 
         double pdistance = glm::length(ppos) / scale;
@@ -307,7 +312,8 @@ void CosmosRenderer::updateGravity(Camera * camera)
         for (int m = 0; m < planet.moons.size(); m++) {
             auto moon = planet.moons[m];
             glm::vec3 orbitplaneTangent = glm::normalize(glm::cross(moon.orbitPlane, glm::vec3(0.0, 1.0, 0.0)));
-            glm::dvec3 moonpos = planetpos + glm::dvec3(glm::angleAxis((float)planet.orbitSpeed * time * 0.001f, star.orbitPlane) * orbitplaneTangent) * moon.planetDistance * scale;
+            glm::dvec3 moonpos = planetpos + glm::dvec3(glm::angleAxis(planet.orbitSpeed * time * 0.001, glm::dvec3(moon.orbitPlane)) * glm::dvec3(orbitplaneTangent)) * moon.planetDistance * scale;
+            glm::dvec3 moonpos1secbefore = planetpos + glm::dvec3(glm::angleAxis(planet.orbitSpeed * (timeplus1sec) * 0.001, glm::dvec3(moon.orbitPlane)) * glm::dvec3(orbitplaneTangent)) * moon.planetDistance * scale;
             glm::dvec3 mpos = moonpos - glm::dvec3(camera->transformation->getPosition());
             glm::vec3 mdir = glm::normalize(mpos);
 
@@ -317,6 +323,7 @@ void CosmosRenderer::updateGravity(Camera * camera)
                 newSurfaceDist = msurfacedistance;
                 newSurfacePos = msurfacepos;
                 newSurfaceNorm = glm::normalize(moonpos - msurfacepos);
+            //    closestObjectLinearAbsoluteSpeed = moonpos - moonpos1secbefore;
             }
 
             double mdistance = glm::length(mpos) / scale;
@@ -328,6 +335,7 @@ void CosmosRenderer::updateGravity(Camera * camera)
     closestSurfaceDistance = newSurfaceDist;
     closestSurfacePosition = newSurfacePos;
     closestSurfaceNormal = newSurfaceNorm;
+    closestObjectLinearAbsoluteSpeed = newClosestObjectLinearAbsoluteSpeed;
 }
 
 void CosmosRenderer::updateNearestStar(Camera * camera)

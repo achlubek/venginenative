@@ -51,6 +51,7 @@ public:
     glm::vec3 lastGravity;
     glm::dvec3 closestSurfacePosition;
     glm::dvec3 closestSurfaceNormal;
+    glm::dvec3 closestObjectLinearAbsoluteSpeed;
     double closestSurfaceDistance;
 
     void* starsDataBufferPointer;
