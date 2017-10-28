@@ -92,11 +92,15 @@ int main()
         if (key == GLFW_KEY_F8) {
             stabilizerotation = 1.0;
         }
+        if (key == GLFW_KEY_PAUSE) {
+            cosmosRenderer->recompileShaders(true);
+        }
     });
     glm::vec3 spaceshipLinearVelocity = glm::vec3(0.0);
     glm::vec3 spaceshipAngularVelocity = glm::vec3(0.0);
     glm::vec3 spaceshipPosition = glm::vec3(0.0);
     glm::quat spaceshipOrientation = glm::quat(1.0, 0.0, 0.0, 0.0);
+    #define multiplyscale(a,b) (std::pow(a, b))
     while (!toolkit->shouldCloseWindow()) {
         frames++;
         double time = glfwGetTime();
@@ -164,9 +168,8 @@ int main()
             camera->transformation->setPosition(glm::mix(newpos, camera->transformation->getPosition(), 0.8f));
         }
         else {
-            glm::mat3 rotmat = glm::mat3_cast(spaceshipOrientation);
             if (cosmosRenderer->closestSurfaceDistance > 1.0) {
-                spaceshipPosition += elapsed_x100 * spaceshipLinearVelocity;
+                spaceshipPosition += elapsed * spaceshipLinearVelocity;
                 spaceshipPosition += elapsed * cosmosRenderer->lastGravity;
                 spaceshipOrientation = spaceshipOrientation
                     * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.x, glm::vec3(1.0, 0.0, 0.0))
@@ -190,6 +193,7 @@ int main()
                 camera->transformation->setOrientation(spaceshipOrientation);
                 spaceshipAngularVelocity *= 0.1f;
             }
+            glm::mat3 rotmat = glm::mat3_cast(spaceshipOrientation);
             if (keyboard->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
                 spaceshipLinearVelocity += speedmultiplier * elapsed_x100 * rotmat * glm::vec3(0, 0, -1);
             }
@@ -211,7 +215,7 @@ int main()
             if (keyboard->getKeyStatus(GLFW_KEY_SPACE) == GLFW_PRESS) {
                 spaceshipLinearVelocity = glm::vec3(cosmosRenderer->closestObjectLinearAbsoluteSpeed * 0.01);
             }
-            spaceshipAngularVelocity *= 1.0f - stabilizerotation * 0.01f;
+            spaceshipAngularVelocity *= multiplyscale(1.0f - stabilizerotation * 0.1f, elapsed_x100);
             if (keyboard->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS) {
                 spaceshipAngularVelocity.z += elapsed_x100 * 0.0005;
             }
@@ -232,8 +236,8 @@ int main()
             }
             if (joystick->isPresent(0)) {
                 auto axes = joystick->getAxes(0);
-                spaceshipLinearVelocity += 70.0f * ((-axes[3]) * 0.5f + 0.5f) * elapsed_x100 * rotmat * glm::vec3(0, 0, -1);
-                spaceshipAngularVelocity.x += elapsed_x100 * 0.001 * axes[1];
+                spaceshipLinearVelocity += 70.0f * ((-axes[3])) * elapsed_x100 * rotmat * glm::vec3(0, 0, -1);
+                spaceshipAngularVelocity.x += elapsed_x100 * 0.001 * -axes[1];
                 spaceshipAngularVelocity.y += elapsed_x100 * 0.001 * -axes[2];
                 spaceshipAngularVelocity.z += elapsed_x100 * 0.001 * -axes[0];
             }

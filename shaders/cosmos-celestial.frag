@@ -157,6 +157,22 @@ float FBM4(vec4 p, int octaves, float dx){
     return a;
 }
 
+float fbmHI(vec3 p, float dx){
+   // p *= 0.1;
+    p *= 1.2;
+    //p += getWind(p * 0.2) * 6.0;
+    float a = 0.0;
+    float w = 1.0;
+    float wc = 0.0;
+    for(int i=0;i<5;i++){
+        //p += noise(vec3(a));
+        a += clamp(2.0 * abs(0.5 - (noise3d(p))) * w, 0.0, 1.0);
+        wc += w;
+        w *= 0.5;
+        p = p * dx;
+    }
+    return a / wc;// + noise(p * 100.0) * 11;
+}
 float rand2s(vec2 co){
     return fract(sin(dot(co.xy * Time,vec2(12.9898,78.233))) * 43758.5453);
 }
@@ -228,6 +244,11 @@ vec3 extra_cheap_atmosphere(float raylen, float sunraylen, float absorbstrength,
     return bluesky2 + mymie * suncolor;
 }
 #line 231
+
+float clouds(vec3 mx, float h){
+    return pow(smoothstep(0.136 - noise3d(mx * 1.3) * 0.03, 0.16, noise3d(mx * 2.0) * h * fbmHI(mx * 6.0 + 5.0*fbmHI(mx.yxz * 1.0 + hiFreq.Time * 0.001, 2.0) * 0.5 - hiFreq.Time * 0.01, 2.8)), 3.0);
+}
+
 vec4 tracePlanetAtmosphere(vec3 start, vec3 end, float lengthstart, float lengthstop){
     float seed = currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.a;
     float rd1 = hash(seed);
@@ -254,31 +275,34 @@ vec4 tracePlanetAtmosphere(vec3 start, vec3 end, float lengthstart, float length
         vec3 p = mix(start, end, iter);
         vec2 hit_Atmosphere = rsi2(Ray(p, sundir), atmosphere);
         vec2 hit_Surface = rsi2(Ray(p, sundir), surface);
-        float heightmix = 1.0 - (distance(currentPlanet.position_radius.rgb, p) - lengthstart) / (lengthstop - lengthstart);
+        float heightmix = smoothstep(lengthstart, lengthstop, distance(currentPlanet.position_radius.rgb, p));
         vec3 dir = normalize(p - currentPlanet.position_radius.rgb);
         float dst = length(p - currentPlanet.position_radius.rgb);
         vec4 coorddir = vec4(dir * (1.0 + 0.1 * heightmix) * 11.0 * (0.2 + rd2 * 3.0), hiFreq.Time * 0.001);
-        float cloudiness = smoothstep(0.5, 0.52, FBM4(coorddir, 8, 1.1 + rd1 * 1.6));
-        vec3 C =  extra_cheap_atmosphere(raylen, hit_Atmosphere.y, 115.0
+        float cloudiness = clouds(dir ,  1.0 - abs( heightmix * 2.0 - 1.0)  );
+        vec3 AC = extra_cheap_atmosphere(raylen, hit_Atmosphere.y, 115.0
                 * currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.a,
                 currentPlanet.atmosphereAbsorbColor_zero.rgb,
                 max(0.0, dot(normalize(end - start), sundir)));
-        atm += (1.0 - step(0.0, hit_Surface.x)) * mix(C, vec3(0.9), cloudiness);
-        coverage += heightmix * raylen * (stepdistance * 0.04 + 0.09 * cloudiness) * currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.a;
+        vec3 CC = cloudiness *  extra_cheap_atmosphere(hit_Atmosphere.y, hit_Atmosphere.y, 115.0
+                * currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.a,
+                currentPlanet.atmosphereAbsorbColor_zero.rgb,
+                1.0);
+        atm += (1.0 - step(0.0, hit_Surface.x + hit_Surface.y)) * (AC + CC);
+        coverage += min(0.1, cloudiness * 4.0 + (1.0 - heightmix) * raylen * (stepdistance * 0.04) * currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.a);
         iter += 0.1;
     }
     atm *= 0.1;
-    coverage = min(1.0, coverage);
     return vec4(atm, min(1.0, coverage));
 }
-
+#define maxheight (0.005 * currentPlanet.position_radius.a)*currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.r*currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.b
 float getplanetheight(vec3 dir){
     float seed = currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.a;
     float rd1 = hash(seed);
     float rd2 = hash(seed + 200.0);
     float rd3 = hash(seed + 400.0);
     return currentPlanet.position_radius.a
-        + (1.0 - 2.0 * abs(0.5 - FBM3(dir * 1.0 * (0.2 + rd2 * 3.0), 8, 1.1 + rd1 * 1.6, rd3* 0.2 + 0.4 )))
+        - (0.005 * currentPlanet.position_radius.a) * (1.0 - 2.0 * abs(0.5 - FBM3(dir * 1.0 * (0.2 + rd2 * 3.0), 8, 1.1 + rd1 * 1.6, rd3* 0.2 + 0.4 )))
         * currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.r
         * currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.b;
 }
@@ -355,7 +379,7 @@ vec4 tracePlanet(Ray ray){
         if(hitcount == 0) coverage = -1.0;//scenario a
         if(hitcount == 1){ // scenario b
             vec4 atm = tracePlanetAtmosphere(ray.d * hit_Atmosphere.x, ray.d * hit_Atmosphere.y,
-                currentPlanet.position_radius.a, atmoradius);
+                currentPlanet.position_radius.a  - maxheight, atmoradius);
             color = atm.rgb;
             coverage = atm.a;
         }

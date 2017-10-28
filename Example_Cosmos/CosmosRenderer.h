@@ -9,9 +9,11 @@ class CosmosRenderer
 public:
     CosmosRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight);
     ~CosmosRenderer();
+    void recompileShaders(bool deleteOld);
 
     GalaxyGenerator* galaxy;
     UIRenderer* ui;
+    AssetLoader assets;
 
     std::vector<GeneratedStarInfo> nearbyStars;
     GeneratedStarInfo nearestStar;
@@ -71,5 +73,7 @@ public:
 
     void updateCameraBuffer(Camera* cam); 
     void draw();
+
+    volatile bool readyForDrawing = false;
 };
 

@@ -5,7 +5,7 @@
 #include "vulkan.h"
 
 CosmosRenderer::CosmosRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) :
-    width(iwidth), height(iheight), vulkan(ivulkan)
+    width(iwidth), height(iheight), vulkan(ivulkan), assets(AssetLoader(ivulkan))
 {
     internalCamera = new Camera();
     nearbyStars = {};
@@ -13,16 +13,12 @@ CosmosRenderer::CosmosRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) 
 
     ui = new UIRenderer(vulkan, width, height);
 
-    auto assets = AssetLoader(vulkan);
-
     cube3dInfo = assets.loadObject3dInfoFile("cube1unitradius.raw");
 
     cameraDataBuffer = new VulkanGenericBuffer(vulkan, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 1024);
     starsDataBuffer = new VulkanGenericBuffer(vulkan, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, 1024 * 1024 * 128); // i want 256 mb 1024 * 1024 * 256
     planetsDataBuffer = new VulkanGenericBuffer(vulkan, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, sizeof(float) * 1024 * 1024);
     moonsDataBuffer = new VulkanGenericBuffer(vulkan, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, sizeof(float) * 1024 * 1024);
-
-    //**********************//
 
     celestialLayout = new VulkanDescriptorSetLayout(vulkan);
     celestialLayout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
@@ -38,12 +34,53 @@ CosmosRenderer::CosmosRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) 
     celestialSet->bindStorageBuffer(3, moonsDataBuffer);
     celestialSet->update();
 
+    combineLayout = new VulkanDescriptorSetLayout(vulkan);
+    combineLayout->addField(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    combineLayout->addField(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    combineLayout->addField(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    combineLayout->compile();
+
     celestialImage = new VulkanImage(vulkan, width, height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
     starsImage = new VulkanImage(vulkan, width, height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
+    outputImage = new VulkanImage(vulkan, width, height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
+    
+
+    combineSet = combineLayout->generateDescriptorSet();
+    combineSet->bindImageViewSampler(0, celestialImage);
+    combineSet->bindImageViewSampler(1, starsImage);
+    combineSet->bindImageViewSampler(2, ui->outputImage);
+    combineSet->update();
+
+    recompileShaders(false);
+
+    readyForDrawing = true;
+}
+
+
+CosmosRenderer::~CosmosRenderer()
+{
+}
+
+#define safedelete(a) if(a!=nullptr){delete a;a=nullptr;}
+void CosmosRenderer::recompileShaders(bool deleteOld)
+{
+    readyForDrawing = false;
+    if (deleteOld){
+        vkDeviceWaitIdle(vulkan->device);
+        safedelete(celestialStage);
+        safedelete(starsStage);
+        safedelete(combineStage);
+        safedelete(renderer);
+    }
+    vkDeviceWaitIdle(vulkan->device);
+
+    //**********************//
+    
     auto celestialvert = new VulkanShaderModule(vulkan, "../../shaders/compiled/cosmos-celestial.vert.spv");
     auto celestialfrag = new VulkanShaderModule(vulkan, "../../shaders/compiled/cosmos-celestial.frag.spv");
 
@@ -72,21 +109,6 @@ CosmosRenderer::CosmosRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) 
 
     //**********************//
 
-    combineLayout = new VulkanDescriptorSetLayout(vulkan);
-    combineLayout->addField(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    combineLayout->addField(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    combineLayout->addField(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    combineLayout->compile();
-
-    combineSet = combineLayout->generateDescriptorSet();
-    combineSet->bindImageViewSampler(0, celestialImage);
-    combineSet->bindImageViewSampler(1, starsImage);
-    combineSet->bindImageViewSampler(2, ui->outputImage);
-    combineSet->update();
-
-    outputImage = new VulkanImage(vulkan, width, height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
-        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
-
     auto combinevert = new VulkanShaderModule(vulkan, "../../shaders/compiled/cosmos-combine.vert.spv");
     auto combinefrag = new VulkanShaderModule(vulkan, "../../shaders/compiled/cosmos-combine.frag.spv");
 
@@ -104,11 +126,8 @@ CosmosRenderer::CosmosRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) 
     renderer->addPostProcessingStage(celestialStage);
     renderer->setOutputStage(combineStage);
     renderer->compile();
-}
 
-
-CosmosRenderer::~CosmosRenderer()
-{
+    readyForDrawing = true;
 }
 
 void CosmosRenderer::mapBuffers()
@@ -408,6 +427,7 @@ void CosmosRenderer::updateCameraBuffer(Camera * camera)
 
 void CosmosRenderer::draw()
 {
+    if (!readyForDrawing) return;
     ui->draw();
 
     starsStage->beginDrawing();
