@@ -34,12 +34,6 @@ CosmosRenderer::CosmosRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) 
     celestialSet->bindStorageBuffer(3, moonsDataBuffer);
     celestialSet->update();
 
-    combineLayout = new VulkanDescriptorSetLayout(vulkan);
-    combineLayout->addField(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    combineLayout->addField(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    combineLayout->addField(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    combineLayout->compile();
-
     celestialImage = new VulkanImage(vulkan, width, height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
@@ -48,12 +42,19 @@ CosmosRenderer::CosmosRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) 
 
     outputImage = new VulkanImage(vulkan, width, height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
-    
+
+    combineLayout = new VulkanDescriptorSetLayout(vulkan);
+    combineLayout->addField(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    combineLayout->addField(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    combineLayout->addField(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    combineLayout->addField(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+    combineLayout->compile();
 
     combineSet = combineLayout->generateDescriptorSet();
     combineSet->bindImageViewSampler(0, celestialImage);
     combineSet->bindImageViewSampler(1, starsImage);
     combineSet->bindImageViewSampler(2, ui->outputImage);
+    combineSet->bindUniformBuffer(3, cameraDataBuffer);
     combineSet->update();
 
     recompileShaders(false);

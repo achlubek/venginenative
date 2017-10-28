@@ -18,9 +18,9 @@ int main()
 
     GalaxyGenerator* galaxy = cosmosRenderer->galaxy;
     printf("gen");
-    int64_t galaxyedge = 249600000;
+    int64_t galaxyedge = 12496000000;
     int64_t galaxythickness = 249600000;
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 100000; i++) {
         galaxy->generateStar(galaxyedge, galaxythickness, 1.0, i);
         cosmosRenderer->nearbyStars.push_back(galaxy->generateStarInfo(i));
     }
@@ -77,7 +77,7 @@ int main()
             speedmultiplier = 100.0;
         }
         if (key == GLFW_KEY_F4) {
-            speedmultiplier = 1000.0;
+            speedmultiplier = 100000.0;
         }
 
         if (key == GLFW_KEY_F5) {

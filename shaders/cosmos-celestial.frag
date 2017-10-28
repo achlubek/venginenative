@@ -280,7 +280,7 @@ vec4 tracePlanetAtmosphere(vec3 start, vec3 end, float lengthstart, float length
         float dst = length(p - currentPlanet.position_radius.rgb);
         vec4 coorddir = vec4(dir * (1.0 + 0.1 * heightmix) * 11.0 * (0.2 + rd2 * 3.0), hiFreq.Time * 0.001);
         float cloudiness = clouds(dir ,  1.0 - abs( heightmix * 2.0 - 1.0)  );
-        vec3 AC = extra_cheap_atmosphere(raylen, hit_Atmosphere.y, 115.0
+        vec3 AC = extra_cheap_atmosphere(raylen, hit_Atmosphere.y, 1.0
                 * currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.a,
                 currentPlanet.atmosphereAbsorbColor_zero.rgb,
                 max(0.0, dot(normalize(end - start), sundir)));
@@ -288,8 +288,8 @@ vec4 tracePlanetAtmosphere(vec3 start, vec3 end, float lengthstart, float length
                 * currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.a,
                 currentPlanet.atmosphereAbsorbColor_zero.rgb,
                 1.0);
-        atm += (1.0 - step(0.0, hit_Surface.x + hit_Surface.y)) * (AC + CC);
-        coverage += min(0.1, cloudiness * 4.0 + (1.0 - heightmix) * raylen * (stepdistance * 0.04) * currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.a);
+        atm += (1.0 - step(0.0, hit_Surface.x + hit_Surface.y)) * (AC );
+        coverage += 0.02 * (1.0 - heightmix) * raylen * (stepdistance * 0.0004) * currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.a;
         iter += 0.1;
     }
     atm *= 0.1;

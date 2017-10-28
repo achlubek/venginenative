@@ -58,13 +58,8 @@ void GalaxyGenerator::generateStar(int64_t galaxyradius, int64_t centerThickness
     s.seed = seed;
     eng.seed(seed);
     s.x = randi64(-galaxyradius, galaxyradius);
-    s.z = randi64(-galaxyradius, galaxyradius);
-    uint64_t len = (abs(s.x) + abs(s.z)) / 2;
-    double gravity = (1.0 / (1.0 + static_cast<double>(len) / 125600000.0));
-   // s.x *= gravity;
-  //  s.z *= gravity;
-
-    s.y = centerThickness / (1.0 + static_cast<double>(len) /125600000.0) * (drandnorm()* 2.0 - 1.0);
+    s.y = randi64(-centerThickness, centerThickness);
+    s.z = randi64(-galaxyradius, galaxyradius); 
     stars.push_back(s);
 }
 
@@ -80,28 +75,86 @@ GeneratedStarInfo GalaxyGenerator::generateStarInfo(size_t index)
     GeneratedStarInfo star = {};
     star.starData = s;
     star.radius = 391000 + randu64(0, 1000000); // sun is 695700 so this range is from 391 000 to 1 391 000 pretty much covers shit
-    star.color = glm::vec3(0.5 + drandnorm(), 0.5 + drandnorm(), 0.5 + drandnorm());
+    star.color = glm::vec3(0.5 + drandnorm() * drandnorm(), 0.5 + drandnorm() * drandnorm(), 0.5 + drandnorm() * drandnorm());
     star.age = drandnorm();
     star.spotsIntensity = drandnorm();
     star.rotationSpeed = drandnorm();
     star.orbitPlane = glm::normalize(glm::vec3(drandnorm(), drandnorm(), drandnorm()) * 2.0f - 1.0f);
     star.planetsCount = randu64(0, 8);
     star.planets = {};
-    double stardisthelper = star.radius * 10.0;
+    double stardisthelper = star.radius * 4.0;
     for (int i = 0; i < star.planetsCount; i++) {
         GeneratedPlanetInfo planet = {};
-        planet.radius = 3742 + randu64(0, 50000); // ranges from mercury to jupiter
-        planet.terrainMaxLevel = drandnorm();
-        planet.fluidMaxLevel = drandnorm() * planet.terrainMaxLevel; // no fully water planets
         planet.starDistance = stardisthelper;
-        stardisthelper += planet.radius * 10.0 + randu64(0, 500000);
-        planet.habitableChance = drandnorm();
+        stardisthelper += randu64(783000, 5500000);
+
+        uint64_t habitableStart = 1082000;
+        uint64_t habitableEnd = 3279000;
+        if (planet.starDistance < habitableStart) {
+            // Rocky and small ONLY
+            planet.radius = randu64(2440, 5440); // ranges from mercury to roughly 2x mercury
+            planet.moonsCount = randu64(0, 1);
+            planet.atmosphereRadius = 0.0;
+            planet.atmosphereAbsorbStrength = 0.0;
+            planet.atmosphereAbsorbColor = glm::vec3(0.0);
+            planet.terrainMaxLevel = drandnorm();
+            planet.fluidMaxLevel = 0.0;
+            planet.habitableChance = 0.0;
+            planet.preferredColor = glm::vec3(0.8 + drandnorm() * 0.2, 0.4 + drandnorm() * 0.3, 0.4 + drandnorm() * 0.2);
+
+        }
+        else if (planet.starDistance >= habitableStart && planet.starDistance < habitableEnd) {
+            // earth like or venus/mars like
+            planet.radius = randu64(3390, 9371); // ranges from mars to 1,5x earth
+            planet.moonsCount = randu64(0, 4);
+            planet.atmosphereRadius = (drandnorm() + 1.0) * (planet.radius * 0.05);
+            planet.terrainMaxLevel = drandnorm();
+            float rand1 = drandnorm();
+            if (rand1 < 0.5) {
+                // oxygen etc, blue marbles
+                planet.atmosphereAbsorbStrength = 0.5;
+                planet.atmosphereAbsorbColor = glm::vec3(0.3, 0.6, 1.0);
+                planet.fluidMaxLevel = drandnorm() * 0.5 + 0.2;
+                planet.habitableChance = 1.0;
+                planet.preferredColor = glm::vec3(0.2 + drandnorm() * 0.2, 0.7 + drandnorm() * 0.3, 0.2 + drandnorm() * 0.2);
+            }
+            else {
+                // some mars like
+                planet.atmosphereAbsorbStrength = 0.5;
+                planet.atmosphereAbsorbColor = glm::vec3(0.4 + drandnorm()* 0.6, 0.7 + drandnorm()* 0.3, 0.8 + drandnorm()* 0.2);
+                planet.fluidMaxLevel = drandnorm() * 0.5;
+                planet.habitableChance = 0.5;
+                planet.preferredColor = glm::vec3(0.8 + drandnorm() * 0.2, 0.4 + drandnorm() * 0.3, 0.1 + drandnorm() * 0.2);
+            }
+        }
+        else {
+            // gaseous giants and small rocky shits
+            float rand1 = drandnorm();
+            if (rand1 < 0.8) {
+                // gaseous giant
+                planet.radius = randu64(25362, 69911); // ranges from uranus to jupiter
+                planet.moonsCount = randu64(5, 16);
+                planet.atmosphereRadius = (drandnorm() + 2.0) * (planet.radius * 0.1);
+                planet.atmosphereAbsorbStrength = 0.7 + 0.3 * drandnorm();
+                planet.atmosphereAbsorbColor = glm::vec3(0.1 + drandnorm(), 0.1 + drandnorm(), 0.1 + drandnorm());
+                planet.fluidMaxLevel = 0.0;
+                planet.habitableChance = 0.0;
+                planet.preferredColor = glm::vec3(0.1 + drandnorm(), 0.1 + drandnorm(), 0.1 + drandnorm());
+            }
+            else {
+                // rocky
+                planet.radius = randu64(2440, 5440); // ranges from mercury to roughly 2x mercury
+                planet.moonsCount = randu64(0, 2);
+                planet.atmosphereRadius = 0.0;
+                planet.atmosphereAbsorbStrength = 0.0;
+                planet.atmosphereAbsorbColor = glm::vec3(0.0);
+                planet.fluidMaxLevel = 0.0;
+                planet.habitableChance = 0.0;
+                planet.preferredColor = glm::vec3(0.8 + drandnorm() * 0.2, 0.7 + drandnorm() * 0.3, 0.7 + drandnorm() * 0.3);
+            }
+        }
+
         planet.orbitSpeed = drandnorm();
-        planet.preferredColor = glm::vec3(0.1 + drandnorm(), 0.1 + drandnorm(), 0.1 + drandnorm());
-        planet.atmosphereRadius = drandnorm() * (planet.radius * 0.05);
-        planet.atmosphereAbsorbStrength = drandnorm();
-        planet.atmosphereAbsorbColor = glm::vec3(0.1 + drandnorm(), 0.1 + drandnorm(), 0.1 + drandnorm());
-        planet.moonsCount = randu64(0, 4);
         planet.moons = {};
         for (int g = 0; g < planet.moonsCount; g++) {
             GeneratedMoonInfo moon = {};

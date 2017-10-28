@@ -41,10 +41,11 @@ layout(set = 0, binding = 1) buffer StarsStorageBuffer {
 void main() {
     inInstanceId = gl_InstanceIndex;
     vec4 posradius = starsBuffer.stars[gl_InstanceIndex].position_radius;
-    float dist = min(90000000.0, length(posradius.xyz));
-    outWorldPos = normalize(posradius.xyz) * dist + inPosition.xyz * posradius.a * 10.0;
+    posradius.xyz -= CameraPosition;
+    float dist = min(9000000.0, length(posradius.xyz));
+    outWorldPos = normalize(posradius.xyz) * dist + inPosition.xyz * posradius.a * 6.0;
     // + inPosition.xyz * starsBuffer.stars[gl_InstanceIndex].position_radius.a * 7.0;
-    vec4 opo = (hiFreq.VPMatrix) * vec4(outWorldPos - CameraPosition, 1.0);
+    vec4 opo = (hiFreq.VPMatrix) * vec4(outWorldPos, 1.0);
     opo.y *= -1.0;
     vec2 newuv = (opo.xy / opo.w) * 0.5 + 0.5;
     outTexCoord = newuv;
