@@ -40,7 +40,7 @@ size_t GalaxyGenerator::findClosestStar(int64_t x, int64_t y, int64_t z)
         if (i == 0 || brief < mindist) {
             mindist = brief;
             choosenIndex = i;
-           // printf("%d\n", i);
+            // printf("%d\n", i);
         }
         //int64_t dist = sqrt(pow(dx, 2i64) + pow(dy, 2i64) + pow(dz, 2i64));
     }
@@ -60,19 +60,19 @@ glm::dvec2 rotate(glm::dvec2 v, double a) {
 double hashx(double n) {
     return glm::fract(sin(n)*758.5453);
 }
-void GalaxyGenerator::generateStar(int64_t galaxyradius, int64_t centerThickness, double centerGravity,  uint64_t seed)
+void GalaxyGenerator::generateStar(int64_t galaxyradius, int64_t centerThickness, double centerGravity, uint64_t seed)
 {
     SingleStar s = {};
     s.seed = seed;
-    eng.seed(seed); 
+    eng.seed(seed);
     double ss = drandnorm() * 100.0;
-    #define rnd() hashx(ss);ss+=100.0;
+#define rnd() hashx(ss);ss+=100.0;
 
     double lu = rnd();
     double x = rnd();
     double y = rnd();
     double w = rnd();
-    #define drand2rn() (drandnorm() * 2.0 - 1.0)
+#define drand2rn() (drandnorm() * 2.0 - 1.0)
     double a = 1.7;
     double coef1 = 1.0 / (sqrt(2.0 * 3.1415 * a * a));
     double coef2 = -1.0 / (2.0 * a * a);
@@ -81,7 +81,7 @@ void GalaxyGenerator::generateStar(int64_t galaxyradius, int64_t centerThickness
     glm::dvec2 c = glm::dvec2(x, y);
     c = c * 2.0 - 1.0;
     c = glm::normalize(c) *glm::dvec2(0.96, 1.0);
-    c *= max(0.00, w < 0.05 ? w : ( w * w * w )); // if > 0.1 then * 
+    c *= max(0.00, w < 0.05 ? w : (w * w * w)); // if > 0.1 then * 
     c = rotate(c, w * 13.2340);
 
     double dst = glm::length(c);
@@ -89,11 +89,11 @@ void GalaxyGenerator::generateStar(int64_t galaxyradius, int64_t centerThickness
     double gauss2 = coef1 * pow(2.7182818, pow(drandnorm() * 2.0, 2.0) * coef2);
     // point c is in -1 -> 1
     w = 1.0 - w;
-    lu =  w*w*(3.0 - 2.0 * w);
+    lu = w*w*(3.0 - 2.0 * w);
     s.x = static_cast<double>(galaxyradius) * c.x;
     s.z = static_cast<double>(galaxyradius) * c.y;
     s.y = static_cast<double>(centerThickness) * (gauss1 * ((drand2rn() * drand2rn() * drand2rn() * drand2rn())));
-     
+
     stars.push_back(s);
 }
 
@@ -122,8 +122,8 @@ GeneratedStarInfo GalaxyGenerator::generateStarInfo(size_t index)
         planet.starDistance = stardisthelper;
         stardisthelper += randu64(783000, 5500000);
 
-        uint64_t habitableStart = 0;// 1082000;
-        uint64_t habitableEnd = 999999999999;// 3279000;
+        uint64_t habitableStart = 1082000;// 1082000;
+        uint64_t habitableEnd = 3279000;// 3279000;
         if (planet.starDistance < habitableStart) {
             // Rocky and small ONLY
             planet.radius = randu64(2440, 5440); // ranges from mercury to roughly 2x mercury
@@ -146,7 +146,7 @@ GeneratedStarInfo GalaxyGenerator::generateStarInfo(size_t index)
             float rand1 = drandnorm();
             if (rand1 < 0.5) {
                 // oxygen etc, blue marbles
-                planet.atmosphereAbsorbStrength = 1.0;
+                planet.atmosphereAbsorbStrength = 0.02;
                 planet.atmosphereAbsorbColor = glm::vec3(0.3, 0.5, 1.0);
                 planet.fluidMaxLevel = drandnorm() * 0.5 + 0.2;
                 planet.habitableChance = 1.0;
@@ -154,7 +154,7 @@ GeneratedStarInfo GalaxyGenerator::generateStarInfo(size_t index)
             }
             else {
                 // some mars like
-                planet.atmosphereAbsorbStrength = 0.5;
+                planet.atmosphereAbsorbStrength = 0.02;
                 planet.atmosphereAbsorbColor = glm::vec3(0.8 + drandnorm()* 0.2, 0.3 + drandnorm()* 0.2, 0.1 + drandnorm()* 0.1);
                 planet.fluidMaxLevel = drandnorm() * 0.5;
                 planet.habitableChance = 0.5;

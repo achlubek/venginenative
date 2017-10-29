@@ -22,7 +22,7 @@ int main()
     //printf("gen");
     int64_t galaxyedge = 12490000000;
     int64_t galaxythickness = 24960000000;
-    for (int i = 0; i < 100000; i++) {
+    for (int i = 0; i < 10000; i++) {
         galaxy->generateStar(galaxyedge, galaxythickness, 1.0, i);
         cosmosRenderer->nearbyStars.push_back(galaxy->generateStarInfo(i));
     }
