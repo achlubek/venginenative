@@ -40,7 +40,7 @@ size_t GalaxyGenerator::findClosestStar(int64_t x, int64_t y, int64_t z)
         if (i == 0 || brief < mindist) {
             mindist = brief;
             choosenIndex = i;
-            printf("%d\n", i);
+           // printf("%d\n", i);
         }
         //int64_t dist = sqrt(pow(dx, 2i64) + pow(dy, 2i64) + pow(dz, 2i64));
     }
@@ -51,15 +51,49 @@ double GalaxyGenerator::drandnorm() {
     std::uniform_int_distribution<uint64_t> distr = std::uniform_int_distribution<uint64_t>();
     return ((double)distr(eng)) / ((double)UINT64_MAX);
 }
-
+glm::dvec2 rotate(glm::dvec2 v, double a) {
+    double s = sin(a);
+    double c = cos(a);
+    glm::dmat2 m = glm::dmat2(c, -s, s, c);
+    return m * v;
+}
+double hashx(double n) {
+    return glm::fract(sin(n)*758.5453);
+}
 void GalaxyGenerator::generateStar(int64_t galaxyradius, int64_t centerThickness, double centerGravity,  uint64_t seed)
 {
     SingleStar s = {};
     s.seed = seed;
-    eng.seed(seed);
-    s.x = randi64(-galaxyradius, galaxyradius);
-    s.y = randi64(-centerThickness, centerThickness);
-    s.z = randi64(-galaxyradius, galaxyradius); 
+    eng.seed(seed); 
+    double ss = drandnorm() * 100.0;
+    #define rnd() hashx(ss);ss+=100.0;
+
+    double lu = rnd();
+    double x = rnd();
+    double y = rnd();
+    double w = rnd();
+    #define drand2rn() (drandnorm() * 2.0 - 1.0)
+    double a = 1.7;
+    double coef1 = 1.0 / (sqrt(2.0 * 3.1415 * a * a));
+    double coef2 = -1.0 / (2.0 * a * a);
+
+    double gauss0 = coef1 * pow(2.7182818, pow(w * 1.0, 2.0) * coef2);
+    glm::dvec2 c = glm::dvec2(x, y);
+    c = c * 2.0 - 1.0;
+    c = glm::normalize(c) *glm::dvec2(0.96, 1.0);
+    c *= max(0.00, w < 0.05 ? w : ( w * w * w )); // if > 0.1 then * 
+    c = rotate(c, w * 13.2340);
+
+    double dst = glm::length(c);
+    double gauss1 = coef1 * pow(2.7182818, pow(dst * 2.0, 2.0) * coef2);
+    double gauss2 = coef1 * pow(2.7182818, pow(drandnorm() * 2.0, 2.0) * coef2);
+    // point c is in -1 -> 1
+    w = 1.0 - w;
+    lu =  w*w*(3.0 - 2.0 * w);
+    s.x = static_cast<double>(galaxyradius) * c.x;
+    s.z = static_cast<double>(galaxyradius) * c.y;
+    s.y = static_cast<double>(centerThickness) * (gauss1 * ((drand2rn() * drand2rn() * drand2rn() * drand2rn())));
+     
     stars.push_back(s);
 }
 

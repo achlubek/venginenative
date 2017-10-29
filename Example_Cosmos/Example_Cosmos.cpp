@@ -8,8 +8,10 @@
 
 int main()
 {
+    Media::loadFileMap(".");
+    INIReader* configreader = new INIReader("cosmos_example.ini");
     auto toolkit = new VulkanToolkit();
-    toolkit->initialize(1920, 1080);
+    toolkit->initialize(configreader->geti("window_width"), configreader->geti("window_height"));
 
     Media::loadFileMap("../../media");
     Media::loadFileMap("../../shaders");
@@ -17,24 +19,24 @@ int main()
     auto cosmosRenderer = new CosmosRenderer(toolkit, toolkit->windowWidth, toolkit->windowHeight);
 
     GalaxyGenerator* galaxy = cosmosRenderer->galaxy;
-    printf("gen");
+    //printf("gen");
     int64_t galaxyedge = 12490000000;
-    int64_t galaxythickness = 2496000000;
-    for (int i = 0; i < 10000; i++) {
+    int64_t galaxythickness = 24960000000;
+    for (int i = 0; i < 100000; i++) {
         galaxy->generateStar(galaxyedge, galaxythickness, 1.0, i);
         cosmosRenderer->nearbyStars.push_back(galaxy->generateStarInfo(i));
     }
-    printf("sea");
-    GeneratedStarInfo starinfo = galaxy->generateStarInfo(galaxy->findClosestStar(1, 1, 1));
+   // printf("sea");
+   // GeneratedStarInfo starinfo = galaxy->generateStarInfo(galaxy->findClosestStar(1, 1, 1));
 
-    auto text = new UIText(cosmosRenderer->ui, 0.1, 0.1, UIColor(1, 1, 1, 1), Media::getPath("font.ttf"), 16, " ");
+    auto text = new UIText(cosmosRenderer->ui, 0.01, 0.01, UIColor(1, 1, 1, 1), Media::getPath("font.ttf"), 16, " ");
     cosmosRenderer->ui->texts.push_back(text);
 
     auto camera = new Camera();
-    camera->createProjectionPerspective(40.0f, (float)toolkit->windowWidth / (float)toolkit->windowHeight, 0.01f, 1000000);
+    camera->createProjectionPerspective(60.0f, (float)toolkit->windowWidth / (float)toolkit->windowHeight, 0.01f, 1000000);
     glm::dvec3 observerPosition;
 
-    volatile bool spaceShipMode = false;
+    volatile bool spaceShipMode = true;
 
     Mouse* mouse = new Mouse(toolkit->window);
     Keyboard* keyboard = new Keyboard(toolkit->window);
@@ -55,11 +57,11 @@ int main()
         }
     });
     background1.detach(); 
-    float speedmultiplier = 1.0;
+    float speedmultiplier = 1000.0;
     float stabilizerotation = 1.0;
     keyboard->onKeyPress.add([&](int key) {
         if (key == GLFW_KEY_ENTER) {
-            spaceShipMode = !spaceShipMode;
+        //    spaceShipMode = !spaceShipMode;
         }
 
         if (key == GLFW_KEY_F1) {
@@ -229,13 +231,14 @@ int main()
             if (keyboard->getKeyStatus(GLFW_KEY_K) == GLFW_PRESS) {
                 spaceshipAngularVelocity.y -= elapsed_x100 * 0.0005;
             }
+            /*
             if (joystick->isPresent(0)) {
                 auto axes = joystick->getAxes(0);
                 spaceshipLinearVelocity += 70.0f * ((-axes[3])) * elapsed_x100 * rotmat * glm::vec3(0, 0, -1);
                 spaceshipAngularVelocity.x += elapsed_x100 * 0.001 * -axes[1];
                 spaceshipAngularVelocity.y += elapsed_x100 * 0.001 * -axes[2];
                 spaceshipAngularVelocity.z += elapsed_x100 * 0.001 * -axes[0];
-            }
+            }*/
 
         }
         cosmosRenderer->updateCameraBuffer(camera, observerPosition);

@@ -279,21 +279,17 @@ vec4 tracePlanetAtmosphere(vec3 start, vec3 end, float lengthstart, float length
         vec3 dir = normalize(p - currentPlanet.position_radius.rgb);
         float dst = length(p - currentPlanet.position_radius.rgb);
         vec4 coorddir = vec4(dir * (1.0 + 0.1 * heightmix) * 11.0 * (0.2 + rd2 * 3.0), hiFreq.Time * 0.001);
-        float cloudiness = clouds(dir ,  1.0 - abs( heightmix * 2.0 - 1.0)  );
+        //float cloudiness = clouds(dir ,  1.0 - abs( heightmix * 2.0 - 1.0)  );
         vec3 AC = extra_cheap_atmosphere(raylen, hit_Atmosphere.y, 115.0
                 * currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.a,
                 currentPlanet.atmosphereAbsorbColor_zero.rgb,
                 max(0.0, dot(normalize(end - start), sundir)));
-        vec3 CC = cloudiness *  extra_cheap_atmosphere(hit_Atmosphere.y, hit_Atmosphere.y, 115.0
-                * currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.a,
-                currentPlanet.atmosphereAbsorbColor_zero.rgb,
-                1.0);
         atm +=  (1.0 - heightmix) * (1.0 - step(0.0, hit_Surface.x + hit_Surface.y)) * (AC );
         coverage +=  (1.0 - heightmix) * (stepdistance * 0.04) * currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.a;
         iter += 0.1;
     }
     //atm *= 0.1;
-    return vec4(step(0.5, UV.x) * atm, min(1.0, coverage));
+    return vec4(atm, min(1.0, coverage));
 }
 #define maxheight (0.005 * currentPlanet.position_radius.a)*currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.r*currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.b
 float getplanetheight(vec3 dir){
@@ -373,6 +369,7 @@ vec4 tracePlanet(Ray ray){
     int hitcount = 0;
     if(hits(hit_Surface)) hitcount++;
     if(hits(hit_Atmosphere.x) || hits(hit_Atmosphere.y)) hitcount++;
+    if(hitcount == 0) return vec4(0.0, 0.0, 0.0, -1.0);
 
     if(centerDistance >= currentPlanet.position_radius.a && centerDistance >= atmoradius){
         // scenario 1
