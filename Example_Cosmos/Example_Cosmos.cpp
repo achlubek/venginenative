@@ -18,9 +18,9 @@ int main()
 
     GalaxyGenerator* galaxy = cosmosRenderer->galaxy;
     printf("gen");
-    int64_t galaxyedge = 12496000000;
-    int64_t galaxythickness = 249600000;
-    for (int i = 0; i < 100000; i++) {
+    int64_t galaxyedge = 12490000000;
+    int64_t galaxythickness = 2496000000;
+    for (int i = 0; i < 10000; i++) {
         galaxy->generateStar(galaxyedge, galaxythickness, 1.0, i);
         cosmosRenderer->nearbyStars.push_back(galaxy->generateStarInfo(i));
     }
@@ -32,6 +32,7 @@ int main()
 
     auto camera = new Camera();
     camera->createProjectionPerspective(40.0f, (float)toolkit->windowWidth / (float)toolkit->windowHeight, 0.01f, 1000000);
+    glm::dvec3 observerPosition;
 
     volatile bool spaceShipMode = false;
 
@@ -45,21 +46,15 @@ int main()
     double lastTime = 0.0;
     double lastRawTime = 0.0;
     cosmosRenderer->mapBuffers();
-    cosmosRenderer->updateStars(camera);
+    cosmosRenderer->updateStars(observerPosition);
     std::thread background1 = std::thread([&]() {
         while (true) {
-            cosmosRenderer->updateNearestStar(camera);
-            cosmosRenderer->updateGravity(camera);
+            cosmosRenderer->updateNearestStar(observerPosition);
+            cosmosRenderer->updateGravity(observerPosition);
             
         }
     });
-    background1.detach();
-    std::thread background2 = std::thread([&]() {
-        while (true) {
-            cosmosRenderer->updatePlanetsAndMoon(camera);
-        }
-    });
-    background2.detach();
+    background1.detach(); 
     float speedmultiplier = 1.0;
     float stabilizerotation = 1.0;
     keyboard->onKeyPress.add([&](int key) {
@@ -98,7 +93,7 @@ int main()
     });
     glm::vec3 spaceshipLinearVelocity = glm::vec3(0.0);
     glm::vec3 spaceshipAngularVelocity = glm::vec3(0.0);
-    glm::vec3 spaceshipPosition = glm::vec3(0.0);
+    glm::dvec3 spaceshipPosition = glm::dvec3(0.0);
     glm::quat spaceshipOrientation = glm::quat(1.0, 0.0, 0.0, 0.0);
     #define multiplyscale(a,b) (std::pow(a, b))
     while (!toolkit->shouldCloseWindow()) {
@@ -165,7 +160,7 @@ int main()
             if (pitch > 360.0f) pitch -= 360.0f;
             glm::quat newrot = glm::angleAxis(deg2rad(pitch), glm::vec3(0, 1, 0)) * glm::angleAxis(deg2rad(yaw), glm::vec3(1, 0, 0));
             camera->transformation->setOrientation(glm::slerp(newrot, camera->transformation->getOrientation(), 0.9f));
-            camera->transformation->setPosition(glm::mix(newpos, camera->transformation->getPosition(), 0.8f));
+            observerPosition = glm::mix(newpos, camera->transformation->getPosition(), 0.8f);
         }
         else {
             if (cosmosRenderer->closestSurfaceDistance > 1.0) {
@@ -176,7 +171,7 @@ int main()
                     * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.y, glm::vec3(0.0, 1.0, 0.0))
                     * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.z, glm::vec3(0.0, 0.0, 1.0))
                     ;
-                camera->transformation->setPosition(spaceshipPosition);
+                observerPosition = spaceshipPosition;
                 camera->transformation->setOrientation(spaceshipOrientation);
             }
             else {
@@ -189,7 +184,7 @@ int main()
                     * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.y, glm::vec3(0.0, 1.0, 0.0))
                     * glm::angleAxis(elapsed_x100 * spaceshipAngularVelocity.z, glm::vec3(0.0, 0.0, 1.0))
                     ;
-                camera->transformation->setPosition(spaceshipPosition);
+                observerPosition = spaceshipPosition;
                 camera->transformation->setOrientation(spaceshipOrientation);
                 spaceshipAngularVelocity *= 0.1f;
             }
@@ -243,7 +238,8 @@ int main()
             }
 
         }
-        cosmosRenderer->updateCameraBuffer(camera);
+        cosmosRenderer->updateCameraBuffer(camera, observerPosition);
+        cosmosRenderer->updatePlanetsAndMoon(observerPosition);
         cosmosRenderer->draw();
         text->updateText("Distance to surface:" + std::to_string(cosmosRenderer->closestSurfaceDistance) + "| " + std::to_string(cosmosRenderer->closestObjectLinearAbsoluteSpeed.x)
             + " , " + std::to_string(cosmosRenderer->closestObjectLinearAbsoluteSpeed.y) + " , " + std::to_string(cosmosRenderer->closestObjectLinearAbsoluteSpeed.z)

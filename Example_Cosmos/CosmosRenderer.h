@@ -63,15 +63,15 @@ public:
     void mapBuffers();
     void unmapBuffers();
 
-    void updateStars(Camera * camera);
+    void updateStars(glm::dvec3 observerPosition);
 
-    void updatePlanetsAndMoon(Camera * camera);
+    void updatePlanetsAndMoon(glm::dvec3 observerPosition);
 
-    void updateGravity(Camera * camera);
+    void updateGravity(glm::dvec3 observerPosition);
 
-    void updateNearestStar(Camera * camera);
+    void updateNearestStar(glm::dvec3 observerPosition);
 
-    void updateCameraBuffer(Camera* cam); 
+    void updateCameraBuffer(Camera* cam, glm::dvec3 observerPosition);
     void draw();
 
     volatile bool readyForDrawing = false;

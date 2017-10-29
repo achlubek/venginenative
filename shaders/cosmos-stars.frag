@@ -96,7 +96,7 @@ Ray cameraRay;
 GeneratedStarInfo currentStar;
 
 vec3 traceStarGlow(Ray ray){
-    float dtraw = dot(normalize(currentStar.position_radius.rgb - ray.o), ray.d);
+    float dtraw = dot(normalize(currentStar.position_radius.rgb  - ray.o), ray.d);
     float dotz = max(0.0, dtraw);
 
     float camdist = distance(CameraPosition, currentStar.position_radius.rgb);
@@ -105,7 +105,7 @@ vec3 traceStarGlow(Ray ray){
     float dim = 1.0 - smoothstep(1000.0, 30000.0, camdist);
     camdist = min(camdist, 700.0);
     float sqrlen = camdist * camdist;
-    float specialtrick1 = 1.0 / (1.0 + 10.0 * sqrlen * (1.0 - dotz));
+    float specialtrick1 = 1.0 / ( 0.1 + 10.0 * sqrlen * (1.0 - dotz));
 
     return dim * specialtrick1 * currentStar.color_age.xyz * 3.0;
 }

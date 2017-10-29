@@ -40,7 +40,7 @@ vec3 blur(sampler2D ss, float radius){
 
 void main() {
     vec4 celestial = texture(texCelestial, UV);
-    vec3 stars = texture(texStars, UV).rgb;//blur(texStars, 0.015).rgb;//texture(texStars, UV);
+    vec3 stars = textureLod(texStars, UV, 0).rgb;//blur(texStars, 0.015).rgb;//texture(texStars, UV);
     vec4 ui = texture(uiTexture, UV);
     //stars.rgb /= max(0.0001, stars.a);
     vec3 a = mix(stars, celestial.rgb, celestial.a);
