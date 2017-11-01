@@ -8,6 +8,8 @@ public:
 
     glm::dvec3 getPosition();
     glm::dquat getOrientation();
+    glm::dvec3 getLinearVelocity();
+    glm::dvec3 getAngularVelocity();
     void update(double time_elapsed);
     void applyImpulse(glm::dvec3 relativePos, glm::dvec3 force);
     std::vector<SpaceShipModule*> modules;

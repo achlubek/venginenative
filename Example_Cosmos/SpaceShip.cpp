@@ -24,6 +24,16 @@ glm::dquat SpaceShip::getOrientation()
     return orientation;
 }
 
+glm::dvec3 SpaceShip::getLinearVelocity()
+{
+    return linearVelocity;
+}
+
+glm::dvec3 SpaceShip::getAngularVelocity()
+{
+    return angularVelocity;
+}
+
 void SpaceShip::update(double time_elapsed)
 {
     for (int i = 0; i < modules.size(); i++) {
@@ -45,6 +55,6 @@ void SpaceShip::applyImpulse(glm::dvec3 relativePos, glm::dvec3 force)
     double t = glm::length(relativePos) * glm::length(force) * sine;
     glm::dvec3 T = glm::cross(relativePos, force);
     auto m3 = glm::mat3_cast(orientation);
-    angularVelocity += m3 * T;
-    linearVelocity += m3 * (glm::abs(cosine) * force); // 100% when relativepos == force (dot == 1) or =relativepos == force (dot == -1), 0 when dot == 0
+    angularVelocity += T;
+    linearVelocity += m3 * (/*glm::abs(cosine) * */ force); // 100% when relativepos == force (dot == 1) or =relativepos == force (dot == -1), 0 when dot == 0
 }
