@@ -58,3 +58,8 @@ void SpaceShip::applyImpulse(glm::dvec3 relativePos, glm::dvec3 force)
     angularVelocity += T;
     linearVelocity += m3 * (/*glm::abs(cosine) * */ force); // 100% when relativepos == force (dot == 1) or =relativepos == force (dot == -1), 0 when dot == 0
 }
+
+void SpaceShip::applyGravity(glm::dvec3 force)
+{
+    linearVelocity += force;
+}

@@ -288,6 +288,7 @@ void CosmosRenderer::updateGravity(glm::dvec3 observerPosition)
     double timeplus1sec = (1.0 + glfwGetTime())*0.1 + 10000.0;
     glm::vec3 newGravity = glm::vec3(0.0);
     glm::vec3 newSurfacePos = glm::vec3(0.0);
+    glm::vec3 newBodyPos = glm::vec3(0.0);
     glm::vec3 newSurfaceNorm = glm::vec3(0.0);
     glm::vec3 newClosestObjectLinearAbsoluteSpeed = glm::vec3(0.0);
     double newSurfaceDist = 99999999999999.0;
@@ -302,6 +303,7 @@ void CosmosRenderer::updateGravity(glm::dvec3 observerPosition)
     if (ssurfacedistance < newSurfaceDist) {
         newSurfaceDist = ssurfacedistance;
         newSurfacePos = ssurfacepos;
+        newBodyPos = starpos;
         newSurfaceNorm = glm::normalize(starpos - ssurfacepos);
         newClosestObjectLinearAbsoluteSpeed = glm::vec3(0.0f); // stars are not moving yet
     }
@@ -322,6 +324,7 @@ void CosmosRenderer::updateGravity(glm::dvec3 observerPosition)
         if (psurfacedistance < newSurfaceDist) {
             newSurfaceDist = psurfacedistance;
             newSurfacePos = psurfacepos;
+            newBodyPos = planetpos;
             newSurfaceNorm = glm::normalize(planetpos - psurfacepos);
             newClosestObjectLinearAbsoluteSpeed = planetpos1secbefore - planetpos;
         }
@@ -336,22 +339,24 @@ void CosmosRenderer::updateGravity(glm::dvec3 observerPosition)
             glm::dvec3 moonpos1secbefore = planetpos + glm::dvec3(glm::angleAxis(planet.orbitSpeed * (timeplus1sec) * 0.001, glm::dvec3(moon.orbitPlane)) * glm::dvec3(orbitplaneTangent)) * moon.planetDistance * scale;
             glm::dvec3 mpos = moonpos - observerPosition;
             glm::vec3 mdir = glm::normalize(mpos);
-
+            /*
             glm::dvec3 msurfacepos = moonpos - glm::dvec3(mdir) * moon.radius * scale;
             double msurfacedistance = glm::distance(observerPosition, moonpos) - moon.radius * scale;
             if (msurfacedistance < newSurfaceDist) {
                 newSurfaceDist = msurfacedistance;
                 newSurfacePos = msurfacepos;
+                newBodyPos = moonpos;
                 newSurfaceNorm = glm::normalize(moonpos - msurfacepos);
             //    closestObjectLinearAbsoluteSpeed = moonpos - moonpos1secbefore;
             }
 
             double mdistance = glm::length(mpos) / scale;
             newGravity += glm::dvec3(mdir) * galaxy->calculateGravity(mdistance, galaxy->calculateMass(moon.radius));
-
+            */
         }
     }
     lastGravity = newGravity;
+    closestBodyPosition = newBodyPos;
     closestSurfaceDistance = newSurfaceDist;
     closestSurfacePosition = newSurfacePos;
     closestSurfaceNormal = newSurfaceNorm;

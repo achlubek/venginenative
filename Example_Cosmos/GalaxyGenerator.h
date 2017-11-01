@@ -68,7 +68,7 @@ public:
     double calculateGravity(double distance, float mass) {
         double G = 0.00000000006674;
         distance *= 1000.0;
-        return G * (mass / (1000.0 + distance * distance));
+        return G * (mass / max(1000.0, distance * distance));
     } 
     double calculateOrbitVelocity(double distance, float mass) {
         double G = 0.00000000006674;

@@ -12,6 +12,7 @@ public:
     glm::dvec3 getAngularVelocity();
     void update(double time_elapsed);
     void applyImpulse(glm::dvec3 relativePos, glm::dvec3 force);
+    void applyGravity(glm::dvec3 force);
     std::vector<SpaceShipModule*> modules;
 private:
 
