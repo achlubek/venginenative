@@ -142,6 +142,9 @@
   <ItemGroup>
     <ClInclude Include="CosmosRenderer.h" />
     <ClInclude Include="GalaxyGenerator.h" />
+    <ClInclude Include="SpaceShip.h" />
+    <ClInclude Include="SpaceShipEngine.h" />
+    <ClInclude Include="SpaceShipModule.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -149,6 +152,9 @@
     <ClCompile Include="CosmosRenderer.cpp" />
     <ClCompile Include="Example_Cosmos.cpp" />
     <ClCompile Include="GalaxyGenerator.cpp" />
+    <ClCompile Include="SpaceShip.cpp" />
+    <ClCompile Include="SpaceShipEngine.cpp" />
+    <ClCompile Include="SpaceShipModule.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

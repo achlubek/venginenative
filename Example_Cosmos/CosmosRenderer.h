@@ -63,7 +63,7 @@ public:
     void mapBuffers();
     void unmapBuffers();
 
-    void updateStars(glm::dvec3 observerPosition);
+    void updateStars();
 
     void updatePlanetsAndMoon(glm::dvec3 observerPosition);
 

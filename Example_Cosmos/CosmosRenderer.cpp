@@ -145,7 +145,7 @@ void CosmosRenderer::unmapBuffers()
     moonsDataBuffer->unmap();
 }
 
-void CosmosRenderer::updateStars(glm::dvec3 observerPosition)
+void CosmosRenderer::updateStars()
 {
     VulkanBinaryBufferBuilder starsBB = VulkanBinaryBufferBuilder();
     starsBB.emplaceInt32(nearbyStars.size());
