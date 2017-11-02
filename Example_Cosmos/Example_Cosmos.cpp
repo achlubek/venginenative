@@ -191,6 +191,18 @@ int main()
     });
     background1.detach();
 
+    /*
+    transparency and fragment ordering :
+    The only sane way is to make it correct ALWAYS
+    struct afragmment{
+        float depth
+        float alpha
+        vec3 color
+    }
+    make a table with 10 these structures
+    then render shit
+    then order it and thats it done thank you bye
+    */
 
 
 #define multiplyscale(a,b) (std::pow(a, b))
@@ -317,12 +329,13 @@ int main()
                     double rad = glm::distance(center, cosmosRenderer->closestSurfacePosition);
                     double orbitradius = 5.0 * rad;
                     printf("R  %.6f \n", orbitradius);
-                    double targettangentialspeed = cosmosRenderer->scale * 0.01 *  cosmosRenderer->galaxy->calculateOrbitVelocity(dst, galaxy->calculateMass(rad / cosmosRenderer->scale));
+                    double targettangentialspeed = cosmosRenderer->scale * 0.03 *  cosmosRenderer->galaxy->calculateOrbitVelocity(dst, galaxy->calculateMass(rad / cosmosRenderer->scale));
                     targetVelocity = cosmosRenderer->closestObjectLinearAbsoluteSpeed;
 
                     glm::dvec3 dir = glm::normalize(cosmosRenderer->closestSurfacePosition - cosmosRenderer->closestBodyPosition);
+                    glm::dvec3 dir2 = glm::normalize((cosmosRenderer->closestSurfacePosition + glm::normalize(ship->getLinearVelocity() + glm::dvec3(0.0, 0.001, 0.0)) - cosmosRenderer->closestBodyPosition) * 0.1);
                     glm::dvec3 heightcorrection = dir * (dst - orbitradius) * -0.1;
-                    glm::dvec3 speedcorrection = glm::normalize(glm::cross(glm::dvec3(0.0, 1.0, 0.0), dir)) * targettangentialspeed;
+                    glm::dvec3 speedcorrection = glm::normalize(dir2 - dir) * targettangentialspeed;
                     targetVelocity = cosmosRenderer->closestObjectLinearAbsoluteSpeed + speedcorrection + heightcorrection;
                 }
                 auto rotmat = glm::mat3_cast(ship->getOrientation());
@@ -422,8 +435,8 @@ int main()
             }*/
 
         }
-        ship->applyGravity(cosmosRenderer->lastGravity * elapsed);
-        ship->update(elapsed);
+        ship->applyGravity(cosmosRenderer->lastGravity * elapsed * (keyboard->getKeyStatus(GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ? 100.0f : 1.0f));
+        ship->update(elapsed * (keyboard->getKeyStatus(GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ? 100.0 : 1.0));
         camera->transformation->setOrientation(ship->getOrientation());
         cosmosRenderer->updateCameraBuffer(camera, ship->getPosition());
         cosmosRenderer->updatePlanetsAndMoon(ship->getPosition());
