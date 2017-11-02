@@ -15,8 +15,8 @@ public:
     UIRenderer* ui;
     AssetLoader assets;
 
-    std::vector<GeneratedStarInfo> nearbyStars;
-    GeneratedStarInfo nearestStar;
+    std::vector<GeneratedStarSystemInfo> nearbyStars;
+    GeneratedStarSystemInfo nearestStar;
     int nearestStarIndex;
     Camera* internalCamera;
 

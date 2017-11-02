@@ -329,7 +329,7 @@ int main()
                     double rad = glm::distance(center, cosmosRenderer->closestSurfacePosition);
                     double orbitradius = 5.0 * rad;
                     printf("R  %.6f \n", orbitradius);
-                    double targettangentialspeed = cosmosRenderer->scale * 0.03 *  cosmosRenderer->galaxy->calculateOrbitVelocity(dst, galaxy->calculateMass(rad / cosmosRenderer->scale));
+                    double targettangentialspeed = cosmosRenderer->scale * 0.0 *  cosmosRenderer->galaxy->calculateOrbitVelocity(dst, galaxy->calculateMass(rad / cosmosRenderer->scale));
                     targetVelocity = cosmosRenderer->closestObjectLinearAbsoluteSpeed;
 
                     glm::dvec3 dir = glm::normalize(cosmosRenderer->closestSurfacePosition - cosmosRenderer->closestBodyPosition);

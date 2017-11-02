@@ -1,25 +1,46 @@
 #pragma once
 #include <random>
 #include <limits>
+#include <glm\glm.hpp>
 struct SingleStar {
 public:
     int64_t x;
     int64_t y;
     int64_t z;
     uint64_t seed;
+    glm::dvec3 getPosition() {
+        return glm::dvec3(x, y, z);
+    }
 };
-struct GeneratedMoonInfo {
+struct GeneratedPlanetInfo;
+struct GeneratedStarInfo;
+struct GeneratedMoonInfo;
+
+struct GeneratedStarInfo {
 public:
-    double radius; // real units idk
-    double terrainMaxLevel; //0->1 
-    glm::vec3 orbitPlane;
-    double orbitSpeed; //0->1
-    double planetDistance; //0->1
-    glm::vec3 preferredColor;//0->1
+    SingleStar starData;
+    double radius; // real units like 1 391 000
+    glm::dvec3 color; //0->maybe 10? maybe 100?
+    double age; //0->1
+    double spotsIntensity; //0->1
+    double rotationSpeed; // 0-> 1
+    glm::dvec3 orbitPlane; // normalized direction, normalize(cross(orbitPlane, up_vector)) == planet line
+    uint8_t planetsCount;
+
+    glm::dvec3 getPosition() {
+        return glm::dvec3(starData.x, starData.y, starData.z);
+    }
+
+    glm::dvec3 getLinearVelocity() {
+        return glm::dvec3(0.0);
+    }
 };
 
 struct GeneratedPlanetInfo {
 public:
+    GeneratedPlanetInfo(GeneratedStarInfo star) : host(star) {
+        
+    }
     double radius; // real units 12 742
     double terrainMaxLevel; //0->1
     double fluidMaxLevel; //0->1
@@ -31,21 +52,51 @@ public:
     double atmosphereAbsorbStrength;//0->1
     glm::vec3 atmosphereAbsorbColor;//0->1
     uint8_t moonsCount;
-    std::vector<GeneratedMoonInfo> moons;
+    GeneratedStarInfo host;
+
+    glm::dvec3 getPosition(double timeShift) {
+        double time = glfwGetTime() + timeShift;
+        glm::dvec3 orbitplaneTangent = glm::normalize(glm::cross(host.orbitPlane, glm::dvec3(0.0, 1.0, 0.0)));
+        return host.getPosition()
+            + glm::dvec3(glm::angleAxis(orbitSpeed * time * 0.001, host.orbitPlane) * orbitplaneTangent) * starDistance;
+    }
+
+    glm::dvec3 getLinearVelocity() {
+        return getPosition(1.0) - getPosition(0.0);
+    }
 };
 
-struct GeneratedStarInfo {
+struct GeneratedMoonInfo {
 public:
-    SingleStar starData;
-    double radius; // real units like 1 391 000
-    glm::vec3 color; //0->maybe 10? maybe 100?
-    double age; //0->1
-    double spotsIntensity; //0->1
-    double rotationSpeed; // 0-> 1
-    glm::vec3 orbitPlane; // normalized direction, normalize(cross(orbitPlane, up_vector)) == planet line
-    uint8_t planetsCount;
-    std::vector<GeneratedPlanetInfo> planets;
+    GeneratedMoonInfo(GeneratedPlanetInfo planet) : host(planet) {
+
+    }
+    double radius; // real units idk
+    double terrainMaxLevel; //0->1 
+    glm::dvec3 orbitPlane;
+    double orbitSpeed; //0->1
+    double planetDistance; //0->1
+    glm::vec3 preferredColor;//0->1
+    GeneratedPlanetInfo host;
+
+    glm::dvec3 getPosition(double timeShift) {
+        double time = glfwGetTime() + timeShift;
+        glm::dvec3 orbitplaneTangent = glm::normalize(glm::cross(orbitPlane, glm::dvec3(0.0, 1.0, 0.0)));
+        return host.getPosition(timeShift)
+            + glm::dvec3(glm::angleAxis(host.orbitSpeed * time * 0.001, glm::dvec3(orbitPlane)) * glm::dvec3(orbitplaneTangent)) * planetDistance;
+    }
+    glm::dvec3 getLinearVelocity() {
+        return getPosition(1.0) - getPosition(0.0);
+    }
 };
+
+struct GeneratedStarSystemInfo {
+    GeneratedStarInfo star;
+    std::vector<GeneratedPlanetInfo> planets;
+    std::vector<GeneratedMoonInfo> moons;
+
+};
+
 class GalaxyGenerator
 {
 public:
@@ -75,7 +126,7 @@ public:
         distance *= 1000.0;
         return sqrt((G * mass) / distance);
     }
-    GeneratedStarInfo generateStarInfo(size_t index);
+    GeneratedStarSystemInfo generateStarInfo(size_t index);
 private:
     std::vector<SingleStar> stars;
 

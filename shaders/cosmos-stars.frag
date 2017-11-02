@@ -112,6 +112,7 @@ vec3 traceStarGlow(Ray ray){
 
     return smoothstep(0.98, 0.99, dotz) * dim * specialtrick1 * currentStar.color_age.xyz ;
 }
+
 void main() {
     vec2 point = gl_PointCoord.xy * 2.0 - 1.0;
     currentStar = starsBuffer.stars[inInstanceId];
@@ -129,6 +130,6 @@ void main() {
     camdist = min(camdist, 20000.0);
     float dim = 1.0 - smoothstep(1000.0, 30000.0, camdist);
     vec3 a = dim * currentStar.color_age.rgb * hitmult * 2.0;
-    outColor = vec4(traceStarGlow(cameraRay) , 1.0);
+    outColor = vec4(traceStarGlow(cameraRay), 1.0);
 
 }

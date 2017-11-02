@@ -230,9 +230,8 @@ vec4 resolveFragments(){
         Fragment f = findMaximum(lastmin);
         lastmin = f.depth - 0.0001;
         result.xyz = mix(result.xyz, f.color, f.alpha);
-        result.a += f.alpha;
+        result.a = max(result.a, f.alpha);
     }
-    result.a = min(1.0, result.a);
     return result;
 }
 
@@ -336,10 +335,9 @@ vec4 tracePlanetAtmosphere(vec3 start, vec3 end, float lengthstart, float length
         currentPlanet.position_radius.a + currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.b);
 
     vec3 atm = vec3(0.0);
-    float iter = rand2s(UV) * 3.7 + 0.001;
+    float stepdistance = 0.7;
+    float iter = rand2s(UV) * stepdistance + 0.001;
     float coverage = 0.0;
-    float stepdistance = 3.7;
-    float stepdistance2 =1.0/ 0.5;
     float dstnew = 0.0;
     float dsttrg = distance(start, end);
     vec3 drr = normalize(end - start);
@@ -350,7 +348,8 @@ vec4 tracePlanetAtmosphere(vec3 start, vec3 end, float lengthstart, float length
         vec2 hit_Atmosphere = rsi2(Ray(p, sundir), atmosphere);
         vec2 hit_Surface = rsi2(Ray(p, sundir), surface);
         iter += stepdistance;
-        if(hits(max(hit_Surface.x, hit_Surface.y))) break;
+        float surfacemulti = 1.0;
+        if(hits(max(hit_Surface.x, hit_Surface.y))) surfacemulti = 0.0;
         float heightmix = smoothstep(lengthstart, lengthstop, distance(currentPlanet.position_radius.rgb, p));
         vec3 dir = normalize(p - currentPlanet.position_radius.rgb);
         float dst = length(p - currentPlanet.position_radius.rgb);
@@ -363,11 +362,12 @@ vec4 tracePlanetAtmosphere(vec3 start, vec3 end, float lengthstart, float length
                 * absorbstrength,
                 currentPlanet.atmosphereAbsorbColor_zero.rgb *  (0.1 + 0.9 * flunctuations),
                 dot(drr, sundir));
-        atm += shadow * vec3(shadow) * 10.0 * stepdistance * max(0.0, 1.0 - coverage) *  (1.0 - step(0.0, max(hit_Surface.x, hit_Surface.y))) * (AC ) * (1.0 - 0.04 * clamp(max(hit_Atmosphere.x, hit_Atmosphere.y), 0.0, 10000.0) * absorbstrength);
-        coverage +=  (stepdistance * 0.4) * absorbstrength;
+        atm += clamp(surfacemulti * shadow * vec3(shadow) * 10.0 * stepdistance * clamp(1.0 - coverage, 0.0, 1.0) *  (1.0 - step(0.0, max(hit_Surface.x, hit_Surface.y))) * (AC ) * (1.0 - 0.04 * clamp(max(hit_Atmosphere.x, hit_Atmosphere.y), 0.0, 10000.0) * absorbstrength), 0.0,1.0);
+        coverage += stepdistance * absorbstrength * 0.1;
+        if(coverage > 1.0) break;
     }
     //atm *= 0.1;
-    return vec4(atm, min(1.0, coverage));
+    return vec4(atm, clamp(coverage, 0.0, 1.0));
 }
 #define maxheight (0.005 * currentPlanet.position_radius.a)*currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.r*currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.b
 float getplanetheight(vec3 dir){

@@ -102,8 +102,9 @@ void GalaxyGenerator::addStar(SingleStar s)
     stars.push_back(s);
 }
 
-GeneratedStarInfo GalaxyGenerator::generateStarInfo(size_t index)
+GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
 {
+    auto system = GeneratedStarSystemInfo();
     auto s = stars[index];
     eng.seed(s.seed);
     GeneratedStarInfo star = {};
@@ -115,10 +116,12 @@ GeneratedStarInfo GalaxyGenerator::generateStarInfo(size_t index)
     star.rotationSpeed = drandnorm();
     star.orbitPlane = glm::normalize(glm::vec3(drandnorm(), drandnorm(), drandnorm()) * 2.0f - 1.0f);
     star.planetsCount = randu64(0, 8);
-    star.planets = {};
+    system.star = star;
+    system.planets = {};
     double stardisthelper = star.radius * 4.0;
     for (int i = 0; i < star.planetsCount; i++) {
-        GeneratedPlanetInfo planet = {};
+        GeneratedPlanetInfo planet = GeneratedPlanetInfo(star);
+       // planet.host = star;
         planet.starDistance = stardisthelper;
         stardisthelper += randu64(783000, 5500000);
 
@@ -189,18 +192,19 @@ GeneratedStarInfo GalaxyGenerator::generateStarInfo(size_t index)
         }
 
         planet.orbitSpeed = drandnorm();
-        planet.moons = {};
+        system.moons = {};
         for (int g = 0; g < planet.moonsCount; g++) {
-            GeneratedMoonInfo moon = {};
+            GeneratedMoonInfo moon = GeneratedMoonInfo(planet);
+           // moon.host = planet;
             moon.radius = randu64(planet.radius / 30, planet.radius / 15);
             moon.terrainMaxLevel = drandnorm();
             moon.orbitPlane = glm::normalize(glm::vec3(drandnorm(), drandnorm(), drandnorm()) * 2.0f - 1.0f);
             moon.orbitSpeed = drandnorm();
             moon.planetDistance = planet.radius * 3.0 + planet.radius * drandnorm() * 3.0;
             moon.preferredColor = glm::vec3(0.6 + 0.4 * drandnorm(), 0.6 + 0.4 * drandnorm(), 0.6 + 0.4 * drandnorm());
-            planet.moons.push_back(moon);
+            system.moons.push_back(moon);
         }
-        star.planets.push_back(planet);
+        system.planets.push_back(planet);
     }
-    return star;
+    return system;
 }
