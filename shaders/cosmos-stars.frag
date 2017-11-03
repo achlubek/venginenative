@@ -103,14 +103,14 @@ vec3 traceStarGlow(Ray ray){
     camdist *= 0.001;
     //camdist = min(camdist, 66000.0);
     float cst2 = camdist * 0.001;
-    float dim = 1.0 /(1.0 + cst2 * cst2 * 0.001);
+    float dim = clamp(1.0 /(1.0 + cst2 * cst2 * 0.001), 0.1, 1.0);
     dim = pow(dim, 1.5);
     camdist = min(camdist, 12000.0);
     camdist = min(camdist, 700.0);
     float sqrlen = camdist * camdist;
-    float specialtrick1 = min(4.0, 1.0 / max( 0.1, 10.0 * sqrlen * (1.0 - dotz) - 1.0));
+    float specialtrick1 = clamp(1.0 / max( 0.1, 10.0 * sqrlen * (1.0 - dotz) - 1.0), 0.0, 4.0);
 
-    return smoothstep(0.98, 0.99, dotz) * dim * specialtrick1 * currentStar.color_age.xyz ;
+    return 10.0 * smoothstep(0.98, 0.99, dotz) * dim * specialtrick1 * currentStar.color_age.xyz ;
 }
 
 void main() {

@@ -2,6 +2,7 @@
 #include <random>
 #include <limits>
 #include <glm\glm.hpp>
+
 struct SingleStar {
 public:
     int64_t x;
@@ -26,6 +27,7 @@ public:
     double rotationSpeed; // 0-> 1
     glm::dvec3 orbitPlane; // normalized direction, normalize(cross(orbitPlane, up_vector)) == planet line
     uint8_t planetsCount;
+    uint64_t starIndex;
 
     glm::dvec3 getPosition() {
         return glm::dvec3(starData.x, starData.y, starData.z);
@@ -34,6 +36,10 @@ public:
     glm::dvec3 getLinearVelocity() {
         return glm::dvec3(0.0);
     }
+
+    std::string getName() {
+        return "S-" + std::to_string(starIndex);
+    }
 };
 
 struct GeneratedPlanetInfo {
@@ -41,6 +47,7 @@ public:
     GeneratedPlanetInfo(GeneratedStarInfo star) : host(star) {
         
     }
+    GeneratedPlanetInfo() { }
     double radius; // real units 12 742
     double terrainMaxLevel; //0->1
     double fluidMaxLevel; //0->1
@@ -53,6 +60,7 @@ public:
     glm::vec3 atmosphereAbsorbColor;//0->1
     uint8_t moonsCount;
     GeneratedStarInfo host;
+    uint64_t planetIndex;
 
     glm::dvec3 getPosition(double timeShift) {
         double time = glfwGetTime() + timeShift;
@@ -64,6 +72,10 @@ public:
     glm::dvec3 getLinearVelocity() {
         return getPosition(1.0) - getPosition(0.0);
     }
+
+    std::string getName() {
+        return host.getName() + "-P-" + std::to_string(planetIndex);
+    }
 };
 
 struct GeneratedMoonInfo {
@@ -71,6 +83,7 @@ public:
     GeneratedMoonInfo(GeneratedPlanetInfo planet) : host(planet) {
 
     }
+    GeneratedMoonInfo() { }
     double radius; // real units idk
     double terrainMaxLevel; //0->1 
     glm::dvec3 orbitPlane;
@@ -78,6 +91,7 @@ public:
     double planetDistance; //0->1
     glm::vec3 preferredColor;//0->1
     GeneratedPlanetInfo host;
+    uint64_t moonIndex;
 
     glm::dvec3 getPosition(double timeShift) {
         double time = glfwGetTime() + timeShift;
@@ -87,6 +101,9 @@ public:
     }
     glm::dvec3 getLinearVelocity() {
         return getPosition(1.0) - getPosition(0.0);
+    }
+    std::string getName() {
+        return host.getName() + "-M-" + std::to_string(moonIndex);
     }
 };
 

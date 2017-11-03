@@ -363,7 +363,7 @@ vec4 tracePlanetAtmosphere(vec3 start, vec3 end, float lengthstart, float length
                 currentPlanet.atmosphereAbsorbColor_zero.rgb *  (0.1 + 0.9 * flunctuations),
                 dot(drr, sundir));
         atm += clamp(surfacemulti * shadow * vec3(shadow) * 10.0 * stepdistance * clamp(1.0 - coverage, 0.0, 1.0) *  (1.0 - step(0.0, max(hit_Surface.x, hit_Surface.y))) * (AC ) * (1.0 - 0.04 * clamp(max(hit_Atmosphere.x, hit_Atmosphere.y), 0.0, 10000.0) * absorbstrength), 0.0,1.0);
-        coverage += stepdistance * absorbstrength * 0.1;
+        coverage += stepdistance * absorbstrength * 1.5;
         if(coverage > 1.0) break;
     }
     //atm *= 0.1;

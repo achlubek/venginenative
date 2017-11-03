@@ -16,8 +16,10 @@ public:
     AssetLoader assets;
 
     std::vector<GeneratedStarSystemInfo> nearbyStars;
-    GeneratedStarSystemInfo nearestStar;
-    int nearestStarIndex;
+    std::vector<GeneratedStarSystemInfo> nearestStarSystems;
+    //int nearestStarIndex;
+    GeneratedPlanetInfo nearestPlanet;
+    GeneratedMoonInfo nearestMoon;
     Camera* internalCamera;
 
     int width{ 0 };

@@ -23,8 +23,8 @@ int main()
 
     GalaxyGenerator* galaxy = cosmosRenderer->galaxy;
     //printf("gen");
-    int64_t galaxyedge = 12490000000;
-    int64_t galaxythickness = 24960000000;
+    int64_t galaxyedge = 1249000000000;
+    int64_t galaxythickness = 2496000000000;
     for (int i = 0; i < 10000; i++) {
         galaxy->generateStar(galaxyedge, galaxythickness, 1.0, i);
         cosmosRenderer->nearbyStars.push_back(galaxy->generateStarInfo(i));
@@ -33,7 +33,17 @@ int main()
     // GeneratedStarInfo starinfo = galaxy->generateStarInfo(galaxy->findClosestStar(1, 1, 1));
 
     auto text = new UIText(cosmosRenderer->ui, 0.01, 0.01, UIColor(1, 1, 1, 1), Media::getPath("font.ttf"), 16, " ");
+    auto closestPlanetText = new UIText(cosmosRenderer->ui, 0.01, 0.02, UIColor(1, 1, 1, 1), Media::getPath("font.ttf"), 16, " ");
     cosmosRenderer->ui->texts.push_back(text);
+    cosmosRenderer->ui->texts.push_back(closestPlanetText);
+
+    std::vector<UIText*> planetsLabels = {};
+    for (int i = 0; i < 8; i++) {
+        auto tx = new UIText(cosmosRenderer->ui, 0.01, 0.01, UIColor(1, 1, 1, 1), Media::getPath("font.ttf"), 16, " ");
+        tx->alignment = UIText::Alignment::center;
+        planetsLabels.push_back(tx);
+        cosmosRenderer->ui->texts.push_back(tx);
+    }
 
     auto camera = new Camera();
     camera->createProjectionPerspective(60.0f, (float)toolkit->windowWidth / (float)toolkit->windowHeight, 0.01f, 1000000);
@@ -50,7 +60,7 @@ int main()
     int frames = 0;
     double lastTime = 0.0;
     double lastRawTime = 0.0;
-    float speedmultiplier = 1000.0;
+    float speedmultiplier = 1.0;
     float stabilizerotation = 1.0;
 
     bool flightHelperEnabled = false;
@@ -68,7 +78,7 @@ int main()
     double helper_orbitRadius;
 
     int helper_orientationMode = 2;
-    int helper_positionMode = 1;
+    int helper_positionMode = helper_positionMode_matchClosestBody;
 
     keyboard->onKeyPress.add([&](int key) {
         if (key == GLFW_KEY_ENTER) {
@@ -76,16 +86,16 @@ int main()
         }
 
         if (key == GLFW_KEY_F1) {
-            speedmultiplier = 0.05;
+            speedmultiplier = 0.00015;
         }
         if (key == GLFW_KEY_F2) {
-            speedmultiplier = 10.0;
+            speedmultiplier = 0.005;
         }
         if (key == GLFW_KEY_F3) {
-            speedmultiplier = 100.0;
+            speedmultiplier = 0.1;
         }
         if (key == GLFW_KEY_F4) {
-            speedmultiplier = 100000.0;
+            speedmultiplier = 1.0;
         }
 
         if (key == GLFW_KEY_F5) {
@@ -110,10 +120,10 @@ int main()
     //glm::quat spaceshipOrientation = glm::quat(1.0, 0.0, 0.0, 0.0);
     //double maxFuel = 10000.0;
     //double fuel = maxFuel;
-    SpaceShip* ship = new SpaceShip(glm::dvec3(0.0, 0.0, 1000000.0), glm::dquat(1.0, 0.0, 0.0, 0.0));
+    SpaceShip* ship = new SpaceShip(cosmosRenderer->nearbyStars[9999].planets[0].getPosition(100.0) * cosmosRenderer->scale, glm::dquat(1.0, 0.0, 0.0, 0.0));
 
-    SpaceShipEngine* forward_engine = new SpaceShipEngine(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(0.0, 0.0, 1.0), 100.19, 0.1);
-    SpaceShipEngine* backward_engine = new SpaceShipEngine(glm::dvec3(0.0, 0.0, -1.0), glm::dvec3(0.0, 0.0, -1.0), 100.19, 0.01);
+    SpaceShipEngine* forward_engine = new SpaceShipEngine(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(0.0, 0.0, 1.0), 10000000.19, 0.1);
+    SpaceShipEngine* backward_engine = new SpaceShipEngine(glm::dvec3(0.0, 0.0, -1.0), glm::dvec3(0.0, 0.0, -1.0), 10000000.19, 0.01);
 
     /*
              rX |   / rY
@@ -142,20 +152,20 @@ int main()
          posZUP
          posZDOWN
     */
-    SpaceShipEngine* negXUP = new SpaceShipEngine(glm::dvec3(-1.0, 0.0, 0.0), glm::dvec3(0.0, 1.0, 0.0), 0.1, 0.1);
-    SpaceShipEngine* negXDOWN = new SpaceShipEngine(glm::dvec3(-1.0, 0.0, 0.0), glm::dvec3(0.0, -1.0, 0.0), 0.1, 0.1);
-    SpaceShipEngine* posXUP = new SpaceShipEngine(glm::dvec3(1.0, 0.0, 0.0), glm::dvec3(0.0, 1.0, 0.0), 0.1, 0.1);
-    SpaceShipEngine* posXDOWN = new SpaceShipEngine(glm::dvec3(1.0, 0.0, 0.0), glm::dvec3(0.0, -1.0, 0.0), 0.1, 0.1);
+    SpaceShipEngine* negXUP = new SpaceShipEngine(glm::dvec3(-1.0, 0.0, 0.0), glm::dvec3(0.0, 1.0, 0.0), 90.1, 0.1);
+    SpaceShipEngine* negXDOWN = new SpaceShipEngine(glm::dvec3(-1.0, 0.0, 0.0), glm::dvec3(0.0, -1.0, 0.0), 90.1, 0.1);
+    SpaceShipEngine* posXUP = new SpaceShipEngine(glm::dvec3(1.0, 0.0, 0.0), glm::dvec3(0.0, 1.0, 0.0), 90.1, 0.1);
+    SpaceShipEngine* posXDOWN = new SpaceShipEngine(glm::dvec3(1.0, 0.0, 0.0), glm::dvec3(0.0, -1.0, 0.0), 90.1, 0.1);
 
-    SpaceShipEngine* negYFORWARD = new SpaceShipEngine(glm::dvec3(0.0, -1.0, 0.0), glm::dvec3(0.0, 0.0, 1.0), 0.1, 0.1);
-    SpaceShipEngine* negYBACKWARD = new SpaceShipEngine(glm::dvec3(0.0, -1.0, 0.0), glm::dvec3(0.0, 0.0, -1.0), 0.1, 0.1);
-    SpaceShipEngine* posYFORWARD = new SpaceShipEngine(glm::dvec3(0.0, 1.0, 0.0), glm::dvec3(0.0, 0.0, 1.0), 0.1, 0.1);
-    SpaceShipEngine* posYBACKWARD = new SpaceShipEngine(glm::dvec3(0.0, 1.0, 0.0), glm::dvec3(0.0, 0.0, -1.0), 0.1, 0.1);
+    SpaceShipEngine* negYFORWARD = new SpaceShipEngine(glm::dvec3(0.0, -1.0, 0.0), glm::dvec3(0.0, 0.0, 1.0), 90.1, 0.1);
+    SpaceShipEngine* negYBACKWARD = new SpaceShipEngine(glm::dvec3(0.0, -1.0, 0.0), glm::dvec3(0.0, 0.0, -1.0), 90.1, 0.1);
+    SpaceShipEngine* posYFORWARD = new SpaceShipEngine(glm::dvec3(0.0, 1.0, 0.0), glm::dvec3(0.0, 0.0, 1.0), 90.1, 0.1);
+    SpaceShipEngine* posYBACKWARD = new SpaceShipEngine(glm::dvec3(0.0, 1.0, 0.0), glm::dvec3(0.0, 0.0, -1.0), 90.1, 0.1);
 
-    SpaceShipEngine* negZLEFT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, -1.0), glm::dvec3(-1.0, 0.0, 0.0), 0.1, 0.1);
-    SpaceShipEngine* negZRIGHT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, -1.0), glm::dvec3(1.0, 0.0, 0.0), 0.1, 0.1);
-    SpaceShipEngine* posZLEFT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(-1.0, 0.0, 0.0), 0.1, 0.1);
-    SpaceShipEngine* posZRIGHT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(1.0, 0.0, 0.0), 0.1, 0.1);
+    SpaceShipEngine* negZLEFT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, -1.0), glm::dvec3(-1.0, 0.0, 0.0), 90.1, 0.1);
+    SpaceShipEngine* negZRIGHT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, -1.0), glm::dvec3(1.0, 0.0, 0.0), 90.1, 0.1);
+    SpaceShipEngine* posZLEFT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(-1.0, 0.0, 0.0), 90.1, 0.1);
+    SpaceShipEngine* posZRIGHT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(1.0, 0.0, 0.0), 90.1, 0.1);
 
     ship->modules.push_back(forward_engine);
     ship->modules.push_back(backward_engine);
@@ -300,7 +310,7 @@ int main()
 
 
                 }
-                angularThrust = targetAngularSpeed - ship->getAngularVelocity();
+                angularThrust = (targetAngularSpeed - ship->getAngularVelocity()) * 0.001;
                 //X
                 negYFORWARD->currentPowerPercentage = angularThrust.x;
                 negYBACKWARD->currentPowerPercentage = -angularThrust.x;
@@ -327,7 +337,7 @@ int main()
                     glm::dvec3 center = cosmosRenderer->closestBodyPosition;
                     float dst = glm::distance(center, ship->getPosition());
                     double rad = glm::distance(center, cosmosRenderer->closestSurfacePosition);
-                    double orbitradius = 5.0 * rad;
+                    double orbitradius = 3.0 * rad;
                     printf("R  %.6f \n", orbitradius);
                     double targettangentialspeed = cosmosRenderer->scale * 0.0 *  cosmosRenderer->galaxy->calculateOrbitVelocity(dst, galaxy->calculateMass(rad / cosmosRenderer->scale));
                     targetVelocity = cosmosRenderer->closestObjectLinearAbsoluteSpeed;
@@ -339,7 +349,7 @@ int main()
                     targetVelocity = cosmosRenderer->closestObjectLinearAbsoluteSpeed + speedcorrection + heightcorrection;
                 }
                 auto rotmat = glm::mat3_cast(ship->getOrientation());
-                glm::dvec3 linearThrust = 1000.0 * glm::inverse(rotmat) * (targetVelocity - ship->getLinearVelocity());
+                glm::dvec3 linearThrust = 0.01 * glm::inverse(rotmat) * (targetVelocity - ship->getLinearVelocity());
                 printf("S %.6f, %.6f, %.6f T %.6f, %.6f, %.6f \n", ship->getLinearVelocity().x, ship->getLinearVelocity().y, ship->getLinearVelocity().z,
                     linearThrust.x, linearThrust.y, linearThrust.z);
                 //X
@@ -348,44 +358,45 @@ int main()
 
                 //  printf("T %.6f, %.6f, %.6f \n", linearThrust.x, linearThrust.y, linearThrust.z);
                 
-                posXUP->currentPowerPercentage = glm::clamp(posXUP->currentPowerPercentage + negativeTrust.y, 0.0, 10.0);
-                posXDOWN->currentPowerPercentage = glm::clamp(posXDOWN->currentPowerPercentage + positiveTrust.y, 0.0, 10.0);
-                negXUP->currentPowerPercentage = glm::clamp(negXUP->currentPowerPercentage + negativeTrust.y, 0.0, 10.0);
-                negXDOWN->currentPowerPercentage = glm::clamp(negXDOWN->currentPowerPercentage + positiveTrust.y, 0.0, 10.0);
+                posXUP->currentPowerPercentage = glm::clamp(posXUP->currentPowerPercentage + negativeTrust.y, 0.0, 1.0);
+                posXDOWN->currentPowerPercentage = glm::clamp(posXDOWN->currentPowerPercentage + positiveTrust.y, 0.0, 1.0);
+                negXUP->currentPowerPercentage = glm::clamp(negXUP->currentPowerPercentage + negativeTrust.y, 0.0, 1.0);
+                negXDOWN->currentPowerPercentage = glm::clamp(negXDOWN->currentPowerPercentage + positiveTrust.y, 0.0, 1.0);
 
-                posYBACKWARD->currentPowerPercentage = glm::clamp(posYBACKWARD->currentPowerPercentage + positiveTrust.z, 0.0, 10.0);
-                posYFORWARD->currentPowerPercentage = glm::clamp(posYFORWARD->currentPowerPercentage + negativeTrust.z, 0.0, 10.0);
-                negYBACKWARD->currentPowerPercentage = glm::clamp(negYBACKWARD->currentPowerPercentage + positiveTrust.z, 0.0, 10.0);
-                negYFORWARD->currentPowerPercentage = glm::clamp(negYFORWARD->currentPowerPercentage + negativeTrust.z, 0.0, 10.0);
+                posYBACKWARD->currentPowerPercentage = glm::clamp(posYBACKWARD->currentPowerPercentage + positiveTrust.z, 0.0, 1.0);
+                posYFORWARD->currentPowerPercentage = glm::clamp(posYFORWARD->currentPowerPercentage + negativeTrust.z, 0.0, 1.0);
+                negYBACKWARD->currentPowerPercentage = glm::clamp(negYBACKWARD->currentPowerPercentage + positiveTrust.z, 0.0, 1.0);
+                negYFORWARD->currentPowerPercentage = glm::clamp(negYFORWARD->currentPowerPercentage + negativeTrust.z, 0.0, 1.0);
 
-                posZLEFT->currentPowerPercentage = glm::clamp(posZLEFT->currentPowerPercentage + positiveTrust.x, 0.0, 10.0);
-                posZRIGHT->currentPowerPercentage = glm::clamp(posZRIGHT->currentPowerPercentage + negativeTrust.x, 0.0, 10.0);
-                negZLEFT->currentPowerPercentage = glm::clamp(negZLEFT->currentPowerPercentage + positiveTrust.x, 0.0, 10.0);
-                negZRIGHT->currentPowerPercentage = glm::clamp(negZRIGHT->currentPowerPercentage + negativeTrust.x, 0.0, 10.0);
+                posZLEFT->currentPowerPercentage = glm::clamp(posZLEFT->currentPowerPercentage + positiveTrust.x, 0.0, 1.0);
+                posZRIGHT->currentPowerPercentage = glm::clamp(posZRIGHT->currentPowerPercentage + negativeTrust.x, 0.0, 1.0);
+                negZLEFT->currentPowerPercentage = glm::clamp(negZLEFT->currentPowerPercentage + positiveTrust.x, 0.0, 1.0);
+                negZRIGHT->currentPowerPercentage = glm::clamp(negZRIGHT->currentPowerPercentage + negativeTrust.x, 0.0, 1.0);
                 
             }
             else {
                 // manual sterring
-                forward_engine->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS ? 1.0 : 0.0;
-                backward_engine->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_S) == GLFW_PRESS ? 1.0 : 0.0;
+                forward_engine->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS ? speedmultiplier : 0.0;
+                backward_engine->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_S) == GLFW_PRESS ? speedmultiplier : 0.0;
 
                 //X
-                negYFORWARD->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_J) == GLFW_PRESS ? 0.05 : 0.0;
-                negYBACKWARD->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_U) == GLFW_PRESS ? 0.05 : 0.0;
-                posYBACKWARD->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_J) == GLFW_PRESS ? 0.05 : 0.0;
-                posYFORWARD->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_U) == GLFW_PRESS ? 0.05 : 0.0;
+                float rotsped = 0.0001;
+                negYFORWARD->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_J) == GLFW_PRESS ? rotsped : 0.0;
+                negYBACKWARD->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_U) == GLFW_PRESS ? rotsped : 0.0;
+                posYBACKWARD->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_J) == GLFW_PRESS ? rotsped : 0.0;
+                posYFORWARD->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_U) == GLFW_PRESS ? rotsped : 0.0;
 
                 //Y
-                negXUP->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS ? 0.05 : 0.0;
-                negXDOWN->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS ? 0.05 : 0.0;
-                posXDOWN->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS ? 0.05 : 0.0;
-                posXUP->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS ? 0.05 : 0.0;
+                negXUP->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS ? rotsped : 0.0;
+                negXDOWN->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS ? rotsped : 0.0;
+                posXDOWN->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS ? rotsped : 0.0;
+                posXUP->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS ? rotsped : 0.0;
 
                 //Z
-                negZLEFT->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_K) == GLFW_PRESS ? 0.05 : 0.0;
-                negZRIGHT->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_H) == GLFW_PRESS ? 0.05 : 0.0;
-                posZRIGHT->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_K) == GLFW_PRESS ? 0.05 : 0.0;
-                posZLEFT->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_H) == GLFW_PRESS ? 0.05 : 0.0;
+                negZLEFT->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_K) == GLFW_PRESS ? rotsped : 0.0;
+                negZRIGHT->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_H) == GLFW_PRESS ? rotsped : 0.0;
+                posZRIGHT->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_K) == GLFW_PRESS ? rotsped : 0.0;
+                posZLEFT->currentPowerPercentage = keyboard->getKeyStatus(GLFW_KEY_H) == GLFW_PRESS ? rotsped : 0.0;
             }
             /*
             if (keyboard->getKeyStatus(GLFW_KEY_S) == GLFW_PRESS) {
@@ -435,14 +446,33 @@ int main()
             }*/
 
         }
+
+        if (cosmosRenderer->nearestStarSystems.size() > 0) {
+          /*  for (int i = 0; i < cosmosRenderer->nearestStarSystems[0].planets.size(); i++) {
+                glm::dvec3 pos = cosmosRenderer->nearestStarSystems[0].planets[i].getPosition(0.0) * cosmosRenderer->scale - ship->getPosition();
+                auto uv = camera->projectToScreen(pos);
+                planetsLabels[i]->x = uv.x;
+                planetsLabels[i]->y = uv.y;
+                planetsLabels[i]->updateText(cosmosRenderer->nearestStarSystems[0].planets[i].getName());
+            }
+            for (int i = cosmosRenderer->nearestStarSystems[0].planets.size(); i < planetsLabels.size(); i++) {
+                planetsLabels[i]->x = -1;
+                planetsLabels[i]->y = -1;
+            }*/
+        }
+
         ship->applyGravity(cosmosRenderer->lastGravity * elapsed * (keyboard->getKeyStatus(GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ? 100.0f : 1.0f));
         ship->update(elapsed * (keyboard->getKeyStatus(GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ? 100.0 : 1.0));
         camera->transformation->setOrientation(ship->getOrientation());
         cosmosRenderer->updateCameraBuffer(camera, ship->getPosition());
         cosmosRenderer->updatePlanetsAndMoon(ship->getPosition());
         cosmosRenderer->draw();
+        auto slp = ship->getLinearVelocity();
         text->updateText("Distance to surface:" + std::to_string(cosmosRenderer->closestSurfaceDistance) + "| " + std::to_string(cosmosRenderer->closestObjectLinearAbsoluteSpeed.x)
-            + " , " + std::to_string(cosmosRenderer->closestObjectLinearAbsoluteSpeed.y) + " , " + std::to_string(cosmosRenderer->closestObjectLinearAbsoluteSpeed.z));
+            + " , " + std::to_string(cosmosRenderer->closestObjectLinearAbsoluteSpeed.y) + " , " + std::to_string(cosmosRenderer->closestObjectLinearAbsoluteSpeed.z)
+            + "| " + std::to_string(slp.x)
+            + " , " + std::to_string(slp.y) + " , " + std::to_string(slp.z));
+        closestPlanetText->updateText("Closest planet:" + cosmosRenderer->nearestPlanet.getName());
         toolkit->poolEvents();
     }
 

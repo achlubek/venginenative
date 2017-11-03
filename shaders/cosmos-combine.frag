@@ -111,17 +111,7 @@ void main() {
     vec4 celestial = texture(texCelestial, UV);
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
     dir *= 2.0;
-    vec3 outerglowi = vec3(
-        FBM3(dir, 2, 3.0, 0.77),
-        FBM3(dir + 10.0, 2, 3.0, 0.77),
-        FBM3(dir + 20.0, 2, 3.0, 0.77)
-    );
-    vec3 outerglow = vec3(
-        FBM3(dir + outerglowi.x, 3, 3.0, 0.77),
-        FBM3(dir + outerglowi.y + 10.0, 3, 3.0, 0.77) * 0.9,
-        FBM3(dir + outerglowi.z + 20.0, 3, 3.0, 0.77)
-    );
-    vec3 stars = pow(outerglow, vec3(4.0)) * 0.105 + textureLod(texStars, UV, 0).rgb + blur(texStars, 0.015).rgb;//texture(texStars, UV);
+    vec3 stars = textureLod(texStars, UV, 0).rgb ;//+ blur(texStars, 0.015).rgb;//texture(texStars, UV);
     vec4 ui = texture(uiTexture, UV);
     //stars.rgb /= max(0.0001, stars.a);
     vec3 a = mix(stars, celestial.rgb, celestial.a);
