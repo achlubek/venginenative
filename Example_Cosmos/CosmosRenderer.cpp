@@ -131,6 +131,25 @@ void CosmosRenderer::recompileShaders(bool deleteOld)
     readyForDrawing = true;
 }
 
+GeneratedStarInfo CosmosRenderer::getStar(int starIndex)
+{
+    return nearbyStars[starIndex].star;
+}
+
+GeneratedPlanetInfo CosmosRenderer::getPlanet(int starIndex, int planetIndex)
+{
+    return nearbyStars[starIndex].planets[planetIndex];
+}
+
+GeneratedMoonInfo CosmosRenderer::getMoon(int starIndex, int planetIndex, int moonIndex)
+{
+    for (int i = 0; i < nearbyStars[starIndex].moons.size(); i++) {
+        auto m = nearbyStars[starIndex].moons[i];
+        if (m.planetIndex == planetIndex && m.moonIndex == moonIndex) return m;
+    }
+    return GeneratedMoonInfo();
+}
+
 void CosmosRenderer::mapBuffers()
 {
     starsDataBuffer->map(0, starsDataBuffer->size, &starsDataBufferPointer);

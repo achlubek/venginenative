@@ -209,6 +209,7 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
         for (int g = 0; g < planet.moonsCount; g++) {
             GeneratedMoonInfo moon = GeneratedMoonInfo(planet);
             moon.moonIndex = g;
+            moon.planetIndex = i;
            // moon.host = planet;
             moon.radius = randu64(planet.radius / 30, planet.radius / 15);
             moon.terrainMaxLevel = drandnorm();

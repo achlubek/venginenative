@@ -7,6 +7,9 @@
 #include "SpaceShip.h"
 #include "SpaceShipModule.h"
 #include "SpaceShipEngine.h"
+#include "SpaceShipAutopilot.h"
+#include "AbsShipEnginesController.h"
+#include "Maneuvering6DOFShipEnginesController.h"
 #include <algorithm>
 
 int main()
@@ -77,8 +80,8 @@ int main()
 
     double helper_orbitRadius;
 
-    int helper_orientationMode = 2;
-    int helper_positionMode = helper_positionMode_matchClosestBody;
+    int helper_orientationMode = helper_orientationMode_align;
+    int helper_positionMode = helper_positionMode_enterBodyOrbit;
 
     keyboard->onKeyPress.add([&](int key) {
         if (key == GLFW_KEY_ENTER) {
@@ -152,20 +155,38 @@ int main()
          posZUP
          posZDOWN
     */
-    SpaceShipEngine* negXUP = new SpaceShipEngine(glm::dvec3(-1.0, 0.0, 0.0), glm::dvec3(0.0, 1.0, 0.0), 90.1, 0.1);
-    SpaceShipEngine* negXDOWN = new SpaceShipEngine(glm::dvec3(-1.0, 0.0, 0.0), glm::dvec3(0.0, -1.0, 0.0), 90.1, 0.1);
-    SpaceShipEngine* posXUP = new SpaceShipEngine(glm::dvec3(1.0, 0.0, 0.0), glm::dvec3(0.0, 1.0, 0.0), 90.1, 0.1);
-    SpaceShipEngine* posXDOWN = new SpaceShipEngine(glm::dvec3(1.0, 0.0, 0.0), glm::dvec3(0.0, -1.0, 0.0), 90.1, 0.1);
+    double helpersforce = 0.5;
+    SpaceShipEngine* negXUP = new SpaceShipEngine(glm::dvec3(-1.0, 0.0, 0.0), glm::dvec3(0.0, 1.0, 0.0), helpersforce, 0.1);
+    SpaceShipEngine* negXDOWN = new SpaceShipEngine(glm::dvec3(-1.0, 0.0, 0.0), glm::dvec3(0.0, -1.0, 0.0), helpersforce, 0.1);
+    SpaceShipEngine* posXUP = new SpaceShipEngine(glm::dvec3(1.0, 0.0, 0.0), glm::dvec3(0.0, 1.0, 0.0), helpersforce, 0.1);
+    SpaceShipEngine* posXDOWN = new SpaceShipEngine(glm::dvec3(1.0, 0.0, 0.0), glm::dvec3(0.0, -1.0, 0.0), helpersforce, 0.1);
 
-    SpaceShipEngine* negYFORWARD = new SpaceShipEngine(glm::dvec3(0.0, -1.0, 0.0), glm::dvec3(0.0, 0.0, 1.0), 90.1, 0.1);
-    SpaceShipEngine* negYBACKWARD = new SpaceShipEngine(glm::dvec3(0.0, -1.0, 0.0), glm::dvec3(0.0, 0.0, -1.0), 90.1, 0.1);
-    SpaceShipEngine* posYFORWARD = new SpaceShipEngine(glm::dvec3(0.0, 1.0, 0.0), glm::dvec3(0.0, 0.0, 1.0), 90.1, 0.1);
-    SpaceShipEngine* posYBACKWARD = new SpaceShipEngine(glm::dvec3(0.0, 1.0, 0.0), glm::dvec3(0.0, 0.0, -1.0), 90.1, 0.1);
+    SpaceShipEngine* negYFORWARD = new SpaceShipEngine(glm::dvec3(0.0, -1.0, 0.0), glm::dvec3(0.0, 0.0, 1.0), helpersforce, 0.1);
+    SpaceShipEngine* negYBACKWARD = new SpaceShipEngine(glm::dvec3(0.0, -1.0, 0.0), glm::dvec3(0.0, 0.0, -1.0), helpersforce, 0.1);
+    SpaceShipEngine* posYFORWARD = new SpaceShipEngine(glm::dvec3(0.0, 1.0, 0.0), glm::dvec3(0.0, 0.0, 1.0), helpersforce, 0.1);
+    SpaceShipEngine* posYBACKWARD = new SpaceShipEngine(glm::dvec3(0.0, 1.0, 0.0), glm::dvec3(0.0, 0.0, -1.0), helpersforce, 0.1);
 
-    SpaceShipEngine* negZLEFT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, -1.0), glm::dvec3(-1.0, 0.0, 0.0), 90.1, 0.1);
-    SpaceShipEngine* negZRIGHT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, -1.0), glm::dvec3(1.0, 0.0, 0.0), 90.1, 0.1);
-    SpaceShipEngine* posZLEFT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(-1.0, 0.0, 0.0), 90.1, 0.1);
-    SpaceShipEngine* posZRIGHT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(1.0, 0.0, 0.0), 90.1, 0.1);
+    SpaceShipEngine* negZLEFT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, -1.0), glm::dvec3(-1.0, 0.0, 0.0), helpersforce, 0.1);
+    SpaceShipEngine* negZRIGHT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, -1.0), glm::dvec3(1.0, 0.0, 0.0), helpersforce, 0.1);
+    SpaceShipEngine* posZLEFT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(-1.0, 0.0, 0.0), helpersforce, 0.1);
+    SpaceShipEngine* posZRIGHT = new SpaceShipEngine(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(1.0, 0.0, 0.0), helpersforce, 0.1);
+
+    Maneuvering6DOFShipEnginesController enginesController = Maneuvering6DOFShipEnginesController();
+    enginesController.negXUP = negXUP;
+    enginesController.negXDOWN = negXDOWN;
+    enginesController.posXUP = posXUP;
+    enginesController.posXDOWN = posXDOWN;
+    enginesController.negYFORWARD = negYFORWARD;
+    enginesController.negYBACKWARD = negYBACKWARD;
+    enginesController.posYFORWARD = posYFORWARD;
+    enginesController.posYBACKWARD = posYBACKWARD;
+    enginesController.negZLEFT = negZLEFT;
+    enginesController.negZRIGHT = negZRIGHT;
+    enginesController.posZLEFT = posZLEFT;
+    enginesController.posZRIGHT = posZRIGHT;
+
+    SpaceShipAutopilot pilot = SpaceShipAutopilot();
+    pilot.controller = &enginesController;
 
     ship->modules.push_back(forward_engine);
     ship->modules.push_back(backward_engine);
@@ -285,7 +306,7 @@ int main()
         else {
             if (flightHelperEnabled) {
                 //debug
-                orientationAlignTarget = glm::normalize(cosmosRenderer->closestSurfacePosition - ship->getPosition());
+                orientationAlignTarget = glm::normalize(cosmosRenderer->closestBodyPosition - ship->getPosition());
 
                 glm::dvec3 angularThrust;
                 glm::dvec3 targetAngularSpeed;
@@ -296,39 +317,10 @@ int main()
                 }
                 else if (helper_orientationMode == helper_orientationMode_align) {
 
-
-                    glm::dvec3 shipforward = ship->getOrientation() * glm::dvec3(0.0, 0.0, -1.0);
-                    glm::dvec3 shipleft = ship->getOrientation() * glm::dvec3(1.0, 0.0, 0.0);
-                    glm::dvec3 shipup = ship->getOrientation() * glm::dvec3(0.0, 1.0, 0.0);
-
-                    glm::dvec3 fdir = shipforward + orientationAlignTarget * 0.1;
-
-                    float xt = glm::dot(shipup, fdir);
-                    float yt = glm::dot(shipleft, fdir);
-
-                    targetAngularSpeed = 10.1 * glm::dvec3(xt, -yt, 0.0);
+                    pilot.getTargetOrientation(orientationAlignTarget);
 
 
-                }
-                angularThrust = (targetAngularSpeed - ship->getAngularVelocity()) * 0.001;
-                //X
-                negYFORWARD->currentPowerPercentage = angularThrust.x;
-                negYBACKWARD->currentPowerPercentage = -angularThrust.x;
-                posYBACKWARD->currentPowerPercentage = angularThrust.x;
-                posYFORWARD->currentPowerPercentage = -angularThrust.x;
-
-                //Z
-                negZLEFT->currentPowerPercentage = -angularThrust.y;
-                negZRIGHT->currentPowerPercentage = angularThrust.y;
-                posZRIGHT->currentPowerPercentage = -angularThrust.y;
-                posZLEFT->currentPowerPercentage = angularThrust.y;
-
-                //Y
-                negXUP->currentPowerPercentage = angularThrust.z;
-                negXDOWN->currentPowerPercentage = -angularThrust.z;
-                posXDOWN->currentPowerPercentage = angularThrust.z;
-                posXUP->currentPowerPercentage = -angularThrust.z;
-
+                } 
                 glm::dvec3 targetVelocity = glm::dvec3();
                 if (helper_positionMode == helper_positionMode_matchClosestBody) {
                     targetVelocity = cosmosRenderer->closestObjectLinearAbsoluteSpeed;
@@ -337,42 +329,26 @@ int main()
                     glm::dvec3 center = cosmosRenderer->closestBodyPosition;
                     float dst = glm::distance(center, ship->getPosition());
                     double rad = glm::distance(center, cosmosRenderer->closestSurfacePosition);
-                    double orbitradius = 3.0 * rad;
+                    double orbitradius = 20.0;
                     printf("R  %.6f \n", orbitradius);
                     double targettangentialspeed = cosmosRenderer->scale * 0.0 *  cosmosRenderer->galaxy->calculateOrbitVelocity(dst, galaxy->calculateMass(rad / cosmosRenderer->scale));
-                    targetVelocity = cosmosRenderer->closestObjectLinearAbsoluteSpeed;
+                    targetVelocity = cosmosRenderer->closestObjectLinearAbsoluteSpeed; 
 
                     glm::dvec3 dir = glm::normalize(cosmosRenderer->closestSurfacePosition - cosmosRenderer->closestBodyPosition);
                     glm::dvec3 dir2 = glm::normalize((cosmosRenderer->closestSurfacePosition + glm::normalize(ship->getLinearVelocity() + glm::dvec3(0.0, 0.001, 0.0)) - cosmosRenderer->closestBodyPosition) * 0.1);
                     glm::dvec3 heightcorrection = dir * (dst - orbitradius) * -0.1;
                     glm::dvec3 speedcorrection = glm::normalize(dir2 - dir) * targettangentialspeed;
                     targetVelocity = cosmosRenderer->closestObjectLinearAbsoluteSpeed + speedcorrection + heightcorrection;
+                    pilot.setTargetPosition(cosmosRenderer->closestSurfacePosition + dir * orbitradius);
                 }
-                auto rotmat = glm::mat3_cast(ship->getOrientation());
-                glm::dvec3 linearThrust = 0.01 * glm::inverse(rotmat) * (targetVelocity - ship->getLinearVelocity());
-                printf("S %.6f, %.6f, %.6f T %.6f, %.6f, %.6f \n", ship->getLinearVelocity().x, ship->getLinearVelocity().y, ship->getLinearVelocity().z,
-                    linearThrust.x, linearThrust.y, linearThrust.z);
-                //X
-                glm::dvec3 positiveTrust = glm::dvec3(max(0.0, linearThrust.x), max(0.0, linearThrust.y), max(0.0, linearThrust.z));
-                glm::dvec3 negativeTrust = -glm::dvec3(min(0.0, linearThrust.x), min(0.0, linearThrust.y), min(0.0, linearThrust.z));
+                pilot.setAngularMaxSpeed(10.0);
+                pilot.setLinearMaxSpeed(100.0);
+                pilot.setPositionCorrectionStrength(0.135);
+                pilot.update(ship);
+                enginesController.setEnginesPower(1.0);
+                enginesController.setReferenceFrameVelocity(cosmosRenderer->closestObjectLinearAbsoluteSpeed);
+                enginesController.update(ship);
 
-                //  printf("T %.6f, %.6f, %.6f \n", linearThrust.x, linearThrust.y, linearThrust.z);
-                
-                posXUP->currentPowerPercentage = glm::clamp(posXUP->currentPowerPercentage + negativeTrust.y, 0.0, 1.0);
-                posXDOWN->currentPowerPercentage = glm::clamp(posXDOWN->currentPowerPercentage + positiveTrust.y, 0.0, 1.0);
-                negXUP->currentPowerPercentage = glm::clamp(negXUP->currentPowerPercentage + negativeTrust.y, 0.0, 1.0);
-                negXDOWN->currentPowerPercentage = glm::clamp(negXDOWN->currentPowerPercentage + positiveTrust.y, 0.0, 1.0);
-
-                posYBACKWARD->currentPowerPercentage = glm::clamp(posYBACKWARD->currentPowerPercentage + positiveTrust.z, 0.0, 1.0);
-                posYFORWARD->currentPowerPercentage = glm::clamp(posYFORWARD->currentPowerPercentage + negativeTrust.z, 0.0, 1.0);
-                negYBACKWARD->currentPowerPercentage = glm::clamp(negYBACKWARD->currentPowerPercentage + positiveTrust.z, 0.0, 1.0);
-                negYFORWARD->currentPowerPercentage = glm::clamp(negYFORWARD->currentPowerPercentage + negativeTrust.z, 0.0, 1.0);
-
-                posZLEFT->currentPowerPercentage = glm::clamp(posZLEFT->currentPowerPercentage + positiveTrust.x, 0.0, 1.0);
-                posZRIGHT->currentPowerPercentage = glm::clamp(posZRIGHT->currentPowerPercentage + negativeTrust.x, 0.0, 1.0);
-                negZLEFT->currentPowerPercentage = glm::clamp(negZLEFT->currentPowerPercentage + positiveTrust.x, 0.0, 1.0);
-                negZRIGHT->currentPowerPercentage = glm::clamp(negZRIGHT->currentPowerPercentage + negativeTrust.x, 0.0, 1.0);
-                
             }
             else {
                 // manual sterring
@@ -448,17 +424,17 @@ int main()
         }
 
         if (cosmosRenderer->nearestStarSystems.size() > 0) {
-          /*  for (int i = 0; i < cosmosRenderer->nearestStarSystems[0].planets.size(); i++) {
-                glm::dvec3 pos = cosmosRenderer->nearestStarSystems[0].planets[i].getPosition(0.0) * cosmosRenderer->scale - ship->getPosition();
-                auto uv = camera->projectToScreen(pos);
-                planetsLabels[i]->x = uv.x;
-                planetsLabels[i]->y = uv.y;
-                planetsLabels[i]->updateText(cosmosRenderer->nearestStarSystems[0].planets[i].getName());
-            }
-            for (int i = cosmosRenderer->nearestStarSystems[0].planets.size(); i < planetsLabels.size(); i++) {
-                planetsLabels[i]->x = -1;
-                planetsLabels[i]->y = -1;
-            }*/
+            /*  for (int i = 0; i < cosmosRenderer->nearestStarSystems[0].planets.size(); i++) {
+                  glm::dvec3 pos = cosmosRenderer->nearestStarSystems[0].planets[i].getPosition(0.0) * cosmosRenderer->scale - ship->getPosition();
+                  auto uv = camera->projectToScreen(pos);
+                  planetsLabels[i]->x = uv.x;
+                  planetsLabels[i]->y = uv.y;
+                  planetsLabels[i]->updateText(cosmosRenderer->nearestStarSystems[0].planets[i].getName());
+              }
+              for (int i = cosmosRenderer->nearestStarSystems[0].planets.size(); i < planetsLabels.size(); i++) {
+                  planetsLabels[i]->x = -1;
+                  planetsLabels[i]->y = -1;
+              }*/
         }
 
         ship->applyGravity(cosmosRenderer->lastGravity * elapsed * (keyboard->getKeyStatus(GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ? 100.0f : 1.0f));

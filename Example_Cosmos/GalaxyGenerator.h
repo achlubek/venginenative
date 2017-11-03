@@ -92,6 +92,7 @@ public:
     glm::vec3 preferredColor;//0->1
     GeneratedPlanetInfo host;
     uint64_t moonIndex;
+    uint64_t planetIndex;
 
     glm::dvec3 getPosition(double timeShift) {
         double time = glfwGetTime() + timeShift;

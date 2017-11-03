@@ -22,6 +22,10 @@ public:
     GeneratedMoonInfo nearestMoon;
     Camera* internalCamera;
 
+    GeneratedStarInfo getStar(int starIndex);
+    GeneratedPlanetInfo getPlanet(int starIndex, int planetIndex);
+    GeneratedMoonInfo getMoon(int starIndex, int planetIndex, int moonIndex);
+
     int width{ 0 };
     int height{ 0 };
 

@@ -140,19 +140,25 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AbsShipEnginesController.h" />
     <ClInclude Include="CosmosRenderer.h" />
     <ClInclude Include="GalaxyGenerator.h" />
+    <ClInclude Include="Maneuvering6DOFShipEnginesController.h" />
     <ClInclude Include="SpaceShip.h" />
+    <ClInclude Include="SpaceShipAutopilot.h" />
     <ClInclude Include="SpaceShipEngine.h" />
     <ClInclude Include="SpaceShipModule.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AbsShipEnginesController.cpp" />
     <ClCompile Include="CosmosRenderer.cpp" />
     <ClCompile Include="Example_Cosmos.cpp" />
     <ClCompile Include="GalaxyGenerator.cpp" />
+    <ClCompile Include="Maneuvering6DOFShipEnginesController.cpp" />
     <ClCompile Include="SpaceShip.cpp" />
+    <ClCompile Include="SpaceShipAutopilot.cpp" />
     <ClCompile Include="SpaceShipEngine.cpp" />
     <ClCompile Include="SpaceShipModule.cpp" />
     <ClCompile Include="stdafx.cpp">
