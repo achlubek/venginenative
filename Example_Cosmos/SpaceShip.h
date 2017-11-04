@@ -13,6 +13,7 @@ public:
     void update(double time_elapsed);
     void applyImpulse(glm::dvec3 relativePos, glm::dvec3 force);
     void applyGravity(glm::dvec3 force);
+    void setHyperDriveVelocity(glm::dvec3 vel);
     std::vector<SpaceShipModule*> modules;
 private:
 
@@ -20,5 +21,6 @@ private:
     glm::dquat orientation;
     glm::dvec3 linearVelocity;
     glm::dvec3 angularVelocity;
+    glm::dvec3 hyperDriveVelocity;
 };
 

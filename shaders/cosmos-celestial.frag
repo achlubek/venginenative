@@ -77,8 +77,8 @@ vec2 rsi2(in Ray ray, in Sphere sphere)
     vec3 oc = ray.o - sphere.pos;
     float b = 2.0 * dot(ray.d, oc);
     float c = dot(oc, oc) - sphere.rad*sphere.rad;
-    float disc = b * b - 4.0 * c;
-    vec2 ex = vec2(-b - sqrt(disc), -b + sqrt(disc))/2.0;
+    float disc = sqrt(b * b - 4.0 * c);
+    vec2 ex = vec2(-b - disc, -b + disc)*0.5;
     return vec2(min(ex.x, ex.y), max(ex.x, ex.y));
 }
 mat3 rotationMatrix(vec3 axis, float angle)
@@ -194,13 +194,7 @@ struct Fragment{
     vec3 color;
 };
 
-Fragment fragments[9] = Fragment[9](
-    Fragment(0,0,vec3(0.0)),
-    Fragment(0,0,vec3(0.0)),
-    Fragment(0,0,vec3(0.0)),
-    Fragment(0,0,vec3(0.0)),
-    Fragment(0,0,vec3(0.0)),
-    Fragment(0,0,vec3(0.0)),
+Fragment fragments[3] = Fragment[3](
     Fragment(0,0,vec3(0.0)),
     Fragment(0,0,vec3(0.0)),
     Fragment(0,0,vec3(0.0))
@@ -208,7 +202,7 @@ Fragment fragments[9] = Fragment[9](
 int fragmentIndex = 0;
 
 void storeFragment(float depth, float alpha, vec3 color){
-    if(fragmentIndex < 9){
+    if(fragmentIndex < 3){
         fragments[fragmentIndex++] = Fragment(depth, alpha, color);
     }
 }
@@ -306,16 +300,16 @@ vec4 traceRings(Ray ray, Sphere surface, vec3 sundir){
     vec3 color = vec3(0.0);
     float coverage = 0.0;
     float hit_Surface = rsi2(ray, surface).x;
-    if(plane > 0.0){
-        vec3 pos = ray.o + ray.d * plane;
-        float planetdist = distance(currentPlanet.position_radius.xyz, pos);
+    vec3 pos = ray.o + ray.d * plane;
+    float r3 = hash(currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.a + 200.0);
+    float planetdist = distance(currentPlanet.position_radius.xyz, pos);
+    if(plane > 0.0 && planetdist < currentPlanet.position_radius.a*  (9.0 + r3 * 2.0)){
         float r1 = hash(currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.a);
         float r2 = hash(currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.a + 100.0);
-        float r3 = hash(currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.a + 200.0);
         float r4 = hash(currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.a + 400.0);
         float multprimary = smoothstep(currentPlanet.position_radius.a * 2.0, currentPlanet.position_radius.a * (3.0 + r1 * 2.0), planetdist);
         float multsecondary = 1.0 - smoothstep(currentPlanet.position_radius.a *  (6.0 + r2 * 2.0), currentPlanet.position_radius.a*  (9.0 + r3 * 2.0), planetdist);
-        float multflunc = smoothstep(0.5, 0.8, noise2d(vec2(planetdist * 0.015 * (0.8 + 0.4 * r4), 0.0)));
+        float multflunc = smoothstep(0.5, 0.8, noise2d(vec2(planetdist * 0.015 * (0.3 + 0.7 * r4), 0.0)));
         float hit_Surface2 = hits(rsi2(Ray(pos, sundir), surface).x) ? 0.0 : 1.0;
         color += hit_Surface2 * multprimary * multsecondary * currentPlanet.preferredColor_zero.rgb;
         coverage += multprimary * multsecondary * multflunc;
@@ -425,7 +419,12 @@ vec4 tracePlanet(Ray ray){
     vec3 color = vec3(0.0);
     float coverage = 0.0;
     vec2 hit_Atmosphere = rsi2(ray, atmosphere);
-    float hit_Surface = hits(hit_Atmosphere.x) || hits(hit_Atmosphere.y) ? raymarchTerrain(ray, currentPlanet.position_radius.xyz) : 0.0;//rsi2(ray, surface).x;
+    float hit_Surface = 0.0;
+    if(currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.r == 0.0){
+        hit_Surface = rsi2(ray, surface).x;
+    } else if(hits(hit_Atmosphere.x) || hits(hit_Atmosphere.y)){
+        hit_Surface = raymarchTerrain(ray, currentPlanet.position_radius.xyz);
+    }
 
     float centerDistance = distance(ray.o, currentPlanet.position_radius.rgb);
 
@@ -447,7 +446,6 @@ vec4 tracePlanet(Ray ray){
     int hitcount = 0;
     if(hits(hit_Surface)) hitcount++;
     if(hits(hit_Atmosphere.x) || hits(hit_Atmosphere.y)) hitcount++;
-    //if(hitcount == 0) return vec4(0.0, 0.0, 0.0, -1.0);
 
     if(centerDistance >= currentPlanet.position_radius.a && centerDistance >= atmoradius){
         // scenario 1
@@ -485,36 +483,8 @@ vec4 tracePlanet(Ray ray){
 
     if(currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.r <= 0.001){
         vec4 rings = traceRings(ray, surface, normalize(SUNDIR - currentPlanet.position_radius.rgb));
-        //color += (1.0 - coverage) * rings.xyz;
-        //coverage += rings.a;
-
     }
 
-/*
-    if(!hits(hit_Surface) && !hits(hit_Atmosphere.x)) return vec4(0.0, 0.0, 0.0, -1.0);
-    if(!hits(hit_Surface) && hits(hit_Atmosphere.x)){
-        // Only ATMOSPHERE hit
-        vec4 atm = tracePlanetAtmosphere(ray.d * hit_Atmosphere.x, ray.d * hit_Atmosphere.y,
-            currentPlanet.position_radius.a,
-            currentPlanet.position_radius.a
-            + currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.b);
-        color = atm.rgb;
-        coverage = atm.a;
-    }
-    if(hits(hit_Surface) && hits(hit_Atmosphere.x)) {
-        vec4 atm = tracePlanetAtmosphere(ray.d * hit_Atmosphere.x, ray.d * hit_Surface,
-            currentPlanet.position_radius.a, currentPlanet.position_radius.a + currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.b);
-        vec3 norm = getplanetnormal(normalize((ray.d * hit_Surface) - currentPlanet.position_radius.rgb));
-        float plhei = getplanetheight(normalize((ray.d * hit_Surface) - currentPlanet.position_radius.rgb));
-        float plheidelta = (plhei - currentPlanet.position_radius.a) / currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.r;
-        vec3 newdir = plhei * normalize((ray.d * hit_Surface) - currentPlanet.position_radius.rgb);
-        vec3 sundir = normalize(SUNDIR - ray.d * hit_Surface);
-        vec2 hit_Atmosphere2 = rsi2(Ray(newdir, sundir), atmosphere);
-        float shadow = smoothstep(-0.2 * plheidelta, 0.2, dot(sundir, newdir));
-        color = atm.rgb * atm.a + (1.0 - atm.a) * shadow * vec3(currentPlanet.preferredColor_zero.rgb) * max(0.0, dot(norm, normalize(SUNDIR - (ray.d * hit_Surface))));
-        coverage = 1.0;
-    }
-*/
     return vec4(color, min(1.0, coverage));
 }
 // END PLANET RENDERING
@@ -531,15 +501,7 @@ void main() {
         planetHostStar = starsBuffer.stars[currentPlanet.hoststarindex_zero_zero_zero.x];
         vec4 pl = tracePlanet(cameraRay);
         //if(pl.a < -0.9) continue;
-        storeFragment(dist, max(pl.a, 0.0), pl.rgb);
-        if(dist < lastdistance){ // current planet is closer than everything rendered yet
-            oz.rgb = mix(oz.rgb, pl.rgb, pl.a);
-            oz.a = pl.a;
-            lastdistance = dist;
-        } else {// current planet is not closer -> results is last color, as we dont have any info where it fits
-            oz.rgb = mix(pl.rgb, oz.rgb,  oz.a);
-            oz.a = 1.0;
-        }
+        if(pl.a > 0.0) storeFragment(dist, max(pl.a, 0.0), pl.rgb);
     }
     for(int i=0;i<moonsBuffer.count.x;i++){
         currentMoon = moonsBuffer.moons[i];
@@ -549,16 +511,8 @@ void main() {
         //if(dist * dist > 99999.0) continue;
         vec4 pl = traceMoon(cameraRay);
         //if(pl.a < -0.9) continue;
-        storeFragment(dist, max(pl.a, 0.0), pl.rgb);
-        if(dist < lastdistance){ // current planet is closer than everything rendered yet
-            oz.rgb = mix(oz.rgb, pl.rgb, pl.a);
-            oz.a = pl.a;
-            lastdistance = dist;
-        } else {// current planet is not closer -> results is last color, as we dont have any info where it fits
-            oz.rgb = mix(pl.rgb, oz.rgb,  oz.a);
-            oz.a = 1.0;
-        }
+        if(pl.a > 1.0) oz.rgb += pl.rgb;//storeFragment(dist, max(pl.a, 0.0), pl.rgb);
     }
     oz.rgb += (1.0 / 128.0) * vec3(rand2s(UV));
-    outColor = resolveFragments();
+    outColor = oz + resolveFragments();
 }

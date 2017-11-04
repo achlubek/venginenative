@@ -57,3 +57,13 @@ void SpaceShipAutopilot::update(SpaceShip * ship)
     double dst = glm::distance(targetPosition, ship->getPosition());
     controller->setTargetLinearVelocity(dir * glm::clamp(positionCorrectionStrength * dst, 0.0, maxLinearSpeed));
 }
+
+void SpaceShipAutopilot::enableHyperDrive(double power)
+{ 
+    hyperDriveTargetPower = power;
+}
+
+void SpaceShipAutopilot::disableHyperDrive()
+{
+    hyperDriveTargetPower = 0.0;
+}

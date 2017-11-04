@@ -41,7 +41,7 @@ void SpaceShip::update(double time_elapsed)
             modules[i]->update(this, time_elapsed);
         }
     }
-    position += time_elapsed * linearVelocity;
+    position += time_elapsed * (linearVelocity + hyperDriveVelocity);
     orientation = orientation
         * glm::angleAxis(time_elapsed * angularVelocity.x, glm::dvec3(1.0, 0.0, 0.0))
         * glm::angleAxis(time_elapsed * angularVelocity.y, glm::dvec3(0.0, 1.0, 0.0))
@@ -62,4 +62,9 @@ void SpaceShip::applyImpulse(glm::dvec3 relativePos, glm::dvec3 force)
 void SpaceShip::applyGravity(glm::dvec3 force)
 {
     linearVelocity += force;
+}
+
+void SpaceShip::setHyperDriveVelocity(glm::dvec3 vel)
+{
+    hyperDriveVelocity = vel;
 }

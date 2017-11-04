@@ -99,25 +99,35 @@ vec3 traceStarGlow(Ray ray){
     float dtraw = dot(normalize(currentStar.position_radius.rgb  - ray.o), ray.d);
     float dotz = max(0.0, dtraw);
 
-    float camdist = distance(CameraPosition, currentStar.position_radius.rgb);
+    vec4 posradius = currentStar.position_radius;
+    posradius.xyz -= CameraPosition;
+    float dist = min(600000.0, length(posradius.xyz));
+    float camdist = dist;
+
+    vec3 reconpoint = ray.o + ray.d * camdist;
+    float deltadst = distance(ray.o + normalize(posradius.xyz) * dist, reconpoint);
+    float prcnt = max(0.0, 1.0 - deltadst / (currentStar.position_radius.a * 1.0));
+    float prcnt2 = max(0.0, 1.0 - deltadst / (currentStar.position_radius.a * 4.0));
+    prcnt *= prcnt;
+    prcnt2 *= prcnt2 * prcnt2 * prcnt2 * prcnt2;
+    camdist = distance(CameraPosition, currentStar.position_radius.xyz);
     camdist *= 0.001;
     //camdist = min(camdist, 66000.0);
     float cst2 = camdist * 0.001;
-    float dim = clamp(1.0 /(1.0 + cst2 * cst2 * 0.001), 0.1, 1.0);
+    float dim = clamp(1.0 /(1.0 + cst2 * cst2 * 0.01), 0.001, 1.0);
     dim = pow(dim, 1.5);
     camdist = min(camdist, 12000.0);
     camdist = min(camdist, 700.0);
     float sqrlen = camdist * camdist;
     float specialtrick1 = clamp(1.0 / max( 0.1, 10.0 * sqrlen * (1.0 - dotz) - 1.0), 0.0, 4.0);
 
-    return 10.0 * smoothstep(0.98, 0.99, dotz) * dim * specialtrick1 * currentStar.color_age.xyz ;
+return dim * (smoothstep(0.00, 0.3, prcnt) * 4.9 + 0.6 * prcnt2) * currentStar.color_age.xyz;
+
+    return dim * specialtrick1 * currentStar.color_age.xyz;
 }
 
 void main() {
-    vec2 point = gl_PointCoord.xy * 2.0 - 1.0;
     currentStar = starsBuffer.stars[inInstanceId];
-    outColor = vec4(currentStar.color_age.xyz * (1.0 - smoothstep(0.7, 1.0, length(point))), 1.0);
-
     vec4 posradius = currentStar.position_radius;
     posradius.xyz -= CameraPosition;
     float dist = min(300000.0, length(posradius.xyz));
@@ -125,6 +135,7 @@ void main() {
     Sphere surface = Sphere( normalize(posradius.xyz) * dist + CameraPosition, currentStar.position_radius.a);
     vec2 hit = rsi2(cameraRay, surface);
     float hitmult = hits(hit.x) ? 1.0 : 0.0;
+    vec3 hitnorm = normalize((cameraRay.o + cameraRay.d * hit.x) - posradius.xyz);
     float camdist = distance(CameraPosition, currentStar.position_radius.rgb);
     camdist *= 0.001;
     camdist = min(camdist, 20000.0);

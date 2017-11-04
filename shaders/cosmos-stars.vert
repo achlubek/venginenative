@@ -43,7 +43,7 @@ void main() {
     vec4 posradius = starsBuffer.stars[gl_InstanceIndex].position_radius;
     posradius.xyz -= CameraPosition;
     float dist = min(300000.0, length(posradius.xyz));
-    outWorldPos = normalize(posradius.xyz) * dist + inPosition.xyz * posradius.a * 6.0;
+    outWorldPos = normalize(posradius.xyz) * dist + inPosition.xyz * posradius.a * 4.0;
     // + inPosition.xyz * starsBuffer.stars[gl_InstanceIndex].position_radius.a * 7.0;
     vec4 opo = (hiFreq.VPMatrix) * vec4(outWorldPos, 1.0);
     opo.y *= -1.0;

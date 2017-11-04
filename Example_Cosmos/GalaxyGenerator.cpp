@@ -65,13 +65,16 @@ void GalaxyGenerator::generateStar(int64_t galaxyradius, int64_t centerThickness
     SingleStar s = {};
     s.seed = seed;
     eng.seed(seed);
+    eng.seed(randi64(0, UINT64_MAX));
     double ss = drandnorm() * 100.0;
 #define rnd() hashx(ss);ss+=100.0;
 
-    double lu = rnd();
-    double x = rnd();
-    double y = rnd();
-    double w = rnd();
+    double lu = drandnorm();
+    double x = drandnorm();
+    double y = drandnorm();
+    double rx = drandnorm() * 2.0 - 1.0;
+    double ry = drandnorm() * 2.0 - 1.0;
+    double w = drandnorm();
 #define drand2rn() (drandnorm() * 2.0 - 1.0)
     double a = 1.7;
     double coef1 = 1.0 / (sqrt(2.0 * 3.1415 * a * a));
@@ -80,19 +83,22 @@ void GalaxyGenerator::generateStar(int64_t galaxyradius, int64_t centerThickness
     double gauss0 = coef1 * pow(2.7182818, pow(w * 1.0, 2.0) * coef2);
     glm::dvec2 c = glm::dvec2(x, y);
     c = c * 2.0 - 1.0;
-    c = glm::normalize(c) *glm::dvec2(0.96, 1.0);
-    c *= max(0.00, w < 0.05 ? w : (w * w * w)); // if > 0.1 then * 
+    c = glm::normalize(c) *glm::dvec2(0.92, 1.0);
+    c *= w * w; // if > 0.1 then * 
     c = rotate(c, w * 13.2340);
 
     double dst = glm::length(c);
-    double gauss1 = coef1 * pow(2.7182818, pow(dst * 2.0, 2.0) * coef2);
+
+    c += glm::dvec2(rx, ry) * (0.01 / (0.01 + dst * 1000.0));
+
+    double gauss1 = cos(3.1415 * 0.5 * (abs(dst)));// coef1 * pow(2.7182818, pow(dst * 0.01, 2.0) * coef2);
     double gauss2 = coef1 * pow(2.7182818, pow(drandnorm() * 2.0, 2.0) * coef2);
     // point c is in -1 -> 1
     w = 1.0 - w;
     lu = w*w*(3.0 - 2.0 * w);
     s.x = static_cast<double>(galaxyradius) * c.x;
     s.z = static_cast<double>(galaxyradius) * c.y;
-    s.y = static_cast<double>(centerThickness) * (gauss1 * ((drand2rn() * drand2rn() * drand2rn() * drand2rn())));
+    s.y = static_cast<double>(centerThickness) * (gauss1 * (drand2rn() * drand2rn() * drand2rn()));
 
     stars.push_back(s);
 }
@@ -109,7 +115,7 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
     eng.seed(s.seed);
     GeneratedStarInfo star = {};
     star.starData = s;
-    star.radius = 39100 + randu64(0, 100000); // sun is 695700 so this range is from 391 000 to 1 391 000 pretty much covers shit
+    star.radius = randu64(39100, 139100);
     star.color = glm::vec3(0.5 + drandnorm() * drandnorm(), 0.5 + drandnorm() * drandnorm(), 0.5 + drandnorm() * drandnorm());
     star.age = drandnorm();
     star.spotsIntensity = drandnorm();
@@ -120,14 +126,14 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
     system.star = star;
     system.planets = {};
     //double stardisthelper = 5800000;
-    double arra[8] = { 5800000,
-        10800000,
-        14900000,
-        22800000,
-        77800000,
-        142700000,
-        287100000,
-        449700000 };
+    double arra[8] = { 580000,
+        1080000,
+        1490000,
+        2280000,
+        7780000,
+        14270000,
+        28710000,
+        44970000 };
 
     for (int i = 0; i < star.planetsCount; i++) {
         GeneratedPlanetInfo planet = GeneratedPlanetInfo(star);
@@ -136,11 +142,11 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
         planet.planetIndex = i;
        // stardisthelper += randu64(4000000, 162600000);
 
-        uint64_t habitableStart = 10800000;// 1082000;
-        uint64_t habitableEnd = 22800000;// 3279000;
+        uint64_t habitableStart = 1080000;// 1082000;
+        uint64_t habitableEnd = 2280000;// 3279000;
         if (planet.starDistance < habitableStart) {
             // Rocky and small ONLY
-            planet.radius = randu64(2440, 5440); // ranges from mercury to roughly 2x mercury
+            planet.radius = randu64(244, 544); // ranges from mercury to roughly 2x mercury
             planet.moonsCount = randu64(1, 2);
             planet.atmosphereRadius = 0.0;
             planet.atmosphereAbsorbStrength = 0.0;
@@ -153,7 +159,7 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
         }
         else if (planet.starDistance >= habitableStart && planet.starDistance <= habitableEnd) {
             // earth like or venus/mars like
-            planet.radius = randu64(3390, 9371); // ranges from mars to 1,5x earth
+            planet.radius = randu64(339, 937.1); // ranges from mars to 1,5x earth
             planet.moonsCount = randu64(1, 4);
             planet.atmosphereRadius = (planet.radius * 0.02);
             planet.terrainMaxLevel = drandnorm();
@@ -180,7 +186,7 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
             float rand1 = drandnorm();
             if (rand1 < 0.8) {
                 // gaseous giant
-                planet.radius = randu64(25362, 69911); // ranges from uranus to jupiter
+                planet.radius = randu64(2536.2, 6991.1); // ranges from uranus to jupiter
                 planet.moonsCount = randu64(5, 16);
                 planet.atmosphereRadius = (drandnorm() + 2.0) * (planet.radius * 0.1);
                 planet.atmosphereAbsorbStrength = 0.7 + 0.3 * drandnorm();
@@ -192,7 +198,7 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
             }
             else {
                 // rocky
-                planet.radius = randu64(2440, 5440); // ranges from mercury to roughly 2x mercury
+                planet.radius = randu64(244.0, 544.0); // ranges from mercury to roughly 2x mercury
                 planet.moonsCount = randu64(1, 2);
                 planet.atmosphereRadius = 0.0;
                 planet.atmosphereAbsorbStrength = 0.0;
