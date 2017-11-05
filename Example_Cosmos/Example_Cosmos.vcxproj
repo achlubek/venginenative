@@ -141,6 +141,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AbsShipEnginesController.h" />
+    <ClInclude Include="CommandTerminal.h" />
     <ClInclude Include="CosmosRenderer.h" />
     <ClInclude Include="GalaxyGenerator.h" />
     <ClInclude Include="Maneuvering6DOFShipEnginesController.h" />
@@ -154,6 +155,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AbsShipEnginesController.cpp" />
+    <ClCompile Include="CommandTerminal.cpp" />
     <ClCompile Include="CosmosRenderer.cpp" />
     <ClCompile Include="Example_Cosmos.cpp" />
     <ClCompile Include="GalaxyGenerator.cpp" />

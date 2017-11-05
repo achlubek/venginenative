@@ -210,7 +210,7 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
             }
         }
 
-        planet.orbitSpeed = drandnorm();
+        planet.orbitSpeed = 0.0*drandnorm();
         system.moons = {};
         for (int g = 0; g < planet.moonsCount; g++) {
             GeneratedMoonInfo moon = GeneratedMoonInfo(planet);

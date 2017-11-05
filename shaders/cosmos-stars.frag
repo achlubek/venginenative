@@ -101,7 +101,7 @@ vec3 traceStarGlow(Ray ray){
 
     vec4 posradius = currentStar.position_radius;
     posradius.xyz -= CameraPosition;
-    float dist = min(600000.0, length(posradius.xyz));
+    float dist = min(500000.0, length(posradius.xyz));
     float camdist = dist;
 
     vec3 reconpoint = ray.o + ray.d * camdist;
@@ -114,16 +114,16 @@ vec3 traceStarGlow(Ray ray){
     camdist *= 0.001;
     //camdist = min(camdist, 66000.0);
     float cst2 = camdist * 0.001;
-    float dim = clamp(1.0 /(1.0 + cst2 * cst2 * 0.01), 0.001, 1.0);
-    dim = pow(dim, 1.5);
+    float dim = clamp(1.0 /(1.0 + cst2 * cst2 * 0.06), 0.0001, 1.0);
+    dim = pow(dim,2.0);
     camdist = min(camdist, 12000.0);
     camdist = min(camdist, 700.0);
     float sqrlen = camdist * camdist;
     float specialtrick1 = clamp(1.0 / max( 0.1, 10.0 * sqrlen * (1.0 - dotz) - 1.0), 0.0, 4.0);
 
-return dim * (smoothstep(0.00, 0.3, prcnt) * 4.9 + 0.6 * prcnt2) * currentStar.color_age.xyz;
+return dim * (smoothstep(0.00, 0.3, prcnt) * 14.9 ) * currentStar.color_age.xyz;
 
-    return dim * specialtrick1 * currentStar.color_age.xyz;
+    return dim * specialtrick1 * currentStar.color_age.xyz * 0.21;
 }
 
 void main() {

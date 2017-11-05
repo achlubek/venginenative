@@ -15,7 +15,7 @@ Maneuvering6DOFShipEnginesController::~Maneuvering6DOFShipEnginesController()
 
 void Maneuvering6DOFShipEnginesController::update(SpaceShip * ship)
 {
-    glm::dvec3 angularThrust = (targetAngularVelocity - ship->getAngularVelocity()) * enginesPower;
+    glm::dvec3 angularThrust = (targetAngularVelocity - ship->getAngularVelocity()) * enginesPower * 0.15;
     //X
     negYFORWARD->currentPowerPercentage = angularThrust.x;
     negYBACKWARD->currentPowerPercentage = -angularThrust.x;

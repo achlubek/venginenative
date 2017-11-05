@@ -121,7 +121,7 @@ void main() {
     vec4 celestial = texture(texCelestial, UV);
     vec3 dir = reconstructCameraSpaceDistance(UV, 1.0);
     dir *= 2.0;
-    vec3 stars = (texture(texStars, UV).rgb + blur(texStars, 0.01).rgb) * 0.8;//texture(texStars, UV);
+    vec3 stars = texture(texStars, UV).rgb ;//texture(texStars, UV);
     vec4 ui = texture(uiTexture, UV);
     //stars.rgb /= max(0.0001, stars.a);
     vec3 a = mix(stars, celestial.rgb, celestial.a);

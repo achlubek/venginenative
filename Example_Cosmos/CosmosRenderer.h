@@ -17,7 +17,7 @@ public:
 
     std::vector<GeneratedStarSystemInfo> nearbyStars;
     std::vector<GeneratedStarSystemInfo> nearestStarSystems;
-    //int nearestStarIndex;
+    //int nearestStarIndex; 
     GeneratedPlanetInfo nearestPlanet;
     GeneratedMoonInfo nearestMoon;
     Camera* internalCamera;

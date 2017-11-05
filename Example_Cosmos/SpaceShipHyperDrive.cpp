@@ -26,7 +26,7 @@ void SpaceShipHyperDrive::update(SpaceShip * ship, double time_elapsed)
         realPower += min(0.01 * time_elapsed, currentPowerPercentage - realPower);
     }
     else {
-        realPower -= min(0.1 * time_elapsed, realPower - currentPowerPercentage);
+        realPower -= min(0.5 * time_elapsed, realPower - currentPowerPercentage);
     }
     realPower = glm::clamp(realPower, 0.0, 1.0);
     ship->setHyperDriveVelocity(m3 * vel);
