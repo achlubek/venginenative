@@ -377,9 +377,9 @@ int main()
                         pilot.getTargetOrientation(dstorient);
                         pilot.update(ship);
                         enginesController.update(ship);
-                        hyperdrive_engine->currentPowerPercentage = glm::clamp(dst2 / (12400000.0), 0.0, 1.0) * 0.01;
+                        hyperdrive_engine->currentPowerPercentage = glm::clamp(dst2 / (20400000.0), 0.0, 1.0) * 0.02;
                         printf("%f %f %f %f\n", hyperdrive_engine->currentPowerPercentage, targetdist, dst, dst2);
-                        if (dst > targetdist - 3000.0) {
+                        if (dst > targetdist - 300.0) {
                             hyperdrive_engine->currentPowerPercentage = 0.0;
                             break;
                         }
@@ -602,7 +602,7 @@ int main()
         }
 
 
-        ship->applyGravity(cosmosRenderer->lastGravity * elapsed * (keyboard->getKeyStatus(GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ? 100.0f : 1.0f));
+       // ship->applyGravity(cosmosRenderer->lastGravity * elapsed * (keyboard->getKeyStatus(GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ? 100.0f : 1.0f));
         ship->update(elapsed * (keyboard->getKeyStatus(GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ? 100.0 : 1.0));
         camera->transformation->setOrientation(ship->getOrientation());
         cosmosRenderer->updateCameraBuffer(camera, ship->getPosition());

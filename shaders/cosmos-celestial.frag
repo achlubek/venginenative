@@ -3,6 +3,9 @@
 
 layout(location = 0) in vec2 UV;
 layout(location = 0) out vec4 outColor;
+layout(set = 0, binding = 4) uniform sampler2D planetTerrainHeightImage;
+layout(set = 0, binding = 5) uniform sampler2D planetTerrainColorImage;
+layout(set = 0, binding = 6) uniform sampler2D planetAtmosphereFlunctuationsImage;
 
 layout(set = 0, binding = 0) uniform UniformBufferObject1 {
     float Time;
@@ -91,6 +94,19 @@ mat3 rotationMatrix(vec3 axis, float angle)
     return mat3(oc * axis.x * axis.x + c, oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s,
         oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c, oc * axis.y * axis.z - axis.x * s,
         oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c);
+}
+vec2 xyzToPolar(vec3 xyz){
+    float theta = atan(xyz.y, xyz.x);
+    float phi = acos(xyz.z);
+    vec2 r = (vec2(theta, phi) / vec2(2.0 *3.1415, 3.1415)).xy;
+    return r;
+}
+
+vec3 polarToXyz(vec2 xy){
+    xy.x = 1.0-xy.x;
+    mat3 a = rotationMatrix(vec3(1.0, 0.0, 0.0), xy.x * 3.1415 * 2.0);
+    mat3 b = rotationMatrix(vec3(0.0, 1.0, 0.0), xy.y * 3.1415 * 1.0 );
+    return b * (a * vec3(0.0, 0.0, -1.0));
 }
 float hash( float n ){
     return fract(sin(n)*758.5453);
@@ -289,7 +305,7 @@ vec3 extra_cheap_atmosphere(float raylen, float sunraylen, float absorbstrength,
 #line 231
 
 float clouds(vec3 mx, float h){
-    return pow(smoothstep(0.136 - noise3d(mx * 1.3) * 0.03, 0.31, noise3d(mx * 2.0) * h * fbmHI(mx * 6.0 + 5.0*fbmHI(mx.yxz * 1.0 + hiFreq.Time * 0.001, 2.0) * 0.5 - hiFreq.Time * 0.01, 2.8)), 3.0);
+    return  texture(planetAtmosphereFlunctuationsImage, xyzToPolar(mx)).r * h;
 }
 
 float intersectPlane(vec3 origin, vec3 direction, vec3 point, vec3 normal)
@@ -331,7 +347,7 @@ vec4 tracePlanetAtmosphere(vec3 start, vec3 end, float lengthstart, float length
     vec3 atm = vec3(0.0);
     float stepdistance = currentPlanet.position_radius.a * 0.002;
     float stepdistanceinv = 1.0 / stepdistance;
-    float iter = rand2s(UV) * stepdistance + 0.0001;
+    float iter = rand2s(UV) * stepdistance + 0.002;
     float coverage = 0.0;
     float dstnew = 0.0;
     float dsttrg = distance(start, end);
@@ -350,7 +366,7 @@ vec4 tracePlanetAtmosphere(vec3 start, vec3 end, float lengthstart, float length
         float dst = length(p - currentPlanet.position_radius.rgb);
         vec4 coorddir = vec4(dir * (1.0 + 0.1 * heightmix) * 11.0 * (0.2 + rd2 * 3.0), hiFreq.Time * 0.001);
         float cloudiness = clouds(dir ,  1.0 - abs( heightmix * 2.0 - 1.0)  );
-        float flunctuations = 1.0 - FBM3(dir * vec3(1.0, 10.0, 1.0), 4, 3.0, 0.5) * (1.0 - step(0.01, currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.r));
+        float flunctuations = 1.0;// - FBM3(dir * vec3(1.0, 10.0, 1.0), 4, 3.0, 0.5) * (1.0 - step(0.01, currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.r));
         float shadow = 1.0;// - traceRings(Ray(p, sundir), surface, sundir).a;
         float absorbstrength = currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.a * (0.1 + 0.9 * flunctuations);
         vec3 AC =  max(vec3(0.0), extra_cheap_atmosphere(101.0 * stepdistance, clamp(101.0 * max(hit_Atmosphere.x, hit_Atmosphere.y), 0.0, 10000.0), 223.0
@@ -362,22 +378,17 @@ vec4 tracePlanetAtmosphere(vec3 start, vec3 end, float lengthstart, float length
                 currentPlanet.atmosphereAbsorbColor_zero.rgb ,
                 1.0) * 0.2 + max(dot(dir, sundir), 0.0);
         float planetshadow = (1.0 - step(0.0, max(hit_Surface.x, hit_Surface.y))) * (1.0 / (1.0 + 10.0 * clamp(max(hit_Atmosphere.x, hit_Atmosphere.y), 0.0, 10000.0)));
-        atm += vec3(cloudiness * directsuncolor * planetshadow) + clamp(surfacemulti * shadow * vec3(shadow) * 0.18 * stepdistanceinv * clamp(1.0 - coverage, 0.0, 1.0) * planetshadow * (AC ) * (1.0 - 0.04 * clamp(max(hit_Atmosphere.x, hit_Atmosphere.y), 0.0, 10000.0) * absorbstrength), 0.0,1.0);
-        coverage += heightmix * stepdistanceinv * absorbstrength * 0.0007 + cloudiness;
+        atm += vec3(cloudiness * directsuncolor * planetshadow  * 10.0)
+            + clamp(  6990.18 * stepdistance * planetshadow * (AC ) * (1.0 - 0.04 * clamp(max(hit_Atmosphere.x, hit_Atmosphere.y), 0.0, 10000.0) * absorbstrength), 0.0,100.0);
+        coverage += heightmix * stepdistance * absorbstrength * 50.507 + cloudiness;
         if(coverage > 1.0) break;
     }
     //atm *= 0.1;
     return vec4(atm, clamp(coverage, 0.0, 1.0));
 }
-#define maxheight (currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.z * 0.5)//*currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.r
+#define maxheight (currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.z * 0.5)*currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.r
 float getplanetheight(vec3 dir){
-    float seed = currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.a;
-    float rd1 = hash(seed);
-    float rd2 = hash(seed + 200.0);
-    float rd3 = hash(seed + 400.0);
-    float dr = FBM3(dir * 0.8 * (0.8 + rd2 * 3.0), 4, 1.8 + rd1 * 0.4, rd3* 0.1 + 0.6 );
-    return currentPlanet.position_radius.a
-        + maxheight * pow(FBM3(dr * 0.4 + dir * 0.8 * (0.8 + rd2 * 3.0), 13, 1.8 + rd1 * 0.4, rd3* 0.1 + 0.6 ), 3.0);
+    return currentPlanet.position_radius.a + texture(planetTerrainHeightImage, xyzToPolar(dir)).r * maxheight;
 }
 vec3 getplanetnormal(vec3 dir){
     vec3 tangdir = normalize(cross(dir, vec3(0.0, 1.0, 0.0)));
@@ -420,8 +431,7 @@ vec3 shadeSurface();
 
 vec4 tracePlanet(Ray ray){
     Sphere surface = Sphere(currentPlanet.position_radius.rgb, currentPlanet.position_radius.a);
-    Sphere watersurface = Sphere(currentPlanet.position_radius.rgb, currentPlanet.position_radius.a + maxheight  * (0.3 + 0.7 * currentPlanet.terrainMaxLevel_fluidMaxLevel_starDistance_seed.y));
-    float atmoradius = currentPlanet.position_radius.a + currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.b;
+    float atmoradius = currentPlanet.position_radius.a + currentPlanet.habitableChance_orbitSpeed_atmosphereRadius_atmosphereAbsorbStrength.b ;
     Sphere atmosphere = Sphere(currentPlanet.position_radius.rgb,
         atmoradius);
     vec3 color = vec3(0.0);
@@ -434,7 +444,6 @@ vec4 tracePlanet(Ray ray){
     } else if(hits(hit_Atmosphere.x) || hits(hit_Atmosphere.y)){
         hit_Surface = raymarchTerrain(ray, currentPlanet.position_radius.xyz);
     }
-    hit_Water = rsi2(ray, watersurface).x;
 
     float centerDistance = distance(ray.o, currentPlanet.position_radius.rgb);
 
@@ -456,7 +465,6 @@ vec4 tracePlanet(Ray ray){
     int hitcount = 0;
     if(hits(hit_Surface)) hitcount++;
     if(hits(hit_Atmosphere.x) || hits(hit_Atmosphere.y)) hitcount++;
-
     if(centerDistance >= currentPlanet.position_radius.a && centerDistance >= atmoradius){
         // scenario 1
         if(hitcount == 0) coverage = -1.0;//scenario a
@@ -470,13 +478,10 @@ vec4 tracePlanet(Ray ray){
             vec4 atm = tracePlanetAtmosphere(ray.d * hit_Atmosphere.x, ray.d * hit_Surface,
                 currentPlanet.position_radius.a  - maxheight, atmoradius);
             vec3 norm = getplanetnormal(normalize((ray.d * hit_Surface) - currentPlanet.position_radius.rgb));
-            vec3 normwater = normalize((ray.d * hit_Water) - currentPlanet.position_radius.rgb);
             vec3 sdir = normalize(SUNDIR - (ray.d * hit_Surface));
-            vec3 ground = vec3(currentPlanet.preferredColor_zero.rgb) * max(0.0, dot(norm, sdir));
-            vec3 water = vec3(0.1, 0.4, 0.7) * pow(max(0.0, dot(normwater, sdir)), 4.0);
-            float surfacedir = getplanetheight(normalize(ray.d * hit_Surface - currentPlanet.position_radius.rgb));
-            float waterdir = watersurface.rad;
-            vec3 colo = mix(ground, water, step(0.0, (waterdir - surfacedir)));
+            vec3 dir = normalize(ray.d * hit_Surface - currentPlanet.position_radius.rgb);
+            vec4 datatex = texture(planetTerrainColorImage, xyzToPolar(dir)).rgba;
+            vec3 colo = 4.0 *  datatex.rgb * pow(max(0.0, dot(norm, sdir)), 1.0 + 3.0 * (1.0 - datatex.a));
             color = atm.rgb  + (1.0 - atm.a) * colo;
             coverage = 1.0;
         }
@@ -491,13 +496,10 @@ vec4 tracePlanet(Ray ray){
             vec4 atm = tracePlanetAtmosphere(ray.o, ray.d * hit_Surface,
                 currentPlanet.position_radius.a  - maxheight, atmoradius);
                 vec3 norm = getplanetnormal(normalize((ray.d * hit_Surface) - currentPlanet.position_radius.rgb));
-                vec3 normwater = normalize((ray.d * hit_Water) - currentPlanet.position_radius.rgb);
                 vec3 sdir = normalize(SUNDIR - (ray.d * hit_Surface));
-                vec3 ground = vec3(currentPlanet.preferredColor_zero.rgb) * max(0.0, dot(norm, sdir));
-                vec3 water = vec3(0.1, 0.4, 0.7) * pow(max(0.0, dot(normwater, sdir)), 4.0);
-                float surfacedir = getplanetheight(normalize(ray.d * hit_Surface - currentPlanet.position_radius.rgb));
-                float waterdir = watersurface.rad;
-                vec3 colo = mix(ground, water, step(0.0, (waterdir - surfacedir)));
+                vec3 dir = normalize(ray.d * hit_Surface - currentPlanet.position_radius.rgb);
+                vec4 datatex = texture(planetTerrainColorImage, xyzToPolar(dir)).rgba;
+                vec3 colo = 4.0 *  datatex.rgb * pow(max(0.0, dot(norm, sdir)), 1.0 + 3.0 * (1.0 - datatex.a));
                 color = atm.rgb  + (1.0 - atm.a) * colo;
             coverage = 1.0;
         }
@@ -537,6 +539,6 @@ void main() {
         //if(pl.a < -0.9) continue;
         if(pl.a > 1.0) oz.rgb += pl.rgb;//storeFragment(dist, max(pl.a, 0.0), pl.rgb);
     }
-    oz.rgb += (1.0 / 128.0) * vec3(rand2s(UV));
+    oz.rgb -= (1.0 / 128.0) * vec3(rand2s(UV));
     outColor = oz + resolveFragments();
 }

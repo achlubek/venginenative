@@ -151,7 +151,7 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
             planet.atmosphereRadius = 0.0;
             planet.atmosphereAbsorbStrength = 0.0;
             planet.atmosphereAbsorbColor = glm::vec3(0.0);
-            planet.terrainMaxLevel = drandnorm();
+            planet.terrainMaxLevel = 0.3 + 0.7 *drandnorm();
             planet.fluidMaxLevel = 0.0;
             planet.habitableChance = 0.0;
             planet.preferredColor = glm::vec3(0.8 + drandnorm() * 0.2, 0.4 + drandnorm() * 0.3, 0.4 + drandnorm() * 0.2);
@@ -168,7 +168,7 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
                 // oxygen etc, blue marbles
                 planet.atmosphereAbsorbStrength = 0.02;
                 planet.atmosphereAbsorbColor = glm::vec3(0.3, 0.5, 1.0);
-                planet.fluidMaxLevel = drandnorm() * 0.5 + 0.2;
+                planet.fluidMaxLevel = drandnorm() * 0.5 + 0.5;
                 planet.habitableChance = 1.0;
                 planet.preferredColor = glm::vec3(0.2 + drandnorm() * 0.2, 0.7 + drandnorm() * 0.3, 0.2 + drandnorm() * 0.2);
             }
@@ -176,7 +176,7 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
                 // some mars like
                 planet.atmosphereAbsorbStrength = 0.02;
                 planet.atmosphereAbsorbColor = glm::vec3(0.8 + drandnorm()* 0.2, 0.3 + drandnorm()* 0.2, 0.1 + drandnorm()* 0.1);
-                planet.fluidMaxLevel = drandnorm() * 0.5;
+                planet.fluidMaxLevel = drandnorm() * 0.5 + 0.5;
                 planet.habitableChance = 0.5;
                 planet.preferredColor = glm::vec3(0.8 + drandnorm() * 0.2, 0.4 + drandnorm() * 0.3, 0.1 + drandnorm() * 0.2);
             }

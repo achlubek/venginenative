@@ -40,6 +40,8 @@ public:
    // VulkanDescriptorSetLayout* starsLayout{ nullptr };
    // VulkanDescriptorSet* starsSet{ nullptr };
 
+    VulkanRenderStage* planetDataStage{ nullptr };
+
     VulkanRenderStage* combineStage{ nullptr };
     VulkanDescriptorSetLayout* combineLayout{ nullptr };
     VulkanDescriptorSet* combineSet{ nullptr };
@@ -51,7 +53,12 @@ public:
 
     VulkanImage* celestialImage;
     VulkanImage* starsImage;
-    VulkanImage* outputImage;
+    //VulkanImage* cosmosImage;
+
+    VulkanImage* planetTerrainHeightImage;
+    VulkanImage* planetTerrainColorImage;
+    VulkanImage* planetAtmosphereFlunctuationsImage;
+
     Object3dInfo* cube3dInfo;
 
     const double scale = 0.01;
