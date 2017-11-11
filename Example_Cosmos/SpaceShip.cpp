@@ -24,6 +24,16 @@ glm::dquat SpaceShip::getOrientation()
     return orientation;
 }
 
+void SpaceShip::setPosition(glm::dvec3 v)
+{
+    position = v;
+}
+
+void SpaceShip::setOrientation(glm::dquat r)
+{
+    orientation = r;
+}
+
 glm::dvec3 SpaceShip::getLinearVelocity()
 {
     return linearVelocity;

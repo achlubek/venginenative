@@ -8,6 +8,8 @@ public:
 
     glm::dvec3 getPosition();
     glm::dquat getOrientation();
+    void setPosition(glm::dvec3 v);
+    void setOrientation(glm::dquat r);
     glm::dvec3 getLinearVelocity();
     glm::dvec3 getAngularVelocity();
     void update(double time_elapsed);

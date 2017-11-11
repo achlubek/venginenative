@@ -72,7 +72,7 @@ int main()
     }
 
     auto camera = new Camera();
-    camera->createProjectionPerspective(60.0f, (float)toolkit->windowWidth / (float)toolkit->windowHeight, 0.01f, 1000000);
+    camera->createProjectionPerspective(80.0f, (float)toolkit->windowWidth / (float)toolkit->windowHeight, 0.01f, 9000000.0f);
     // glm::dvec3 observerPosition;
 
 
@@ -161,7 +161,7 @@ int main()
     //double fuel = maxFuel;
     SpaceShip* ship = new SpaceShip(cosmosRenderer->nearbyStars[9999].planets[0].getPosition(100.0) * cosmosRenderer->scale + glm::dvec3(10000.0, 0.0, 0.0), glm::dquat(1.0, 0.0, 0.0, 0.0));
 
-    SpaceShipHyperDrive* hyperdrive_engine = new SpaceShipHyperDrive(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(0.0, 0.0, 1.0), 500000000.19, 0.1);
+    SpaceShipHyperDrive* hyperdrive_engine = new SpaceShipHyperDrive(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(0.0, 0.0, 1.0), 2500000.19, 0.1);
 
     SpaceShipEngine* forward_engine = new SpaceShipEngine(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(0.0, 0.0, 1.0), 100.19, 0.1);
     SpaceShipEngine* backward_engine = new SpaceShipEngine(glm::dvec3(0.0, 0.0, -1.0), glm::dvec3(0.0, 0.0, -1.0), 100.19, 0.01);
@@ -313,7 +313,7 @@ int main()
                     }
                     //  terminal->printMessage(UIColor(0.1, 1.0, 0.1, 1.0), "*** Enabling hyperdrive...");
                     enginesController.setEnginesPower(1.0);
-                    hyperdrive_engine->currentPowerPercentage = 0.01;
+                    hyperdrive_engine->currentPowerPercentage = 1.0;
                     double targetdist = glm::length(target - ship->getPosition());
                     glm::dvec3 start = ship->getPosition();
                     while (true) {
@@ -324,7 +324,7 @@ int main()
                         pilot.getTargetOrientation(dstorient);
                         pilot.update(ship);
                         enginesController.update(ship);
-                        hyperdrive_engine->currentPowerPercentage = glm::clamp(dst2 / (targetdist - 10000.0), 0.0, 1.0) * 0.01;
+                        hyperdrive_engine->currentPowerPercentage = glm::clamp(dst2 / (targetdist - 10000.0), 0.0, 1.0);
                         printf("%f %f %f %f\n", hyperdrive_engine->currentPowerPercentage, targetdist, dst, dst2);
                         if (dst > targetdist - 10000.0) {
                             hyperdrive_engine->currentPowerPercentage = 0.0;
@@ -366,20 +366,20 @@ int main()
                     }
                     //  terminal->printMessage(UIColor(0.1, 1.0, 0.1, 1.0), "*** Enabling hyperdrive...");
                     enginesController.setEnginesPower(1.0);
-                    hyperdrive_engine->currentPowerPercentage = 0.01;
+                    hyperdrive_engine->currentPowerPercentage = 1.0;
                     double targetdist = glm::length(target - ship->getPosition());
                     glm::dvec3 start = ship->getPosition();
                     while (true) {
                         double dst = glm::length(start - ship->getPosition());
                         double dst2 = glm::length(target - ship->getPosition());
-                        pilot.setTargetPosition(ship->getPosition());
+                        pilot.setTargetPosition(ship->getPosition() + ship->getLinearVelocity() * -100.0);
                         dstorient = glm::normalize(target - ship->getPosition());
                         pilot.getTargetOrientation(dstorient);
                         pilot.update(ship);
                         enginesController.update(ship);
-                        hyperdrive_engine->currentPowerPercentage = glm::clamp(dst2 / (20400000.0), 0.0, 1.0) * 0.02;
+                        hyperdrive_engine->currentPowerPercentage = glm::clamp((dst2 - 3000.0) / (5400000.0), 0.0, 1.0) * 1.0;
                         printf("%f %f %f %f\n", hyperdrive_engine->currentPowerPercentage, targetdist, dst, dst2);
-                        if (dst > targetdist - 300.0) {
+                        if (dst > targetdist - 3000.0) {
                             hyperdrive_engine->currentPowerPercentage = 0.0;
                             break;
                         }
@@ -388,6 +388,13 @@ int main()
                 });
                 hyperdrive_proc.detach();
                 return;
+            }
+            if (words.size() == 3 && words[0] == "tp") {
+                glm::dvec3 target = cosmosRenderer->nearbyStars[std::stoi(words[1])].planets[std::stoi(words[2])].getPosition(0.0) * cosmosRenderer->scale;
+                enginesController.setReferenceFrameVelocity(glm::dvec3(0.0));
+                enginesController.setTargetAngularVelocity(glm::dvec3(0.0));
+                enginesController.setTargetLinearVelocity(glm::dvec3(0.0));
+                ship->setPosition(target - ship->getOrientation() * glm::dvec3(0.0, 0.0, 1.0));
             }
             terminal->printMessage(UIColor(1.0, 1.0, 0.0, 1.0), "* Invalid command.");
             return;
@@ -605,7 +612,8 @@ int main()
        // ship->applyGravity(cosmosRenderer->lastGravity * elapsed * (keyboard->getKeyStatus(GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ? 100.0f : 1.0f));
         ship->update(elapsed * (keyboard->getKeyStatus(GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ? 100.0 : 1.0));
         camera->transformation->setOrientation(ship->getOrientation());
-        cosmosRenderer->updateCameraBuffer(camera, ship->getPosition());
+        cosmosRenderer->updateCameraBuffer(camera, ship->getPosition() + glm::mat3_cast(ship->getOrientation()) * glm::dvec3(0.0, 0.7, 3.45) , 
+            ship->getPosition(), ship->getOrientation());
         cosmosRenderer->updatePlanetsAndMoon(ship->getPosition());
         cosmosRenderer->draw();
         auto slp = ship->getLinearVelocity();

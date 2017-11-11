@@ -26,6 +26,9 @@ public:
     GeneratedPlanetInfo getPlanet(int starIndex, int planetIndex);
     GeneratedMoonInfo getMoon(int starIndex, int planetIndex, int moonIndex);
 
+    int lastStarId;
+    int lastPlanetId;
+
     int width{ 0 };
     int height{ 0 };
 
@@ -41,6 +44,7 @@ public:
    // VulkanDescriptorSet* starsSet{ nullptr };
 
     VulkanRenderStage* planetDataStage{ nullptr };
+    VulkanRenderStage* shipStage{ nullptr };
 
     VulkanRenderStage* combineStage{ nullptr };
     VulkanDescriptorSetLayout* combineLayout{ nullptr };
@@ -50,16 +54,21 @@ public:
     VulkanGenericBuffer* starsDataBuffer;
     VulkanGenericBuffer* planetsDataBuffer;
     VulkanGenericBuffer* moonsDataBuffer;
+    VulkanGenericBuffer* shipDataBuffer;
 
     VulkanImage* celestialImage;
     VulkanImage* starsImage;
     //VulkanImage* cosmosImage;
+    VulkanImage* shipResultImage;
+    VulkanImage* shipDepthImage;
+    VulkanImage* shipColorTexture;
 
     VulkanImage* planetTerrainHeightImage;
     VulkanImage* planetTerrainColorImage;
     VulkanImage* planetAtmosphereFlunctuationsImage;
 
     Object3dInfo* cube3dInfo;
+    Object3dInfo* spaceship3dInfo;
 
     const double scale = 0.01;
 
@@ -85,7 +94,7 @@ public:
 
     void updateNearestStar(glm::dvec3 observerPosition);
 
-    void updateCameraBuffer(Camera* cam, glm::dvec3 observerPosition);
+    void updateCameraBuffer(Camera* cam, glm::dvec3 observerPosition, glm::dvec3 spaceShipPosition, glm::dquat spaceShipOrientation);
     void draw();
 
     volatile bool readyForDrawing = false;

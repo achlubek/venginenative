@@ -34,7 +34,7 @@ CommandTerminal::CommandTerminal(UIRenderer* irenderer, Keyboard* ikeyboard)
             if (ignoreCharsCount-- > 0) return;
             if (c == '\n') return;
             inputString += c;
-            input->updateText(inputString + " ");
+            input->updateText(inputString + "|");
         }
     });
     keyboard->onKeyPress.add([&](int c) {

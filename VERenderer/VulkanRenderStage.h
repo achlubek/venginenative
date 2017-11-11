@@ -37,6 +37,7 @@ public:
     VulkanRenderStage* copy();
     bool alphaBlending = false;
     bool additiveBlending = false;
+    bool enabled = true;
     VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; 
     VkCullModeFlags cullFlags = 0;
 

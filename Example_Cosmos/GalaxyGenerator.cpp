@@ -135,6 +135,7 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
         28710000,
         44970000 };
 
+    system.moons = {};
     for (int i = 0; i < star.planetsCount; i++) {
         GeneratedPlanetInfo planet = GeneratedPlanetInfo(star);
        // planet.host = star;
@@ -161,20 +162,20 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
             // earth like or venus/mars like
             planet.radius = randu64(339, 937.1); // ranges from mars to 1,5x earth
             planet.moonsCount = randu64(1, 4);
-            planet.atmosphereRadius = (planet.radius * 0.02);
+            planet.atmosphereRadius = (planet.radius * 0.004709);
             planet.terrainMaxLevel = drandnorm();
             float rand1 = drandnorm();
             if (rand1 < 0.5) {
                 // oxygen etc, blue marbles
-                planet.atmosphereAbsorbStrength = 0.02;
-                planet.atmosphereAbsorbColor = glm::vec3(0.3, 0.5, 1.0);
-                planet.fluidMaxLevel = drandnorm() * 0.5 + 0.5;
+                planet.atmosphereAbsorbStrength = 0.12;
+                planet.atmosphereAbsorbColor = glm::vec3(0.24, 0.58, 1.0);
+                planet.fluidMaxLevel = drandnorm();
                 planet.habitableChance = 1.0;
                 planet.preferredColor = glm::vec3(0.2 + drandnorm() * 0.2, 0.7 + drandnorm() * 0.3, 0.2 + drandnorm() * 0.2);
             }
             else {
                 // some mars like
-                planet.atmosphereAbsorbStrength = 0.02;
+                planet.atmosphereAbsorbStrength = 0.12;
                 planet.atmosphereAbsorbColor = glm::vec3(0.8 + drandnorm()* 0.2, 0.3 + drandnorm()* 0.2, 0.1 + drandnorm()* 0.1);
                 planet.fluidMaxLevel = drandnorm() * 0.5 + 0.5;
                 planet.habitableChance = 0.5;
@@ -190,11 +191,11 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
                 planet.moonsCount = randu64(5, 16);
                 planet.atmosphereRadius = (drandnorm() + 2.0) * (planet.radius * 0.1);
                 planet.atmosphereAbsorbStrength = 0.7 + 0.3 * drandnorm();
-                planet.atmosphereAbsorbColor = glm::vec3(0.1 + drandnorm(), 0.1 + drandnorm(), 0.1 + drandnorm());
+                planet.atmosphereAbsorbColor = glm::vec3(0.1 + drandnorm() * 0.8, 0.1 + drandnorm() * 0.8, 0.1 + drandnorm() * 0.8);
                 planet.terrainMaxLevel = 0.0;
                 planet.fluidMaxLevel = 0.0;
                 planet.habitableChance = 0.0;
-                planet.preferredColor = glm::vec3(0.1 + drandnorm(), 0.1 + drandnorm(), 0.1 + drandnorm());
+                planet.preferredColor = glm::vec3(0.1 + drandnorm() * 0.8, 0.1 + drandnorm() * 0.8, 0.1 + drandnorm() * 0.8);
             }
             else {
                 // rocky
@@ -211,11 +212,11 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
         }
 
         planet.orbitSpeed = 0.0*drandnorm();
-        system.moons = {};
+        system.planets.push_back(planet);
         for (int g = 0; g < planet.moonsCount; g++) {
             GeneratedMoonInfo moon = GeneratedMoonInfo(planet);
             moon.moonIndex = g;
-            moon.planetIndex = i;
+            moon.planetIndex = planet.planetIndex;
            // moon.host = planet;
             moon.radius = randu64(planet.radius / 30, planet.radius / 15);
             moon.terrainMaxLevel = drandnorm();
@@ -225,7 +226,6 @@ GeneratedStarSystemInfo GalaxyGenerator::generateStarInfo(size_t index)
             moon.preferredColor = glm::vec3(0.6 + 0.4 * drandnorm(), 0.6 + 0.4 * drandnorm(), 0.6 + 0.4 * drandnorm());
             system.moons.push_back(moon);
         }
-        system.planets.push_back(planet);
     }
     return system;
 }

@@ -98,7 +98,7 @@ public:
         double time = glfwGetTime() + timeShift;
         glm::dvec3 orbitplaneTangent = glm::normalize(glm::cross(orbitPlane, glm::dvec3(0.0, 1.0, 0.0)));
         return host.getPosition(timeShift)
-            + glm::dvec3(glm::angleAxis(host.orbitSpeed * time * 0.001, glm::dvec3(orbitPlane)) * glm::dvec3(orbitplaneTangent)) * planetDistance;
+            + glm::dvec3(glm::angleAxis(orbitSpeed * time * 0.001, glm::dvec3(orbitPlane)) * glm::dvec3(orbitplaneTangent)) * planetDistance;
     }
     glm::dvec3 getLinearVelocity() {
         return getPosition(1.0) - getPosition(0.0);

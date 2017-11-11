@@ -173,8 +173,10 @@ void VulkanRenderer::endDrawing()
         }
 
         for (int i = 0; i < postProcessingStages.size(); i++) {
-            postProcessingStages[i]->submit({ lastSemaphore });
-            lastSemaphore = postProcessingStages[i]->signalSemaphore;
+            if (postProcessingStages[i]->enabled) {
+                postProcessingStages[i]->submit({ lastSemaphore });
+                lastSemaphore = postProcessingStages[i]->signalSemaphore;
+            }
         }
 
         outputStages[imageIndex]->submit({ lastSemaphore });
@@ -184,7 +186,7 @@ void VulkanRenderer::endDrawing()
     }
     else {
         VkSemaphore lastSemaphore = stubMeshSemaphore;
-        if (usingMeshStage) { 
+        if (usingMeshStage) {
             meshStage->submit({ });
             lastSemaphore = meshStage->signalSemaphore;
         }
@@ -194,8 +196,10 @@ void VulkanRenderer::endDrawing()
         }
 
         for (int i = 0; i < postProcessingStages.size(); i++) {
-            postProcessingStages[i]->submit({ lastSemaphore });
-            lastSemaphore = postProcessingStages[i]->signalSemaphore;
+            if (postProcessingStages[i]->enabled) {
+                postProcessingStages[i]->submit({ lastSemaphore });
+                lastSemaphore = postProcessingStages[i]->signalSemaphore;
+            }
         }
 
         submitEmptyBatch2({ meshStage->signalSemaphore });

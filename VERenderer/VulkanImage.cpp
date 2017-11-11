@@ -106,7 +106,7 @@ VkSampler VulkanImage::getSampler()
     int mipmaps = 1;
     for (int32_t i = 1; sz > 1; i++)
     {
-        mipmaps++;
+     //   mipmaps++;
         sz /= 2;
     }
    // sampler = new VkSampler();

@@ -4,6 +4,12 @@
 float hash( float n ){
     return fract(sin(n)*758.5453);
 }
+
+float noise1d(float x){
+    float n = floor(x);
+    return mix(hash(n+0.0),hash(n+1.0),smoothstep(0.0, 1.0, fract(x)));
+}
+
 float noise2d( in vec2 x ){
     vec2 p = floor(x);
     vec2 f = smoothstep(0.0, 1.0, fract(x));
