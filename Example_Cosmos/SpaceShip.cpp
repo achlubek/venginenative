@@ -1,10 +1,13 @@
 #include "stdafx.h"
 #include "SpaceShip.h"
 #include "SpaceShipModule.h"
+#include "Object3dInfo.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm\gtx\intersect.hpp"
 
 
-SpaceShip::SpaceShip(glm::dvec3 pos, glm::dquat orient)
-    :position(pos), orientation(orient), modules({})
+SpaceShip::SpaceShip(Object3dInfo* info3d, glm::dvec3 pos, glm::dquat orient)
+    :position(pos), orientation(orient), modules({}), ship3dInfo(info3d)
 {
 
 }
@@ -12,6 +15,79 @@ SpaceShip::SpaceShip(glm::dvec3 pos, glm::dquat orient)
 
 SpaceShip::~SpaceShip()
 {
+}
+
+bool SpaceShip::hitRayPosition(glm::dvec3 origin, glm::dvec3 direction, glm::dvec3 &outposvec)
+{
+    double mindist = 9999999999999.0;
+    bool hit = false;
+    for (int i = 0; i < ship3dInfo->vbo.size(); i+=12) {
+        glm::dvec3 v1 = getPosition()
+            + glm::dvec3(ship3dInfo->vbo[i], ship3dInfo->vbo[i + 1], ship3dInfo->vbo[i + 2]);
+        i += 12;
+        glm::dvec3 v2 = getPosition()
+            + glm::dvec3(ship3dInfo->vbo[i], ship3dInfo->vbo[i + 1], ship3dInfo->vbo[i + 2]);
+        i += 12;
+        glm::dvec3 v3 = getPosition()
+            + glm::dvec3(ship3dInfo->vbo[i], ship3dInfo->vbo[i + 1], ship3dInfo->vbo[i + 2]);
+        glm::dvec3 outpos;
+        bool hits = glm::intersectLineTriangle(origin, direction, v1, v2, v3, outpos);
+        if (hits) {
+            double dst = glm::distance(outpos, origin);
+            if (dst < mindist) {
+                mindist = dst;
+                outposvec = outpos;
+                hit = true;
+            }
+        }
+    }
+    return hit;
+}
+
+glm::dvec3 SpaceShip::closestSurface(glm::dvec3 position)
+{
+    glm::dvec3 outposvec = glm::dvec3(0.0);
+    double mindist = 9999999999999.0; 
+    for (int i = 0; i < ship3dInfo->vbo.size(); i += 12) {
+        glm::dvec3 v1 = getPosition()
+            + glm::dvec3(ship3dInfo->vbo[i], ship3dInfo->vbo[i + 1], ship3dInfo->vbo[i + 2]);
+         
+        double dst = glm::distance(v1, position);
+        if (dst < mindist) {
+            mindist = dst;
+            outposvec = v1;
+        } 
+    }
+    for (int i = 0; i < ship3dInfo->vbo.size(); i += 12) {
+        glm::dvec3 v1 = getPosition()
+            + glm::dvec3(ship3dInfo->vbo[i], ship3dInfo->vbo[i + 1], ship3dInfo->vbo[i + 2]);
+        i += 12;
+        glm::dvec3 v2 = getPosition()
+            + glm::dvec3(ship3dInfo->vbo[i], ship3dInfo->vbo[i + 1], ship3dInfo->vbo[i + 2]);
+        i += 12;
+        glm::dvec3 v3 = getPosition()
+            + glm::dvec3(ship3dInfo->vbo[i], ship3dInfo->vbo[i + 1], ship3dInfo->vbo[i + 2]);
+        glm::dvec3 outpos;
+        glm::dvec3 normal = glm::normalize(glm::cross(v2 - v1, v3 - v1));
+        bool hits = glm::intersectLineTriangle(position, normal, v1, v2, v3, outpos);
+        if (hits) {
+            double dst = glm::distance(outpos, position);
+            if (dst < mindist) {
+                mindist = dst;
+                outpos = outpos;
+            }
+        }
+        normal *= -1.0;
+        hits = glm::intersectLineTriangle(position, normal, v1, v2, v3, outpos);
+        if (hits) {
+            double dst = glm::distance(outpos, position);
+            if (dst < mindist) {
+                mindist = dst;
+                outpos = outpos;
+            }
+        }
+    }
+    return outposvec;
 }
 
 glm::dvec3 SpaceShip::getPosition()

@@ -5,41 +5,172 @@ float hash( float n ){
     return fract(sin(n)*758.5453);
 }
 
-float noise1d(float x){
-    float n = floor(x);
-    return mix(hash(n+0.0),hash(n+1.0),smoothstep(0.0, 1.0, fract(x)));
+/*
+Copyright afl_ext (achlubek)
+Released to PUBLIC DOMAIN
+
+contains 1d 2d 3d 4d noises with the same characteristics
+do whatever you want.
+
+*/
+
+
+float oct(float p){
+    return fract(4768.1232345456 * sin(p));
+}
+float oct(vec2 p){
+    return fract(4768.1232345456 * sin((p.x+p.y*43.0)));
+}
+float oct(vec3 p){
+    return fract(4768.1232345456 * sin((p.x+p.y*43.0+p.z*137.0)));
+}
+float oct(vec4 p){
+    return fract(4768.1232345456 * sin((p.x+p.y*43.0+p.z*137.0+p.w*2666.0)));
 }
 
-float noise2d( in vec2 x ){
+float achnoise(float x){
+    float p = floor(x);
+    float fr = fract(x);
+    float L = p;
+    float R = p + 1.0;
+
+    float Lo = oct(L);
+    float Ro = oct(R);
+
+    return mix(Lo, Ro, fr);
+}
+
+float achnoise(vec2 x){
     vec2 p = floor(x);
-    vec2 f = smoothstep(0.0, 1.0, fract(x));
-    float n = p.x + p.y*57.0;
-    return mix(
-        mix(hash(n+0.0),hash(n+1.0),f.x),
-        mix(hash(n+57.0),hash(n+58.0),f.x),
-        f.y
-       );
-}
-float noise3d( in vec3 x ){
-    vec3 p = floor(x);
-        vec3 f = smoothstep(0.0, 1.0, fract(x));
-    float n = p.x + p.y*157.0 + 113.0*p.z;
+    vec2 fr = fract(x);
+    vec2 LB = p;
+    vec2 LT = p + vec2(0.0, 1.0);
+    vec2 RB = p + vec2(1.0, 0.0);
+    vec2 RT = p + vec2(1.0, 1.0);
 
-    return mix(mix(	mix( hash(n+0.0), hash(n+1.0),f.x),
-            mix( hash(n+157.0), hash(n+158.0),f.x),f.y),
-           mix(	mix( hash(n+113.0), hash(n+114.0),f.x),
-            mix( hash(n+270.0), hash(n+271.0),f.x),f.y),f.z);
+    float LBo = oct(LB);
+    float RBo = oct(RB);
+    float LTo = oct(LT);
+    float RTo = oct(RT);
+
+    float noise1d1 = mix(LBo, RBo, fr.x);
+    float noise1d2 = mix(LTo, RTo, fr.x);
+
+    float noise2d = mix(noise1d1, noise1d2, fr.y);
+
+    return noise2d;
 }
-// YOU ARE WELCOME! 4d NOISE
-float noise4d(vec4 x){
-    vec4 p=floor(x);
-    vec4 f=smoothstep(0.,1.,fract(x));
-    float n=p.x+p.y*157.+p.z*113.+p.w*971.;
-    return mix(mix(mix(mix(hash(n),hash(n+1.),f.x),mix(hash(n+157.),hash(n+158.),f.x),f.y),
-    mix(mix(hash(n+113.),hash(n+114.),f.x),mix(hash(n+270.),hash(n+271.),f.x),f.y),f.z),
-    mix(mix(mix(hash(n+971.),hash(n+972.),f.x),mix(hash(n+1128.),hash(n+1129.),f.x),f.y),
-    mix(mix(hash(n+1084.),hash(n+1085.),f.x),mix(hash(n+1241.),hash(n+1242.),f.x),f.y),f.z),f.w);
+float achnoise(vec3 x){
+    vec3 p = floor(x);
+    vec3 fr = fract(x);
+    vec3 LBZ = p + vec3(0.0, 0.0, 0.0);
+    vec3 LTZ = p + vec3(0.0, 1.0, 0.0);
+    vec3 RBZ = p + vec3(1.0, 0.0, 0.0);
+    vec3 RTZ = p + vec3(1.0, 1.0, 0.0);
+
+    vec3 LBF = p + vec3(0.0, 0.0, 1.0);
+    vec3 LTF = p + vec3(0.0, 1.0, 1.0);
+    vec3 RBF = p + vec3(1.0, 0.0, 1.0);
+    vec3 RTF = p + vec3(1.0, 1.0, 1.0);
+
+    float l0candidate1 = oct(LBZ);
+    float l0candidate2 = oct(RBZ);
+    float l0candidate3 = oct(LTZ);
+    float l0candidate4 = oct(RTZ);
+
+    float l0candidate5 = oct(LBF);
+    float l0candidate6 = oct(RBF);
+    float l0candidate7 = oct(LTF);
+    float l0candidate8 = oct(RTF);
+
+    float l1candidate1 = mix(l0candidate1, l0candidate2, fr[0]);
+    float l1candidate2 = mix(l0candidate3, l0candidate4, fr[0]);
+    float l1candidate3 = mix(l0candidate5, l0candidate6, fr[0]);
+    float l1candidate4 = mix(l0candidate7, l0candidate8, fr[0]);
+
+
+    float l2candidate1 = mix(l1candidate1, l1candidate2, fr[1]);
+    float l2candidate2 = mix(l1candidate3, l1candidate4, fr[1]);
+
+
+    float l3candidate1 = mix(l2candidate1, l2candidate2, fr[2]);
+
+    return l3candidate1;
 }
+
+
+float achnoise(vec4 x){
+    vec4 p = floor(x);
+    vec4 fr = fract(x);
+    vec4 LBZU = p + vec4(0.0, 0.0, 0.0, 0.0);
+    vec4 LTZU = p + vec4(0.0, 1.0, 0.0, 0.0);
+    vec4 RBZU = p + vec4(1.0, 0.0, 0.0, 0.0);
+    vec4 RTZU = p + vec4(1.0, 1.0, 0.0, 0.0);
+
+    vec4 LBFU = p + vec4(0.0, 0.0, 1.0, 0.0);
+    vec4 LTFU = p + vec4(0.0, 1.0, 1.0, 0.0);
+    vec4 RBFU = p + vec4(1.0, 0.0, 1.0, 0.0);
+    vec4 RTFU = p + vec4(1.0, 1.0, 1.0, 0.0);
+
+    vec4 LBZD = p + vec4(0.0, 0.0, 0.0, 1.0);
+    vec4 LTZD = p + vec4(0.0, 1.0, 0.0, 1.0);
+    vec4 RBZD = p + vec4(1.0, 0.0, 0.0, 1.0);
+    vec4 RTZD = p + vec4(1.0, 1.0, 0.0, 1.0);
+
+    vec4 LBFD = p + vec4(0.0, 0.0, 1.0, 1.0);
+    vec4 LTFD = p + vec4(0.0, 1.0, 1.0, 1.0);
+    vec4 RBFD = p + vec4(1.0, 0.0, 1.0, 1.0);
+    vec4 RTFD = p + vec4(1.0, 1.0, 1.0, 1.0);
+
+    float l0candidate1  = oct(LBZU);
+    float l0candidate2  = oct(RBZU);
+    float l0candidate3  = oct(LTZU);
+    float l0candidate4  = oct(RTZU);
+
+    float l0candidate5  = oct(LBFU);
+    float l0candidate6  = oct(RBFU);
+    float l0candidate7  = oct(LTFU);
+    float l0candidate8  = oct(RTFU);
+
+    float l0candidate9  = oct(LBZD);
+    float l0candidate10 = oct(RBZD);
+    float l0candidate11 = oct(LTZD);
+    float l0candidate12 = oct(RTZD);
+
+    float l0candidate13 = oct(LBFD);
+    float l0candidate14 = oct(RBFD);
+    float l0candidate15 = oct(LTFD);
+    float l0candidate16 = oct(RTFD);
+
+    float l1candidate1 = mix(l0candidate1, l0candidate2, fr[0]);
+    float l1candidate2 = mix(l0candidate3, l0candidate4, fr[0]);
+    float l1candidate3 = mix(l0candidate5, l0candidate6, fr[0]);
+    float l1candidate4 = mix(l0candidate7, l0candidate8, fr[0]);
+    float l1candidate5 = mix(l0candidate9, l0candidate10, fr[0]);
+    float l1candidate6 = mix(l0candidate11, l0candidate12, fr[0]);
+    float l1candidate7 = mix(l0candidate13, l0candidate14, fr[0]);
+    float l1candidate8 = mix(l0candidate15, l0candidate16, fr[0]);
+
+
+    float l2candidate1 = mix(l1candidate1, l1candidate2, fr[1]);
+    float l2candidate2 = mix(l1candidate3, l1candidate4, fr[1]);
+    float l2candidate3 = mix(l1candidate5, l1candidate6, fr[1]);
+    float l2candidate4 = mix(l1candidate7, l1candidate8, fr[1]);
+
+
+    float l3candidate1 = mix(l2candidate1, l2candidate2, fr[2]);
+    float l3candidate2 = mix(l2candidate3, l2candidate4, fr[2]);
+
+    float l4candidate1 = mix(l3candidate1, l3candidate2, fr[3]);
+
+    return l4candidate1;
+}
+
+#define noise1d(a) achnoise(a)
+#define noise2d(a) achnoise(a)
+#define noise3d(a) achnoise(a)
+#define noise4d(a) achnoise(a)
+
 float FBM2(vec2 p, int octaves, float dx){
     float a = 0.0;
         float w = 0.5;
@@ -70,29 +201,4 @@ float FBM4(vec4 p, int octaves, float dx){
         p *= dx;
     }
     return a;
-}
-
-float configurablenoise(vec3 x, float h2, float h1) {
-    vec3 p = floor(x);
-    vec3 f = fract(x);
-    f = f*f*(3.0-2.0*f);
-
-    float n = p.x + p.y*h1+ h2*p.z;
-    return mix(mix(    mix( hash(n+0.0), hash(n+1.0),f.x),
-        mix(hash(n+h1), hash(n+h1+1.0),f.x),f.y),
-        mix(mix(hash(n+h2), hash(n+h2+1.0),f.x),
-        mix(hash(n+h2+h1), hash(n+h2+h1+1.0),f.x),f.y),f.z);
-}
-
-#define noise3d(a) configurablenoise(a, 883.0, 971.0)
-
-float supernoise3d(vec3 p){
-    float a =  configurablenoise(p, 883.0, 971.0);
-    float b =  configurablenoise(p + 0.5, 113.0, 157.0);
-    return (a + b) * 0.5;
-}
-float supernoise3dX(vec3 p){
-    float a =  configurablenoise(p, 883.0, 971.0);
-    float b =  configurablenoise(p + 0.5, 113.0, 157.0);
-    return (a * b);
 }

@@ -1,10 +1,17 @@
 #pragma once 
 class SpaceShipModule;
+class Object3dInfo;
+
 class SpaceShip
 {
 public:
-    SpaceShip(glm::dvec3 pos, glm::dquat orient);
+    SpaceShip(Object3dInfo* info3d, glm::dvec3 pos, glm::dquat orient);
     ~SpaceShip();
+
+    Object3dInfo * ship3dInfo;
+     
+    bool hitRayPosition(glm::dvec3 origin, glm::dvec3 direction, glm::dvec3 &outpos);
+    glm::dvec3 closestSurface(glm::dvec3 position);
 
     glm::dvec3 getPosition();
     glm::dquat getOrientation();

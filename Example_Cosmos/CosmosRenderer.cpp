@@ -595,14 +595,14 @@ void CosmosRenderer::draw()
     starsStage->drawMesh(cube3dInfo, nearbyStars.size());
 
     starsStage->endDrawing();
-    starsStage->submit({});
+    starsStage->submitNoSemaphores({});
 
     shipStage->beginDrawing();
 
     shipStage->drawMesh(spaceship3dInfo, 1);
 
     shipStage->endDrawing();
-    shipStage->submit({ starsStage->signalSemaphore });
+    shipStage->submitNoSemaphores({});
 
 
     renderer->beginDrawing();
