@@ -21,8 +21,26 @@ UIBitmap::~UIBitmap()
 void UIBitmap::updateBuffer()
 {
     VulkanBinaryBufferBuilder bb = VulkanBinaryBufferBuilder();
-    bb.emplaceFloat32(x);
-    bb.emplaceFloat32(y);
+
+    if (horizontalAlignment == HorizontalAlignment::left) {
+        bb.emplaceFloat32(x);
+    }
+    else if (horizontalAlignment == HorizontalAlignment::center) {
+        bb.emplaceFloat32(x - 0.5f * width);
+    }
+    else if (horizontalAlignment == HorizontalAlignment::right) {
+        bb.emplaceFloat32(x - width);
+    }
+
+    if (verticalAlignment == VerticalAlignment::top) {
+        bb.emplaceFloat32(y);
+    }
+    else if (verticalAlignment == VerticalAlignment::center) {
+        bb.emplaceFloat32(y - 0.5f * height);
+    }
+    else if (verticalAlignment == VerticalAlignment::bottom) {
+        bb.emplaceFloat32(y - height);
+    }
     bb.emplaceFloat32(width);
     bb.emplaceFloat32(height);
 

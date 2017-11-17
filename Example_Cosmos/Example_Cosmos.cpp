@@ -12,6 +12,7 @@
 #include "AbsShipEnginesController.h"
 #include "Maneuvering6DOFShipEnginesController.h"
 #include "CommandTerminal.h"
+#include "Player.h"
 #include <algorithm>
 void splitBySpaces(vector<string>& output, string src)
 {
@@ -66,10 +67,16 @@ int main()
     std::vector<UIText*> planetsLabels = {};
     for (int i = 0; i < 8; i++) {
         auto tx = new UIText(cosmosRenderer->ui, 0.01, 0.01, UIColor(1, 1, 1, 1), Media::getPath("font.ttf"), 16, " ");
-        tx->alignment = UIText::Alignment::center;
+        tx->horizontalAlignment = UIText::HorizontalAlignment::center;
+        tx->verticalAlignment = UIText::VerticalAlignment::center;
         planetsLabels.push_back(tx);
         cosmosRenderer->ui->texts.push_back(tx);
-    }
+    } 
+
+    UIBitmap* marker = new UIBitmap(cosmosRenderer->ui, 0.0, 0.0, 0.15, 0.15, cosmosRenderer->assets.loadTextureFile("crosshair_helper.png"), UIColor(7,7,7,7));
+    cosmosRenderer->ui->bitmaps.push_back(marker);
+    marker->horizontalAlignment = UIBitmap::HorizontalAlignment::center;
+    marker->verticalAlignment = UIBitmap::VerticalAlignment::center;
 
     auto camera = new Camera();
     camera->createProjectionPerspective(80.0f, (float)toolkit->windowWidth / (float)toolkit->windowHeight, 0.01f, 9000000.0f);
@@ -121,7 +128,10 @@ int main()
         }
         if (terminal->isInputEnabled()) return;
         if (key == GLFW_KEY_O) {
-             flightHelperEnabled = !flightHelperEnabled;
+            flightHelperEnabled = !flightHelperEnabled;
+        }
+        if (key == GLFW_KEY_F5) {
+            spaceShipMode = !spaceShipMode;
         }
 
         if (key == GLFW_KEY_F1) {
@@ -159,8 +169,9 @@ int main()
     //glm::quat spaceshipOrientation = glm::quat(1.0, 0.0, 0.0, 0.0);
     //double maxFuel = 10000.0;
     //double fuel = maxFuel;
+    Player* player = new Player();
     SpaceShip* ship = new SpaceShip(cosmosRenderer->spaceship3dInfo, cosmosRenderer->nearbyStars[9999].planets[0].getPosition(100.0) * cosmosRenderer->scale + glm::dvec3(10000.0, 0.0, 0.0), glm::dquat(1.0, 0.0, 0.0, 0.0));
-
+    player->setPosition(ship->getPosition());
     SpaceShipHyperDrive* hyperdrive_engine = new SpaceShipHyperDrive(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(0.0, 0.0, 1.0), 2500000.19, 0.1);
 
     SpaceShipEngine* forward_engine = new SpaceShipEngine(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(0.0, 0.0, 1.0), 100.19, 0.1);
@@ -412,13 +423,13 @@ int main()
             printf("FPS %d\n", frames);
             frames = 0;
         }
-        float elapsed_x100 = (float)(100.0 * (time - lastRawTime));
-        float elapsed = (float)((time - lastRawTime));
+        double elapsed_x100 = (float)(100.0 * (time - lastRawTime));
+        double elapsed = (float)((time - lastRawTime));
         lastRawTime = time;
         lastTime = nowtime;
 
         if (!spaceShipMode) {
-            float speed = 1.1f * elapsed_x100;
+            double speed = 1.1f * elapsed_x100;
             if (keyboard->getKeyStatus(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
                 speed *= 0.1f;
             }
@@ -428,8 +439,8 @@ int main()
             if (keyboard->getKeyStatus(GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
                 speed *= 730.1f;
             }
-            glm::vec3 dw = glm::vec3(0);
-            float w = 0.0;
+            glm::dvec3 dw = glm::vec3(0);
+            double w = 0.0;
             if (keyboard->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
                 dw += camera->transformation->getOrientation() * glm::vec3(0, 0, -1);
                 w += 1.0;
@@ -446,10 +457,10 @@ int main()
                 dw += camera->transformation->getOrientation() * glm::vec3(1, 0, 0);
                 w += 1.0;
             }
-            glm::vec3 a = dw / w;
-            glm::vec3 dir = w > 0.0 ? a : dw;
-            glm::vec3 newpos = camera->transformation->getPosition();
-            newpos += length(dir) > 0.0 ? (normalize(dir) * speed) : (glm::vec3(0.0));
+            glm::dvec3 a = dw / w;
+            glm::dvec3 dir = w > 0.0 ? a : dw;
+            glm::dvec3 newpos = player->getPosition();
+            newpos += length(dir) > 0.0 ? (normalize(dir) * speed) : (glm::dvec3(0.0));
             glm::dvec2 cursor;
             auto tup = mouse->getCursorPosition();
             cursor.x = get<0>(tup);
@@ -468,7 +479,11 @@ int main()
             if (pitch > 360.0f) pitch -= 360.0f;
             glm::quat newrot = glm::angleAxis(deg2rad(pitch), glm::vec3(0, 1, 0)) * glm::angleAxis(deg2rad(yaw), glm::vec3(1, 0, 0));
             camera->transformation->setOrientation(glm::slerp(newrot, camera->transformation->getOrientation(), 0.9f));
-            //  observerPosition = glm::mix(newpos, camera->transformation->getPosition(), 0.8f);
+            glm::dvec3 outposhit;
+            bool hits = ship->hitRayPosition(player->getPosition(), glm::normalize(dir), outposhit);
+            if (!hits || glm::distance(outposhit, player->getPosition()) > glm::distance(newpos, player->getPosition())) {
+                player->setPosition(newpos);
+            }
         }
         else if (!terminal->isInputEnabled()) {
             if (flightHelperEnabled) {
@@ -597,7 +612,7 @@ int main()
 
         int cnt = cosmosRenderer->nearestStarSystems.size() > 0 ? cosmosRenderer->nearestStarSystems[0].planets.size() : 0;
         for (int i = 0; i < cnt; i++) {
-            glm::dvec3 pos = cosmosRenderer->nearestStarSystems[0].planets[i].getPosition(0.0) * cosmosRenderer->scale - ship->getPosition();
+            glm::dvec3 pos = cosmosRenderer->nearestStarSystems[0].planets[i].getPosition(0.0) * cosmosRenderer->scale - player->getPosition();
             auto uv = camera->projectToScreen(pos);
             planetsLabels[i]->x = uv.x;
             planetsLabels[i]->y = uv.y;
@@ -610,17 +625,26 @@ int main()
 
 
        // ship->applyGravity(cosmosRenderer->lastGravity * elapsed * (keyboard->getKeyStatus(GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ? 100.0f : 1.0f));
-        ship->update(elapsed * (keyboard->getKeyStatus(GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ? 100.0 : 1.0));
-        camera->transformation->setOrientation(ship->getOrientation());
-        cosmosRenderer->updateCameraBuffer(camera, ship->getPosition() + glm::mat3_cast(ship->getOrientation()) * glm::dvec3(0.0, 0.7, 3.45) , 
+        ship->stepEmulation(elapsed);
+        //camera->transformation->setOrientation(ship->getOrientation());
+        cosmosRenderer->updateCameraBuffer(camera, player->getPosition() , 
             ship->getPosition(), ship->getOrientation());
         cosmosRenderer->updatePlanetsAndMoon(ship->getPosition());
         cosmosRenderer->draw();
         auto slp = ship->getLinearVelocity();
+        auto slp2 = ship->closestSurface(player->getPosition());
+        auto uv = camera->projectToScreen(slp2 - player->getPosition());
+        marker->x = uv.x;
+        marker->y = uv.y;
+        slp2 = player->getPosition() - slp2;
         text->updateText("Distance to surface:" + std::to_string(cosmosRenderer->closestSurfaceDistance) + "| " + std::to_string(cosmosRenderer->closestObjectLinearAbsoluteSpeed.x)
             + " , " + std::to_string(cosmosRenderer->closestObjectLinearAbsoluteSpeed.y) + " , " + std::to_string(cosmosRenderer->closestObjectLinearAbsoluteSpeed.z)
             + "| " + std::to_string(slp.x)
-            + " , " + std::to_string(slp.y) + " , " + std::to_string(slp.z));
+            + " , " + std::to_string(slp.y)
+            + " , " + std::to_string(slp.z)
+            + "| " + std::to_string(slp2.x)
+            + " , " + std::to_string(slp2.y)
+            + " , " + std::to_string(slp2.z));
         closestPlanetText->updateText("Closest planet:" + cosmosRenderer->nearestPlanet.getName());
         toolkit->poolEvents();
     }

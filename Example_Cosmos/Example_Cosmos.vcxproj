@@ -145,6 +145,8 @@
     <ClInclude Include="CosmosRenderer.h" />
     <ClInclude Include="GalaxyGenerator.h" />
     <ClInclude Include="Maneuvering6DOFShipEnginesController.h" />
+    <ClInclude Include="PhysicalEntity.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="SpaceShip.h" />
     <ClInclude Include="SpaceShipAutopilot.h" />
     <ClInclude Include="SpaceShipEngine.h" />
@@ -160,6 +162,8 @@
     <ClCompile Include="Example_Cosmos.cpp" />
     <ClCompile Include="GalaxyGenerator.cpp" />
     <ClCompile Include="Maneuvering6DOFShipEnginesController.cpp" />
+    <ClCompile Include="PhysicalEntity.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="SpaceShip.cpp" />
     <ClCompile Include="SpaceShipAutopilot.cpp" />
     <ClCompile Include="SpaceShipEngine.cpp" />

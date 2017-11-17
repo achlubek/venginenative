@@ -13,5 +13,9 @@ public:
     float x{ 0 }, y{ 0 }, width{ 0 }, height{ 0 };
     UIColor color{ UIColor(0.0, 0.0, 0.0, 0.0) };
     void updateBuffer();
+    enum class HorizontalAlignment { left, center, right };
+    enum class VerticalAlignment { top, center, bottom };
+    HorizontalAlignment horizontalAlignment = HorizontalAlignment::left;
+    VerticalAlignment verticalAlignment = VerticalAlignment::top;
 };
 
