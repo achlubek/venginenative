@@ -3,7 +3,7 @@
 class Player : public PhysicalEntity
 {
 public:
-    Player();
+    Player(Object3dInfo* collisionShape);
     ~Player();
     virtual void update(double time_delta) override;
 };

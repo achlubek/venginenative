@@ -21,6 +21,6 @@ float rand2s(vec2 co){
 
 Ray cameraRay;
 void main() {
-    outColor = vec4(texture(texShipColor, UV * 30.0).rgb, 1.0);
+    outColor = vec4(texture(texShipColor, vec2(UV.x, 1.0 - UV.y)).rgb, 1.0);
 
 }

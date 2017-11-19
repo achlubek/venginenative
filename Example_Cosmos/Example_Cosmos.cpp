@@ -13,6 +13,7 @@
 #include "Maneuvering6DOFShipEnginesController.h"
 #include "CommandTerminal.h"
 #include "Player.h"
+#include "PhysicalWorld.h"
 #include <algorithm>
 void splitBySpaces(vector<string>& output, string src)
 {
@@ -169,9 +170,14 @@ int main()
     //glm::quat spaceshipOrientation = glm::quat(1.0, 0.0, 0.0, 0.0);
     //double maxFuel = 10000.0;
     //double fuel = maxFuel;
-    Player* player = new Player();
+    PhysicalWorld* pworld = new PhysicalWorld();
+    Player* player = new Player(cosmosRenderer->assets.loadObject3dInfoFile("icos.raw"));
     SpaceShip* ship = new SpaceShip(cosmosRenderer->spaceship3dInfo, cosmosRenderer->nearbyStars[9999].planets[0].getPosition(100.0) * cosmosRenderer->scale + glm::dvec3(10000.0, 0.0, 0.0), glm::dquat(1.0, 0.0, 0.0, 0.0));
     player->setPosition(ship->getPosition());
+
+    pworld->entities.push_back(player);
+    pworld->entities.push_back(ship);
+
     SpaceShipHyperDrive* hyperdrive_engine = new SpaceShipHyperDrive(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(0.0, 0.0, 1.0), 2500000.19, 0.1);
 
     SpaceShipEngine* forward_engine = new SpaceShipEngine(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(0.0, 0.0, 1.0), 100.19, 0.1);
@@ -442,19 +448,19 @@ int main()
             glm::dvec3 dw = glm::vec3(0);
             double w = 0.0;
             if (keyboard->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
-                dw += camera->transformation->getOrientation() * glm::vec3(0, 0, -1);
+                dw +=  glm::vec3(0, 0, -1);
                 w += 1.0;
             }
             if (keyboard->getKeyStatus(GLFW_KEY_S) == GLFW_PRESS) {
-                dw += camera->transformation->getOrientation() * glm::vec3(0, 0, 1);
+                dw += glm::vec3(0, 0, 1);
                 w += 1.0;
             }
             if (keyboard->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS) {
-                dw += camera->transformation->getOrientation() * glm::vec3(-1, 0, 0);
+                dw +=  glm::vec3(-1, 0, 0);
                 w += 1.0;
             }
             if (keyboard->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS) {
-                dw += camera->transformation->getOrientation() * glm::vec3(1, 0, 0);
+                dw += glm::vec3(1, 0, 0);
                 w += 1.0;
             }
             glm::dvec3 a = dw / w;
@@ -479,11 +485,13 @@ int main()
             if (pitch > 360.0f) pitch -= 360.0f;
             glm::quat newrot = glm::angleAxis(deg2rad(pitch), glm::vec3(0, 1, 0)) * glm::angleAxis(deg2rad(yaw), glm::vec3(1, 0, 0));
             camera->transformation->setOrientation(glm::slerp(newrot, camera->transformation->getOrientation(), 0.9f));
-            glm::dvec3 outposhit;
+            player->setOrientation(newrot);
+            player->applyImpulse(glm::dvec3(0.0, 0.0, -1.0), length(dir) > 0.0 ? (normalize(dir) * speed) : (glm::dvec3(0.0)));
+            /*glm::dvec3 outposhit;
             bool hits = ship->hitRayPosition(player->getPosition(), glm::normalize(dir), outposhit);
             if (!hits || glm::distance(outposhit, player->getPosition()) > glm::distance(newpos, player->getPosition())) {
                 player->setPosition(newpos);
-            }
+            }*/
         }
         else if (!terminal->isInputEnabled()) {
             if (flightHelperEnabled) {
@@ -623,9 +631,9 @@ int main()
             planetsLabels[i]->y = -1;
         }
 
-
+        pworld->stepEmulation(elapsed);
        // ship->applyGravity(cosmosRenderer->lastGravity * elapsed * (keyboard->getKeyStatus(GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ? 100.0f : 1.0f));
-        ship->stepEmulation(elapsed);
+       // ship->stepEmulation(elapsed);
         //camera->transformation->setOrientation(ship->getOrientation());
         cosmosRenderer->updateCameraBuffer(camera, player->getPosition() , 
             ship->getPosition(), ship->getOrientation());
