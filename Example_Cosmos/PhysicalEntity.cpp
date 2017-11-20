@@ -69,23 +69,48 @@ glm::dvec3 PhysicalEntity::getAngularVelocity()
     return angularVelocity;
 }
 
+void PhysicalEntity::setLinearVelocity(glm::dvec3 v)
+{
+    linearVelocity = v;
+}
+
+void PhysicalEntity::setAngularVelocity(glm::dvec3 v)
+{
+    angularVelocity = v;
+}
+
 void PhysicalEntity::stepEmulation(double time_delta)
 {
     update(time_delta);
     position = predictPosition(time_delta);
     orientation = predictOrientation(time_delta);
 }
-
+ 
 void PhysicalEntity::applyImpulse(glm::dvec3 relativePos, glm::dvec3 force)
 {
-    double cosine = glm::length(force) == 0 ? 0.0 : glm::dot(glm::normalize(relativePos), glm::normalize(force));
-    double sine = glm::sign(cosine) * glm::sqrt(1.0 - cosine * cosine);
-    double t = glm::length(relativePos) * glm::length(force) * sine;
-    glm::dvec3 T = glm::cross(relativePos, force);
+    if (glm::length(relativePos) > 0.0) {
+        double cosine = glm::length(force) == 0 ? 0.0 : glm::dot(glm::normalize(relativePos), glm::normalize(force));
+        double sine = glm::sign(cosine) * glm::sqrt(1.0 - cosine * cosine);
+        double t = glm::length(relativePos) * glm::length(force) * sine;
+        glm::dvec3 T = glm::cross(relativePos, force);
+        angularVelocity += T / mass;
+    }
     auto m3 = glm::mat3_cast(orientation);
-    angularVelocity += T;
-    linearVelocity += m3 * (/*glm::abs(cosine) * */ force); // 100% when relativepos == force (dot == 1) or =relativepos == force (dot == -1), 0 when dot == 0
-    // it just didnt fit....
+    linearVelocity += m3 * (/*glm::abs(cosine) * */ force / mass); // 100% when relativepos == force (dot == 1) or =relativepos == force (dot == -1), 0 when dot == 0
+                                                                   // it just didnt fit....
+}
+
+void PhysicalEntity::applyAbsoluteImpulse(glm::dvec3 relativePos, glm::dvec3 force)
+{
+    if (glm::length(relativePos) > 0.0) {
+        double cosine = glm::length(force) == 0 ? 0.0 : glm::dot(glm::normalize(relativePos), glm::normalize(force));
+        double sine = glm::sign(cosine) * glm::sqrt(1.0 - cosine * cosine);
+        double t = glm::length(relativePos) * glm::length(force) * sine;
+        glm::dvec3 T = glm::cross(relativePos, force);
+        angularVelocity += T / mass;
+    }
+    linearVelocity += (/*glm::abs(cosine) * */ force / mass); // 100% when relativepos == force (dot == 1) or =relativepos == force (dot == -1), 0 when dot == 0
+                                                                   // it just didnt fit....
 }
 
 void PhysicalEntity::applyGravity(glm::dvec3 force)
@@ -160,8 +185,8 @@ bool PhysicalEntity::hitRayPosition(glm::dvec3 position, glm::dvec3 direction, g
             if (odist < mindist) {
                 mindist = odist;
                 outposvec = outpos;
-                glm::dvec3 normal = glm::normalize(glm::cross(v1 - v2, v1 - v3));
-                if (glm::dot(normal, direction) > 0.0) normal *= -1.0;
+                glm::dvec3 normal = glm::normalize(glm::cross(v2 - v1, v3 - v1));
+                if (glm::dot(normal, direction) > 0.0) normal = -normal;
                 outnormal = normal;
                 hit = true;
             }
