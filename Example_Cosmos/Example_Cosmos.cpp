@@ -178,6 +178,8 @@ int main()
     pworld->entities.push_back(player);
     pworld->entities.push_back(ship);
 
+    ship->mainSeat = player;
+
     SpaceShipHyperDrive* hyperdrive_engine = new SpaceShipHyperDrive(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(0.0, 0.0, 1.0), 2500000.19, 0.1);
 
     SpaceShipEngine* forward_engine = new SpaceShipEngine(glm::dvec3(0.0, 0.0, 1.0), glm::dvec3(0.0, 0.0, 1.0), 100.19, 0.1);
@@ -210,7 +212,7 @@ int main()
          posZUP
          posZDOWN
     */
-    double helpersforce = 0.5;
+    double helpersforce = 100.5;
     SpaceShipEngine* negXUP = new SpaceShipEngine(glm::dvec3(-1.0, 0.0, 0.0), glm::dvec3(0.0, 1.0, 0.0), helpersforce, 0.1);
     SpaceShipEngine* negXDOWN = new SpaceShipEngine(glm::dvec3(-1.0, 0.0, 0.0), glm::dvec3(0.0, -1.0, 0.0), helpersforce, 0.1);
     SpaceShipEngine* posXUP = new SpaceShipEngine(glm::dvec3(1.0, 0.0, 0.0), glm::dvec3(0.0, 1.0, 0.0), helpersforce, 0.1);
@@ -484,9 +486,9 @@ int main()
             if (pitch < -360.0f) pitch += 360.0f;
             if (pitch > 360.0f) pitch -= 360.0f;
             glm::quat newrot = glm::angleAxis(deg2rad(pitch), glm::vec3(0, 1, 0)) * glm::angleAxis(deg2rad(yaw), glm::vec3(1, 0, 0));
-            camera->transformation->setOrientation(glm::slerp(newrot, camera->transformation->getOrientation(), 0.9f));
-            player->setOrientation(newrot);
-            player->applyImpulse(glm::dvec3(0.0, 0.0, -1.0), length(dir) > 0.0 ? (normalize(dir) * speed) : (glm::dvec3(0.0)));
+         //   camera->transformation->setOrientation(glm::slerp(newrot, camera->transformation->getOrientation(), 0.9f));
+         //   player->setOrientation(newrot);
+           // player->applyImpulse(glm::dvec3(0.0, 0.0, -1.0), length(dir) > 0.0 ? (normalize(dir) * speed) : (glm::dvec3(0.0)));
             /*glm::dvec3 outposhit;
             bool hits = ship->hitRayPosition(player->getPosition(), glm::normalize(dir), outposhit);
             if (!hits || glm::distance(outposhit, player->getPosition()) > glm::distance(newpos, player->getPosition())) {
@@ -632,6 +634,7 @@ int main()
         }
 
         pworld->stepEmulation(elapsed);
+        camera->transformation->setOrientation(player->getOrientation());
        // ship->applyGravity(cosmosRenderer->lastGravity * elapsed * (keyboard->getKeyStatus(GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ? 100.0f : 1.0f));
        // ship->stepEmulation(elapsed);
         //camera->transformation->setOrientation(ship->getOrientation());

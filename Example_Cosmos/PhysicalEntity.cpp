@@ -81,9 +81,9 @@ void PhysicalEntity::setAngularVelocity(glm::dvec3 v)
 
 void PhysicalEntity::stepEmulation(double time_delta)
 {
-    update(time_delta);
     position = predictPosition(time_delta);
     orientation = predictOrientation(time_delta);
+    update(time_delta);
 }
  
 void PhysicalEntity::applyImpulse(glm::dvec3 relativePos, glm::dvec3 force)

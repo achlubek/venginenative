@@ -31,4 +31,10 @@ void SpaceShip::update(double time_elapsed)
             modules[i]->update(this, time_elapsed);
         }
     }
+    if (mainSeat != nullptr) {
+        mainSeat->setPosition(getPosition() + getOrientation() * mainSeatPosition);
+        mainSeat->setOrientation(mainSeatOrientation * getOrientation());
+        mainSeat->setLinearVelocity(getLinearVelocity());
+        mainSeat->setAngularVelocity(getAngularVelocity());
+    }
 }
