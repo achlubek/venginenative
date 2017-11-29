@@ -5,7 +5,7 @@ VulkanShaderModule::VulkanShaderModule(VulkanToolkit * ivulkan, std::string path
 {
     std::ifstream file(path, std::ios::ate | std::ios::binary);
 
-    if (!file.is_open()) {
+    if (!file.is_open()) { 
         throw std::runtime_error("failed to open file!");
     }
 
