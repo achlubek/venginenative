@@ -1,6 +1,7 @@
 #pragma once
 class VulkanGraphicsPipeline;
 class VulkanDescriptorSet;
+class VulkanSingleAllocation;
 class Object3dInfo
 {
 public:
@@ -17,7 +18,7 @@ public:
     VulkanToolkit * vulkan;
 
     VkBuffer vertexBuffer;
-    VkDeviceMemory vertexBufferMemory;
+    VulkanSingleAllocation vertexBufferMemory;
     int vertexCount = 0;
 
     //VulkanImage texture;

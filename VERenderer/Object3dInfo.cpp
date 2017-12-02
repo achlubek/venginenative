@@ -1,4 +1,7 @@
 #include "stdafx.h"
+#include "VulkanToolkit.h" 
+#include "VulkanMemoryManager.h" 
+#include "VulkanMemoryChunk.h" 
 
 /*
 This class expected interleaved buffer in format
@@ -112,16 +115,21 @@ void Object3dInfo::generate()
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = vulkan->findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
+    auto properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+    vertexBufferMemory = vulkan->memoryManager->bindBufferMemory(vulkan->findMemoryType(memRequirements.memoryTypeBits, properties), vertexBuffer, memRequirements.size);
+
+    /*
     if (vkAllocateMemory(vulkan->device, &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate vertex buffer memory!");
     }
 
-    vkBindBufferMemory(vulkan->device, vertexBuffer, vertexBufferMemory, 0);
+    vkBindBufferMemory(vulkan->device, vertexBuffer, vertexBufferMemory, 0);*/
 
     void* data;
-    vkMapMemory(vulkan->device, vertexBufferMemory, 0, bufferInfo.size, 0, &data);
+    vkMapMemory(vulkan->device, vertexBufferMemory.chunk->handle, vertexBufferMemory.offset, bufferInfo.size, 0, &data);
     memcpy(data, vbo.data(), (size_t)bufferInfo.size);
-    vkUnmapMemory(vulkan->device, vertexBufferMemory);
+    vkUnmapMemory(vulkan->device, vertexBufferMemory.chunk->handle);
     vertexCount = vbo.size() / 12;
 
     generated = true;

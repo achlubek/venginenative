@@ -567,7 +567,7 @@ void EditorApp::onBind()
         }
         //app->world->scene->addMesh3d(s);
         */
-
+    /*
         
         int terrainparts = 10;
         float fullsize = 4819.0;
@@ -594,7 +594,7 @@ void EditorApp::onBind()
             }
         }
 
-
+        */
 
         //  t->name = "flagbase";
         // app->world->scene->addMesh(t);

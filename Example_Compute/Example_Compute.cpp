@@ -35,7 +35,7 @@ int main()
     buffer->unmap();
 
     stage->beginRecording();
-    stage->dispatch({ set }, 4, 1, 1);
+    stage->dispatch({ set }, 1, 1, 1);
     stage->endRecording();
     stage->submitNoSemaphores({});
 
