@@ -10,6 +10,7 @@ Mouse::Mouse(GLFWwindow* win)
 
     onMouseDown = EventHandler<int>();
     onMouseUp = EventHandler<int>();
+    onMouseScroll = EventHandler<int>();
 
     glfwSetMouseButtonCallback(window, [](GLFWwindow * window, int button, int action, int mods) -> void {
         int id = 0;
@@ -19,12 +20,18 @@ Mouse::Mouse(GLFWwindow* win)
         if (action == GLFW_PRESS) Mouse::instance->onMouseDown.invoke(id);
         if (action == GLFW_RELEASE) Mouse::instance->onMouseUp.invoke(id);
     });
-
+    glfwSetScrollCallback(window, [](GLFWwindow * window, double xoffset, double yoffset) -> void {
+        Mouse::instance->onMouseScroll.invoke(yoffset); // TODO add x offset making another callback
+    });
+    glfwSetInputMode(window, GLFW_CURSOR, cursorMode);
 }
 
 void Mouse::setCursorMode(int mode)
 {
-    glfwSetInputMode(window, GLFW_CURSOR, mode);
+    if (mode != cursorMode) {
+        glfwSetInputMode(window, GLFW_CURSOR, mode);
+        cursorMode = mode;
+    }
 }
 
 std::tuple<float, float> Mouse::getCursorPosition()
@@ -32,6 +39,11 @@ std::tuple<float, float> Mouse::getCursorPosition()
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
     return std::make_tuple(xpos, ypos);
+}
+
+bool Mouse::isButtonPressed(int button)
+{
+    return glfwGetMouseButton(window, button) == GLFW_PRESS;
 }
 
 
