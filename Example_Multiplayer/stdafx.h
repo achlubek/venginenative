@@ -20,6 +20,8 @@
 #include "glm/vec3.hpp"
 #include "glm/gtc/quaternion.hpp"
 
+#include <GLFW/glfw3.h>
+
 #include "VECommon.h"
 #include "VERenderer.h"
 #include "VEUserInterface.h"
