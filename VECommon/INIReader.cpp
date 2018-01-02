@@ -54,6 +54,11 @@ string INIReader::gets(string key)
     return data[key];
 }
 
+std::vector<std::string> INIReader::getAllKeys()
+{
+    return allKeys;
+}
+
 INIReader::~INIReader()
 {
 }
@@ -61,6 +66,7 @@ INIReader::~INIReader()
 void INIReader::readString(string str)
 {
     data = {};
+    allKeys = {};
     stringstream sskey, ssval;
     int len = str.size();
     bool skipspaces = true;
@@ -79,6 +85,7 @@ void INIReader::readString(string str)
             ssval.str(std::string());
             if (key.size() == 0) continue;
             data[key] = val;
+            allKeys.push_back(key);
             valuereading = false;
             skipspaces = true;
             continue;
@@ -90,6 +97,8 @@ void INIReader::readString(string str)
         (valuereading ? ssval : sskey) << str[i];
     }
     string key = sskey.str();
-    if (key.size() != 0)
+    if (key.size() != 0) {
         data[key] = ssval.str();
+        allKeys.push_back(key);
+    }
 }
