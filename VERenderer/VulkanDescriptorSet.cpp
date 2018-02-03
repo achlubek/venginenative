@@ -23,7 +23,7 @@ VulkanDescriptorSet::~VulkanDescriptorSet()
 void VulkanDescriptorSet::bindImageViewSampler(int binding, VulkanImage* img)
 {
     VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo();
-    imageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    imageInfo->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
     imageInfo->imageView = img->imageView;
     imageInfo->sampler = img->getSampler();
 
@@ -36,6 +36,26 @@ void VulkanDescriptorSet::bindImageViewSampler(int binding, VulkanImage* img)
     writes[i].dstBinding = binding;
     writes[i].dstArrayElement = 0;
     writes[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    writes[i].descriptorCount = 1;
+    writes[i].pImageInfo = imageInfo;
+
+}
+void VulkanDescriptorSet::bindImageStorage(int binding, VulkanImage* img)
+{
+    VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo();
+    imageInfo->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+    imageInfo->imageView = img->imageView;
+    imageInfo->sampler = img->getSampler();
+
+    writes.resize(writes.size() + 1);
+
+    int i = writes.size() - 1;
+
+    writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writes[i].dstSet = set;
+    writes[i].dstBinding = binding;
+    writes[i].dstArrayElement = 0;
+    writes[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
     writes[i].descriptorCount = 1;
     writes[i].pImageInfo = imageInfo;
 

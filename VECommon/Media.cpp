@@ -36,7 +36,6 @@ int get_file_contents_binary(unsigned char** out_bytes, const char* path) {
 
 int put_file_contents_binary(const void* out_bytes, int size, const char* path) {
     FILE* fh = fopen(path, "wb+");
-    printf("%d\n", size);
     fwrite(out_bytes, 1, size, fh);
     fclose(fh);
     return size;

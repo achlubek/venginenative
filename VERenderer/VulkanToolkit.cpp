@@ -35,6 +35,7 @@ void VulkanToolkit::initialize(int width, int height)
     requiredFeatures.tessellationShader = VK_FALSE;
     requiredFeatures.geometryShader = VK_FALSE;
     requiredFeatures.samplerAnisotropy = VK_FALSE; // I will need to recheck this mipmapping hell some time
+    requiredFeatures.shaderStorageImageExtendedFormats = VK_TRUE;
 
     const std::vector<float> priorities = { 1.0f };
     const VkDeviceQueueCreateInfo deviceQueueCreateInfo =

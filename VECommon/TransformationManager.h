@@ -31,7 +31,7 @@ public:
         size *= rhs.size;
         return *this;
     }
-    friend TransformStruct &operator*(TransformStruct& lhs, const TransformStruct& rhs)
+    friend TransformStruct operator*(TransformStruct& lhs, const TransformStruct& rhs)
     {
         return TransformStruct(lhs.position + rhs.position, lhs.orientation * rhs.orientation, lhs.size * rhs.size);
     }
