@@ -14,6 +14,7 @@ VulkanAttachment::VulkanAttachment(VulkanImage* iimage, VkFormat format, VkSampl
     description.stencilStoreOp = stencilstoreop;
     description.initialLayout = initialLayout;
     description.finalLayout = finalLayout;
+    blending = VulkanAttachmentBlending::None;
 
 }
 

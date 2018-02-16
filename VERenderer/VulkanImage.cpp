@@ -17,7 +17,7 @@ VulkanImage::VulkanImage(VulkanToolkit * ivulkan, uint32_t iwidth, uint32_t ihei
     aspectFlags = iaspectFlags;
     initialLayout = iinitialLayout;
     isDepthBuffer = iisDepthBuffer;
-
+    attachmentBlending = VulkanAttachmentBlending::None;
     unsigned int sz = min(width, height) / 2;
     int mipmaps = 1;
    // for (int32_t i = 1; sz > 1; i++)
@@ -135,10 +135,12 @@ VkSampler VulkanImage::getSampler()
 
 VulkanAttachment VulkanImage::getAttachment()
 {
-    return VulkanAttachment(this, format, VK_SAMPLE_COUNT_1_BIT,
+    auto att = VulkanAttachment(this, format, VK_SAMPLE_COUNT_1_BIT,
         VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
         VK_IMAGE_LAYOUT_UNDEFINED, isPresentReady ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR  : (isDepthBuffer ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL));
+    att.blending = attachmentBlending;
+    return att;
 }
 
 void VulkanImage::generateMipMaps()

@@ -1,5 +1,10 @@
 #pragma once
 class VulkanImage;
+enum VulkanAttachmentBlending {
+    None,
+    Additive,
+    Alpha
+};
 class VulkanAttachment
 {
 public:
@@ -10,5 +15,6 @@ public:
     ~VulkanAttachment();
     VkAttachmentDescription description;
     VkAttachmentReference getReference(uint32_t attachment, VkImageLayout layout);
+    VulkanAttachmentBlending blending;
 };
 

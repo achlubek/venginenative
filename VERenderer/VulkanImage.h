@@ -29,6 +29,8 @@ public:
 
     VkSampler getSampler();
     VulkanAttachment getAttachment();
+
+    VulkanAttachmentBlending attachmentBlending;
     void generateMipMaps();
     ~VulkanImage();
 private:
