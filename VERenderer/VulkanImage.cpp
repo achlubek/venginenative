@@ -17,6 +17,7 @@ VulkanImage::VulkanImage(VulkanToolkit * ivulkan, uint32_t iwidth, uint32_t ihei
     aspectFlags = iaspectFlags;
     initialLayout = iinitialLayout;
     isDepthBuffer = iisDepthBuffer;
+    clearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
     attachmentBlending = VulkanAttachmentBlending::None;
     unsigned int sz = min(width, height) / 2;
     int mipmaps = 1;
@@ -95,6 +96,7 @@ VulkanImage::VulkanImage(VkFormat iformat, VkImage imageHandle, VkImageView view
     imageView = viewHandle; 
     isDepthBuffer = false;
     samplerCreated = false;
+    clearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 }
 
 VkSampler VulkanImage::getSampler()
@@ -140,6 +142,8 @@ VulkanAttachment VulkanImage::getAttachment()
         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
         VK_IMAGE_LAYOUT_UNDEFINED, isPresentReady ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR  : (isDepthBuffer ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL));
     att.blending = attachmentBlending;
+    att.clearColor = clearColor;
+    att.clear = clear;
     return att;
 }
 

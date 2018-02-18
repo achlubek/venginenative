@@ -50,7 +50,7 @@ void VulkanRenderStage::addShaderStage(VkPipelineShaderStageCreateInfo ss)
 {
     shaderStages.push_back(ss);
 }
- 
+
 void VulkanRenderStage::beginDrawing()
 {
     cmdMeshesCounts = 0;
@@ -62,22 +62,26 @@ void VulkanRenderStage::beginDrawing()
     renderPassInfo.framebuffer = framebuffer->handle;
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = viewport;
-
     std::vector<VkClearValue> clearValues = {};
+    if (clearBeforeDrawing) {
 
-    for (int i = 0; i < renderPass->attachments.size(); i++) {
-        VkClearValue c = VkClearValue();
-        if (renderPass->attachments[i].image->isDepthBuffer) {
-            c.depthStencil = { 1.0f, 0 };
+        clearValues.resize(renderPass->attachments.size());
+
+        for (int i = 0; i < renderPass->attachments.size(); i++) {
+            if (renderPass->attachments[i].image->isDepthBuffer) {
+                clearValues[i].depthStencil = { 1.0f, 0 };
+            }
+            else {
+                clearValues[i].color = renderPass->attachments[i].clearColor;
+            }
         }
-        else {
-            c.color = { 0.0f, 0.0f, 0.0f, 0.0f };
-        }
-        clearValues.push_back(c);
+
+        renderPassInfo.clearValueCount = static_cast<uint32_t>(renderPass->attachments.size());
+        renderPassInfo.pClearValues = clearValues.data();
     }
-    
-    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-    renderPassInfo.pClearValues = clearValues.data();
+    else {
+        renderPassInfo.clearValueCount = 0;
+    }
 
     vkCmdBeginRenderPass(commandBuffer->handle, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -102,7 +106,7 @@ void VulkanRenderStage::drawMesh(Object3dInfo * info, size_t instances)
 }
 
 void VulkanRenderStage::compile()
-{ 
+{
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     vkCreateSemaphore(vulkan->device, &semaphoreInfo, nullptr, &signalSemaphore);
@@ -118,6 +122,12 @@ void VulkanRenderStage::compile()
     bool foundDepthBuffer = false;
     for (int i = 0; i < outputImages.size(); i++) {
         auto atta = outputImages[i]->getAttachment();
+        if (!clearBeforeDrawing) {
+            atta.description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        }
+        if (!atta.clear) {
+            atta.description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        }
         if (outputImages[i]->isDepthBuffer) {
             depthAttachment = atta;
             foundDepthBuffer = true;
@@ -157,7 +167,7 @@ VulkanRenderStage* VulkanRenderStage::copy()
 
 void VulkanRenderStage::submit(std::vector<VkSemaphore> waitSemaphores)
 {
-    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_ALL_COMMANDS_BIT };
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.waitSemaphoreCount = waitSemaphores.size();
@@ -177,7 +187,7 @@ void VulkanRenderStage::submit(std::vector<VkSemaphore> waitSemaphores)
 
 void VulkanRenderStage::submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores)
 {
-    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_ALL_COMMANDS_BIT };
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.waitSemaphoreCount = waitSemaphores.size();

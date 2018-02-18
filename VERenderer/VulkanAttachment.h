@@ -16,5 +16,7 @@ public:
     VkAttachmentDescription description;
     VkAttachmentReference getReference(uint32_t attachment, VkImageLayout layout);
     VulkanAttachmentBlending blending;
+    VkClearColorValue clearColor;
+    bool clear = true;
 };
 

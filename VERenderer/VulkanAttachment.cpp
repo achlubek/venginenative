@@ -15,6 +15,7 @@ VulkanAttachment::VulkanAttachment(VulkanImage* iimage, VkFormat format, VkSampl
     description.initialLayout = initialLayout;
     description.finalLayout = finalLayout;
     blending = VulkanAttachmentBlending::None;
+    clearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 }
 

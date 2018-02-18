@@ -38,6 +38,7 @@ public:
     bool alphaBlending = false;
     bool additiveBlending = false;
     bool enabled = true;
+    bool clearBeforeDrawing = true;
     VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; 
     VkCullModeFlags cullFlags = 0;
 

@@ -20,6 +20,8 @@ public:
     VkSampler sampler;
     bool isDepthBuffer;
     bool isPresentReady = false;
+    bool clear = true;
+    VkClearColorValue clearColor;
      
     VulkanImage(VulkanToolkit * vulkan, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
         VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags,
