@@ -3,16 +3,14 @@
 #include "UIRenderer.h"
 
 
-UIBox::UIBox(UIRenderer* irenderer, float ix, float iy, float iwidth, float iheight, UIColor icolor)
-    : renderer(irenderer), x(ix), y(iy), width(iwidth), height(iheight), color(icolor)
+UIBox::UIBox(UIRenderer* renderer, float x, float y, float width, float height, UIColor color)
+    : UIAbsDrawable(renderer, x, y, width, height, color)
 {
-    dataBuffer = new VulkanGenericBuffer(irenderer->vulkan, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 1024);
-    set = renderer->layout->generateDescriptorSet();
-    set->bindUniformBuffer(0, dataBuffer);
-    set->bindImageViewSampler(1, renderer->dummyTexture);
-    set->update();
+	set = renderer->layout->generateDescriptorSet();
+	set->bindUniformBuffer(0, dataBuffer);
+	set->bindImageViewSampler(1, renderer->dummyTexture);
+	set->update();
 }
-
 
 UIBox::~UIBox()
 {

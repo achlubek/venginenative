@@ -12,6 +12,7 @@ public:
     VulkanGraphicsPipeline* pipeline;
     std::vector<VkDescriptorSetLayout> setLayouts;
     VkPipelineShaderStageCreateInfo shader;
+	VkQueue queue;
 
     void addDescriptorSetLayout(VkDescriptorSetLayout lay);
     void setShaderStage(VkPipelineShaderStageCreateInfo ss);

@@ -38,14 +38,14 @@ void VulkanToolkit::initialize(int width, int height)
     requiredFeatures.shaderStorageImageExtendedFormats = VK_TRUE;
     requiredFeatures.independentBlend = VK_TRUE;
 
-    const std::vector<float> priorities = { 1.0f };
+    const std::vector<float> priorities = { 1.0f, 0.0f };
     const VkDeviceQueueCreateInfo deviceQueueCreateInfo =
     {
         VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,     // sType
         nullptr,                                        // pNext
         0,                                              // flags
         chosenQFId,                                     // queueFamilyIndex
-        1,                                              // queueCount
+        2,                                              // queueCount
         priorities.data()                                         // pQueuePriorities
     };
     std::vector<const char*> deviceExtensions = {
@@ -69,7 +69,8 @@ void VulkanToolkit::initialize(int width, int height)
     createLogicalDevice(physicalDevices[chosenDeviceId], createInfo);
 
 
-    vkGetDeviceQueue(device, chosenQFId, 0, &mainQueue);
+	vkGetDeviceQueue(device, chosenQFId, 0, &mainQueue);
+	vkGetDeviceQueue(device, chosenQFId, 1, &secondaryQueue);
 
     memoryManager = new VulkanMemoryManager(this);
 

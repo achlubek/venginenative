@@ -1,7 +1,7 @@
 #pragma once
 class VulkanGraphicsPipeline;
 class VulkanDescriptorSet;
-class VulkanSingleAllocation;
+struct VulkanSingleAllocation;
 class Object3dInfo
 {
 public:

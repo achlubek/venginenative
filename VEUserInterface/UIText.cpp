@@ -23,7 +23,7 @@ int uitext_get_file_contents_binary(unsigned char** out_bytes, const char* path)
 }
 
 UIText::UIText(UIRenderer* irenderer, float ix, float iy, UIColor icolor, std::string fontpath, int ifontsize, std::string text)
-    : renderer(irenderer), x(ix), y(iy), color(icolor), fontsize(ifontsize)
+    : UIAbsDrawable(renderer, x, y, 0, 0, color), fontsize(ifontsize)
 {
     uitext_get_file_contents_binary(&fontBuffer, fontpath.c_str());
     font = new stbtt_fontinfo();
@@ -31,7 +31,6 @@ UIText::UIText(UIRenderer* irenderer, float ix, float iy, UIColor icolor, std::s
     {
         printf("failed\n");
     }
-    dataBuffer = new VulkanGenericBuffer(irenderer->vulkan, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 1024);
     set = renderer->layout->generateDescriptorSet();
     updateText(text);
 }
@@ -39,6 +38,9 @@ UIText::UIText(UIRenderer* irenderer, float ix, float iy, UIColor icolor, std::s
 
 UIText::~UIText()
 {
+	delete texture;
+	delete font;
+	delete fontBuffer;
 }
 
 void UIText::updateBuffer()

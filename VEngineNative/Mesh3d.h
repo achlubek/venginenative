@@ -3,7 +3,7 @@ class Mesh3dInstance;
 class Mesh3dLodLevel;
 class Object3dInfo;
 
-#include "Material.h";
+#include "Material.h"
 class Mesh3d
 {
 public:

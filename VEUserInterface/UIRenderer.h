@@ -1,26 +1,26 @@
 #pragma once
 class VulkanRenderer;
 class VulkanToolkit;
-class UIBox;
-class UIText;
-class UIBitmap;
+class UIAbsDrawable;
 
 class UIRenderer
 {
 public:
     UIRenderer(VulkanToolkit* vulkan, int width, int height);
     ~UIRenderer();
-    int width{ 0 };
-    int height{ 0 };
-    VulkanToolkit* vulkan{ nullptr };
-    VulkanRenderer* renderer{ nullptr };
+	void draw();
+	void addDrawable(UIAbsDrawable* drawable);
+	void removeDrawable(UIAbsDrawable* drawable);
+	std::vector<UIAbsDrawable*> getDrawables();
+	void removeAllDrawables();
+	VulkanDescriptorSetLayout* layout{ nullptr };
+	VulkanImage* dummyTexture;
+	int width{ 0 }, height{ 0 };
+	VulkanToolkit* vulkan{ nullptr };
+	VulkanImage* outputImage;
+private:
+	VulkanRenderer * renderer{ nullptr };
     VulkanRenderStage* stage{ nullptr };
-    VulkanDescriptorSetLayout* layout{ nullptr };
-    VulkanImage* outputImage;
-    std::vector<UIBox*> boxes;
-    std::vector<UIText*> texts;
-    std::vector<UIBitmap*> bitmaps;
-    void draw();
-    VulkanImage* dummyTexture;
+    std::vector<UIAbsDrawable*> drawables;
 };
 

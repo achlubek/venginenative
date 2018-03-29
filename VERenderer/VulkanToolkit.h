@@ -51,7 +51,8 @@ public:
      
     VkCommandPool commandPool;
 
-    VkQueue mainQueue;
+	VkQueue mainQueue;
+	VkQueue secondaryQueue;
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties); 
 
     ImageData readFileImageData(std::string path);

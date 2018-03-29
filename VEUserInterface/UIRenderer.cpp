@@ -7,7 +7,7 @@
 
 
 UIRenderer::UIRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) :
-    width(iwidth), height(iheight), vulkan(ivulkan)
+    vulkan(ivulkan), width(iwidth), height(iheight)
 {
 
     ImageData img = ImageData();
@@ -37,49 +37,63 @@ UIRenderer::UIRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) :
     stage->addShaderStage(frag->createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
     stage->addDescriptorSetLayout(layout->layout);
     stage->addOutputImage(outputImage);
-    stage->alphaBlending = true; //yisss
+    stage->alphaBlending = true;
     
     renderer = new VulkanRenderer(vulkan);
     renderer->setMeshStage(stage);
     renderer->compile();
 }
 
-/*
-buffer struct layout for elements
-
-*/
 
 void UIRenderer::draw() {
-    // update buffers........
-    for (int i = 0; i < boxes.size(); i++) {
-        boxes[i]->updateBuffer();
-    }
-    for (int i = 0; i < bitmaps.size(); i++) {
-        bitmaps[i]->updateBuffer();
-    }
-    for (int i = 0; i < texts.size(); i++) {
-        if (texts[i]->width == 0.0 && texts[i]->height == 0.0) continue;
-        texts[i]->updateBuffer();
+
+	for (int a = 0; a < drawables.size(); a++) {
+		for (int b = 0; b < drawables.size(); b++) {
+			auto index_a = drawables[a]->zIndex;
+			auto index_b = drawables[b]->zIndex;
+			if (index_a > index_b) {
+				auto tmp = drawables[b];
+				drawables[b] = drawables[a];
+				drawables[a] = tmp;
+			}
+		}
+	}
+
+    for (int i = 0; i < drawables.size(); i++) {
+		drawables[i]->updateBuffer();
     }
 
     renderer->beginDrawing();
 
     auto stage = renderer->getMesh3dStage();
-    for (int i = 0; i < boxes.size(); i++) {
-        stage->setSets({ boxes[i]->set });
-        stage->drawMesh(vulkan->fullScreenQuad3dInfo, 1);
-    }
-    for (int i = 0; i < bitmaps.size(); i++) {
-        stage->setSets({ bitmaps[i]->set });
-        stage->drawMesh(vulkan->fullScreenQuad3dInfo, 1);
-    }
-    for (int i = 0; i < texts.size(); i++) {
-        if (texts[i]->width == 0.0 && texts[i]->height == 0.0) continue;
-        stage->setSets({ texts[i]->set });
-        stage->drawMesh(vulkan->fullScreenQuad3dInfo, 1);
+    for (int i = 0; i < drawables.size(); i++) {
+		drawables[i]->draw(stage);
     }
 
     renderer->endDrawing();
+}
+
+void UIRenderer::addDrawable(UIAbsDrawable * drawable)
+{
+	drawables.push_back(drawable);
+}
+
+void UIRenderer::removeDrawable(UIAbsDrawable * drawable)
+{
+	auto found = std::find(drawables.begin(), drawables.end(), drawable);
+	if (found != drawables.end()) {
+		drawables.erase(found);
+	}
+}
+
+std::vector<UIAbsDrawable*> UIRenderer::getDrawables()
+{
+	return drawables;
+}
+
+void UIRenderer::removeAllDrawables()
+{
+	drawables.clear();
 }
 
 UIRenderer::~UIRenderer()

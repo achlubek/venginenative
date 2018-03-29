@@ -64,8 +64,8 @@ void EditorApp::onRenderFrame(float elapsed)
     walker->update();
     //app->ui->texts[0]->updateText(std::to_string((float)rand()));
     auto fiestapos2d = cam->projectToScreen(car[0]->getTransformation()->getPosition());
-    app->ui->texts[0]->x = fiestapos2d.x;
-    app->ui->texts[0]->y = fiestapos2d.y;
+//    app->ui->texts[0]->x = fiestapos2d.x;
+ //   app->ui->texts[0]->y = fiestapos2d.y;
     for (int i = 0; i < players.size(); i++) {
         players[i]->nextFrame();
     }
@@ -489,7 +489,7 @@ void EditorApp::onBind()
     //   app->ui->boxes.push_back(box);
      //  app->ui->boxes.push_back(box2);
      //  app->ui->bitmaps.push_back(img1);
-    app->ui->texts.push_back(txt);
+//    app->ui->texts.push_back(txt);
 
     chat = new Chat(app->ui, keyboard);
     chat->onSendText.add([&](std::string s) {

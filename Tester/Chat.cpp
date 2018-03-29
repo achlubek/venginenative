@@ -19,7 +19,7 @@ Chat::Chat(UIRenderer* irenderer, Keyboard* ikeyboard)
     for (int i = 0; i < 10; i++) {
         auto txt = new UIText(renderer, 0.002, y, UIColor(1, 1, 1, 1.0), Media::getPath("font.ttf"), fontsize, " ");
         lines.push_back(txt);
-        renderer->texts.push_back(txt);
+		renderer->addDrawable(txt);
         linesStrings.push_back("");
         linesColors.push_back(UIColor(0,0,0,0));
         y += lineheight;
@@ -27,7 +27,7 @@ Chat::Chat(UIRenderer* irenderer, Keyboard* ikeyboard)
     y += lineheight;
     input = new UIText(renderer, 0.002, y, UIColor(1, 1, 1, 1.0), Media::getPath("font.ttf"), fontsize, " ");
     inputString = "";
-    renderer->texts.push_back(input);
+	renderer->addDrawable(input);
     keyboard->onChar.add([&](unsigned int c) {
         if (inputEnabled) {
             if (ignoreCharsCount-- > 0) return;

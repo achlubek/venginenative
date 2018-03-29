@@ -5,6 +5,7 @@
 VulkanComputeStage::VulkanComputeStage(VulkanToolkit * ivulkan)
     : vulkan(ivulkan)
 {
+	queue = vulkan->mainQueue;
     setLayouts = {};  
 }
 

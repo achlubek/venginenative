@@ -126,6 +126,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="UIAbsDrawable.h" />
     <ClInclude Include="UIBitmap.h" />
     <ClInclude Include="UIBox.h" />
     <ClInclude Include="UIColor.h" />
@@ -140,6 +141,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="UIAbsDrawable.cpp" />
     <ClCompile Include="UIBitmap.cpp" />
     <ClCompile Include="UIBox.cpp" />
     <ClCompile Include="UIColor.cpp" />

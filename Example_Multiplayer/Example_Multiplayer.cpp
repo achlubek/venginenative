@@ -149,7 +149,7 @@ int main(int argc, char* argv[])
     for (int i = 0; i < 20; i++) {
         // out of screen by default
         auto img1 = new UIText(game->ui, 0.2, 0.2, UIColor(1, 0, 0, 0.5), Media::getPath("font.ttf"), 26, " ");
-        game->ui->texts.push_back(img1);
+       // game->ui->texts.push_back(img1);
     }
 
     auto mouse = new Mouse(game->vulkan->window);
@@ -158,13 +158,13 @@ int main(int argc, char* argv[])
         for (int i = 0; i < client->allPlayersData.size(); i++) {
             auto p = static_cast<TestPlayerData*>(client->allPlayersData[i]);
             if (client->allPlayersData[i]->id == client->clientPlayerData->id) continue;
-            game->ui->texts[i]->x = p->testposition.x;
-            game->ui->texts[i]->y = p->testposition.y;
-            game->ui->texts[i]->updateText(p->nick);
+           // game->ui->texts[i]->x = p->testposition.x;
+         //   game->ui->texts[i]->y = p->testposition.y;
+         //   game->ui->texts[i]->updateText(p->nick);
         }
         for (int i = client->allPlayersData.size(); i < 20; i++) {
-            game->ui->texts[i]->x = -1.0f;
-            game->ui->texts[i]->y = -1.0f;
+          //  game->ui->texts[i]->x = -1.0f;
+           // game->ui->texts[i]->y = -1.0f;
         }
         auto p = static_cast<TestPlayerData*>(client->clientPlayerData);
         auto cursor = mouse->getCursorPosition();
