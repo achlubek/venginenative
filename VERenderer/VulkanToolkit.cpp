@@ -13,11 +13,11 @@ VulkanToolkit::~VulkanToolkit()
     vkDestroyInstance(instance, nullptr);
 }
 
-void VulkanToolkit::initialize(int width, int height)
+void VulkanToolkit::initialize(int width, int height, bool enableValidation, std::string windowName)
 {
     windowWidth = width;
     windowHeight = height;
-    createInstance("VEngine", "VEngine");
+    createInstance(windowName, windowName, enableValidation);
     loadPhysicalDevices();
     for (int i = 0; i < physicalDevices.size(); i++) {
         auto props = getQueueFamilyProperties(physicalDevices[i]);
@@ -63,8 +63,13 @@ void VulkanToolkit::initialize(int width, int height)
     createInfo.enabledExtensionCount = deviceExtensions.size();
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-    createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-    createInfo.ppEnabledLayerNames = validationLayers.data();
+    if (enableValidation) {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+    }
+    else {
+        createInfo.enabledLayerCount = 0;
+    }
 
     pdevice = physicalDevices[chosenDeviceId];
     createLogicalDevice(physicalDevices[chosenDeviceId], createInfo);
@@ -149,7 +154,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     return VK_FALSE;
 }
 
-void VulkanToolkit::createInstance(std::string appname, std::string enginename)
+void VulkanToolkit::createInstance(std::string appname, std::string enginename, bool enableValidation)
 {
     glfwInit();
     VkApplicationInfo appInfo = {};
@@ -176,8 +181,14 @@ void VulkanToolkit::createInstance(std::string appname, std::string enginename)
     createInfo.pApplicationInfo = &appInfo;
     createInfo.enabledExtensionCount = deviceExtensions.size();
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
-    createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-    createInfo.ppEnabledLayerNames = validationLayers.data();
+
+    if (enableValidation) {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+    }
+    else {
+        createInfo.enabledLayerCount = 0;
+    }
 
     VkResult result;
     result = vkCreateInstance(&createInfo, nullptr, &instance);

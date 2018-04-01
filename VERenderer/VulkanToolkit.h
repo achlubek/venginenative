@@ -27,8 +27,8 @@ public:
     VulkanMemoryManager* memoryManager;
     Object3dInfo* fullScreenQuad3dInfo;
     Object3dInfo* singlePoint3dInfo;
-    void initialize(int width, int height);
-    void createInstance(std::string appname, std::string enginename);
+    void initialize(int width, int height, bool enableValidation, std::string windowName);
+    void createInstance(std::string appname, std::string enginename, bool enableValidation);
     void setupDebugCallback();
     void loadPhysicalDevices();
     std::vector<VkQueueFamilyProperties> getQueueFamilyProperties(VkPhysicalDevice pdevice);

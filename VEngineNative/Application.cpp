@@ -19,7 +19,7 @@ Application::Application(int windowwidth, int windowheight)
     idMap = unordered_map<int, void*>();
     hasExited = false;
     vulkan = new VulkanToolkit();
-    vulkan->initialize(windowwidth, windowheight);
+    vulkan->initialize(windowwidth, windowheight, true, "VEngine old engine");
     //auto data = readFileImageData(path);
     asset = new AssetLoader(vulkan);
     ImageData img = ImageData();

@@ -7,7 +7,7 @@
 int main()
 {
     auto toolkit = new VulkanToolkit();
-    toolkit->initialize(0, 0); // no window
+    toolkit->initialize(0, 0, true, "No window mode"); // no window
     
     auto shader = new VulkanShaderModule(toolkit, "../../shaders/compiled/example-compute.comp.spv");
 

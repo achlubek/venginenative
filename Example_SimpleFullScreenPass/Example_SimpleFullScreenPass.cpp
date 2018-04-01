@@ -7,7 +7,7 @@
 int main()
 {
     auto toolkit = new VulkanToolkit();
-    toolkit->initialize(640, 480);
+    toolkit->initialize(640, 480, true, "Full screen pass example");
 
     VkExtent2D ext;
     ext.width = toolkit->windowWidth;

@@ -47,27 +47,27 @@ UIRenderer::UIRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) :
 
 void UIRenderer::draw() {
 
-	for (int a = 0; a < drawables.size(); a++) {
-		for (int b = 0; b < drawables.size(); b++) {
-			auto index_a = drawables[a]->zIndex;
-			auto index_b = drawables[b]->zIndex;
-			if (index_a > index_b) {
-				auto tmp = drawables[b];
-				drawables[b] = drawables[a];
-				drawables[a] = tmp;
-			}
-		}
-	}
+    for (int a = 0; a < drawables.size(); a++) {
+        for (int b = 0; b < drawables.size(); b++) {
+            auto index_a = drawables[a]->zIndex;
+            auto index_b = drawables[b]->zIndex;
+            if (index_a > index_b) {
+                auto tmp = drawables[b];
+                drawables[b] = drawables[a];
+                drawables[a] = tmp;
+            }
+        }
+    }
 
     for (int i = 0; i < drawables.size(); i++) {
-		drawables[i]->updateBuffer();
+        drawables[i]->updateBuffer();
     }
 
     renderer->beginDrawing();
 
     auto stage = renderer->getMesh3dStage();
     for (int i = 0; i < drawables.size(); i++) {
-		drawables[i]->draw(stage);
+        drawables[i]->draw(stage);
     }
 
     renderer->endDrawing();
@@ -75,25 +75,25 @@ void UIRenderer::draw() {
 
 void UIRenderer::addDrawable(UIAbsDrawable * drawable)
 {
-	drawables.push_back(drawable);
+    drawables.push_back(drawable);
 }
 
 void UIRenderer::removeDrawable(UIAbsDrawable * drawable)
 {
-	auto found = std::find(drawables.begin(), drawables.end(), drawable);
-	if (found != drawables.end()) {
-		drawables.erase(found);
-	}
+    auto found = std::find(drawables.begin(), drawables.end(), drawable);
+    if (found != drawables.end()) {
+        drawables.erase(found);
+    }
 }
 
 std::vector<UIAbsDrawable*> UIRenderer::getDrawables()
 {
-	return drawables;
+    return drawables;
 }
 
 void UIRenderer::removeAllDrawables()
 {
-	drawables.clear();
+    drawables.clear();
 }
 
 UIRenderer::~UIRenderer()
