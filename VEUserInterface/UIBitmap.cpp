@@ -4,8 +4,8 @@
 #include "UIAbsDrawable.h"
 
 
-UIBitmap::UIBitmap(UIRenderer* irenderer, float ix, float iy, float iwidth, float iheight, VulkanImage* itexture, UIColor icolor)
-    : UIAbsDrawable(renderer, x, y, width, height, color)
+UIBitmap::UIBitmap(UIRenderer* irenderer, float x, float y, float width, float height, VulkanImage* itexture, UIColor color)
+    : UIAbsDrawable(irenderer, x, y, width, height, color), texture(itexture)
 {
     set = renderer->layout->generateDescriptorSet();
     set->bindUniformBuffer(0, dataBuffer);

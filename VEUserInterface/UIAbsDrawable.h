@@ -1,5 +1,6 @@
 #pragma once
 #include "UIColor.h"
+#include "EventHandler.h"
 class UIRenderer;
 class UIAbsDrawable
 {
@@ -18,5 +19,7 @@ public:
 	enum class VerticalAlignment { top, center, bottom };
 	HorizontalAlignment horizontalAlignment = HorizontalAlignment::left;
 	VerticalAlignment verticalAlignment = VerticalAlignment::top;
+    EventHandler<int> onMouseDown;
+    EventHandler<int> onMouseUp;
 };
 

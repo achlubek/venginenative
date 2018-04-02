@@ -22,14 +22,14 @@ int uitext_get_file_contents_binary(unsigned char** out_bytes, const char* path)
     return size;
 }
 
-UIText::UIText(UIRenderer* irenderer, float ix, float iy, UIColor icolor, std::string fontpath, int ifontsize, std::string text)
-    : UIAbsDrawable(renderer, x, y, 0, 0, color), fontsize(ifontsize)
+UIText::UIText(UIRenderer* irenderer, float x, float y, UIColor color, std::string fontpath, int ifontsize, std::string text)
+    : UIAbsDrawable(irenderer, x, y, 0, 0, color), fontsize(ifontsize)
 {
     uitext_get_file_contents_binary(&fontBuffer, fontpath.c_str());
     font = new stbtt_fontinfo();
     if (!stbtt_InitFont(font, fontBuffer, 0))
     {
-        printf("failed\n");
+        printf("font loading failed\n");
     }
     set = renderer->layout->generateDescriptorSet();
     updateText(text);

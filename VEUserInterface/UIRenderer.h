@@ -2,11 +2,12 @@
 class VulkanRenderer;
 class VulkanToolkit;
 class UIAbsDrawable;
+class Mouse;
 
 class UIRenderer
 {
 public:
-    UIRenderer(VulkanToolkit* vulkan, int width, int height);
+    UIRenderer(VulkanToolkit* vulkan, Mouse* mouse, int width, int height);
     ~UIRenderer();
 	void draw();
 	void addDrawable(UIAbsDrawable* drawable);
@@ -18,9 +19,11 @@ public:
 	int width{ 0 }, height{ 0 };
 	VulkanToolkit* vulkan{ nullptr };
 	VulkanImage* outputImage;
+    std::vector<UIAbsDrawable*> rayCast(float x, float y);
 private:
 	VulkanRenderer * renderer{ nullptr };
     VulkanRenderStage* stage{ nullptr };
     std::vector<UIAbsDrawable*> drawables;
+    Mouse* mouse;
 };
 

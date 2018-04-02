@@ -4,10 +4,11 @@
 #include "UIBox.h"
 #include "UIBitmap.h"
 #include "UIText.h"
+#include "Mouse.h"
 
 
-UIRenderer::UIRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) :
-    vulkan(ivulkan), width(iwidth), height(iheight)
+UIRenderer::UIRenderer(VulkanToolkit* ivulkan, Mouse* imouse, int iwidth, int iheight) :
+    vulkan(ivulkan), width(iwidth), height(iheight), mouse(imouse)
 {
 
     ImageData img = ImageData();
@@ -42,6 +43,22 @@ UIRenderer::UIRenderer(VulkanToolkit* ivulkan, int iwidth, int iheight) :
     renderer = new VulkanRenderer(vulkan);
     renderer->setMeshStage(stage);
     renderer->compile();
+
+    mouse->onMouseDown.add([&](int a) {
+        auto cursor = mouse->getCursorPosition();
+        auto hits = rayCast(static_cast<float>(std::get<0>(cursor)) / width, static_cast<float>(std::get<1>(cursor)) / height);
+        if (hits.size() > 0) {
+            hits[0]->onMouseDown.invoke(0);
+        }
+    });
+
+    mouse->onMouseUp.add([&](int a) {
+        auto cursor = mouse->getCursorPosition();
+        auto hits = rayCast(static_cast<float>(std::get<0>(cursor)) / width, static_cast<float>(std::get<1>(cursor)) / height);
+        if (hits.size() > 0 ) {
+            hits[0]->onMouseUp.invoke(0);
+        }
+    });
 }
 
 
@@ -94,6 +111,21 @@ std::vector<UIAbsDrawable*> UIRenderer::getDrawables()
 void UIRenderer::removeAllDrawables()
 {
     drawables.clear();
+} 
+
+std::vector<UIAbsDrawable*> UIRenderer::rayCast(float x, float y)
+{
+    auto result = std::vector<UIAbsDrawable*>();
+    for (int a = 0; a < drawables.size(); a++) {
+        if (
+            x > drawables[a]->x 
+            && x < (drawables[a]->x + drawables[a]->width)
+            && y > drawables[a]->y 
+            && y < (drawables[a]->y + drawables[a]->height)) {
+            result.push_back(drawables[a]);
+        }
+    }
+    return result;
 }
 
 UIRenderer::~UIRenderer()

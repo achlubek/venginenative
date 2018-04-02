@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Application.h"
 #include "Media.h"
+#include "Mouse.h"
 
 Application * Application::instance = nullptr;
 
@@ -48,7 +49,7 @@ Application::Application(int windowwidth, int windowheight)
     materialLayout->addField(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     materialLayout->addField(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     materialLayout->compile();
-    ui = new UIRenderer(vulkan, width, height);
+    ui = new UIRenderer(vulkan, new Mouse(vulkan->window), width, height);
     renderer = new Renderer(vulkan, width, height);
 }
 
