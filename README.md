@@ -12,4 +12,4 @@ Want to buy me a coffee? Here you can https://www.paypal.com/paypalme/aflext/
 
 The software is licensed under MIT license.
 
-Discord channel for discussions: https://discord.gg/mdSxNr9
+Discord channel for discussions: https://discord.gg/mCyZunu
