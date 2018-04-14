@@ -11,6 +11,8 @@ public:
 
     uint32_t width;
     uint32_t height;
+    uint32_t depth;
+    uint32_t arrayLayers;
     VkFormat format;
     VkImageTiling tiling;
     VkImageUsageFlags usage;
@@ -22,7 +24,15 @@ public:
     bool isPresentReady = false;
     bool clear = true;
     VkClearColorValue clearColor;
-     
+
+    VulkanImage(VulkanToolkit * vulkan, uint32_t width, uint32_t height, uint32_t depth, VkFormat format, VkImageTiling tiling,
+        VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags,
+        VkImageLayout initialLayout, bool iisDepthBuffer);
+
+    VulkanImage(VulkanToolkit * vulkan, uint32_t width, uint32_t height, uint32_t depth, uint32_t arrayLayers, VkFormat format, VkImageTiling tiling,
+        VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags,
+        VkImageLayout initialLayout, bool iisDepthBuffer);
+
     VulkanImage(VulkanToolkit * vulkan, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
         VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags,
         VkImageLayout initialLayout, bool iisDepthBuffer);
@@ -37,4 +47,5 @@ public:
     ~VulkanImage();
 private:
     bool samplerCreated = false;
+    void initalize();
 };

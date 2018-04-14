@@ -6,34 +6,92 @@
 VulkanImage::VulkanImage(VulkanToolkit * ivulkan, uint32_t iwidth, uint32_t iheight, VkFormat iformat, VkImageTiling itiling,
     VkImageUsageFlags iusage, VkMemoryPropertyFlags iproperties, VkImageAspectFlags iaspectFlags,
     VkImageLayout iinitialLayout, bool iisDepthBuffer)
-    : vulkan(ivulkan)
+    : vulkan(ivulkan),
+    width(iwidth),
+    height(iheight),
+    depth(1),
+    arrayLayers(1),
+    format(iformat),
+    tiling(itiling),
+    usage(iusage | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT),
+    properties(iproperties),
+    aspectFlags(iaspectFlags),
+    initialLayout(iinitialLayout),
+    isDepthBuffer(iisDepthBuffer),
+    clearColor({ 0.0f, 0.0f, 0.0f, 0.0f }),
+    attachmentBlending(VulkanAttachmentBlending::None)
 {
-    width = iwidth;
-    height = iheight;
-    format = iformat;
-    tiling = itiling;
-    usage = iusage | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    properties = iproperties;
-    aspectFlags = iaspectFlags;
-    initialLayout = iinitialLayout;
-    isDepthBuffer = iisDepthBuffer;
-    clearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
-    attachmentBlending = VulkanAttachmentBlending::None;
-    unsigned int sz = min(width, height) / 2;
-    int mipmaps = 1;
-   // for (int32_t i = 1; sz > 1; i++)
-    //{
-   //     mipmaps++;
-   //     sz /= 2;
-   // }
+    initalize();
+}
+
+VulkanImage::VulkanImage(VulkanToolkit * ivulkan, uint32_t iwidth, uint32_t iheight, uint32_t idepth, VkFormat iformat, VkImageTiling itiling,
+    VkImageUsageFlags iusage, VkMemoryPropertyFlags iproperties, VkImageAspectFlags iaspectFlags,
+    VkImageLayout iinitialLayout, bool iisDepthBuffer)
+    : vulkan(ivulkan),
+    width(iwidth),
+    height(iheight),
+    depth(idepth),
+    arrayLayers(1),
+    format(iformat),
+    tiling(itiling),
+    usage(iusage | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT),
+    properties(iproperties),
+    aspectFlags(iaspectFlags),
+    initialLayout(iinitialLayout),
+    isDepthBuffer(iisDepthBuffer),
+    clearColor({ 0.0f, 0.0f, 0.0f, 0.0f }),
+    attachmentBlending(VulkanAttachmentBlending::None)
+{
+    initalize();
+}
+
+VulkanImage::VulkanImage(VulkanToolkit * ivulkan, uint32_t iwidth, uint32_t iheight, uint32_t idepth, uint32_t iarrayLayers, VkFormat iformat, VkImageTiling itiling,
+    VkImageUsageFlags iusage, VkMemoryPropertyFlags iproperties, VkImageAspectFlags iaspectFlags,
+    VkImageLayout iinitialLayout, bool iisDepthBuffer)
+    : vulkan(ivulkan),
+    width(iwidth),
+    height(iheight),
+    depth(idepth),
+    arrayLayers(iarrayLayers),
+    format(iformat),
+    tiling(itiling),
+    usage(iusage | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT),
+    properties(iproperties),
+    aspectFlags(iaspectFlags),
+    initialLayout(iinitialLayout),
+    isDepthBuffer(iisDepthBuffer),
+    clearColor({ 0.0f, 0.0f, 0.0f, 0.0f }),
+    attachmentBlending(VulkanAttachmentBlending::None)
+{
+    initalize();
+}
+
+VulkanImage::~VulkanImage()
+{
+    if (samplerCreated) {
+        vkDestroySampler(vulkan->device, sampler, nullptr);
+    }
+    vkDestroyImageView(vulkan->device, imageView, nullptr);
+    vkDestroyImage(vulkan->device, image, nullptr);
+    imageMemory.free();
+   // vkFreeMemory(vulkan->device, imageMemory, nullptr);
+}
+
+void VulkanImage::initalize()
+{
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    if (depth == 1) {
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    }
+    else {
+        imageInfo.imageType = VK_IMAGE_TYPE_3D;
+    }
     imageInfo.extent.width = width;
     imageInfo.extent.height = height;
-    imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = mipmaps;
-    imageInfo.arrayLayers = 1;
+    imageInfo.extent.depth = depth;
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = arrayLayers;
     imageInfo.format = format;
     imageInfo.tiling = tiling;
     imageInfo.initialLayout = initialLayout;
@@ -47,46 +105,30 @@ VulkanImage::VulkanImage(VulkanToolkit * ivulkan, uint32_t iwidth, uint32_t ihei
 
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(vulkan->device, image, &memRequirements);
-    /*
-    VkMemoryAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = vulkan->findMemoryType(memRequirements.memoryTypeBits, properties);*/
 
     imageMemory = vulkan->memoryManager->bindImageMemory(vulkan->findMemoryType(memRequirements.memoryTypeBits, properties), image, memRequirements.size);
-    /*
-    if (vkAllocateMemory(vulkan->device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate image memory!");
-    }
-
-    vkBindImageMemory(vulkan->device, image, imageMemory, 0);*/
 
     VkImageViewCreateInfo viewInfo = {};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = image;
-    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+
+    if (depth == 1) {
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    }
+    else {
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_3D;
+    }
     viewInfo.format = format;
     viewInfo.subresourceRange.aspectMask = aspectFlags;
     viewInfo.subresourceRange.baseMipLevel = 0;
-    viewInfo.subresourceRange.levelCount = mipmaps;
+    viewInfo.subresourceRange.levelCount = 1;
     viewInfo.subresourceRange.baseArrayLayer = 0;
-    viewInfo.subresourceRange.layerCount = 1;
+    viewInfo.subresourceRange.layerCount = arrayLayers;
 
     if (vkCreateImageView(vulkan->device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
         throw std::runtime_error("failed to create texture image view!");
     }
     samplerCreated = false;
-}
-
-VulkanImage::~VulkanImage()
-{
-    if (samplerCreated) {
-        vkDestroySampler(vulkan->device, sampler, nullptr);
-    }
-    vkDestroyImageView(vulkan->device, imageView, nullptr);
-    vkDestroyImage(vulkan->device, image, nullptr);
-    imageMemory.free();
-   // vkFreeMemory(vulkan->device, imageMemory, nullptr);
 }
 
 VulkanImage::VulkanImage(VkFormat iformat, VkImage imageHandle, VkImageView viewHandle)
