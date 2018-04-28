@@ -201,7 +201,7 @@
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Code\stb;C:\VulkanSDK\1.0.57.0\Include\vulkan;C:\Code\glfw-3.2.1\include;C:\Code\glm-0.9.9-a1;C:\Code\VEngineNative\VECommon;C:\Code\VEngineNative\VERenderer;C:\Code\VEngineNative\VEUserInterface;C:\Code\VEngineNative\VEInput;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Code\stb;C:\VulkanSDK\1.1.70.1\Include\vulkan;C:\Code\glfw-3.2.1\include;C:\Code\glm-0.9.9-a1;C:\Code\VEngineNative\VECommon;C:\Code\VEngineNative\VERenderer;C:\Code\VEngineNative\VEUserInterface;C:\Code\VEngineNative\VEInput;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>

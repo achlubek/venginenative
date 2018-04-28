@@ -138,6 +138,7 @@ void VulkanToolkit::initialize(int width, int height, bool enableValidation, std
         vkGetPhysicalDeviceSurfaceSupportKHR(pdevice, chosenQFId, surface, &supported);
         swapChain = new VulkanSwapChain(this, width, height);
     }
+    vkDeviceWaitIdle(device);
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
