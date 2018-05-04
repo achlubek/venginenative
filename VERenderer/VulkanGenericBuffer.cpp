@@ -6,6 +6,10 @@
 VulkanGenericBuffer::VulkanGenericBuffer(VulkanToolkit * ivulkan, VkBufferUsageFlags usage, VkDeviceSize s)
     : vulkan(ivulkan)
 {
+    if (usage == VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
+    {
+        type = VulkanBufferType::storage;
+    }
     size = s;
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;

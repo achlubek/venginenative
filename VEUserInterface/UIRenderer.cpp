@@ -7,7 +7,7 @@
 #include "Mouse.h"
 
 
-UIRenderer::UIRenderer(VulkanToolkit* ivulkan, Mouse* imouse, int iwidth, int iheight) :
+UIRenderer::UIRenderer(VulkanToolkit* ivulkan, Mouse* imouse, VulkanImage* outputImage, int iwidth, int iheight) :
     vulkan(ivulkan), width(iwidth), height(iheight), mouse(imouse)
 {
 
@@ -25,9 +25,6 @@ UIRenderer::UIRenderer(VulkanToolkit* ivulkan, Mouse* imouse, int iwidth, int ih
     layout->compile();
 
     VulkanRenderStage* stage = new VulkanRenderStage(vulkan);
-
-    outputImage = new VulkanImage(vulkan, width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
-        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, false);
 
     auto vert = new VulkanShaderModule(vulkan, "../../shaders/compiled/ui.vert.spv");
     auto frag = new VulkanShaderModule(vulkan, "../../shaders/compiled/ui.frag.spv");

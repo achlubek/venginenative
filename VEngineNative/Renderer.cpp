@@ -172,7 +172,7 @@ void Renderer::rebuild(bool destroy)
     postProcessSet->bindImageViewSampler(3, normalImage);
     postProcessSet->bindImageViewSampler(4, distanceImage);
     postProcessSet->bindImageViewSampler(5, ambientImage);
-    postProcessSet->bindImageViewSampler(6, Application::instance->ui->outputImage);
+//    postProcessSet->bindImageViewSampler(6, Application::instance->ui->outputImage);
     postProcessSet->bindImageViewSampler(7, deferredResolvedImage);
     postProcessSet->bindImageViewSampler(8, ambientShadowRenderer->distanceImage);
     postProcessSet->update();

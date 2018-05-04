@@ -7,7 +7,7 @@ class Mouse;
 class UIRenderer
 {
 public:
-    UIRenderer(VulkanToolkit* vulkan, Mouse* mouse, int width, int height);
+    UIRenderer(VulkanToolkit* vulkan, Mouse* mouse, VulkanImage* outputImage, int width, int height);
     ~UIRenderer();
 	void draw();
 	void addDrawable(UIAbsDrawable* drawable);
@@ -18,7 +18,6 @@ public:
 	VulkanImage* dummyTexture;
 	int width{ 0 }, height{ 0 };
 	VulkanToolkit* vulkan{ nullptr };
-	VulkanImage* outputImage;
     std::vector<UIAbsDrawable*> rayCast(float x, float y);
 private:
 	VulkanRenderer * renderer{ nullptr };

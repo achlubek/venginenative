@@ -1,6 +1,10 @@
 #pragma once 
 class VulkanToolkit;
 #include "VulkanMemoryChunk.h"
+enum VulkanBufferType {
+    uniform, 
+    storage
+};
 class VulkanGenericBuffer
 {
 public:
@@ -8,6 +12,7 @@ public:
     VkBuffer buffer;
     VulkanSingleAllocation bufferMemory;
     VkDeviceSize size; 
+    VulkanBufferType type{ VulkanBufferType ::uniform };
     VulkanGenericBuffer(VulkanToolkit * vulkan, VkBufferUsageFlags usage, VkDeviceSize s);
     ~VulkanGenericBuffer();
     void map(VkDeviceSize offset, VkDeviceSize size, void** data);
