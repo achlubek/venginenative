@@ -9,5 +9,3 @@
 - Image loading using stb_image https://github.com/nothings/stb
 
 The software is licensed under MIT license.
-
-Discord channel for discussions: https://discord.gg/mCyZunu
