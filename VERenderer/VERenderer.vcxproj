@@ -144,6 +144,7 @@
     <ClInclude Include="VulkanRenderPass.h" />
     <ClInclude Include="VulkanRenderStage.h" />
     <ClInclude Include="VulkanShaderModule.h" />
+    <ClInclude Include="VulkanSingleAllocation.h" />
     <ClInclude Include="VulkanSubpass.h" />
     <ClInclude Include="VulkanSwapChain.h" />
     <ClInclude Include="VulkanToolkit.h" />
@@ -172,6 +173,7 @@
     <ClCompile Include="VulkanRenderPass.cpp" />
     <ClCompile Include="VulkanRenderStage.cpp" />
     <ClCompile Include="VulkanShaderModule.cpp" />
+    <ClCompile Include="VulkanSingleAllocation.cpp" />
     <ClCompile Include="VulkanSubpass.cpp" />
     <ClCompile Include="VulkanSwapChain.cpp" />
     <ClCompile Include="VulkanToolkit.cpp" />

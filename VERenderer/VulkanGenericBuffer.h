@@ -1,6 +1,6 @@
 #pragma once 
 class VulkanToolkit;
-#include "VulkanMemoryChunk.h"
+#include "VulkanSingleAllocation.h"
 enum VulkanBufferType {
     uniform, 
     storage

@@ -37,10 +37,10 @@ VulkanGenericBuffer::~VulkanGenericBuffer()
 
 void VulkanGenericBuffer::map(VkDeviceSize offset, VkDeviceSize size, void ** data)
 {
-    vkMapMemory(vulkan->device, bufferMemory.chunk->handle, bufferMemory.offset + offset, size, 0, data);
+    bufferMemory.map(offset, size, data);
 }
 
 void VulkanGenericBuffer::unmap()
 {
-    vkUnmapMemory(vulkan->device, bufferMemory.chunk->handle);
+    bufferMemory.unmap();
 }

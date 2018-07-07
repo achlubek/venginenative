@@ -9,8 +9,6 @@ pos.xyz-uv.xy-normal.xyz-tangent.xyzw
 totals in 12 elements per vertex
 */
 
-VkVertexInputBindingDescription Object3dInfo::bindingDescription = {};
-std::array<VkVertexInputAttributeDescription, 4> Object3dInfo::attributeDescriptions = {};
 Object3dInfo::Object3dInfo(VulkanToolkit * ivulkan, vector<GLfloat> &vboin)
     : vulkan(ivulkan)
 {
@@ -127,9 +125,9 @@ void Object3dInfo::generate()
     vkBindBufferMemory(vulkan->device, vertexBuffer, vertexBufferMemory, 0);*/
 
     void* data;
-    vkMapMemory(vulkan->device, vertexBufferMemory.chunk->handle, vertexBufferMemory.offset, bufferInfo.size, 0, &data);
+    vertexBufferMemory.map(&data);
     memcpy(data, vbo.data(), (size_t)bufferInfo.size);
-    vkUnmapMemory(vulkan->device, vertexBufferMemory.chunk->handle);
+    vertexBufferMemory.unmap();
     vertexCount = vbo.size() / 12;
 
     generated = true;

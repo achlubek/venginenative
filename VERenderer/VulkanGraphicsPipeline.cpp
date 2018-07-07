@@ -1,11 +1,13 @@
 #include "stdafx.h" 
 
+VkVertexInputBindingDescription VulkanGraphicsPipeline::bindingDescription = {};
+std::array<VkVertexInputAttributeDescription, 4> VulkanGraphicsPipeline::attributeDescriptions = {};
 VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int viewportwidth, int viewportheight, std::vector<VkDescriptorSetLayout> setlayouts,
     std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass* renderpass, bool enableDepthTest, 
     bool alphablend, bool additive_blend, VkPrimitiveTopology topology, VkCullModeFlags cullflags)
     : vulkan(ivulkan)
 {
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo = Object3dInfo::getVertexInputStateCreateInfo();
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo = VulkanGraphicsPipeline::getVertexInputStateCreateInfo();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

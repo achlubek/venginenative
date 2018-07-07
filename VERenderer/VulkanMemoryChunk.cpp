@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "VulkanMemoryChunk.h"
+#include "VulkanSingleAllocation.h"
 
 
 VulkanMemoryChunk::VulkanMemoryChunk(VulkanToolkit* ivulkan, uint32_t itype)
@@ -12,19 +13,18 @@ VulkanMemoryChunk::VulkanMemoryChunk(VulkanToolkit* ivulkan, uint32_t itype)
     allocInfo.memoryTypeIndex = type;
 
     if (vkAllocateMemory(vulkan->device, &allocInfo, nullptr, &handle) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate image memory!");
+        throw std::runtime_error("failed to allocate requested memory!");
     }
 }
-
 
 VulkanMemoryChunk::~VulkanMemoryChunk()
 {
     vkFreeMemory(vulkan->device, handle, nullptr);
 }
 
-VulkanSingleAllocation VulkanMemoryChunk::bindBufferMemory(VkBuffer buffer, VkDeviceSize size, VkDeviceSize offset)
+VulkanSingleAllocation VulkanMemoryChunk::bindBufferMemory(VkBuffer buffer, uint64_t size, uint64_t offset)
 {
-    while (inUse);
+    while (inUse); // todo mutex
     inUse = true;
     vkBindBufferMemory(vulkan->device, buffer, handle, offset);
     auto va = VulkanSingleAllocation(this, size, offset);
@@ -34,7 +34,7 @@ VulkanSingleAllocation VulkanMemoryChunk::bindBufferMemory(VkBuffer buffer, VkDe
     return va;
 }
 
-VulkanSingleAllocation VulkanMemoryChunk::bindImageMemory(VkImage image, VkDeviceSize size, VkDeviceSize offset)
+VulkanSingleAllocation VulkanMemoryChunk::bindImageMemory(VkImage image, uint64_t size, uint64_t offset)
 {
     while (inUse);
     inUse = true;
@@ -53,16 +53,16 @@ void VulkanMemoryChunk::freeBindMemory(VulkanSingleAllocation allocation)
     int allocscount = allActiveAllocations.size();
     for (int i = 0; i < allocscount; i++) {
         auto a = allActiveAllocations[i];
-        if (a.offset == allocation.offset && a.size == allocation.size) {
+        if (a.getOffset() == allocation.getOffset() && a.getSize() == allocation.getSize()) {
             allActiveAllocations.erase(allActiveAllocations.begin() + i);
-            allAllocationsSize -= allocation.size;
+            allAllocationsSize -= allocation.getSize();
             break;
         }
     }
     inUse = false;
 }
 
-bool VulkanMemoryChunk::findFreeMemoryOffset(VkDeviceSize size, VkDeviceSize &outOffset)
+bool VulkanMemoryChunk::findFreeMemoryOffset(uint64_t size, uint64_t &outOffset)
 {
     while (inUse);
     inUse = true;
@@ -74,8 +74,8 @@ bool VulkanMemoryChunk::findFreeMemoryOffset(VkDeviceSize size, VkDeviceSize &ou
     int allocscount = allActiveAllocations.size();
     for (int i = 0; i < allocscount; i++) {
         auto a = allActiveAllocations[i];
-        if (isFreeSpace(a.offset + a.size + 2048, size)) {
-            outOffset = a.offset + a.size + 2048;
+        if (isFreeSpace(a.getOffset() + a.getSize() + 2048, size)) {
+            outOffset = a.getOffset() + a.getSize() + 2048;
             inUse = false;
             return true;
         }
@@ -84,7 +84,17 @@ bool VulkanMemoryChunk::findFreeMemoryOffset(VkDeviceSize size, VkDeviceSize &ou
     return false;
 }
 
-bool VulkanMemoryChunk::isFreeSpace(VkDeviceSize offset, VkDeviceSize size)
+VkDeviceMemory VulkanMemoryChunk::getHandle()
+{
+    return handle;
+}
+
+VulkanToolkit* VulkanMemoryChunk::getVulkanToolkit()
+{
+    return vulkan;
+}
+
+bool VulkanMemoryChunk::isFreeSpace(uint64_t offset, uint64_t size)
 {
     VkDeviceSize end = offset + size;
     int allocscount = allActiveAllocations.size();
@@ -93,14 +103,14 @@ bool VulkanMemoryChunk::isFreeSpace(VkDeviceSize offset, VkDeviceSize size)
     }
     for (int i = 0; i < allocscount; i++) {
         auto a = allActiveAllocations[i];
-        VkDeviceSize aend = a.offset + a.size;
-        if (offset >= a.offset && offset <= aend) { // if start of alloc collides
+        VkDeviceSize aend = a.getOffset() + a.getSize();
+        if (offset >= a.getOffset() && offset <= aend) { // if start of alloc collides
             return false;
         }
-        if (end >= a.offset && end <= aend) { // if end of alloc collides
+        if (end >= a.getOffset() && end <= aend) { // if end of alloc collides
             return false;
         }
-        if (offset <= a.offset && end >= aend) { // if alloc contains element
+        if (offset <= a.getOffset() && end >= aend) { // if alloc contains element
             return false;
         }
     }
