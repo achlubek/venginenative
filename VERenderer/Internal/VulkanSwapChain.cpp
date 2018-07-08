@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include "VulkanSwapChain.h"
+#include <vulkan.h>
 
 
 VulkanSwapChain::VulkanSwapChain(VulkanToolkit * ivulkan, int width, int height)

@@ -1,4 +1,6 @@
 #pragma once
+class VulkanAttachment;
+#include <vulkan.h>
 class VulkanSubpass
 {
 public:

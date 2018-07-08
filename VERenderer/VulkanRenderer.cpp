@@ -1,4 +1,5 @@
 #include "stdafx.h" 
+#include "VulkanRenderer.h" 
 
 
 VulkanRenderer::VulkanRenderer(VulkanToolkit * ivulkan)

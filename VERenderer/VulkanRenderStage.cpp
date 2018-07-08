@@ -1,14 +1,29 @@
 #include "stdafx.h"
+#include "VulkanRenderStage.h"
 #include "Object3dInfo.h"
+#include "VulkanDescriptorSetLayout.h"
+#include "VulkanDescriptorSet.h"
 #include "Object3dInfo.h"
+#include "Internal/VulkanCommandBuffer.h"
+#include "Internal/VulkanRenderPass.h"
+#include "Internal/VulkanSubpass.h"
+#include "Internal/VulkanGraphicsPipeline.h"
+#include "Internal/VulkanVertexBuffer.h"
+#include "Internal/VulkanFramebuffer.h"
+#include "Internal/VulkanAttachment.h"
+#include "VulkanImage.h"
+#include "VulkanToolkit.h"
+#include "VulkanShaderModule.h"
+#include <vulkan.h>
 
-VulkanRenderStage::VulkanRenderStage(VulkanToolkit * ivulkan)
-    : vulkan(ivulkan)
+VulkanRenderStage::VulkanRenderStage(VulkanToolkit * vulkan, int width, int height,
+    std::vector<VulkanShaderModule*> shaders,
+    std::vector<VulkanDescriptorSetLayout*> layouts,
+    std::vector<VulkanImage*> outputImages)
+    : vulkan(vulkan), width(width), height(height), setLayouts(layouts), outputImages(outputImages), shaders(shaders)
 {
-    setLayouts = {};
-    outputImages = {};
-    shaderStages = {};
     sets = {};
+    compile();
 }
 
 
@@ -23,34 +38,6 @@ VulkanRenderStage::~VulkanRenderStage()
     safedelete(commandBuffer);
 }
 
-void VulkanRenderStage::addDescriptorSetLayout(VkDescriptorSetLayout lay)
-{
-    setLayouts.push_back(lay);
-}
-
-void VulkanRenderStage::addOutputImage(VulkanImage * lay)
-{
-    outputImages.push_back(lay);
-}
-
-void VulkanRenderStage::setViewport(VkExtent2D size)
-{
-    viewport = size;
-}
-
-void VulkanRenderStage::setViewport(int width, int height)
-{
-    VkExtent2D e = VkExtent2D();
-    e.width = width;
-    e.height = height;
-    setViewport(e);
-}
-
-void VulkanRenderStage::addShaderStage(VkPipelineShaderStageCreateInfo ss)
-{
-    shaderStages.push_back(ss);
-}
-
 void VulkanRenderStage::beginDrawing()
 {
     cmdMeshesCounts = 0;
@@ -61,7 +48,10 @@ void VulkanRenderStage::beginDrawing()
     renderPassInfo.renderPass = renderPass->handle;
     renderPassInfo.framebuffer = framebuffer->handle;
     renderPassInfo.renderArea.offset = { 0, 0 };
-    renderPassInfo.renderArea.extent = viewport;
+    VkExtent2D extent = {};
+    extent.width = width;
+    extent.height = height;
+    renderPassInfo.renderArea.extent = extent;
     std::vector<VkClearValue> clearValues = {};
     if (clearBeforeDrawing) {
 
@@ -85,7 +75,7 @@ void VulkanRenderStage::beginDrawing()
 
     vkCmdBeginRenderPass(commandBuffer->handle, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    vkCmdBindPipeline(commandBuffer->handle, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->graphicsPipeline);
+    vkCmdBindPipeline(commandBuffer->handle, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getPipeline());
 
 }
 void VulkanRenderStage::endDrawing()
@@ -101,7 +91,7 @@ void VulkanRenderStage::setSets(std::vector<VulkanDescriptorSet*> isets)
 
 void VulkanRenderStage::drawMesh(Object3dInfo * info, size_t instances)
 {
-    info->drawInstanced(pipeline, sets, commandBuffer->handle, instances);
+    info->getVertexBuffer()->drawInstanced(pipeline, sets, commandBuffer, instances);
     cmdMeshesCounts++;
 }
 
@@ -148,20 +138,35 @@ void VulkanRenderStage::compile()
 
     renderPass = new VulkanRenderPass(vulkan, attachments, subpasses);
 
-    framebuffer = new VulkanFramebuffer(vulkan, viewport.width, viewport.height, renderPass, attachmentsViews);
+    framebuffer = new VulkanFramebuffer(vulkan, width, height, renderPass, attachmentsViews);
 
-    pipeline = new VulkanGraphicsPipeline(vulkan, viewport.width, viewport.height,
+    std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {};
+    for (int i = 0; i < shaders.size(); i++) {
+        auto shader = shaders[i];
+        VkPipelineShaderStageCreateInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+
+        auto type = VK_SHADER_STAGE_VERTEX_BIT;
+        if (shader->getType() == VulkanShaderModuleType::Fragment) {
+            type = VK_SHADER_STAGE_FRAGMENT_BIT;
+        }
+        if (shader->getType() == VulkanShaderModuleType::Compute) {
+            type = VK_SHADER_STAGE_COMPUTE_BIT;
+        }
+
+        info.stage = type;
+        info.module = shader->getHandle();
+        info.pName = "main";
+        shaderStages.push_back(info);
+    }
+
+    pipeline = new VulkanGraphicsPipeline(vulkan, width, height,
         setLayouts, shaderStages, renderPass, foundDepthBuffer, alphaBlending, additiveBlending, topology, cullFlags);
 }
 
 VulkanRenderStage* VulkanRenderStage::copy()
 {
-    auto v = new VulkanRenderStage(vulkan);
-    v->setLayouts = setLayouts;
-    v->outputImages = outputImages;
-    v->shaderStages = shaderStages;
-    v->viewport = viewport;
-    v->sets = sets;
+    auto v = new VulkanRenderStage(vulkan, width, height, shaders, setLayouts, outputImages);
     return v;
 }
 

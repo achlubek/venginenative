@@ -1,13 +1,65 @@
 #include "stdafx.h" 
+#include "VulkanGraphicsPipeline.h" 
+#include "VulkanRenderPass.h" 
+#include "VulkanAttachment.h"
+#include "../VulkanImage.h" 
+#include "../VulkanToolkit.h" 
+#include "../VulkanDescriptorSetLayout.h" 
+#include <array> 
+#include <vulkan.h> 
 
-VkVertexInputBindingDescription VulkanGraphicsPipeline::bindingDescription = {};
-std::array<VkVertexInputAttributeDescription, 4> VulkanGraphicsPipeline::attributeDescriptions = {};
-VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int viewportwidth, int viewportheight, std::vector<VkDescriptorSetLayout> setlayouts,
+
+static VkVertexInputBindingDescription bindingDescription;
+static void getBindingDescription() {
+    bindingDescription = {};
+    bindingDescription.binding = 0;
+    bindingDescription.stride = sizeof(float) * 12;
+    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+}
+
+static std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions;
+static void getAttributeDescriptions() {
+    std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = {};
+    attributeDescriptions[0].binding = 0;
+    attributeDescriptions[0].location = 0;
+    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[0].offset = sizeof(float) * 0;
+
+    attributeDescriptions[1].binding = 0;
+    attributeDescriptions[1].location = 1;
+    attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[1].offset = sizeof(float) * 3;
+
+    attributeDescriptions[2].binding = 0;
+    attributeDescriptions[2].location = 2;
+    attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[2].offset = sizeof(float) * 5;
+
+    attributeDescriptions[3].binding = 0;
+    attributeDescriptions[3].location = 3;
+    attributeDescriptions[3].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    attributeDescriptions[3].offset = sizeof(float) * 8;
+}
+
+static VkPipelineVertexInputStateCreateInfo getVertexInputStateCreateInfo() {
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
+    getBindingDescription();
+    getAttributeDescriptions();
+
+    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+    return vertexInputInfo;
+}
+
+VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int viewportwidth, int viewportheight, std::vector<VulkanDescriptorSetLayout*> setlayouts,
     std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass* renderpass, bool enableDepthTest, 
     bool alphablend, bool additive_blend, VkPrimitiveTopology topology, VkCullModeFlags cullflags)
     : vulkan(ivulkan)
 {
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo = VulkanGraphicsPipeline::getVertexInputStateCreateInfo();
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo = getVertexInputStateCreateInfo();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -122,10 +174,15 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int view
     colorBlending.blendConstants[2] = 1.0f;
     colorBlending.blendConstants[3] = 1.0f;
 
+    std::vector<VkDescriptorSetLayout> layouts = {};
+    for (int i = 0; i < setlayouts.size(); i++) {
+        layouts.push_back(setlayouts[i]->layout);
+    }
+
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = setlayouts.size();
-    pipelineLayoutInfo.pSetLayouts = setlayouts.data();
+    pipelineLayoutInfo.setLayoutCount = layouts.size();
+    pipelineLayoutInfo.pSetLayouts = layouts.data();
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 
     if (vkCreatePipelineLayout(vulkan->device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
@@ -180,4 +237,9 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * vulkan, std::vect
 
 VulkanGraphicsPipeline::~VulkanGraphicsPipeline()
 {
+}
+
+VkPipeline VulkanGraphicsPipeline::getPipeline()
+{
+    return graphicsPipeline;
 }

@@ -2,11 +2,22 @@
 class Object3dInfo;
 class VulkanToolkit;
 class VulkanShaderModule;
+class VulkanDescriptorSetLayout;
+class VulkanImage;
+class VulkanRenderPass;
+class VulkanFramebuffer;
+class VulkanGraphicsPipeline;
+class VulkanCommandBuffer;
+
 class VulkanRenderStage
 {
 public:
-    VulkanRenderStage(VulkanToolkit * vulkan);
+    VulkanRenderStage(VulkanToolkit * vulkan, int width, int height,
+        std::vector<VulkanShaderModule*> shaders, 
+        std::vector<VulkanDescriptorSetLayout*> layouts, 
+        std::vector<VulkanImage*> outputImages);
     ~VulkanRenderStage();
+private:
 
     VulkanToolkit * vulkan;
     VkSemaphore signalSemaphore;
@@ -14,20 +25,15 @@ public:
     VulkanFramebuffer* framebuffer = nullptr;
     VulkanGraphicsPipeline* pipeline = nullptr;
     VulkanCommandBuffer* commandBuffer = nullptr;
-    std::vector<VkDescriptorSetLayout> setLayouts;
+    std::vector<VulkanDescriptorSetLayout*> setLayouts;
     std::vector<VulkanDescriptorSet*> sets;
     std::vector<VulkanImage*> outputImages;
-    VkExtent2D viewport;
-    std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+    int width;
+    int height;
+    std::vector<VulkanShaderModule*> shaders;
 
     VulkanDescriptorSet* meshSharedSet;
 
-    void addDescriptorSetLayout(VkDescriptorSetLayout lay);
-    void addOutputImage(VulkanImage * lay);
-    void setViewport(VkExtent2D size);
-    void setViewport(int width, int height);
-    void addShaderStage(VkPipelineShaderStageCreateInfo ss);
-     
     int cmdMeshesCounts = 0;
     void beginDrawing();
     void endDrawing();

@@ -1,4 +1,5 @@
 #include "stdafx.h" 
+#include "VulkanGenericBuffer.h" 
 #include "VulkanToolkit.h" 
 #include "VulkanMemoryManager.h" 
 #include "VulkanMemoryChunk.h" 

@@ -1,5 +1,6 @@
 #include "stdafx.h"
-
+#include "VulkanSubpass.h"
+#include <vulkan.h>
 
 VulkanSubpass::VulkanSubpass(std::vector<VulkanAttachment> colorattachments, std::vector<VkImageLayout> colorattachmentlayouts, VulkanAttachment depthstencilattachment, VkImageLayout despthattachmentlayout)
 {

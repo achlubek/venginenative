@@ -2,14 +2,14 @@
 #include <map>
 class VulkanMemoryChunk;
 struct VulkanSingleAllocation;
-class VulkanToolkit;
+class VulkanDevice;
 class VulkanMemoryManager
 {
 public:
-    VulkanMemoryManager(VulkanToolkit* vulkan);
+    VulkanMemoryManager(VulkanDevice* device);
     ~VulkanMemoryManager();
 
-    VulkanToolkit* vulkan;
+    VulkanDevice* device;
 
     VulkanSingleAllocation bindBufferMemory(uint32_t type, VkBuffer buffer, VkDeviceSize size);
     VulkanSingleAllocation bindImageMemory(uint32_t type, VkImage image, VkDeviceSize size);

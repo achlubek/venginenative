@@ -1,4 +1,6 @@
 #include "stdafx.h" 
+#include "VulkanRenderPass.h" 
+#include <vulkan.h>
 
 
 VulkanRenderPass::VulkanRenderPass(VulkanToolkit * ivulkan, std::vector<VulkanAttachment> iattachments, std::vector<VulkanSubpass> subpasses)

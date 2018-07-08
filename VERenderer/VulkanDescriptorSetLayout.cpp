@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "VulkanDescriptorSetLayout.h"
 
 
 VulkanDescriptorSetLayout::VulkanDescriptorSetLayout(VulkanToolkit * ivulkan)

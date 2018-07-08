@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include "VulkanCommandBuffer.h"
+#include <vulkan.h>
 
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanToolkit * ivulkan, VkCommandBufferLevel level)
     : vulkan(ivulkan)

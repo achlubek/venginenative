@@ -1,7 +1,12 @@
 #include "stdafx.h"
+#include "VulkanShaderModule.h"
+#include "VulkanToolkit.h"
+#include <iostream>
+#include <fstream>
+#include <vulkan.h>
 
-VulkanShaderModule::VulkanShaderModule(VulkanToolkit * ivulkan, std::string path)
-    : vulkan(ivulkan)
+VulkanShaderModule::VulkanShaderModule(VulkanToolkit * vulkan, VulkanShaderModuleType type, std::string path)
+    : vulkan(vulkan), type(type)
 {
     std::ifstream file(path, std::ios::ate | std::ios::binary);
 
@@ -34,13 +39,11 @@ VulkanShaderModule::~VulkanShaderModule()
 {
     vkDestroyShaderModule(vulkan->device, handle, nullptr);
 }
-
-VkPipelineShaderStageCreateInfo VulkanShaderModule::createShaderStage(VkShaderStageFlagBits type, const char* entrypoint)
+VkShaderModule VulkanShaderModule::getHandle()
 {
-    VkPipelineShaderStageCreateInfo info = {};
-    info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    info.stage = type;
-    info.module = handle;
-    info.pName = entrypoint;
-    return info;
+    return handle;
+}
+VulkanShaderModuleType VulkanShaderModule::getType()
+{
+    return type;
 }

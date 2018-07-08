@@ -1,9 +1,10 @@
 #pragma once
 struct VulkanSingleAllocation;
+struct VulkanDevice;
 class VulkanMemoryChunk
 {
 public:
-    VulkanMemoryChunk(VulkanToolkit* vulkan, uint32_t type);
+    VulkanMemoryChunk(VulkanDevice* device, uint32_t type);
     ~VulkanMemoryChunk();
 
     VulkanSingleAllocation bindBufferMemory(VkBuffer buffer, uint64_t size, uint64_t offset);
@@ -11,10 +12,9 @@ public:
     void freeBindMemory(VulkanSingleAllocation allocation);
     bool findFreeMemoryOffset(uint64_t size, uint64_t &outOffset);
     VkDeviceMemory getHandle();
-    VulkanToolkit* getVulkanToolkit();
 private:
     bool isFreeSpace(uint64_t offset, uint64_t size);
-    VulkanToolkit* vulkan;
+    VulkanDevice* device;
     uint32_t type;
     uint64_t chunkSize;
     std::vector<VulkanSingleAllocation> allActiveAllocations;

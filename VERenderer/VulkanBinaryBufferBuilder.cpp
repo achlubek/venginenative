@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "VulkanBinaryBufferBuilder.h"
 
 VulkanBinaryBufferBuilder::VulkanBinaryBufferBuilder()
 {

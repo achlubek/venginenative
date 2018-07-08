@@ -1,6 +1,9 @@
 #pragma once
 struct GLFWwindow;
 class VulkanMemoryManager;
+class Object3dInfo;
+class VulkanSwapChain;
+class VulkanImage;
 
 struct ImageData {
 public:
@@ -11,9 +14,11 @@ public:
 class VulkanToolkit
 {
 public:
-     
     VulkanToolkit();
     ~VulkanToolkit();
+
+private:
+     
     VkInstance instance;
     std::vector<VkPhysicalDevice> physicalDevices;
     std::vector<VkPhysicalDeviceProperties> physicalDevicesProps;
@@ -25,7 +30,7 @@ public:
     VkSurfaceKHR surface;
     VkDebugReportCallbackEXT callback;
     VulkanMemoryManager* memoryManager;
-    Object3dInfo* fullScreenQuad3dInfo;
+    Object3dInfo* fullScreenQuad3dInfo; // todo to factory
     Object3dInfo* singlePoint3dInfo;
     void initialize(int width, int height, bool enableValidation, std::string windowName);
     void createInstance(std::string appname, std::string enginename, bool enableValidation);

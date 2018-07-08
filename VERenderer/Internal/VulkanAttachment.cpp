@@ -1,5 +1,6 @@
 #include "stdafx.h"
-
+#include "VulkanAttachment.h"
+#include <vulkan.h>
 
 VulkanAttachment::VulkanAttachment(VulkanImage* iimage, VkFormat format, VkSampleCountFlagBits samples, VkAttachmentLoadOp loadop, VkAttachmentStoreOp storeop, 
     VkAttachmentLoadOp stencilloadop, VkAttachmentStoreOp stencilstoreop, VkImageLayout initialLayout, VkImageLayout finalLayout)

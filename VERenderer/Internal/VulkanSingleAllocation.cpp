@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "VulkanSingleAllocation.h"
 #include "VulkanMemoryChunk.h"
+#include <vulkan.h>
 
 
 VulkanSingleAllocation::VulkanSingleAllocation()

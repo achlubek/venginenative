@@ -1,10 +1,13 @@
 #include "stdafx.h"
 #include "VulkanMemoryManager.h"
 #include "VulkanMemoryChunk.h"
+#include "VulkanDevice.h"
+#include "VulkanSingleAllocation.h"
+#include <vulkan.h>
 
 
-VulkanMemoryManager::VulkanMemoryManager(VulkanToolkit* ivulkan)
-    : vulkan(ivulkan)
+VulkanMemoryManager::VulkanMemoryManager(VulkanDevice* device)
+    : device(device)
 {
     allAllocationsByType = {};
 }
@@ -18,7 +21,7 @@ VulkanSingleAllocation VulkanMemoryManager::bindBufferMemory(uint32_t type, VkBu
 {
     size += 2048 - (size % 2048);
     if (allAllocationsByType.find(type) == allAllocationsByType.end()) {
-        allAllocationsByType[type] = { new VulkanMemoryChunk(vulkan, type) };
+        allAllocationsByType[type] = { new VulkanMemoryChunk(device, type) };
     }
     auto chunks = allAllocationsByType.at(type);
     for (int i = 0; i < chunks.size(); i++) {
@@ -29,7 +32,7 @@ VulkanSingleAllocation VulkanMemoryManager::bindBufferMemory(uint32_t type, VkBu
         }
     }
     // no suitable chunk found, create new, add, and alloc
-    auto newchunk = new VulkanMemoryChunk(vulkan, type);
+    auto newchunk = new VulkanMemoryChunk(device, type);
     allAllocationsByType[type].push_back(newchunk);
     VkDeviceSize offset;
     bool result = newchunk->findFreeMemoryOffset(size, offset);
@@ -40,7 +43,7 @@ VulkanSingleAllocation VulkanMemoryManager::bindImageMemory(uint32_t type, VkIma
 {
     size += 2048 - (size % 2048);
     if (allAllocationsByType.find(type) == allAllocationsByType.end()) {
-        allAllocationsByType[type] = { new VulkanMemoryChunk(vulkan, type) };
+        allAllocationsByType[type] = { new VulkanMemoryChunk(device, type) };
     }
     auto chunks = allAllocationsByType.at(type);
     for (int i = 0; i < chunks.size(); i++) {
@@ -51,7 +54,7 @@ VulkanSingleAllocation VulkanMemoryManager::bindImageMemory(uint32_t type, VkIma
         }
     }
     // no suitable chunk found, create new, add, and alloc
-    auto newchunk = new VulkanMemoryChunk(vulkan, type);
+    auto newchunk = new VulkanMemoryChunk(device, type);
     allAllocationsByType[type].push_back(newchunk);
     VkDeviceSize offset;
     bool result = newchunk->findFreeMemoryOffset(size, offset);

@@ -1,8 +1,10 @@
 #include "stdafx.h"
-#include "VulkanMemoryManager.h"
+#include "VulkanToolkit.h"
+#include "Internal/VulkanMemoryManager.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>  
+#include <vulkan.h>  
 
 VulkanToolkit::VulkanToolkit()
 { 

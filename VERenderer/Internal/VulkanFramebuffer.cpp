@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include "VulkanFramebuffer.h"
+#include <vulkan.h>
 
 VulkanFramebuffer::VulkanFramebuffer(VulkanToolkit * ivulkan, uint32_t width, uint32_t height, VulkanRenderPass* renderPass, std::vector<VkImageView> &attachments)
     : vulkan(ivulkan)

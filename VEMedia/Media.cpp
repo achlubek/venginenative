@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include "Media.h"
+#include "tinydir.h"
 
 using namespace std;
 

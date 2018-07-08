@@ -1,10 +1,12 @@
 #include "stdafx.h"
 #include "VulkanMemoryChunk.h"
 #include "VulkanSingleAllocation.h"
+#include "VulkanDevice.h"
+#include <vulkan.h>
 
 
-VulkanMemoryChunk::VulkanMemoryChunk(VulkanToolkit* ivulkan, uint32_t itype)
-    : vulkan(ivulkan), type(itype)
+VulkanMemoryChunk::VulkanMemoryChunk(VulkanDevice* device, uint32_t itype)
+    : device(device), type(itype)
 {
     chunkSize = 256 * 1024 * 1024;
     VkMemoryAllocateInfo allocInfo = {};
@@ -12,21 +14,21 @@ VulkanMemoryChunk::VulkanMemoryChunk(VulkanToolkit* ivulkan, uint32_t itype)
     allocInfo.allocationSize = chunkSize;
     allocInfo.memoryTypeIndex = type;
 
-    if (vkAllocateMemory(vulkan->device, &allocInfo, nullptr, &handle) != VK_SUCCESS) {
+    if (vkAllocateMemory(device->getDevice(), &allocInfo, nullptr, &handle) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate requested memory!");
     }
 }
 
 VulkanMemoryChunk::~VulkanMemoryChunk()
 {
-    vkFreeMemory(vulkan->device, handle, nullptr);
+    vkFreeMemory(device->getDevice(), handle, nullptr);
 }
 
 VulkanSingleAllocation VulkanMemoryChunk::bindBufferMemory(VkBuffer buffer, uint64_t size, uint64_t offset)
 {
     while (inUse); // todo mutex
     inUse = true;
-    vkBindBufferMemory(vulkan->device, buffer, handle, offset);
+    vkBindBufferMemory(device->getDevice(), buffer, handle, offset);
     auto va = VulkanSingleAllocation(this, size, offset);
     allActiveAllocations.push_back(va);
     allAllocationsSize += size;
@@ -38,7 +40,7 @@ VulkanSingleAllocation VulkanMemoryChunk::bindImageMemory(VkImage image, uint64_
 {
     while (inUse);
     inUse = true;
-    vkBindImageMemory(vulkan->device, image, handle, offset);
+    vkBindImageMemory(device->getDevice(), image, handle, offset);
     auto va = VulkanSingleAllocation(this, size, offset);
     allActiveAllocations.push_back(va);
     allAllocationsSize += size;
@@ -87,11 +89,6 @@ bool VulkanMemoryChunk::findFreeMemoryOffset(uint64_t size, uint64_t &outOffset)
 VkDeviceMemory VulkanMemoryChunk::getHandle()
 {
     return handle;
-}
-
-VulkanToolkit* VulkanMemoryChunk::getVulkanToolkit()
-{
-    return vulkan;
 }
 
 bool VulkanMemoryChunk::isFreeSpace(uint64_t offset, uint64_t size)
