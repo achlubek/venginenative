@@ -1,8 +1,8 @@
 #pragma once
-#include <vulkan.h>
-#include <GLFW/glfw3.h>
 #include "VulkanSwapChain.h"
 #include "VulkanMemoryManager.h"
+#include <vulkan.h>
+#include <GLFW/glfw3.h>
 
 class VulkanDevice
 {
@@ -10,6 +10,12 @@ public:
     VulkanDevice(int width, int height, bool enableValidation, std::string windowName);
     ~VulkanDevice();
     VkDevice getDevice();
+    VkQueue getMainQueue();
+    bool shouldCloseWindow();
+    void poolEvents();
+    double getExecutionTime();
+    VulkanMemoryManager* getMemoryManager();
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 private:
 
     VkInstance instance;
@@ -43,10 +49,6 @@ private:
     void setupDebugCallback();
     void loadPhysicalDevices();
     void createLogicalDevice(VkPhysicalDevice pdevice, VkDeviceCreateInfo cinfo);
-    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-    bool shouldCloseWindow();
-    void poolEvents();
-    double getExecutionTime();
 };
 

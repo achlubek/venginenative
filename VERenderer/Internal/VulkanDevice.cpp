@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "VulkanDevice.h"
+#include <vulkan.h>
+#include <GLFW/glfw3.h>
 
 
 VulkanDevice::VulkanDevice(int width, int height, bool enableValidation, std::string windowName)
@@ -89,7 +91,7 @@ VulkanDevice::VulkanDevice(int width, int height, bool enableValidation, std::st
 
         VkBool32 supported = false;
         vkGetPhysicalDeviceSurfaceSupportKHR(pdevice, chosenQFId, surface, &supported);
-        swapChain = new VulkanSwapChain(this, width, height);
+        swapChain = new VulkanSwapChain(this, width, height, surface, window, pdevice);
     }
     vkDeviceWaitIdle(device);
 }
@@ -97,11 +99,17 @@ VulkanDevice::VulkanDevice(int width, int height, bool enableValidation, std::st
 
 VulkanDevice::~VulkanDevice()
 {
+    vkDestroyInstance(instance, nullptr);
 }
 
 VkDevice VulkanDevice::getDevice()
 {
     return device;
+}
+
+VkQueue VulkanDevice::getMainQueue()
+{
+    return mainQueue;
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
@@ -239,6 +247,11 @@ void VulkanDevice::poolEvents()
 double VulkanDevice::getExecutionTime()
 {
     return glfwGetTime();
+}
+
+VulkanMemoryManager * VulkanDevice::getMemoryManager()
+{
+    return memoryManager;
 }
 
 uint32_t VulkanDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
