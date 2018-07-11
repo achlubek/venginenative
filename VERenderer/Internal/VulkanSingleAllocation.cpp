@@ -35,15 +35,15 @@ uint64_t VulkanSingleAllocation::getSize()
 
 void VulkanSingleAllocation::map(uint64_t ioffset, uint64_t isize, void ** data)
 {
-    vkMapMemory(chunk->getVulkanToolkit()->device, chunk->getHandle(), ioffset + offset, isize, 0, data);
+    vkMapMemory(chunk->getDevice(), chunk->getHandle(), ioffset + offset, isize, 0, data);
 }
 
 void VulkanSingleAllocation::map(void ** data)
 {
-    vkMapMemory(chunk->getVulkanToolkit()->device, chunk->getHandle(), offset, size, 0, data);
+    vkMapMemory(chunk->getDevice(), chunk->getHandle(), offset, size, 0, data);
 }
 
 void VulkanSingleAllocation::unmap()
 {
-    vkUnmapMemory(chunk->getVulkanToolkit()->device, chunk->getHandle());
+    vkUnmapMemory(chunk->getDevice(), chunk->getHandle());
 }

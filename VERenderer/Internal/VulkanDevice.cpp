@@ -112,6 +112,11 @@ VkQueue VulkanDevice::getMainQueue()
     return mainQueue;
 }
 
+VkCommandPool VulkanDevice::getCommandPool()
+{
+    return commandPool;
+}
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     VkDebugReportFlagsEXT flags,
     VkDebugReportObjectTypeEXT objType,

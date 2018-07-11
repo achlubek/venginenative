@@ -11,6 +11,7 @@ public:
     ~VulkanDevice();
     VkDevice getDevice();
     VkQueue getMainQueue();
+    VkCommandPool getCommandPool();
     bool shouldCloseWindow();
     void poolEvents();
     double getExecutionTime();

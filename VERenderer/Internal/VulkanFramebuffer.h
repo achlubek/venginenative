@@ -1,10 +1,13 @@
 #pragma once
-class VulkanToolkit;
+class VulkanDevice;
+class VulkanRenderPass;
 class VulkanFramebuffer
 {
 public:
-    VkFramebuffer handle;
-    VulkanToolkit * vulkan;
-    VulkanFramebuffer(VulkanToolkit * vulkan, uint32_t width, uint32_t height, VulkanRenderPass* renderPass, std::vector<VkImageView> &attachments);
+    VulkanFramebuffer(VulkanDevice * device, uint32_t width, uint32_t height, VulkanRenderPass* renderPass, std::vector<VkImageView> &attachments);
     ~VulkanFramebuffer();
+    VkFramebuffer getHandle();
+private:
+    VkFramebuffer handle;
+    VulkanDevice * device;
 };

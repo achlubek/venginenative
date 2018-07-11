@@ -3,6 +3,7 @@ class VulkanToolkit;
 #include "Internal/VulkanSingleAllocation.h"
 class VulkanInternalImage;
 class VulkanAttachment;
+#include <vulkan.h>
 
 enum VulkanImageUsage {
     ColorAttachment = 1, 
@@ -62,11 +63,16 @@ enum VulkanImageFormat {
 class VulkanImage
 {
 public:
-    VulkanImage(VulkanDevice* device, uint32_t width, uint32_t height, uint32_t depth, VulkanImageFormat format, VulkanImageUsage usage, VulkanImageAspect aspect, VulkanImageLayout layout);
+    VulkanImage(VulkanDevice* device, uint32_t width, uint32_t height, uint32_t depth, 
+        VulkanImageFormat format, VulkanImageUsage usage, VulkanImageAspect aspect, VulkanImageLayout layout);
     ~VulkanImage();
-    VulkanAttachment getAttachment();
+    // todo abstarct out VkClearColorValue
+    VulkanAttachment getAttachment(VulkanAttachmentBlending blending, bool clear, VkClearColorValue clearColor, bool forPresent);
+    bool isDepthBuffer();
 private:
     VkFormat resolveFormat(VulkanImageFormat format);
+    bool resolveIsDepthBuffer(VulkanImageFormat format);
     VulkanDevice * device;
-    VulkanInternalImage * device;
+    VulkanInternalImage * internalImage;
+    VulkanImageFormat format;
 };

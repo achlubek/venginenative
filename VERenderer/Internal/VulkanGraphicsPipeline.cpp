@@ -3,7 +3,7 @@
 #include "VulkanRenderPass.h" 
 #include "VulkanAttachment.h"
 #include "../VulkanImage.h" 
-#include "../VulkanToolkit.h" 
+#include "VulkanDevice.h" 
 #include "../VulkanDescriptorSetLayout.h" 
 #include <array> 
 #include <vulkan.h> 
@@ -54,10 +54,10 @@ static VkPipelineVertexInputStateCreateInfo getVertexInputStateCreateInfo() {
     return vertexInputInfo;
 }
 
-VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int viewportwidth, int viewportheight, std::vector<VulkanDescriptorSetLayout*> setlayouts,
+VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, int viewportwidth, int viewportheight, std::vector<VulkanDescriptorSetLayout*> setlayouts,
     std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass* renderpass, bool enableDepthTest, 
     bool alphablend, bool additive_blend, VkPrimitiveTopology topology, VkCullModeFlags cullflags)
-    : vulkan(ivulkan)
+    : device(device)
 {
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = getVertexInputStateCreateInfo();
 
@@ -113,8 +113,8 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int view
     std::vector<VkPipelineColorBlendAttachmentState> atts = {  };
 
 
-    for (int i = 0; i < renderpass->attachments.size(); i++) {
-        if (!renderpass->attachments[i].image->isDepthBuffer) {
+    for (int i = 0; i < renderpass->getAttachments().size(); i++) {
+        if (!renderpass->getAttachments()[i].getImage()->isDepthBuffer()) {
             VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
             colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             if (alphablend) {
@@ -136,7 +136,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int view
                 colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
             }
             else {
-                if (renderpass->attachments[i].blending == VulkanAttachmentBlending::Alpha) {
+                if (renderpass->getAttachments()[i].getBlending() == VulkanAttachmentBlending::Alpha) {
                     colorBlendAttachment.blendEnable = VK_TRUE;
                     colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
                     colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
@@ -145,7 +145,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int view
                     colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
                     colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
                 }
-                else if (renderpass->attachments[i].blending == VulkanAttachmentBlending::Additive) {
+                else if (renderpass->getAttachments()[i].getBlending() == VulkanAttachmentBlending::Additive) {
                     colorBlendAttachment.blendEnable = VK_TRUE;
                     colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
                     colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
@@ -185,7 +185,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int view
     pipelineLayoutInfo.pSetLayouts = layouts.data();
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-    if (vkCreatePipelineLayout(vulkan->device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+    if (vkCreatePipelineLayout(device->getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout!");
     }
 
@@ -201,16 +201,16 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * ivulkan, int view
     pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.layout = pipelineLayout;
-    pipelineInfo.renderPass = renderpass->handle;
+    pipelineInfo.renderPass = renderpass->getHandle();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-    if (vkCreateGraphicsPipelines(vulkan->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+    if (vkCreateGraphicsPipelines(device->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline!");
     }
 }
 
-VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * vulkan, std::vector<VkDescriptorSetLayout> setlayouts, 
+VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, std::vector<VkDescriptorSetLayout> setlayouts,
     VkPipelineShaderStageCreateInfo shader)
 {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
@@ -219,7 +219,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * vulkan, std::vect
     pipelineLayoutInfo.pSetLayouts = setlayouts.data();
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-    if (vkCreatePipelineLayout(vulkan->device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+    if (vkCreatePipelineLayout(device->getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout!");
     }
 
@@ -229,7 +229,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanToolkit * vulkan, std::vect
     pipelineInfo.layout = pipelineLayout;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     // todo maybe exclude it from this class
-    if (vkCreateComputePipelines(vulkan->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+    if (vkCreateComputePipelines(device->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
         throw std::runtime_error("failed to create compute pipeline!");
     }
 }

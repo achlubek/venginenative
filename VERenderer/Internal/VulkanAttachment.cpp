@@ -3,7 +3,8 @@
 #include <vulkan.h>
 
 VulkanAttachment::VulkanAttachment(VulkanImage* iimage, VkFormat format, VkSampleCountFlagBits samples, VkAttachmentLoadOp loadop, VkAttachmentStoreOp storeop, 
-    VkAttachmentLoadOp stencilloadop, VkAttachmentStoreOp stencilstoreop, VkImageLayout initialLayout, VkImageLayout finalLayout)
+    VkAttachmentLoadOp stencilloadop, VkAttachmentStoreOp stencilstoreop, VkImageLayout initialLayout, VkImageLayout finalLayout,
+    VulkanAttachmentBlending blending, VkClearColorValue clearColor, bool clear)
 {
     image = iimage;
     description = {};
@@ -16,13 +17,35 @@ VulkanAttachment::VulkanAttachment(VulkanImage* iimage, VkFormat format, VkSampl
     description.initialLayout = initialLayout;
     description.finalLayout = finalLayout;
     blending = VulkanAttachmentBlending::None;
-    clearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
-
+    clearColor = { 0.0f, 0.0f, 0.0f, 0.0f };    
+    blending = blending;
+    clearColor = clearColor;
+    clear = clear;
 }
 
 
 VulkanAttachment::~VulkanAttachment()
 {
+}
+
+VkAttachmentDescription VulkanAttachment::getDescription()
+{
+    return description;
+}
+
+VulkanAttachmentBlending VulkanAttachment::getBlending()
+{
+    return blending;
+}
+
+VkClearColorValue VulkanAttachment::getClearColor()
+{
+    return clearColor;
+}
+
+bool VulkanAttachment::isCleared()
+{
+    return clear;
 }
 
 VkAttachmentReference VulkanAttachment::getReference(uint32_t attachment, VkImageLayout layout)

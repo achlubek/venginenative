@@ -4,68 +4,24 @@
 #include "VulkanMemoryManager.h" 
 #include "VulkanMemoryChunk.h" 
 
-VulkanInternalImage::VulkanInternalImage(VulkanDevice * device, uint32_t iwidth, uint32_t iheight, VkFormat iformat, VkImageTiling itiling,
-    VkImageUsageFlags iusage, VkMemoryPropertyFlags iproperties, VkImageAspectFlags iaspectFlags,
-    VkImageLayout iinitialLayout, bool iisDepthBuffer)
-    : device(device),
-    width(iwidth),
-    height(iheight),
-    depth(1),
-    arrayLayers(1),
-    format(iformat),
-    tiling(itiling),
-    usage(iusage | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT),
-    properties(iproperties),
-    aspectFlags(iaspectFlags),
-    initialLayout(iinitialLayout),
-    isDepthBuffer(iisDepthBuffer),
-    clearColor({ 0.0f, 0.0f, 0.0f, 0.0f }),
-    attachmentBlending(VulkanAttachmentBlending::None)
-{
-    initalize();
-}
 
 VulkanInternalImage::VulkanInternalImage(VulkanDevice * device, uint32_t iwidth, uint32_t iheight, uint32_t idepth, VkFormat iformat, VkImageTiling itiling,
     VkImageUsageFlags iusage, VkMemoryPropertyFlags iproperties, VkImageAspectFlags iaspectFlags,
-    VkImageLayout iinitialLayout, bool iisDepthBuffer)
+    VkImageLayout iinitialLayout)
     : device(device),
     width(iwidth),
     height(iheight),
     depth(idepth),
-    arrayLayers(1),
     format(iformat),
     tiling(itiling),
     usage(iusage | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT),
     properties(iproperties),
     aspectFlags(iaspectFlags),
-    initialLayout(iinitialLayout),
-    isDepthBuffer(iisDepthBuffer),
-    clearColor({ 0.0f, 0.0f, 0.0f, 0.0f }),
-    attachmentBlending(VulkanAttachmentBlending::None)
+    initialLayout(iinitialLayout)
 {
     initalize();
 }
 
-VulkanInternalImage::VulkanInternalImage(VulkanDevice * device, uint32_t iwidth, uint32_t iheight, uint32_t idepth, uint32_t iarrayLayers, VkFormat iformat, VkImageTiling itiling,
-    VkImageUsageFlags iusage, VkMemoryPropertyFlags iproperties, VkImageAspectFlags iaspectFlags,
-    VkImageLayout iinitialLayout, bool iisDepthBuffer)
-    : device(device),
-    width(iwidth),
-    height(iheight),
-    depth(idepth),
-    arrayLayers(iarrayLayers),
-    format(iformat),
-    tiling(itiling),
-    usage(iusage | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT),
-    properties(iproperties),
-    aspectFlags(iaspectFlags),
-    initialLayout(iinitialLayout),
-    isDepthBuffer(iisDepthBuffer),
-    clearColor({ 0.0f, 0.0f, 0.0f, 0.0f }),
-    attachmentBlending(VulkanAttachmentBlending::None)
-{
-    initalize();
-}
 
 VulkanInternalImage::~VulkanInternalImage()
 {
@@ -92,7 +48,7 @@ void VulkanInternalImage::initalize()
     imageInfo.extent.height = height;
     imageInfo.extent.depth = depth;
     imageInfo.mipLevels = 1;
-    imageInfo.arrayLayers = arrayLayers;
+    imageInfo.arrayLayers = 1;
     imageInfo.format = format;
     imageInfo.tiling = tiling;
     imageInfo.initialLayout = initialLayout;
@@ -124,7 +80,7 @@ void VulkanInternalImage::initalize()
     viewInfo.subresourceRange.baseMipLevel = 0;
     viewInfo.subresourceRange.levelCount = 1;
     viewInfo.subresourceRange.baseArrayLayer = 0;
-    viewInfo.subresourceRange.layerCount = arrayLayers;
+    viewInfo.subresourceRange.layerCount = 1;
 
     if (vkCreateImageView(device->getDevice(), &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
         throw std::runtime_error("failed to create texture image view!");
@@ -136,10 +92,8 @@ VulkanInternalImage::VulkanInternalImage(VkFormat iformat, VkImage imageHandle, 
 {
     iformat = format;
     image = imageHandle;
-    imageView = viewHandle;
-    isDepthBuffer = false;
+    imageView = viewHandle; 
     samplerCreated = false;
-    clearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 }
 
 VkSampler VulkanInternalImage::getSampler()
@@ -170,104 +124,4 @@ VkSampler VulkanInternalImage::getSampler()
     }
     samplerCreated = true;
     return sampler;
-}
-
-VulkanAttachment VulkanInternalImage::getAttachment()
-{
-    auto att = VulkanAttachment(this, format, VK_SAMPLE_COUNT_1_BIT,
-        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
-        VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        VK_IMAGE_LAYOUT_UNDEFINED, isPresentReady ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : (isDepthBuffer ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL));
-    att.blending = attachmentBlending;
-    att.clearColor = clearColor;
-    att.clear = clear;
-    return att;
-}
-
-void VulkanInternalImage::generateMipMaps()
-{
-    return;
-
-    VkCommandBuffer blitCmd = vulkan->beginSingleTimeCommands();
-
-    vulkan->transitionImageLayoutExistingCommandBuffer(blitCmd, 0, image, format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-        VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
-
-    // Copy down mips from n-1 to n
-    unsigned int sz = min(width, height) / 2;
-    for (int32_t i = 1; sz > 1; i++)
-    {
-        sz /= 2;
-        VkImageBlit imageBlit{};
-
-        // Source
-        imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        imageBlit.srcSubresource.layerCount = 1;
-        imageBlit.srcSubresource.mipLevel = i - 1;
-        imageBlit.srcOffsets[1].x = int32_t(width >> (i - 1));
-        imageBlit.srcOffsets[1].y = int32_t(height >> (i - 1));
-        imageBlit.srcOffsets[1].z = 1;
-
-        // Destination
-        imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        imageBlit.dstSubresource.layerCount = 1;
-        imageBlit.dstSubresource.mipLevel = i;
-        imageBlit.dstOffsets[1].x = int32_t(width >> i);
-        imageBlit.dstOffsets[1].y = int32_t(height >> i);
-        imageBlit.dstOffsets[1].z = 1;
-
-        VkImageSubresourceRange mipSubRange = {};
-        mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        mipSubRange.baseMipLevel = i;
-        mipSubRange.levelCount = 1;
-        mipSubRange.layerCount = 1;
-
-        // Transiton current mip level to transfer dest
-        vulkan->transitionImageLayoutExistingCommandBuffer(
-            blitCmd, i,
-            image,
-            format,
-            VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
-
-        // Blit from previous level
-        vkCmdBlitImage(
-            blitCmd,
-            image,
-            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-            image,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            1,
-            &imageBlit,
-            VK_FILTER_LINEAR);
-
-        // Transiton current mip level to transfer source for read in next iteration
-        vulkan->transitionImageLayoutExistingCommandBuffer(
-            blitCmd, i,
-            image,
-            format,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
-    }
-    sz = min(width, height);
-    for (int32_t i = 0; sz > 1; i++)
-    {
-        vulkan->transitionImageLayoutExistingCommandBuffer(
-            blitCmd, i,
-            image,
-            format,
-            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-        sz /= 2;
-    }
-
-
-    vulkan->endSingleTimeCommands(blitCmd);
-
 }

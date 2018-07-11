@@ -1,4 +1,5 @@
 #pragma once
+#include <vulkan.h>
 struct VulkanSingleAllocation;
 struct VulkanDevice;
 class VulkanMemoryChunk
@@ -12,6 +13,7 @@ public:
     void freeBindMemory(VulkanSingleAllocation allocation);
     bool findFreeMemoryOffset(uint64_t size, uint64_t &outOffset);
     VkDeviceMemory getHandle();
+    VkDevice getDevice();
 private:
     bool isFreeSpace(uint64_t offset, uint64_t size);
     VulkanDevice* device;

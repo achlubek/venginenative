@@ -2,7 +2,6 @@
 #include "VulkanMemoryChunk.h"
 #include "VulkanSingleAllocation.h"
 #include "VulkanDevice.h"
-#include <vulkan.h>
 
 
 VulkanMemoryChunk::VulkanMemoryChunk(VulkanDevice* device, uint32_t itype)
@@ -89,6 +88,11 @@ bool VulkanMemoryChunk::findFreeMemoryOffset(uint64_t size, uint64_t &outOffset)
 VkDeviceMemory VulkanMemoryChunk::getHandle()
 {
     return handle;
+}
+
+VkDevice VulkanMemoryChunk::getDevice()
+{
+    return device->getDevice();
 }
 
 bool VulkanMemoryChunk::isFreeSpace(uint64_t offset, uint64_t size)

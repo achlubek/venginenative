@@ -1,6 +1,6 @@
 #pragma once
 class Object3dInfo;
-class VulkanToolkit;
+class VulkanDevice;
 class VulkanShaderModule;
 class VulkanDescriptorSetLayout;
 class VulkanImage;
@@ -12,14 +12,14 @@ class VulkanCommandBuffer;
 class VulkanRenderStage
 {
 public:
-    VulkanRenderStage(VulkanToolkit * vulkan, int width, int height,
+    VulkanRenderStage(VulkanDevice * device, int width, int height,
         std::vector<VulkanShaderModule*> shaders, 
         std::vector<VulkanDescriptorSetLayout*> layouts, 
         std::vector<VulkanImage*> outputImages);
     ~VulkanRenderStage();
 private:
 
-    VulkanToolkit * vulkan;
+    VulkanDevice * device;
     VkSemaphore signalSemaphore;
     VulkanRenderPass* renderPass = nullptr;
     VulkanFramebuffer* framebuffer = nullptr;

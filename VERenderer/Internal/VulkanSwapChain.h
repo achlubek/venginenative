@@ -1,11 +1,12 @@
 #pragma once
+#include <vulkan.h>
+#include <GLFW/glfw3.h>
 struct SwapChainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities;
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> presentModes;
 };
 class VulkanDevice;
-class VkPhysicalDevice;
 class VulkanSwapChain
 {
 public:

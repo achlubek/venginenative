@@ -3,7 +3,6 @@
 #include "VulkanMemoryChunk.h"
 #include "VulkanDevice.h"
 #include "VulkanSingleAllocation.h"
-#include <vulkan.h>
 
 
 VulkanMemoryManager::VulkanMemoryManager(VulkanDevice* device)

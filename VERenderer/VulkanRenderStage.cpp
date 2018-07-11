@@ -12,15 +12,15 @@
 #include "Internal/VulkanFramebuffer.h"
 #include "Internal/VulkanAttachment.h"
 #include "VulkanImage.h"
-#include "VulkanToolkit.h"
+#include "Internal/VulkanDevice.h"
 #include "VulkanShaderModule.h"
 #include <vulkan.h>
 
-VulkanRenderStage::VulkanRenderStage(VulkanToolkit * vulkan, int width, int height,
+VulkanRenderStage::VulkanRenderStage(VulkanDevice * device, int width, int height,
     std::vector<VulkanShaderModule*> shaders,
     std::vector<VulkanDescriptorSetLayout*> layouts,
     std::vector<VulkanImage*> outputImages)
-    : vulkan(vulkan), width(width), height(height), setLayouts(layouts), outputImages(outputImages), shaders(shaders)
+    : device(device), width(width), height(height), setLayouts(layouts), outputImages(outputImages), shaders(shaders)
 {
     sets = {};
     compile();
@@ -45,8 +45,8 @@ void VulkanRenderStage::beginDrawing()
 
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = renderPass->handle;
-    renderPassInfo.framebuffer = framebuffer->handle;
+    renderPassInfo.renderPass = renderPass->getHandle();
+    renderPassInfo.framebuffer = framebuffer->getHandle();
     renderPassInfo.renderArea.offset = { 0, 0 };
     VkExtent2D extent = {};
     extent.width = width;
@@ -55,18 +55,18 @@ void VulkanRenderStage::beginDrawing()
     std::vector<VkClearValue> clearValues = {};
     if (clearBeforeDrawing) {
 
-        clearValues.resize(renderPass->attachments.size());
+        clearValues.resize(renderPass->getAttachments().size());
 
-        for (int i = 0; i < renderPass->attachments.size(); i++) {
-            if (renderPass->attachments[i].image->isDepthBuffer) {
+        for (int i = 0; i < renderPass->getAttachments().size(); i++) {
+            if (renderPass->getAttachments()[i].getImage()->isDepthBuffer()) {
                 clearValues[i].depthStencil = { 1.0f, 0 };
             }
             else {
-                clearValues[i].color = renderPass->attachments[i].clearColor;
+                clearValues[i].color = renderPass->getAttachments()[i].getClearColor();
             }
         }
 
-        renderPassInfo.clearValueCount = static_cast<uint32_t>(renderPass->attachments.size());
+        renderPassInfo.clearValueCount = static_cast<uint32_t>(renderPass->getAttachments().size());
         renderPassInfo.pClearValues = clearValues.data();
     }
     else {
@@ -99,9 +99,9 @@ void VulkanRenderStage::compile()
 {
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    vkCreateSemaphore(vulkan->device, &semaphoreInfo, nullptr, &signalSemaphore);
+    vkCreateSemaphore(device->getDevice(), &semaphoreInfo, nullptr, &signalSemaphore);
 
-    commandBuffer = new VulkanCommandBuffer(vulkan, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+    commandBuffer = new VulkanCommandBuffer(device, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
     std::vector<VulkanAttachment> attachments = {};
     std::vector<VkImageView> attachmentsViews = {};
@@ -113,10 +113,10 @@ void VulkanRenderStage::compile()
     for (int i = 0; i < outputImages.size(); i++) {
         auto atta = outputImages[i]->getAttachment();
         if (!clearBeforeDrawing) {
-            atta.description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            atta.getDescription().loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
         }
         if (!atta.clear) {
-            atta.description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            atta.getDescription().loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
         }
         if (outputImages[i]->isDepthBuffer) {
             depthAttachment = atta;
@@ -136,9 +136,9 @@ void VulkanRenderStage::compile()
 
     std::vector<VulkanSubpass> subpasses = { subpass };
 
-    renderPass = new VulkanRenderPass(vulkan, attachments, subpasses);
+    renderPass = new VulkanRenderPass(device, attachments, subpasses);
 
-    framebuffer = new VulkanFramebuffer(vulkan, width, height, renderPass, attachmentsViews);
+    framebuffer = new VulkanFramebuffer(device, width, height, renderPass, attachmentsViews);
 
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {};
     for (int i = 0; i < shaders.size(); i++) {
@@ -160,13 +160,13 @@ void VulkanRenderStage::compile()
         shaderStages.push_back(info);
     }
 
-    pipeline = new VulkanGraphicsPipeline(vulkan, width, height,
+    pipeline = new VulkanGraphicsPipeline(device, width, height,
         setLayouts, shaderStages, renderPass, foundDepthBuffer, alphaBlending, additiveBlending, topology, cullFlags);
 }
 
 VulkanRenderStage* VulkanRenderStage::copy()
 {
-    auto v = new VulkanRenderStage(vulkan, width, height, shaders, setLayouts, outputImages);
+    auto v = new VulkanRenderStage(device, width, height, shaders, setLayouts, outputImages);
     return v;
 }
 
@@ -185,7 +185,7 @@ void VulkanRenderStage::submit(std::vector<VkSemaphore> waitSemaphores)
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &signalSemaphore;
 
-    if (vkQueueSubmit(vulkan->mainQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+    if (vkQueueSubmit(device->getMainQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 }
@@ -205,7 +205,7 @@ void VulkanRenderStage::submitNoSemaphores(std::vector<VkSemaphore> waitSemaphor
     submitInfo.signalSemaphoreCount = 0;
     submitInfo.pSignalSemaphores = nullptr;
 
-    if (vkQueueSubmit(vulkan->mainQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+    if (vkQueueSubmit(device->getMainQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 }

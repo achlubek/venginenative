@@ -1,14 +1,14 @@
 #pragma once
-class VulkanToolkit;
+class VulkanDevice;
 class VulkanCommandBuffer
 {
 public:
-    VkCommandBuffer handle;
-    VulkanToolkit * vulkan;
-     
-    VulkanCommandBuffer(VulkanToolkit * vulkan, VkCommandBufferLevel level);
+    VulkanCommandBuffer(VulkanDevice * device, VkCommandBufferLevel level);
     ~VulkanCommandBuffer();
-
     void begin(VkCommandBufferUsageFlags flags);
     void end();
+
+private:
+    VkCommandBuffer handle;
+    VulkanDevice * device;
 };

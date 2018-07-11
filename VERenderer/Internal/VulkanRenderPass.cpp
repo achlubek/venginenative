@@ -1,15 +1,18 @@
 #include "stdafx.h" 
 #include "VulkanRenderPass.h" 
+#include "VulkanDevice.h" 
+#include "VulkanSubpass.h" 
+#include "VulkanAttachment.h" 
 #include <vulkan.h>
 
 
-VulkanRenderPass::VulkanRenderPass(VulkanToolkit * ivulkan, std::vector<VulkanAttachment> iattachments, std::vector<VulkanSubpass> subpasses)
-    : vulkan(ivulkan)
+VulkanRenderPass::VulkanRenderPass(VulkanDevice * device, std::vector<VulkanAttachment> iattachments, std::vector<VulkanSubpass> subpasses)
+    : device(device)
 {
     attachments = iattachments;
     std::vector<VkAttachmentDescription> descs = {};
     descs.resize(attachments.size());
-    for (int i = 0; i < attachments.size(); i++)descs[i] = attachments[i].description;
+    for (int i = 0; i < attachments.size(); i++)descs[i] = attachments[i].getDescription();
 
     std::vector<VkSubpassDescription> subpassesraw = {};
     subpassesraw.resize(subpasses.size());
@@ -22,11 +25,21 @@ VulkanRenderPass::VulkanRenderPass(VulkanToolkit * ivulkan, std::vector<VulkanAt
     renderPassInfo.subpassCount = subpassesraw.size();
     renderPassInfo.pSubpasses = subpassesraw.data();
 
-    vkCreateRenderPass(vulkan->device, &renderPassInfo, nullptr, &handle);
+    vkCreateRenderPass(device->getDevice(), &renderPassInfo, nullptr, &handle);
 }
 
 
 VulkanRenderPass::~VulkanRenderPass()
 {
-    vkDestroyRenderPass(vulkan->device, handle, nullptr);
+    vkDestroyRenderPass(device->getDevice(), handle, nullptr);
+}
+
+VkRenderPass VulkanRenderPass::getHandle()
+{
+    return handle;
+}
+
+std::vector<VulkanAttachment>& VulkanRenderPass::getAttachments()
+{
+    return attachments;
 }
