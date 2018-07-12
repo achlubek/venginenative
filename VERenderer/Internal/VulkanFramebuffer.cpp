@@ -2,7 +2,6 @@
 #include "VulkanFramebuffer.h"
 #include "VulkanDevice.h"
 #include "VulkanRenderPass.h"
-#include <vulkan.h>
 
 VulkanFramebuffer::VulkanFramebuffer(VulkanDevice * device, uint32_t width, uint32_t height, VulkanRenderPass* renderPass, std::vector<VkImageView> &attachments)
     : device(device)

@@ -1,9 +1,10 @@
 #pragma once 
-class VulkanToolkit;
+class VulkanDevice;
+#include <vulkan.h>
 #include "Internal/VulkanSingleAllocation.h"
 class VulkanInternalImage;
 class VulkanAttachment;
-#include <vulkan.h>
+#include "Internal/VulkanAttachment.h" 
 
 enum VulkanImageUsage {
     ColorAttachment = 1, 
@@ -14,8 +15,8 @@ enum VulkanImageUsage {
 };
 
 enum VulkanImageAspect {
-    Color,
-    Depth
+    ColorAspect,
+    DepthAspect
 };
 
 enum VulkanImageLayout {
@@ -69,6 +70,8 @@ public:
     // todo abstarct out VkClearColorValue
     VulkanAttachment getAttachment(VulkanAttachmentBlending blending, bool clear, VkClearColorValue clearColor, bool forPresent);
     bool isDepthBuffer();
+    VkSampler getSampler();
+    VkImageView getImageView();
 private:
     VkFormat resolveFormat(VulkanImageFormat format);
     bool resolveIsDepthBuffer(VulkanImageFormat format);

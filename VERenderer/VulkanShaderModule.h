@@ -1,6 +1,6 @@
 #pragma once
-class VulkanToolkit;
-class VkShaderModule;
+class VulkanDevice;
+#include <vulkan.h>
 
 enum VulkanShaderModuleType {
     Vertex,
@@ -11,13 +11,13 @@ enum VulkanShaderModuleType {
 class VulkanShaderModule
 {
 public:
-    VulkanShaderModule(VulkanToolkit * vulkan, VulkanShaderModuleType type, std::string path);
+    VulkanShaderModule(VulkanDevice * device, VulkanShaderModuleType type, std::string path);
     ~VulkanShaderModule();
     VkShaderModule getHandle();
     VulkanShaderModuleType getType();
 
 private:
     VkShaderModule handle;
-    VulkanToolkit * vulkan;
+    VulkanDevice * device;
     VulkanShaderModuleType type;
 };

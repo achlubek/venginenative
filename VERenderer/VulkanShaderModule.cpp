@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "VulkanShaderModule.h"
-#include "VulkanToolkit.h"
+#include "Internal/VulkanDevice.h"
 #include <iostream>
 #include <fstream>
 #include <vulkan.h>
 
-VulkanShaderModule::VulkanShaderModule(VulkanToolkit * vulkan, VulkanShaderModuleType type, std::string path)
-    : vulkan(vulkan), type(type)
+VulkanShaderModule::VulkanShaderModule(VulkanDevice * device, VulkanShaderModuleType type, std::string path)
+    : device(device), type(type)
 {
     std::ifstream file(path, std::ios::ate | std::ios::binary);
 
@@ -32,12 +32,12 @@ VulkanShaderModule::VulkanShaderModule(VulkanToolkit * vulkan, VulkanShaderModul
 
     createInfo.pCode = codeAligned.data();
 
-    vkCreateShaderModule(vulkan->device, &createInfo, nullptr, &handle);
+    vkCreateShaderModule(device->getDevice(), &createInfo, nullptr, &handle);
 }
 
 VulkanShaderModule::~VulkanShaderModule()
 {
-    vkDestroyShaderModule(vulkan->device, handle, nullptr);
+    vkDestroyShaderModule(device->getDevice(), handle, nullptr);
 }
 VkShaderModule VulkanShaderModule::getHandle()
 {

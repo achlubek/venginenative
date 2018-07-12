@@ -7,6 +7,7 @@ public:
     ~VulkanCommandBuffer();
     void begin(VkCommandBufferUsageFlags flags);
     void end();
+    VkCommandBuffer getHandle();
 
 private:
     VkCommandBuffer handle;

@@ -36,9 +36,6 @@
     <ClInclude Include="VulkanImage.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanRenderer.h">
-      <Filter>Pliki nagłówkowe</Filter>
-    </ClInclude>
     <ClInclude Include="VulkanRenderStage.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
@@ -120,9 +117,6 @@
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
     <ClCompile Include="VulkanImage.cpp">
-      <Filter>Pliki źródłowe</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanRenderer.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
     <ClCompile Include="VulkanRenderStage.cpp">

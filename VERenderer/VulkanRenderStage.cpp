@@ -13,13 +13,13 @@
 #include "Internal/VulkanAttachment.h"
 #include "VulkanImage.h"
 #include "Internal/VulkanDevice.h"
-#include "VulkanShaderModule.h"
 #include <vulkan.h>
+#include "VulkanShaderModule.h"
 
 VulkanRenderStage::VulkanRenderStage(VulkanDevice * device, int width, int height,
     std::vector<VulkanShaderModule*> shaders,
     std::vector<VulkanDescriptorSetLayout*> layouts,
-    std::vector<VulkanImage*> outputImages)
+    std::vector<VulkanAttachment> outputImages)
     : device(device), width(width), height(height), setLayouts(layouts), outputImages(outputImages), shaders(shaders)
 {
     sets = {};
@@ -53,34 +53,31 @@ void VulkanRenderStage::beginDrawing()
     extent.height = height;
     renderPassInfo.renderArea.extent = extent;
     std::vector<VkClearValue> clearValues = {};
-    if (clearBeforeDrawing) {
-
-        clearValues.resize(renderPass->getAttachments().size());
-
-        for (int i = 0; i < renderPass->getAttachments().size(); i++) {
+    
+    for (int i = 0; i < renderPass->getAttachments().size(); i++) {
+        if (renderPass->getAttachments()[i].isCleared()) {
+            clearValues.push_back(VkClearValue());
             if (renderPass->getAttachments()[i].getImage()->isDepthBuffer()) {
-                clearValues[i].depthStencil = { 1.0f, 0 };
+                clearValues[clearValues.size() - 1].depthStencil = { 1.0f, 0 };
             }
             else {
-                clearValues[i].color = renderPass->getAttachments()[i].getClearColor();
+                clearValues[clearValues.size() - 1].color = renderPass->getAttachments()[i].getClearColor();
             }
         }
-
-        renderPassInfo.clearValueCount = static_cast<uint32_t>(renderPass->getAttachments().size());
-        renderPassInfo.pClearValues = clearValues.data();
-    }
-    else {
-        renderPassInfo.clearValueCount = 0;
     }
 
-    vkCmdBeginRenderPass(commandBuffer->handle, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
 
-    vkCmdBindPipeline(commandBuffer->handle, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getPipeline());
+
+    vkCmdBeginRenderPass(commandBuffer->getHandle(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(commandBuffer->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getPipeline());
 
 }
 void VulkanRenderStage::endDrawing()
 {
-    vkCmdEndRenderPass(commandBuffer->handle);
+    vkCmdEndRenderPass(commandBuffer->getHandle());
     commandBuffer->end();
 }
 
@@ -111,14 +108,8 @@ void VulkanRenderStage::compile()
 
     bool foundDepthBuffer = false;
     for (int i = 0; i < outputImages.size(); i++) {
-        auto atta = outputImages[i]->getAttachment();
-        if (!clearBeforeDrawing) {
-            atta.getDescription().loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-        }
-        if (!atta.clear) {
-            atta.getDescription().loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-        }
-        if (outputImages[i]->isDepthBuffer) {
+        auto atta = outputImages[i];
+        if (outputImages[i].getImage()->isDepthBuffer()) {
             depthAttachment = atta;
             foundDepthBuffer = true;
         }
@@ -127,7 +118,7 @@ void VulkanRenderStage::compile()
             colorattachmentsLayouts.push_back(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         }
         attachments.push_back(atta);
-        attachmentsViews.push_back(outputImages[i]->imageView);
+        attachmentsViews.push_back(outputImages[i].getImage()->getImageView());
     }
 
     VulkanSubpass subpass;
@@ -161,7 +152,7 @@ void VulkanRenderStage::compile()
     }
 
     pipeline = new VulkanGraphicsPipeline(device, width, height,
-        setLayouts, shaderStages, renderPass, foundDepthBuffer, alphaBlending, additiveBlending, topology, cullFlags);
+        setLayouts, shaderStages, renderPass, foundDepthBuffer, topology, cullFlags);
 }
 
 VulkanRenderStage* VulkanRenderStage::copy()
@@ -180,7 +171,8 @@ void VulkanRenderStage::submit(std::vector<VkSemaphore> waitSemaphores)
     submitInfo.pWaitDstStageMask = waitStages2;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer->handle;
+    auto cbufferHandle = commandBuffer->getHandle();
+    submitInfo.pCommandBuffers = &cbufferHandle;
 
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &signalSemaphore;
@@ -200,7 +192,8 @@ void VulkanRenderStage::submitNoSemaphores(std::vector<VkSemaphore> waitSemaphor
     submitInfo.pWaitDstStageMask = waitStages2;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer->handle;
+    auto cbufferHandle = commandBuffer->getHandle();
+    submitInfo.pCommandBuffers = &cbufferHandle;
 
     submitInfo.signalSemaphoreCount = 0;
     submitInfo.pSignalSemaphores = nullptr;

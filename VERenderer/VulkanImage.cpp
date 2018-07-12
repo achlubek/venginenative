@@ -1,7 +1,6 @@
 #include "stdafx.h" 
 #include "VulkanImage.h" 
 #include "Internal/VulkanInternalImage.h"
-#include "VulkanToolkit.h" 
 #include "Internal/VulkanMemoryManager.h" 
 #include "Internal/VulkanMemoryChunk.h" 
 #include "Internal/VulkanAttachment.h" 
@@ -23,7 +22,7 @@ VulkanImage::VulkanImage(VulkanDevice * device, uint32_t width, uint32_t height,
     if ((usage & VulkanImageUsage::TransferDestination) == VulkanImageUsage::TransferDestination) 
         mappedUsage = mappedUsage | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     internalImage = new VulkanInternalImage(device, width, height, depth, resolveFormat(format), VK_IMAGE_TILING_OPTIMAL, (VkImageUsageFlagBits)mappedUsage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        aspect == VulkanImageAspect::Color ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT,
+        aspect == VulkanImageAspect::ColorAspect ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT,
         layout == VulkanImageLayout::Preinitialized ? VK_IMAGE_LAYOUT_PREINITIALIZED : VK_IMAGE_LAYOUT_UNDEFINED);
 }
 
@@ -72,7 +71,7 @@ VkFormat VulkanImage::resolveFormat(VulkanImageFormat format)
     return VK_FORMAT_R8_SNORM;
 }
 
-bool VulkanImage::isDepthBuffer(VulkanImageFormat format)
+bool VulkanImage::resolveIsDepthBuffer(VulkanImageFormat format)
 {
     switch (format) {
     case VulkanImageFormat::R8inorm: 
@@ -116,9 +115,9 @@ bool VulkanImage::isDepthBuffer(VulkanImageFormat format)
 VulkanAttachment VulkanImage::getAttachment(VulkanAttachmentBlending blending, bool clear, VkClearColorValue clearColor, bool forPresent)
 {
     auto att = VulkanAttachment(this, resolveFormat(format), VK_SAMPLE_COUNT_1_BIT,
-        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
+        clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        VK_IMAGE_LAYOUT_UNDEFINED, forPresent ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR  : (isDepthBuffer(format) ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL),
+        VK_IMAGE_LAYOUT_UNDEFINED, forPresent ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR  : (resolveIsDepthBuffer(format) ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL),
         blending, clearColor, clear);
     return att;
 }
@@ -126,4 +125,14 @@ VulkanAttachment VulkanImage::getAttachment(VulkanAttachmentBlending blending, b
 bool VulkanImage::isDepthBuffer()
 {
     return resolveIsDepthBuffer(format);
+}
+
+VkSampler VulkanImage::getSampler()
+{
+    return internalImage->getSampler();
+}
+
+VkImageView VulkanImage::getImageView()
+{
+    return internalImage->getImageView();
 }

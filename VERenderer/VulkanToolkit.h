@@ -9,6 +9,7 @@ public:
     bool shouldCloseWindow();
     void poolEvents();
     double getExecutionTime();
+    VulkanDevice* getDevice();
 
 private:
     VulkanDevice* device;

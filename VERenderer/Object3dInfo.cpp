@@ -1,12 +1,7 @@
 #include "stdafx.h"
-#include "Object3dInfo.h" 
-#include "VulkanToolkit.h" 
-#include "VulkanDescriptorSet.h" 
-#include "Internal/VulkanCommandBuffer.h" 
-#include "Internal/VulkanMemoryManager.h" 
-#include "Internal/VulkanMemoryChunk.h" 
-#include "Internal/VulkanVertexBuffer.h" 
-#include <vulkan.h>
+#include "Object3dInfo.h"
+class VulkanDevice;
+#include "Internal/VulkanVertexBuffer.h"
 
 /*
 This class expected interleaved buffer in format
@@ -14,10 +9,9 @@ pos.xyz-uv.xy-normal.xyz-tangent.xyzw
 totals in 12 elements per vertex
 */
 
-Object3dInfo::Object3dInfo(VulkanToolkit * vulkan, std::vector<float> &vboin)
-    : vulkan(vulkan)
+Object3dInfo::Object3dInfo(VulkanDevice * device, std::vector<float> &vboin)
 {
-    vertexBuffer = new VulkanVertexBuffer(vulkan, vboin);
+    vertexBuffer = new VulkanVertexBuffer(device, vboin);
 }
 
 Object3dInfo::~Object3dInfo()

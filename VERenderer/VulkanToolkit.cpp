@@ -27,3 +27,8 @@ double VulkanToolkit::getExecutionTime()
 {
     return device->getExecutionTime();
 }
+
+VulkanDevice * VulkanToolkit::getDevice()
+{
+    return device;
+}

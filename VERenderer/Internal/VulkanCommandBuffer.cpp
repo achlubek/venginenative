@@ -32,3 +32,8 @@ void VulkanCommandBuffer::end()
 {
     vkEndCommandBuffer(handle);
 }
+
+VkCommandBuffer VulkanCommandBuffer::getHandle()
+{
+    return handle;
+}

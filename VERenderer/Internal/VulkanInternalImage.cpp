@@ -125,3 +125,8 @@ VkSampler VulkanInternalImage::getSampler()
     samplerCreated = true;
     return sampler;
 }
+
+VkImageView VulkanInternalImage::getImageView()
+{
+    return VkImageView();
+}

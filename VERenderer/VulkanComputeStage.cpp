@@ -1,11 +1,14 @@
 #include "stdafx.h"
+#include "Internal/VulkanDevice.h"
 #include "VulkanComputeStage.h"
+#include "VulkanDescriptorSet.h"
+#include "Internal/VulkanCommandBuffer.h"
+#include "Internal/VulkanGraphicsPipeline.h"
 
 
-VulkanComputeStage::VulkanComputeStage(VulkanToolkit * ivulkan)
-    : vulkan(ivulkan)
+VulkanComputeStage::VulkanComputeStage(VulkanDevice * device)
+    : device(device)
 {
-    queue = vulkan->mainQueue;
     setLayouts = {};  
 }
 
@@ -28,11 +31,11 @@ void VulkanComputeStage::compile()
 {
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    vkCreateSemaphore(vulkan->device, &semaphoreInfo, nullptr, &signalSemaphore);
+    vkCreateSemaphore(device->getDevice(), &semaphoreInfo, nullptr, &signalSemaphore);
 
-    commandBuffer = new VulkanCommandBuffer(vulkan, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+    commandBuffer = new VulkanCommandBuffer(device, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
      
-    pipeline = new VulkanGraphicsPipeline(vulkan, setLayouts, shader);
+    pipeline = new VulkanGraphicsPipeline(device, setLayouts, shader);
 }
 
 
@@ -41,7 +44,7 @@ void VulkanComputeStage::beginRecording()
     cmdMeshesCounts = 0;
     commandBuffer->begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
  
-    vkCmdBindPipeline(commandBuffer->handle, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->graphicsPipeline);
+    vkCmdBindPipeline(commandBuffer->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->getPipeline());
 
 }
 void VulkanComputeStage::endRecording()
@@ -53,10 +56,10 @@ void VulkanComputeStage::dispatch(std::vector<VulkanDescriptorSet*> sets, uint32
 {
     std::vector<VkDescriptorSet> realsets = {};
     for (int i = 0; i < sets.size(); i++) {
-        realsets.push_back(sets[i]->set);
+        realsets.push_back(sets[i]->getSet());
     }
-    vkCmdBindDescriptorSets(commandBuffer->handle, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->pipelineLayout, 0, realsets.size(), realsets.data(), 0, nullptr);
-    vkCmdDispatch(commandBuffer->handle, groupX, groupY, groupZ);
+    vkCmdBindDescriptorSets(commandBuffer->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->getPipelineLayout(), 0, realsets.size(), realsets.data(), 0, nullptr);
+    vkCmdDispatch(commandBuffer->getHandle(), groupX, groupY, groupZ);
 }
 
 void VulkanComputeStage::submit(std::vector<VkSemaphore> waitSemaphores)
@@ -69,12 +72,13 @@ void VulkanComputeStage::submit(std::vector<VkSemaphore> waitSemaphores)
     submitInfo.pWaitDstStageMask = waitStages2;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer->handle;
+    auto cbufferHandle = commandBuffer->getHandle();
+    submitInfo.pCommandBuffers = &cbufferHandle;
 
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &signalSemaphore;
 
-    if (vkQueueSubmit(vulkan->mainQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+    if (vkQueueSubmit(device->getMainQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 }
@@ -89,12 +93,13 @@ void VulkanComputeStage::submitNoSemaphores(std::vector<VkSemaphore> waitSemapho
     submitInfo.pWaitDstStageMask = waitStages2;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer->handle;
+    auto cbufferHandle = commandBuffer->getHandle();
+    submitInfo.pCommandBuffers = &cbufferHandle;
 
     submitInfo.signalSemaphoreCount = 0;
     submitInfo.pSignalSemaphores = nullptr;
 
-    if (vkQueueSubmit(vulkan->mainQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+    if (vkQueueSubmit(device->getMainQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 }

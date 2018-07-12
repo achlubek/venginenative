@@ -56,7 +56,7 @@ static VkPipelineVertexInputStateCreateInfo getVertexInputStateCreateInfo() {
 
 VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, int viewportwidth, int viewportheight, std::vector<VulkanDescriptorSetLayout*> setlayouts,
     std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass* renderpass, bool enableDepthTest, 
-    bool alphablend, bool additive_blend, VkPrimitiveTopology topology, VkCullModeFlags cullflags)
+    VkPrimitiveTopology topology, VkCullModeFlags cullflags)
     : device(device)
 {
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = getVertexInputStateCreateInfo();
@@ -117,7 +117,8 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, int viewpo
         if (!renderpass->getAttachments()[i].getImage()->isDepthBuffer()) {
             VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
             colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-            if (alphablend) {
+            
+            if (renderpass->getAttachments()[i].getBlending() == VulkanAttachmentBlending::Alpha) {
                 colorBlendAttachment.blendEnable = VK_TRUE;
                 colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
                 colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
@@ -126,7 +127,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, int viewpo
                 colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
                 colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
             }
-            else if (additive_blend) {
+            else if (renderpass->getAttachments()[i].getBlending() == VulkanAttachmentBlending::Additive) {
                 colorBlendAttachment.blendEnable = VK_TRUE;
                 colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
                 colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
@@ -136,28 +137,9 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, int viewpo
                 colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
             }
             else {
-                if (renderpass->getAttachments()[i].getBlending() == VulkanAttachmentBlending::Alpha) {
-                    colorBlendAttachment.blendEnable = VK_TRUE;
-                    colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-                    colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-                    colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-                    colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-                    colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-                    colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-                }
-                else if (renderpass->getAttachments()[i].getBlending() == VulkanAttachmentBlending::Additive) {
-                    colorBlendAttachment.blendEnable = VK_TRUE;
-                    colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-                    colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-                    colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-                    colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-                    colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-                    colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-                }
-                else {
-                    colorBlendAttachment.blendEnable = VK_FALSE;
-                }
+                colorBlendAttachment.blendEnable = VK_FALSE;
             }
+            
             atts.push_back(colorBlendAttachment);
         }
     }
@@ -242,4 +224,9 @@ VulkanGraphicsPipeline::~VulkanGraphicsPipeline()
 VkPipeline VulkanGraphicsPipeline::getPipeline()
 {
     return graphicsPipeline;
+}
+
+VkPipelineLayout VulkanGraphicsPipeline::getPipelineLayout()
+{
+    return pipelineLayout;
 }

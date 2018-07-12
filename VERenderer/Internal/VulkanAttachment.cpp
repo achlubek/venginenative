@@ -28,6 +28,11 @@ VulkanAttachment::~VulkanAttachment()
 {
 }
 
+VulkanImage * VulkanAttachment::getImage()
+{
+    return image;
+}
+
 VkAttachmentDescription VulkanAttachment::getDescription()
 {
     return description;

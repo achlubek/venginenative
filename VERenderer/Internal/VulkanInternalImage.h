@@ -6,6 +6,18 @@ class VulkanDevice;
 class VulkanInternalImage
 {
 public:
+    VulkanInternalImage(VulkanDevice * vulkan, uint32_t width, uint32_t height, uint32_t depth, VkFormat format, VkImageTiling tiling,
+        VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags,
+        VkImageLayout initialLayout);
+
+    VulkanInternalImage(VkFormat format, VkImage imageHandle, VkImageView viewHandle);
+
+    ~VulkanInternalImage();
+
+    VkSampler getSampler();
+    VkImageView getImageView();
+
+private:
     VulkanDevice * device;
     VkImage image;
     VulkanSingleAllocation imageMemory;
@@ -13,7 +25,7 @@ public:
 
     uint32_t width;
     uint32_t height;
-    uint32_t depth; 
+    uint32_t depth;
     VkFormat format;
     VkImageTiling tiling;
     VkImageUsageFlags usage;
@@ -21,18 +33,6 @@ public:
     VkImageAspectFlags aspectFlags;
     VkImageLayout initialLayout;
     VkSampler sampler;
-
-    VulkanInternalImage(VulkanDevice * vulkan, uint32_t width, uint32_t height, uint32_t depth, VkFormat format, VkImageTiling tiling,
-        VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags,
-        VkImageLayout initialLayout);
-
-
-    VulkanInternalImage(VkFormat format, VkImage imageHandle, VkImageView viewHandle);
-
-    VkSampler getSampler();
-
-    ~VulkanInternalImage();
-private:
     bool samplerCreated = false;
     void initalize();
 };

@@ -1,16 +1,14 @@
 #pragma once
-class VulkanToolkit;
+class VulkanDevice;
+class VulkanImage;
+class VulkanGenericBuffer; 
+#include <vulkan.h>
+
 class VulkanDescriptorSet
 {
 public:
-    VulkanToolkit * vulkan;
-    VkDescriptorPool pool;
-    VkDescriptorSetLayout layout;
-    VkDescriptorSet set; 
-    VulkanDescriptorSet(VulkanToolkit * vulkan, VkDescriptorPool p, VkDescriptorSetLayout l);
+    VulkanDescriptorSet(VulkanDevice * device, VkDescriptorPool p, VkDescriptorSetLayout l);
     ~VulkanDescriptorSet();
-
-    std::vector<VkWriteDescriptorSet> writes;
 
     void bindImageViewSampler(int binding, VulkanImage* img);
     void bindImageStorage(int binding, VulkanImage* img);
@@ -18,5 +16,14 @@ public:
     void bindStorageBuffer(int binding, VulkanGenericBuffer* buffer);
 
     void update();
+
+    VkDescriptorSet getSet();
+
+private:
+    VulkanDevice * device;
+    VkDescriptorPool pool;
+   // VkDescriptorSetLayout layout;
+    VkDescriptorSet set;
+    std::vector<VkWriteDescriptorSet> writes;
 };
 

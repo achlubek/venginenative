@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Object3dInfoFactory.h"
 #include "Object3dInfo.h"
+#include "VulkanToolkit.h"
 #include "Media.h"
 
 
@@ -33,5 +34,5 @@ Object3dInfo * Object3dInfoFactory::build(std::string mediakey)
 
 Object3dInfo * Object3dInfoFactory::build(std::vector<float> rawData)
 {
-    return new Object3dInfo(vulkan, rawData);
+    return new Object3dInfo(vulkan->getDevice(), rawData);
 }

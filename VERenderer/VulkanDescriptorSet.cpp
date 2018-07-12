@@ -1,20 +1,23 @@
 #include "stdafx.h"
 #include "VulkanDescriptorSet.h"
+#include "VulkanImage.h"
+#include "VulkanGenericBuffer.h"
+#include "Internal/VulkanDevice.h"
 
-VulkanDescriptorSet::VulkanDescriptorSet(VulkanToolkit * ivulkan, VkDescriptorPool p, VkDescriptorSetLayout l)
-    : vulkan(ivulkan)
+VulkanDescriptorSet::VulkanDescriptorSet(VulkanDevice * device, VkDescriptorPool p, VkDescriptorSetLayout l)
+    : device(device)
 {
     writes = {};
     pool = p;
-    layout = l;
+    //layout = l;
 
-    VkDescriptorSetLayout layouts[] = { layout };
+    VkDescriptorSetLayout layouts[] = { l };
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = pool;
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = layouts;
-    vkAllocateDescriptorSets(vulkan->device, &allocInfo, &set);
+    vkAllocateDescriptorSets(device->getDevice(), &allocInfo, &set);
 }
 
 VulkanDescriptorSet::~VulkanDescriptorSet()
@@ -25,7 +28,7 @@ void VulkanDescriptorSet::bindImageViewSampler(int binding, VulkanImage* img)
 {
     VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo();
     imageInfo->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-    imageInfo->imageView = img->imageView;
+    imageInfo->imageView = img->getImageView();
     imageInfo->sampler = img->getSampler();
 
     writes.resize(writes.size() + 1);
@@ -45,7 +48,7 @@ void VulkanDescriptorSet::bindImageStorage(int binding, VulkanImage* img)
 {
     VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo();
     imageInfo->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-    imageInfo->imageView = img->imageView;
+    imageInfo->imageView = img->getImageView();
     imageInfo->sampler = img->getSampler();
 
     writes.resize(writes.size() + 1);
@@ -65,9 +68,9 @@ void VulkanDescriptorSet::bindImageStorage(int binding, VulkanImage* img)
 void VulkanDescriptorSet::bindUniformBuffer(int binding, VulkanGenericBuffer* buffer)
 {
     VkDescriptorBufferInfo* bufferInfo = new VkDescriptorBufferInfo();
-    bufferInfo->buffer = buffer->buffer;
+    bufferInfo->buffer = buffer->getBuffer();
     bufferInfo->offset = 0;
-    bufferInfo->range = buffer->size;
+    bufferInfo->range = buffer->getSize();
 
     writes.resize(writes.size() + 1);
 
@@ -85,9 +88,9 @@ void VulkanDescriptorSet::bindUniformBuffer(int binding, VulkanGenericBuffer* bu
 void VulkanDescriptorSet::bindStorageBuffer(int binding, VulkanGenericBuffer* buffer)
 {
     VkDescriptorBufferInfo* bufferInfo = new VkDescriptorBufferInfo();
-    bufferInfo->buffer = buffer->buffer;
+    bufferInfo->buffer = buffer->getBuffer();
     bufferInfo->offset = 0;
-    bufferInfo->range = buffer->size;
+    bufferInfo->range = buffer->getSize();
 
     writes.resize(writes.size() + 1);
 
@@ -104,7 +107,12 @@ void VulkanDescriptorSet::bindStorageBuffer(int binding, VulkanGenericBuffer* bu
 
 void VulkanDescriptorSet::update()
 {
-    vkUpdateDescriptorSets(vulkan->device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+    vkUpdateDescriptorSets(device->getDevice(), static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     writes.clear();
     writes = {};
+}
+
+VkDescriptorSet VulkanDescriptorSet::getSet()
+{
+    return set;
 }

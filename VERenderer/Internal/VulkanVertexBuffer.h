@@ -1,6 +1,6 @@
 #pragma once
-class VulkanToolkit;
-class VkBuffer;
+class VulkanDevice;
+#include <vulkan.h>
 class VulkanGraphicsPipeline;
 class VulkanDescriptorSet;
 class VulkanCommandBuffer;
@@ -8,12 +8,12 @@ class VulkanCommandBuffer;
 class VulkanVertexBuffer
 {
 public:
-    VulkanVertexBuffer(VulkanToolkit* vulkan, std::vector<float> data);
+    VulkanVertexBuffer(VulkanDevice* device, std::vector<float> data);
     ~VulkanVertexBuffer();
     VkBuffer getBuffer();
     void drawInstanced(VulkanGraphicsPipeline* p, std::vector<VulkanDescriptorSet*> sets, VulkanCommandBuffer* cb, size_t instances);
 private:
-    VulkanToolkit * vulkan;
+    VulkanDevice * device;
     VkBuffer vertexBuffer;
     VulkanSingleAllocation vertexBufferMemory;
     int vertexCount = 0;

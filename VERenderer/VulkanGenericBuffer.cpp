@@ -1,11 +1,11 @@
 #include "stdafx.h" 
 #include "VulkanGenericBuffer.h" 
-#include "VulkanToolkit.h" 
-#include "VulkanMemoryManager.h" 
-#include "VulkanMemoryChunk.h" 
+#include "Internal/VulkanDevice.h" 
+#include "Internal/VulkanMemoryManager.h" 
+#include "Internal/VulkanMemoryChunk.h" 
 
-VulkanGenericBuffer::VulkanGenericBuffer(VulkanToolkit * ivulkan, VkBufferUsageFlags usage, VkDeviceSize s)
-    : vulkan(ivulkan)
+VulkanGenericBuffer::VulkanGenericBuffer(VulkanDevice * device, VkBufferUsageFlags usage, VkDeviceSize s)
+    : device(device)
 {
     if (usage == VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
     {
@@ -18,21 +18,21 @@ VulkanGenericBuffer::VulkanGenericBuffer(VulkanToolkit * ivulkan, VkBufferUsageF
     bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateBuffer(vulkan->device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+    if (vkCreateBuffer(device->getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to create buffer!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(vulkan->device, buffer, &memRequirements);
+    vkGetBufferMemoryRequirements(device->getDevice(), buffer, &memRequirements);
      
-    bufferMemory = vulkan->memoryManager->bindBufferMemory(
-        vulkan->findMemoryType(memRequirements.memoryTypeBits, 
+    bufferMemory = device->getMemoryManager()->bindBufferMemory(
+        device->findMemoryType(memRequirements.memoryTypeBits,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), buffer, memRequirements.size);
 }
 
 VulkanGenericBuffer::~VulkanGenericBuffer()
 {
-    vkDestroyBuffer(vulkan->device, buffer, nullptr);
+    vkDestroyBuffer(device->getDevice(), buffer, nullptr);
     bufferMemory.free();
 }
 
@@ -44,4 +44,14 @@ void VulkanGenericBuffer::map(VkDeviceSize offset, VkDeviceSize size, void ** da
 void VulkanGenericBuffer::unmap()
 {
     bufferMemory.unmap();
+}
+
+VkBuffer VulkanGenericBuffer::getBuffer()
+{
+    return buffer;
+}
+
+uint64_t VulkanGenericBuffer::getSize()
+{
+    return size;
 }

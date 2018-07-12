@@ -143,7 +143,6 @@
     <ClInclude Include="Internal\VulkanMemoryChunk.h" />
     <ClInclude Include="Internal\VulkanMemoryManager.h" />
     <ClInclude Include="Internal\VulkanInternalImage.h" />
-    <ClInclude Include="VulkanRenderer.h" />
     <ClInclude Include="Internal\VulkanRenderPass.h" />
     <ClInclude Include="VulkanRenderStage.h" />
     <ClInclude Include="VulkanShaderFactory.h" />
@@ -177,7 +176,6 @@
     <ClCompile Include="Internal\VulkanMemoryChunk.cpp" />
     <ClCompile Include="Internal\VulkanMemoryManager.cpp" />
     <ClCompile Include="Internal\VulkanInternalImage.cpp" />
-    <ClCompile Include="VulkanRenderer.cpp" />
     <ClCompile Include="Internal\VulkanRenderPass.cpp" />
     <ClCompile Include="VulkanRenderStage.cpp" />
     <ClCompile Include="VulkanShaderFactory.cpp" />

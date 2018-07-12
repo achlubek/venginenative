@@ -1,12 +1,13 @@
 #pragma once
-class VulkanToolkit;
+class VulkanDevice;
+class VulkanDescriptorSet;
 class VulkanDescriptorSetLayout
 {
 public:
-    VulkanDescriptorSetLayout(VulkanToolkit * vulkan);
+    VulkanDescriptorSetLayout(VulkanDevice * device);
     ~VulkanDescriptorSetLayout();
 
-    VulkanToolkit * vulkan;
+    VulkanDevice * device;
     int allocationCounter = 0;
 
     std::vector<VkDescriptorPool> descriptorPools = {};
