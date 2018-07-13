@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "VulkanDevice.h"
-#include <vulkan.h>
 #include <GLFW/glfw3.h>
 
 
@@ -257,6 +256,11 @@ double VulkanDevice::getExecutionTime()
 VulkanMemoryManager * VulkanDevice::getMemoryManager()
 {
     return memoryManager;
+}
+
+VulkanSwapChain * VulkanDevice::getSwapChain()
+{
+    return swapChain;
 }
 
 uint32_t VulkanDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {

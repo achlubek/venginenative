@@ -1,6 +1,5 @@
 #pragma once
 class VulkanDevice;
-#include <vulkan.h>
 
 enum VulkanShaderModuleType {
     Vertex,

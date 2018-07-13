@@ -150,6 +150,7 @@
     <ClInclude Include="Internal\VulkanSingleAllocation.h" />
     <ClInclude Include="Internal\VulkanSubpass.h" />
     <ClInclude Include="Internal\VulkanSwapChain.h" />
+    <ClInclude Include="VulkanSwapChainOutput.h" />
     <ClInclude Include="VulkanToolkit.h" />
     <ClInclude Include="Internal\VulkanVertexBuffer.h" />
   </ItemGroup>
@@ -183,6 +184,7 @@
     <ClCompile Include="Internal\VulkanSingleAllocation.cpp" />
     <ClCompile Include="Internal\VulkanSubpass.cpp" />
     <ClCompile Include="Internal\VulkanSwapChain.cpp" />
+    <ClCompile Include="VulkanSwapChainOutput.cpp" />
     <ClCompile Include="VulkanToolkit.cpp" />
     <ClCompile Include="Internal\VulkanVertexBuffer.cpp" />
   </ItemGroup>

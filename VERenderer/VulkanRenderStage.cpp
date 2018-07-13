@@ -13,17 +13,15 @@
 #include "Internal/VulkanAttachment.h"
 #include "VulkanImage.h"
 #include "Internal/VulkanDevice.h"
-#include <vulkan.h>
 #include "VulkanShaderModule.h"
 
 VulkanRenderStage::VulkanRenderStage(VulkanDevice * device, int width, int height,
     std::vector<VulkanShaderModule*> shaders,
     std::vector<VulkanDescriptorSetLayout*> layouts,
-    std::vector<VulkanAttachment> outputImages)
+    std::vector<VulkanAttachment*> outputImages)
     : device(device), width(width), height(height), setLayouts(layouts), outputImages(outputImages), shaders(shaders)
 {
     sets = {};
-    compile();
 }
 
 
@@ -55,13 +53,13 @@ void VulkanRenderStage::beginDrawing()
     std::vector<VkClearValue> clearValues = {};
     
     for (int i = 0; i < renderPass->getAttachments().size(); i++) {
-        if (renderPass->getAttachments()[i].isCleared()) {
+        if (renderPass->getAttachments()[i]->isCleared()) {
             clearValues.push_back(VkClearValue());
-            if (renderPass->getAttachments()[i].getImage()->isDepthBuffer()) {
+            if (renderPass->getAttachments()[i]->getImage()->isDepthBuffer()) {
                 clearValues[clearValues.size() - 1].depthStencil = { 1.0f, 0 };
             }
             else {
-                clearValues[clearValues.size() - 1].color = renderPass->getAttachments()[i].getClearColor();
+                clearValues[clearValues.size() - 1].color = renderPass->getAttachments()[i]->getClearColor();
             }
         }
     }
@@ -100,16 +98,18 @@ void VulkanRenderStage::compile()
 
     commandBuffer = new VulkanCommandBuffer(device, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
-    std::vector<VulkanAttachment> attachments = {};
+    std::vector<VulkanAttachment*> attachments = {};
     std::vector<VkImageView> attachmentsViews = {};
-    std::vector<VulkanAttachment> colorAttachments = { };
-    VulkanAttachment depthAttachment = VulkanAttachment();
+    std::vector<VulkanAttachment*> colorAttachments = { };
+    VulkanAttachment* depthAttachment = nullptr;
     std::vector<VkImageLayout> colorattachmentsLayouts = { };
 
     bool foundDepthBuffer = false;
     for (int i = 0; i < outputImages.size(); i++) {
         auto atta = outputImages[i];
-        if (outputImages[i].getImage()->isDepthBuffer()) {
+        auto image = atta->getImage();
+        auto view = image->getImageView();
+        if (image->isDepthBuffer()) {
             depthAttachment = atta;
             foundDepthBuffer = true;
         }
@@ -118,7 +118,7 @@ void VulkanRenderStage::compile()
             colorattachmentsLayouts.push_back(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         }
         attachments.push_back(atta);
-        attachmentsViews.push_back(outputImages[i].getImage()->getImageView());
+        attachmentsViews.push_back(view);
     }
 
     VulkanSubpass subpass;
@@ -158,7 +158,20 @@ void VulkanRenderStage::compile()
 VulkanRenderStage* VulkanRenderStage::copy()
 {
     auto v = new VulkanRenderStage(device, width, height, shaders, setLayouts, outputImages);
+    v->setSets(sets);
     return v;
+}
+
+VulkanRenderStage * VulkanRenderStage::copy(std::vector<VulkanAttachment*> ioutputImages)
+{
+    auto v = new VulkanRenderStage(device, width, height, shaders, setLayouts, ioutputImages);
+    v->setSets(sets);
+    return v;
+}
+
+VkSemaphore VulkanRenderStage::getSignalSemaphore()
+{
+    return signalSemaphore;
 }
 
 void VulkanRenderStage::submit(std::vector<VkSemaphore> waitSemaphores)

@@ -9,7 +9,6 @@ VulkanDescriptorSet::VulkanDescriptorSet(VulkanDevice * device, VkDescriptorPool
 {
     writes = {};
     pool = p;
-    //layout = l;
 
     VkDescriptorSetLayout layouts[] = { l };
     VkDescriptorSetAllocateInfo allocInfo = {};

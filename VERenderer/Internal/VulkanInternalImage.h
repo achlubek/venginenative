@@ -2,7 +2,6 @@
 class VulkanDevice;
 #include "VulkanAttachment.h"
 #include "VulkanSingleAllocation.h"
-#include <vulkan.h>
 class VulkanInternalImage
 {
 public:
@@ -10,7 +9,7 @@ public:
         VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags,
         VkImageLayout initialLayout);
 
-    VulkanInternalImage(VkFormat format, VkImage imageHandle, VkImageView viewHandle);
+    VulkanInternalImage(VulkanDevice * device, VkFormat format, VkImage imageHandle, VkImageView viewHandle);
 
     ~VulkanInternalImage();
 

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanDevice.h"
-#include <vulkan.h>
 
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice * device, VkCommandBufferLevel level)
     : device(device)

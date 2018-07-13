@@ -1,5 +1,4 @@
 #pragma once
-#include <vulkan.h>
 struct VulkanSingleAllocation;
 struct VulkanDevice;
 class VulkanMemoryChunk

@@ -1,8 +1,6 @@
 #pragma once
 #include "VulkanSwapChain.h"
 #include "VulkanMemoryManager.h"
-#include <vulkan.h>
-#include <GLFW/glfw3.h>
 
 class VulkanDevice
 {
@@ -16,6 +14,7 @@ public:
     void poolEvents();
     double getExecutionTime();
     VulkanMemoryManager* getMemoryManager();
+    VulkanSwapChain* getSwapChain();
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 private:
 

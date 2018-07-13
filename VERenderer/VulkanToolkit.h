@@ -1,5 +1,7 @@
 #pragma once
 class VulkanDevice;
+class Object3dInfoFactory;
+class VulkanShaderFactory;
 
 class VulkanToolkit
 {

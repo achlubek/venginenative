@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "VulkanAttachment.h"
-#include <vulkan.h>
 
 VulkanAttachment::VulkanAttachment(VulkanImage* iimage, VkFormat format, VkSampleCountFlagBits samples, VkAttachmentLoadOp loadop, VkAttachmentStoreOp storeop, 
     VkAttachmentLoadOp stencilloadop, VkAttachmentStoreOp stencilstoreop, VkImageLayout initialLayout, VkImageLayout finalLayout,
@@ -15,9 +14,7 @@ VulkanAttachment::VulkanAttachment(VulkanImage* iimage, VkFormat format, VkSampl
     description.stencilLoadOp = stencilloadop;
     description.stencilStoreOp = stencilstoreop;
     description.initialLayout = initialLayout;
-    description.finalLayout = finalLayout;
-    blending = VulkanAttachmentBlending::None;
-    clearColor = { 0.0f, 0.0f, 0.0f, 0.0f };    
+    description.finalLayout = finalLayout; 
     blending = blending;
     clearColor = clearColor;
     clear = clear;

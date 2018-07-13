@@ -1,6 +1,5 @@
 #pragma once
 class VulkanDevice;
-#include <vulkan.h>
 class VulkanGraphicsPipeline;
 class VulkanDescriptorSet;
 class VulkanCommandBuffer;

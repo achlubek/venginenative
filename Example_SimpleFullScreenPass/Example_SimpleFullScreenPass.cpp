@@ -6,27 +6,19 @@
 
 int main()
 {
-    auto toolkit = new VulkanToolkit();
-    toolkit->initialize(640, 480, true, "Full screen pass example");
+    auto toolkit = new VulkanToolkit(640, 480, true, "Full screen pass example");
+    auto device = toolkit->getDevice();
+    
+    auto vert = new VulkanShaderModule(device, VulkanShaderModuleType::Vertex, "../../shaders/compiled/example-simplefullscreenpass.vert.spv");
+    auto frag = new VulkanShaderModule(device, VulkanShaderModuleType::Fragment, "../../shaders/compiled/example-simplefullscreenpass.frag.spv");
 
-    VkExtent2D ext;
-    ext.width = toolkit->windowWidth;
-    ext.height = toolkit->windowHeight;
-
-    auto vert = new VulkanShaderModule(toolkit, "../../shaders/compiled/example-simplefullscreenpass.vert.spv");
-    auto frag = new VulkanShaderModule(toolkit, "../../shaders/compiled/example-simplefullscreenpass.frag.spv");
-
-    auto layout = new VulkanDescriptorSetLayout(toolkit);
+    auto layout = new VulkanDescriptorSetLayout(device);
     layout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
     layout->compile();
 
-    auto stage = new VulkanRenderStage(toolkit);
-    stage->setViewport(ext);
-    stage->addShaderStage(vert->createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
-    stage->addShaderStage(frag->createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
-    stage->addDescriptorSetLayout(layout->layout);
+    auto stage = new VulkanRenderStage(device, 640, 480, { vert, frag }, { layout }, {});
 
-    auto buffer = new VulkanGenericBuffer(toolkit, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
+    auto buffer = new VulkanGenericBuffer(device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(float) * 20);
 
     auto set = layout->generateDescriptorSet();
     set->bindUniformBuffer(0, buffer); 
@@ -34,18 +26,20 @@ int main()
 
     stage->setSets({ set });
 
-    auto renderer = new VulkanRenderer(toolkit);
-    renderer->setOutputStage(stage);
-    renderer->compile();
+    auto output = new VulkanSwapChainOutput(device, stage);
 
     while (!toolkit->shouldCloseWindow()) {
+
         void* ptr;
         buffer->map(0, sizeof(float) * 1, &ptr);
         ((float*)ptr)[0] = (float)toolkit->getExecutionTime();
         buffer->unmap();
-        renderer->beginDrawing();
+
+        output->beginDrawing();
         // no meshes drawn, only post process which is handled automatically
-        renderer->endDrawing();
+        output->endDrawing();
+        output->submit({});
+
         toolkit->poolEvents();
     }
 

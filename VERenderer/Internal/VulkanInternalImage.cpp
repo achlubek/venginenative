@@ -88,11 +88,9 @@ void VulkanInternalImage::initalize()
     samplerCreated = false;
 }
 
-VulkanInternalImage::VulkanInternalImage(VkFormat iformat, VkImage imageHandle, VkImageView viewHandle)
+VulkanInternalImage::VulkanInternalImage(VulkanDevice * device, VkFormat format, VkImage image, VkImageView imageView)
+    : device(device), format(format), image(image), imageView(imageView)
 {
-    iformat = format;
-    image = imageHandle;
-    imageView = viewHandle; 
     samplerCreated = false;
 }
 

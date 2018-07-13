@@ -2,7 +2,6 @@
 class VulkanDevice;
 class VulkanImage;
 class VulkanGenericBuffer; 
-#include <vulkan.h>
 
 class VulkanDescriptorSet
 {
@@ -22,7 +21,6 @@ public:
 private:
     VulkanDevice * device;
     VkDescriptorPool pool;
-   // VkDescriptorSetLayout layout;
     VkDescriptorSet set;
     std::vector<VkWriteDescriptorSet> writes;
 };

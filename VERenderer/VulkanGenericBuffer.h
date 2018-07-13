@@ -1,7 +1,6 @@
 #pragma once 
 class VulkanDevice;
 #include "Internal/VulkanSingleAllocation.h"
-#include <vulkan.h>
 enum VulkanBufferType {
     uniform, 
     storage

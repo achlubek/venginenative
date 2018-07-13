@@ -2,7 +2,6 @@
 class VulkanDevice;
 class VulkanRenderPass;
 class VulkanDescriptorSetLayout;
-#include <vulkan.h> 
 
 class VulkanGraphicsPipeline
 {

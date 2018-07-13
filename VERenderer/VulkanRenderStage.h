@@ -9,7 +9,6 @@ class VulkanFramebuffer;
 class VulkanGraphicsPipeline;
 class VulkanCommandBuffer;
 class VulkanAttachment;
-#include <vulkan.h>
 
 class VulkanRenderStage
 {
@@ -17,7 +16,7 @@ public:
     VulkanRenderStage(VulkanDevice * device, int width, int height,
         std::vector<VulkanShaderModule*> shaders, 
         std::vector<VulkanDescriptorSetLayout*> layouts, 
-        std::vector<VulkanAttachment> outputImages);
+        std::vector<VulkanAttachment*> outputImages);
     ~VulkanRenderStage();
     void beginDrawing();
     void endDrawing();
@@ -25,6 +24,10 @@ public:
     void drawMesh(Object3dInfo *info, size_t instances);
     void submit(std::vector<VkSemaphore> waitSemaphores);
     void submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores);
+    VulkanRenderStage* copy();
+    VulkanRenderStage* copy(std::vector<VulkanAttachment*> outputImages);
+    VkSemaphore getSignalSemaphore();
+    void compile();
 
 private:
     VulkanDevice * device;
@@ -35,14 +38,12 @@ private:
     VulkanCommandBuffer* commandBuffer = nullptr;
     std::vector<VulkanDescriptorSetLayout*> setLayouts;
     std::vector<VulkanDescriptorSet*> sets;
-    std::vector<VulkanAttachment> outputImages;
+    std::vector<VulkanAttachment*> outputImages;
     int width;
     int height;
     std::vector<VulkanShaderModule*> shaders;
     
     int cmdMeshesCounts = 0;
-    void compile();
-    VulkanRenderStage* copy();
     bool enabled = true;
     VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; 
     VkCullModeFlags cullFlags = 0;

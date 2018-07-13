@@ -50,6 +50,11 @@ VulkanDescriptorSet* VulkanDescriptorSetLayout::generateDescriptorSet()
     return new VulkanDescriptorSet(device, pool, layout);
 }
 
+VkDescriptorSetLayout VulkanDescriptorSetLayout::getHandle()
+{
+    return layout;
+}
+
 void VulkanDescriptorSetLayout::generateNewPool()
 {
     VkDescriptorPool pool;

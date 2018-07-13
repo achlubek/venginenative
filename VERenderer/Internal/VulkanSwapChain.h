@@ -1,6 +1,4 @@
 #pragma once
-#include <vulkan.h>
-#include <GLFW/glfw3.h>
 struct SwapChainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities;
     std::vector<VkSurfaceFormatKHR> formats;
@@ -13,6 +11,11 @@ public:
     VulkanSwapChain(VulkanDevice * device, int width, int height, VkSurfaceKHR surface, GLFWwindow* window, VkPhysicalDevice physicalDevice);
     ~VulkanSwapChain();
     void present(std::vector<VkSemaphore> waitSemaphores, const uint32_t imageIndex);
+    unsigned int getImagesCount();
+    VkImage getImage(unsigned int index);
+    VkImageView getImageView(unsigned int index);
+    VkFormat getImageFormat();
+    VkSwapchainKHR getHandle(); // todoo instead implementt image acquire behaviour
 
 private:
 
@@ -22,6 +25,7 @@ private:
     GLFWwindow* window;
     VkPhysicalDevice physicalDevice;
     std::vector<VkImage> swapChainImages;
+    std::vector<VkImageView> swapChainImageViews;
     VkFormat swapChainImageFormat;
     VkExtent2D swapChainExtent;
 
@@ -32,6 +36,5 @@ private:
 
     void createSwapChain(int width, int height);
 
-    std::vector<VkImageView> swapChainImageViews;
 };
 

@@ -3,7 +3,6 @@
 #include "Internal/VulkanDevice.h"
 #include <iostream>
 #include <fstream>
-#include <vulkan.h>
 
 VulkanShaderModule::VulkanShaderModule(VulkanDevice * device, VulkanShaderModuleType type, std::string path)
     : device(device), type(type)

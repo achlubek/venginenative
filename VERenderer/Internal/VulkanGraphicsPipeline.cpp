@@ -5,8 +5,6 @@
 #include "../VulkanImage.h" 
 #include "VulkanDevice.h" 
 #include "../VulkanDescriptorSetLayout.h" 
-#include <array> 
-#include <vulkan.h> 
 
 
 static VkVertexInputBindingDescription bindingDescription;
@@ -114,11 +112,11 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, int viewpo
 
 
     for (int i = 0; i < renderpass->getAttachments().size(); i++) {
-        if (!renderpass->getAttachments()[i].getImage()->isDepthBuffer()) {
+        if (!renderpass->getAttachments()[i]->getImage()->isDepthBuffer()) {
             VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
             colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             
-            if (renderpass->getAttachments()[i].getBlending() == VulkanAttachmentBlending::Alpha) {
+            if (renderpass->getAttachments()[i]->getBlending() == VulkanAttachmentBlending::Alpha) {
                 colorBlendAttachment.blendEnable = VK_TRUE;
                 colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
                 colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
@@ -127,7 +125,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, int viewpo
                 colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
                 colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
             }
-            else if (renderpass->getAttachments()[i].getBlending() == VulkanAttachmentBlending::Additive) {
+            else if (renderpass->getAttachments()[i]->getBlending() == VulkanAttachmentBlending::Additive) {
                 colorBlendAttachment.blendEnable = VK_TRUE;
                 colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
                 colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
@@ -158,7 +156,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, int viewpo
 
     std::vector<VkDescriptorSetLayout> layouts = {};
     for (int i = 0; i < setlayouts.size(); i++) {
-        layouts.push_back(setlayouts[i]->layout);
+        layouts.push_back(setlayouts[i]->getHandle());
     }
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};

@@ -35,6 +35,31 @@ void VulkanSwapChain::present(std::vector<VkSemaphore> waitSemaphores, const uin
     glfwSwapBuffers(window);
 }
 
+unsigned int VulkanSwapChain::getImagesCount()
+{
+    return swapChainImages.size();
+}
+
+VkImage VulkanSwapChain::getImage(unsigned int index)
+{
+    return swapChainImages[index];
+}
+
+VkImageView VulkanSwapChain::getImageView(unsigned int index)
+{
+    return swapChainImageViews[index];
+}
+
+VkFormat VulkanSwapChain::getImageFormat()
+{
+    return swapChainImageFormat;
+}
+
+VkSwapchainKHR VulkanSwapChain::getHandle()
+{
+    return swapChain;
+}
+
 
 VkSurfaceFormatKHR VulkanSwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
     if (availableFormats.size() == 1 && availableFormats[0].format == VK_FORMAT_UNDEFINED) {

@@ -26,6 +26,11 @@ VulkanImage::VulkanImage(VulkanDevice * device, uint32_t width, uint32_t height,
         layout == VulkanImageLayout::Preinitialized ? VK_IMAGE_LAYOUT_PREINITIALIZED : VK_IMAGE_LAYOUT_UNDEFINED);
 }
 
+VulkanImage::VulkanImage(VulkanDevice * device, VulkanInternalImage * internalImage, VkFormat internalFormat)
+    : device(device), internalImage(internalImage), format(reverseResolveFormat(internalFormat))
+{
+}
+
 VulkanImage::~VulkanImage()
 {
 }
@@ -71,6 +76,47 @@ VkFormat VulkanImage::resolveFormat(VulkanImageFormat format)
     return VK_FORMAT_R8_SNORM;
 }
 
+VulkanImageFormat VulkanImage::reverseResolveFormat(VkFormat format)
+{
+    switch (format) {
+    case VK_FORMAT_R8_SNORM: return VulkanImageFormat::R8inorm;
+    case VK_FORMAT_R8G8_SNORM: return VulkanImageFormat::RG8inorm;
+    case VK_FORMAT_R8G8B8A8_SNORM: return VulkanImageFormat::RGBA8inorm;
+
+    case VK_FORMAT_R8_UNORM: return VulkanImageFormat::R8unorm;
+    case VK_FORMAT_R8G8_UNORM: return VulkanImageFormat::RG8unorm;
+    case VK_FORMAT_R8G8B8A8_UNORM: return VulkanImageFormat::RGBA8unorm;
+
+    case VK_FORMAT_R16_SINT: return VulkanImageFormat::R16i;
+    case VK_FORMAT_R16G16_SINT: return VulkanImageFormat::RG16i;
+    case VK_FORMAT_R16G16B16A16_SINT: return VulkanImageFormat::RGBA16i;
+
+    case VK_FORMAT_R16_UINT: return VulkanImageFormat::R16u;
+    case VK_FORMAT_R16G16_UINT: return VulkanImageFormat::RG16u;
+    case VK_FORMAT_R16G16B16A16_UINT: return VulkanImageFormat::RGBA16u;
+
+    case VK_FORMAT_R16_SFLOAT: return VulkanImageFormat::R16f;
+    case VK_FORMAT_R16G16_SFLOAT: return VulkanImageFormat::RG16f;
+    case VK_FORMAT_R16G16B16A16_SFLOAT: return VulkanImageFormat::RGBA16f;
+
+    case VK_FORMAT_R32_SINT: return VulkanImageFormat::R32i;
+    case VK_FORMAT_R32G32_SINT: return VulkanImageFormat::RG32i;
+    case VK_FORMAT_R32G32B32A32_SINT: return VulkanImageFormat::RGBA32i;
+
+    case VK_FORMAT_R32_UINT: return VulkanImageFormat::R32u;
+    case VK_FORMAT_R32G32_UINT: return VulkanImageFormat::RG32u;
+    case VK_FORMAT_R32G32B32A32_UINT: return VulkanImageFormat::RGBA32u;
+
+    case VK_FORMAT_R32_SFLOAT: return VulkanImageFormat::R32f;
+    case VK_FORMAT_R32G32_SFLOAT: return VulkanImageFormat::RG32f;
+    case VK_FORMAT_R32G32B32A32_SFLOAT: return VulkanImageFormat::RGBA32f;
+
+    case VK_FORMAT_D16_UNORM: return VulkanImageFormat::Depth16u;
+    case VK_FORMAT_D32_SFLOAT: return VulkanImageFormat::Depth32f;
+    }
+    return VulkanImageFormat::R8inorm;
+}
+
 bool VulkanImage::resolveIsDepthBuffer(VulkanImageFormat format)
 {
     switch (format) {
@@ -112,9 +158,9 @@ bool VulkanImage::resolveIsDepthBuffer(VulkanImageFormat format)
     return false;
 }
 
-VulkanAttachment VulkanImage::getAttachment(VulkanAttachmentBlending blending, bool clear, VkClearColorValue clearColor, bool forPresent)
+VulkanAttachment* VulkanImage::getAttachment(VulkanAttachmentBlending blending, bool clear, VkClearColorValue clearColor, bool forPresent)
 {
-    auto att = VulkanAttachment(this, resolveFormat(format), VK_SAMPLE_COUNT_1_BIT,
+    auto att = new VulkanAttachment(this, resolveFormat(format), VK_SAMPLE_COUNT_1_BIT,
         clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
         VK_IMAGE_LAYOUT_UNDEFINED, forPresent ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR  : (resolveIsDepthBuffer(format) ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL),

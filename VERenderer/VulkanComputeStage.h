@@ -3,7 +3,6 @@ class VulkanDevice;
 class VulkanDescriptorSet; 
 class VulkanCommandBuffer;
 class VulkanGraphicsPipeline;
-#include <vulkan.h>
 
 class VulkanComputeStage
 {

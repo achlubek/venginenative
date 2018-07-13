@@ -1,13 +1,15 @@
 #pragma once
 class VulkanAttachment;
-#include <vulkan.h>
 class VulkanSubpass
 {
 public:
     VulkanSubpass() {}
-    VulkanSubpass(std::vector<VulkanAttachment> colorattachments, std::vector<VkImageLayout> colorattachmentlayouts, VulkanAttachment depthstencilattachment, VkImageLayout despthattachmentlayout);
-    VulkanSubpass(std::vector<VulkanAttachment> colorattachments, std::vector<VkImageLayout> colorattachmentlayouts);
-    VkSubpassDescription description;
+    VulkanSubpass(std::vector<VulkanAttachment*> colorattachments, std::vector<VkImageLayout> colorattachmentlayouts, VulkanAttachment* depthstencilattachment, VkImageLayout despthattachmentlayout);
+    VulkanSubpass(std::vector<VulkanAttachment*> colorattachments, std::vector<VkImageLayout> colorattachmentlayouts);
     ~VulkanSubpass();
+
+    VkSubpassDescription getHandle();
+private:
+    VkSubpassDescription description;
 };
 
