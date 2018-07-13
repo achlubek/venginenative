@@ -176,6 +176,7 @@ VkSemaphore VulkanRenderStage::getSignalSemaphore()
 
 void VulkanRenderStage::submit(std::vector<VkSemaphore> waitSemaphores)
 {
+    vkDeviceWaitIdle(device->getDevice());
     VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_ALL_COMMANDS_BIT };
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

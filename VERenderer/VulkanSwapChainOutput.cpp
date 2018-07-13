@@ -42,12 +42,14 @@ void VulkanSwapChainOutput::endDrawing()
     outputStages[imageIndex]->endDrawing();
 }
 
+void VulkanSwapChainOutput::drawMesh(Object3dInfo * info, size_t instances)
+{
+    outputStages[imageIndex]->drawMesh(info, instances);
+}
+
 void VulkanSwapChainOutput::submit(std::vector<VkSemaphore> waitSemaphores)
 {
-
-    
+    waitSemaphores.push_back(imageAvailableSemaphore);
     outputStages[imageIndex]->submit(waitSemaphores);
-
     device->getSwapChain()->present({ outputStages[imageIndex]->getSignalSemaphore() }, imageIndex);
-
 }

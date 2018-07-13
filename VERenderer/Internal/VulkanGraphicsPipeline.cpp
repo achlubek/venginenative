@@ -7,17 +7,17 @@
 #include "../VulkanDescriptorSetLayout.h" 
 
 
-static VkVertexInputBindingDescription bindingDescription;
-static void getBindingDescription() {
+VkVertexInputBindingDescription bindingDescription;
+void getBindingDescription() {
     bindingDescription = {};
     bindingDescription.binding = 0;
     bindingDescription.stride = sizeof(float) * 12;
     bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 }
 
-static std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions;
-static void getAttributeDescriptions() {
-    std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = {};
+std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions;
+void getAttributeDescriptions() {
+    //std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = {};
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
     attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -39,7 +39,7 @@ static void getAttributeDescriptions() {
     attributeDescriptions[3].offset = sizeof(float) * 8;
 }
 
-static VkPipelineVertexInputStateCreateInfo getVertexInputStateCreateInfo() {
+VkPipelineVertexInputStateCreateInfo getVertexInputStateCreateInfo() {
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
     getBindingDescription();
     getAttributeDescriptions();

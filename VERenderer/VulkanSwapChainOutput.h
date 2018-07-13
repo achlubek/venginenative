@@ -1,6 +1,7 @@
 #pragma once
 class VulkanDevice;
 class VulkanRenderStage;
+class Object3dInfo;
 class VulkanSwapChainOutput
 {
 public:
@@ -8,6 +9,7 @@ public:
     ~VulkanSwapChainOutput();
     void beginDrawing();
     void endDrawing();
+    void drawMesh(Object3dInfo *info, size_t instances);
     void submit(std::vector<VkSemaphore> waitSemaphores);
 private:
     VulkanDevice * device;
