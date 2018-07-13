@@ -72,6 +72,26 @@ VkFormat VulkanImage::resolveFormat(VulkanImageFormat format)
 
     case VulkanImageFormat::Depth16u: return VK_FORMAT_D16_UNORM;
     case VulkanImageFormat::Depth32f: return VK_FORMAT_D32_SFLOAT;
+
+    case VulkanImageFormat::BGRA8unorm: return VK_FORMAT_B8G8R8A8_UNORM;
+    case VulkanImageFormat::RGBA8srgb: return VK_FORMAT_R8G8B8A8_SRGB;
+    case VulkanImageFormat::RGB5unormPack16: return VK_FORMAT_R5G6B5_UNORM_PACK16;
+    case VulkanImageFormat::RGBA8snorm: return VK_FORMAT_R8G8B8A8_SNORM;
+    case VulkanImageFormat::ABGR8unormPack32: return VK_FORMAT_A8B8G8R8_UNORM_PACK32;
+    case VulkanImageFormat::ABGR8snormPack32: return VK_FORMAT_A8B8G8R8_SNORM_PACK32;
+    case VulkanImageFormat::ABGR8srgbPack32: return VK_FORMAT_A8B8G8R8_SRGB_PACK32;
+    case VulkanImageFormat::ARGB10unormPack32: return VK_FORMAT_A2R10G10B10_UNORM_PACK32;
+    case VulkanImageFormat::ABGR10unormPack32: return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+    case VulkanImageFormat::RGBA16unorm: return VK_FORMAT_R16G16B16A16_UNORM;
+    case VulkanImageFormat::RGBA16snorm: return VK_FORMAT_R16G16B16A16_SNORM;
+    case VulkanImageFormat::BGR11ufloatPack32: return VK_FORMAT_B10G11R11_UFLOAT_PACK32;
+    case VulkanImageFormat::BGR5unormPack16: return VK_FORMAT_B5G6R5_UNORM_PACK16;
+    case VulkanImageFormat::BGRA8snorm: return VK_FORMAT_B8G8R8A8_SNORM;
+    case VulkanImageFormat::A1RGB5unormPack16: return VK_FORMAT_A1R5G5B5_UNORM_PACK16;
+    case VulkanImageFormat::RGBA4unormPack16: return VK_FORMAT_R4G4B4A4_UNORM_PACK16;
+    case VulkanImageFormat::BGRA4unormPack16: return VK_FORMAT_B4G4R4A4_UNORM_PACK16;
+    case VulkanImageFormat::RGB4A1unormPack16: return VK_FORMAT_R5G5B5A1_UNORM_PACK16;
+    case VulkanImageFormat::BGR5A1unormPack16: return VK_FORMAT_B5G5R5A1_UNORM_PACK16;
     }
     return VK_FORMAT_R8_SNORM;
 }
@@ -113,6 +133,25 @@ VulkanImageFormat VulkanImage::reverseResolveFormat(VkFormat format)
 
     case VK_FORMAT_D16_UNORM: return VulkanImageFormat::Depth16u;
     case VK_FORMAT_D32_SFLOAT: return VulkanImageFormat::Depth32f;
+
+    case VK_FORMAT_R8G8B8A8_SRGB: return VulkanImageFormat::RGBA8srgb;
+    case VK_FORMAT_R5G6B5_UNORM_PACK16: return VulkanImageFormat::RGB5unormPack16;
+    case VK_FORMAT_A8B8G8R8_UNORM_PACK32: return VulkanImageFormat::ABGR8unormPack32;
+    case VK_FORMAT_A8B8G8R8_SNORM_PACK32: return VulkanImageFormat::ABGR8snormPack32;
+    case VK_FORMAT_A8B8G8R8_SRGB_PACK32: return VulkanImageFormat::ABGR8srgbPack32;
+    case VK_FORMAT_A2R10G10B10_UNORM_PACK32: return VulkanImageFormat::ARGB10unormPack32;
+    case VK_FORMAT_A2B10G10R10_UNORM_PACK32: return VulkanImageFormat::ABGR10unormPack32;
+    case VK_FORMAT_R16G16B16A16_UNORM: return VulkanImageFormat::RGBA16unorm;
+    case VK_FORMAT_R16G16B16A16_SNORM: return VulkanImageFormat::RGBA16snorm;
+    case VK_FORMAT_B10G11R11_UFLOAT_PACK32: return VulkanImageFormat::BGR11ufloatPack32;
+    case VK_FORMAT_B5G6R5_UNORM_PACK16: return VulkanImageFormat::BGR5unormPack16;
+    case VK_FORMAT_B8G8R8A8_SNORM: return VulkanImageFormat::BGRA8snorm;
+    case VK_FORMAT_B8G8R8A8_UNORM: return VulkanImageFormat::BGRA8unorm;
+    case VK_FORMAT_A1R5G5B5_UNORM_PACK16: return VulkanImageFormat::A1RGB5unormPack16;
+    case VK_FORMAT_R4G4B4A4_UNORM_PACK16: return VulkanImageFormat::RGBA4unormPack16;
+    case VK_FORMAT_B4G4R4A4_UNORM_PACK16: return VulkanImageFormat::BGRA4unormPack16;
+    case VK_FORMAT_R5G5B5A1_UNORM_PACK16: return VulkanImageFormat::RGB4A1unormPack16;
+    case VK_FORMAT_B5G5R5A1_UNORM_PACK16: return VulkanImageFormat::BGR5A1unormPack16;
     }
     return VulkanImageFormat::R8inorm;
 }

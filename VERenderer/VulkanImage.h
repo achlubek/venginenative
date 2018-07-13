@@ -57,7 +57,27 @@ enum VulkanImageFormat {
     RGBA32f,
 
     Depth16u,
-    Depth32f
+    Depth32f,
+
+    RGBA8srgb,
+    RGB5unormPack16,
+    RGBA8snorm,
+    ABGR8unormPack32,
+    ABGR8snormPack32,
+    ABGR8srgbPack32,
+    ARGB10unormPack32,
+    ABGR10unormPack32,
+    RGBA16unorm,
+    RGBA16snorm,
+    BGR11ufloatPack32,
+    BGR5unormPack16,
+    BGRA8snorm,
+    BGRA8unorm,
+    A1RGB5unormPack16,
+    RGBA4unormPack16,
+    BGRA4unormPack16,
+    RGB4A1unormPack16,
+    BGR5A1unormPack16
 };
 
 class VulkanImage
