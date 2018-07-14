@@ -38,7 +38,6 @@ VulkanRenderStage::~VulkanRenderStage()
 
 void VulkanRenderStage::beginDrawing()
 {
-    cmdMeshesCounts = 0;
     commandBuffer->begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
     VkRenderPassBeginInfo renderPassInfo = {};
@@ -87,7 +86,6 @@ void VulkanRenderStage::setSets(std::vector<VulkanDescriptorSet*> isets)
 void VulkanRenderStage::drawMesh(Object3dInfo * info, size_t instances)
 {
     info->getVertexBuffer()->drawInstanced(pipeline, sets, commandBuffer, instances);
-    cmdMeshesCounts++;
 }
 
 void VulkanRenderStage::compile()

@@ -43,8 +43,6 @@ private:
     int height;
     std::vector<VulkanShaderModule*> shaders;
     
-    int cmdMeshesCounts = 0;
-    bool enabled = true;
     VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; 
     VkCullModeFlags cullFlags = 0;
 };

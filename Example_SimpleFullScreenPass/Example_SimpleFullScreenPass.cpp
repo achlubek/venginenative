@@ -10,7 +10,6 @@ int main()
     Media::loadFileMap("../../media");
     Media::loadFileMap("../../shaders");
     auto toolkit = new VulkanToolkit(640, 480, true, "Full screen pass example");
-    auto device = toolkit->getDevice();
     
     auto vert = toolkit->getVulkanShaderFactory()->build(VulkanShaderModuleType::Vertex, "example-simplefullscreenpass.vert.spv");
     auto frag = toolkit->getVulkanShaderFactory()->build(VulkanShaderModuleType::Fragment, "example-simplefullscreenpass.frag.spv");

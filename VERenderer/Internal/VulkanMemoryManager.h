@@ -1,6 +1,6 @@
 #pragma once
 class VulkanMemoryChunk;
-struct VulkanSingleAllocation;
+class VulkanSingleAllocation;
 class VulkanDevice;
 class VulkanMemoryManager
 {

@@ -48,9 +48,7 @@ void VulkanComputeStage::compile()
 
 void VulkanComputeStage::beginRecording()
 {
-    cmdMeshesCounts = 0;
     commandBuffer->begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
- 
     vkCmdBindPipeline(commandBuffer->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->getPipeline());
 
 }

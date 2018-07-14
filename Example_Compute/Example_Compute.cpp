@@ -3,27 +3,29 @@
 
 #include "stdafx.h"
 
+#include "Media.h"
+#include "Internal/VulkanDevice.h"
+#include "VulkanComputeStage.h"
 
 int main()
 {
-    auto toolkit = new VulkanToolkit();
-    toolkit->initialize(0, 0, true, "No window mode"); // no window
+    Media::loadFileMap("../../media");
+    Media::loadFileMap("../../shaders");
+    auto toolkit = new VulkanToolkit(0, 0, true, "No window mode");
     
-    auto shader = new VulkanShaderModule(toolkit, "../../shaders/compiled/example-compute.comp.spv");
+    auto shader = toolkit->getVulkanShaderFactory()->build(VulkanShaderModuleType::Compute, "example-compute.comp.spv");
 
-    auto layout = new VulkanDescriptorSetLayout(toolkit);
-    layout->addField(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT);
+    auto layout = toolkit->getVulkanDescriptorSetLayoutFactory()->build();
+    layout->addField(VulkanDescriptorSetFieldType::FieldTypeStorageBuffer, VulkanDescriptorSetFieldStage::FieldStageCompute);
     layout->compile();
 
-    auto stage = new VulkanComputeStage(toolkit);
-    stage->setShaderStage(shader->createShaderStage(VK_SHADER_STAGE_COMPUTE_BIT, "main"));
-    stage->addDescriptorSetLayout(layout->layout);
+    auto stage = toolkit->getVulkanComputeStageFactory()->build(shader, { layout });
     stage->compile();
-
-    auto buffer = new VulkanGenericBuffer(toolkit, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, sizeof(float) * 20);
-
+    
+    auto buffer = toolkit->getVulkanBufferFactory()->build(VulkanBufferType::BufferTypeStorage, sizeof(float) * 20);
+    
     auto set = layout->generateDescriptorSet();
-    set->bindStorageBuffer(0, buffer);
+    set->bindBuffer(0, buffer);
     set->update();
 
     void* ptr;
@@ -39,7 +41,7 @@ int main()
     stage->endRecording();
     stage->submitNoSemaphores({});
 
-    vkQueueWaitIdle(toolkit->mainQueue);
+    vkQueueWaitIdle(toolkit->getDevice()->getMainQueue());
      
     buffer->map(0, sizeof(float) * 4, &ptr);
     printf("%f", ((float*)ptr)[0]);
