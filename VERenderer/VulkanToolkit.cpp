@@ -22,7 +22,21 @@ VulkanToolkit::VulkanToolkit(int width, int height, bool enableValidation, std::
     vulkanBufferFactory(new VulkanBufferFactory(device)),
     vulkanImageFactory(new VulkanImageFactory(device)),
     vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device))
-{ 
+{
+}
+
+VulkanToolkit::VulkanToolkit(bool enableValidation)
+    : device(new VulkanDevice(0, 0, enableValidation, "")),
+    windowWidth(0), windowHeight(0),
+    object3dInfoFactory(new Object3dInfoFactory(device)),
+    vulkanShaderFactory(new VulkanShaderFactory(device)),
+    vulkanDescriptorSetLayoutFactory(new VulkanDescriptorSetLayoutFactory(device)),
+    vulkanRenderStageFactory(new VulkanRenderStageFactory(device)),
+    vulkanComputeStageFactory(new VulkanComputeStageFactory(device)),
+    vulkanBufferFactory(new VulkanBufferFactory(device)),
+    vulkanImageFactory(new VulkanImageFactory(device)),
+    vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device))
+{
 }
 
 VulkanToolkit::~VulkanToolkit()

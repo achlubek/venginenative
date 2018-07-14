@@ -13,6 +13,7 @@ class VulkanToolkit
 {
 public:
     VulkanToolkit(int width, int height, bool enableValidation, std::string windowName);
+    VulkanToolkit(bool enableValidation);
     ~VulkanToolkit();
     bool shouldCloseWindow();
     void poolEvents();
