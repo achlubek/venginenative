@@ -7,39 +7,22 @@
 #include "Mouse.h"
 
 
-UIRenderer::UIRenderer(VulkanToolkit* ivulkan, Mouse* imouse, VulkanImage* outputImage, int iwidth, int iheight) :
-    vulkan(ivulkan), width(iwidth), height(iheight), mouse(imouse)
+UIRenderer::UIRenderer(VulkanToolkit* vulkan, Mouse* mouse, VulkanImage* outputImage, int width, int height) :
+    vulkan(vulkan), width(width), height(height), mouse(mouse)
 {
-
-    ImageData img = ImageData();
-    img.width = 1;
-    img.height = 1;
-    img.channelCount = 4;
     unsigned char * emptytexture = new unsigned char[4]{ (unsigned char)0x255, (unsigned char)0x255, (unsigned char)0x255, (unsigned char)0x255 };
-    img.data = (void*)emptytexture;
-    dummyTexture = vulkan->createTexture(img, VK_FORMAT_R8G8B8A8_UNORM);
+    dummyTexture = vulkan->getVulkanImageFactory()->build(1, 1, 4, emptytexture);
 
-    layout = new VulkanDescriptorSetLayout(vulkan);
-    layout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
-    layout->addField(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    layout = vulkan->getVulkanDescriptorSetLayoutFactory()->build();
+    layout->addField(VulkanDescriptorSetFieldType::FieldTypeUniformBuffer, VulkanDescriptorSetFieldStage::FieldStageAll);
+    layout->addField(VulkanDescriptorSetFieldType::FieldTypeSampler, VulkanDescriptorSetFieldStage::FieldStageFragment);
     layout->compile();
 
-    VulkanRenderStage* stage = new VulkanRenderStage(vulkan);
+    auto vert = vulkan->getVulkanShaderFactory()->build(VulkanShaderModuleType::Vertex, "ui.vert.spv");
+    auto frag = vulkan->getVulkanShaderFactory()->build(VulkanShaderModuleType::Fragment, "ui.frag.spv");
 
-    auto vert = new VulkanShaderModule(vulkan, "../../shaders/compiled/ui.vert.spv");
-    auto frag = new VulkanShaderModule(vulkan, "../../shaders/compiled/ui.frag.spv");
-    
-    stage = new VulkanRenderStage(vulkan);
-    stage->setViewport(width, height);
-    stage->addShaderStage(vert->createShaderStage(VK_SHADER_STAGE_VERTEX_BIT, "main"));
-    stage->addShaderStage(frag->createShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT, "main"));
-    stage->addDescriptorSetLayout(layout->layout);
-    stage->addOutputImage(outputImage);
-    stage->alphaBlending = true;
-    
-    renderer = new VulkanRenderer(vulkan);
-    renderer->setMeshStage(stage);
-    renderer->compile();
+    auto stage = vulkan->getVulkanRenderStageFactory()->build(width, height, { vert, frag }, { layout },
+        { outputImage->getAttachment(VulkanAttachmentBlending::Alpha, true,{ { 0.5f, 0.5f, 0.5f, 1.f } }, false)  });
 
     mouse->onMouseDown.add([&](int a) {
         auto cursor = mouse->getCursorPosition();
@@ -77,14 +60,13 @@ void UIRenderer::draw() {
         drawables[i]->updateBuffer();
     }
 
-    renderer->beginDrawing();
+    stage->beginDrawing();
 
-    auto stage = renderer->getMesh3dStage();
     for (int i = 0; i < drawables.size(); i++) {
         drawables[i]->draw(stage);
     }
 
-    renderer->endDrawing();
+    stage->endDrawing();
 }
 
 void UIRenderer::addDrawable(UIAbsDrawable * drawable)
@@ -123,6 +105,31 @@ std::vector<UIAbsDrawable*> UIRenderer::rayCast(float x, float y)
         }
     }
     return result;
+}
+
+VulkanToolkit * UIRenderer::getToolkit()
+{
+    return vulkan;
+}
+
+uint32_t UIRenderer::getWidth()
+{
+    return width;
+}
+
+uint32_t UIRenderer::getHeight()
+{
+    return height;
+}
+
+VulkanDescriptorSetLayout * UIRenderer::getSetLayout()
+{
+    return layout;
+}
+
+VulkanImage * UIRenderer::getDummyTexture()
+{
+    return dummyTexture;
 }
 
 UIRenderer::~UIRenderer()

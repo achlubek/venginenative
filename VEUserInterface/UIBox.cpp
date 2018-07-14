@@ -6,9 +6,9 @@
 UIBox::UIBox(UIRenderer* renderer, float x, float y, float width, float height, UIColor color)
     : UIAbsDrawable(renderer, x, y, width, height, color)
 {
-	set = renderer->layout->generateDescriptorSet();
+	set = renderer->getSetLayout()->generateDescriptorSet();
 	set->bindBuffer(0, dataBuffer);
-	set->bindImageViewSampler(1, renderer->dummyTexture);
+	set->bindImageViewSampler(1, renderer->getDummyTexture());
 	set->update();
 }
 

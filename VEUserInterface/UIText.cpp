@@ -4,34 +4,16 @@
 #include "UIRenderer.h"
 
 
-int uitext_fsize(FILE* fh) {
-    int prev = ftell(fh);
-    fseek(fh, 0L, SEEK_END);
-    int sz = ftell(fh);
-    fseek(fh, prev, SEEK_SET);
-    return sz;
-}
-
-int uitext_get_file_contents_binary(unsigned char** out_bytes, const char* path) {
-    FILE* fh = fopen(path, "rb");
-    int size = uitext_fsize(fh);
-    unsigned char* content = (unsigned char*)calloc(size, 1);
-    size_t sz = fread(content, 1, size, fh);
-    fclose(fh);
-    *out_bytes = content;
-    return size;
-}
-
-UIText::UIText(UIRenderer* irenderer, float x, float y, UIColor color, std::string fontpath, int ifontsize, std::string text)
+UIText::UIText(UIRenderer* irenderer, float x, float y, UIColor color, std::string fontmediakey, int ifontsize, std::string text)
     : UIAbsDrawable(irenderer, x, y, 0, 0, color), fontsize(ifontsize)
 {
-    uitext_get_file_contents_binary(&fontBuffer, fontpath.c_str());
+    Media::readBinary(fontmediakey, &fontBuffer);
     font = new stbtt_fontinfo();
     if (!stbtt_InitFont(font, fontBuffer, 0))
     {
         printf("font loading failed\n");
     }
-    set = renderer->layout->generateDescriptorSet();
+    set = renderer->getSetLayout()->generateDescriptorSet();
     updateText(text);
 }
 
@@ -98,7 +80,7 @@ void UIText::updateText(std::string text)
 
     int l_h = fontsize;  
      
-    float scale = stbtt_ScaleForPixelHeight(font, l_h);
+    float scale = stbtt_ScaleForPixelHeight(font, static_cast<float>(l_h));
 
     const char* word = text.c_str();
 
@@ -108,8 +90,8 @@ void UIText::updateText(std::string text)
     int ascent, descent, lineGap;
     stbtt_GetFontVMetrics(font, &ascent, &descent, &lineGap);
 
-    ascent *= scale;
-    descent *= scale;
+    ascent = static_cast<int>(static_cast<float>(ascent) * scale);
+    descent = static_cast<int>(static_cast<float>(descent) * scale);
 
     for (int i = 0; i < strlen(word); ++i)
     {
@@ -128,12 +110,12 @@ void UIText::updateText(std::string text)
         /* how wide is this character */
         int ax;
         stbtt_GetCodepointHMetrics(font, word[i], &ax, 0);
-        nx += ax * scale;
+        nx += static_cast<int>(static_cast<float>(ax) * scale);
 
         /* add kerning */
         int kern;
         kern = stbtt_GetCodepointKernAdvance(font, word[i], word[i + 1]);
-        nx += kern * scale;
+        nx += static_cast<int>(static_cast<float>(kern) * scale);
         nx += 2;
     }
     if (nx * maxy == 0) {
@@ -162,30 +144,21 @@ void UIText::updateText(std::string text)
         /* how wide is this character */
         int ax;
         stbtt_GetCodepointHMetrics(font, word[i], &ax, 0);
-        nx += ax * scale;
+        nx += static_cast<int>(static_cast<float>(ax) * scale);
 
         /* add kerning */
         int kern;
         kern = stbtt_GetCodepointKernAdvance(font, word[i], word[i + 1]);
-        nx += kern * scale;
+        nx += static_cast<int>(static_cast<float>(kern) * scale);
         nx += 2;
     }
 
-   // free(fontBuffer);
-   // free(bitmap);
-
-    ImageData img = ImageData();
-    img.width = nx;
-    img.height = maxy;
-    img.channelCount = 1;
-    img.data = (void*)bitmap;
-
-    width = (float)nx / (float)renderer->width;
-    height = (float)maxy / (float)renderer->height; 
+    width = (float)nx / (float)renderer->getWidth();
+    height = (float)maxy / (float)renderer->getHeight(); 
 
     if (texture != nullptr) delete texture;
-    texture = renderer->vulkan->createTexture(img, VK_FORMAT_R8_UNORM);
-    set->bindUniformBuffer(0, dataBuffer);
+    texture = renderer->getToolkit()->getVulkanImageFactory()->build(nx, maxy, 1, (void*)bitmap);
+    set->bindBuffer(0, dataBuffer);
     set->bindImageViewSampler(1, texture);
     set->update();
 

@@ -110,6 +110,19 @@ VulkanInternalImage::VulkanInternalImage(VulkanDevice * device, std::string medi
     createTexture(imgdata, format);
 }
 
+VulkanInternalImage::VulkanInternalImage(VulkanDevice * device, uint32_t width, uint32_t height, uint32_t channelCount, void * data)
+    : device(device)
+{
+    auto imgdata = ImageData();
+    imgdata.width = width;
+    imgdata.height = height;
+    imgdata.channelCount = channelCount;
+    auto format = VK_FORMAT_R8G8B8A8_UNORM; 
+    if (imgdata.channelCount == 2) format = VK_FORMAT_R8G8_UNORM;
+    if (imgdata.channelCount == 1) format = VK_FORMAT_R8_UNORM;
+    createTexture(imgdata, format);
+}
+
 VkSampler VulkanInternalImage::getSampler()
 {
     if (samplerCreated) {

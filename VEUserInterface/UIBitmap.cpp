@@ -7,7 +7,7 @@
 UIBitmap::UIBitmap(UIRenderer* irenderer, float x, float y, float width, float height, VulkanImage* itexture, UIColor color)
     : UIAbsDrawable(irenderer, x, y, width, height, color), texture(itexture)
 {
-    set = renderer->layout->generateDescriptorSet();
+    set = renderer->getSetLayout()->generateDescriptorSet();
     set->bindBuffer(0, dataBuffer);
     set->bindImageViewSampler(1, texture);
     set->update();

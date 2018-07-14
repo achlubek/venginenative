@@ -22,6 +22,8 @@ public:
 
     VulkanImage* build(std::string mediakey);
 
+    VulkanImage* build(uint32_t width, uint32_t height, uint32_t channelCount, void * data);
+
 private:
     VulkanDevice * device;
 };

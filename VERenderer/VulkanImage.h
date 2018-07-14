@@ -14,6 +14,7 @@ public:
         VulkanImageFormat format, VulkanImageUsage usage, VulkanImageAspect aspect, VulkanImageLayout layout);
     VulkanImage(VulkanDevice* device, VulkanInternalImage* internalImage, VkFormat internalFormat);
     VulkanImage(VulkanDevice* device, std::string mediakey);
+    VulkanImage(VulkanDevice* device, uint32_t width, uint32_t height, uint32_t channelCount, void * data);
     ~VulkanImage();
     // todo abstarct out VkClearColorValue
     VulkanAttachment* getAttachment(VulkanAttachmentBlending blending, bool clear, VkClearColorValue clearColor, bool forPresent);

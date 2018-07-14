@@ -37,6 +37,12 @@ VulkanImage::VulkanImage(VulkanDevice * device, std::string mediakey)
     format = reverseResolveFormat(internalImage->getFormat());
 }
 
+VulkanImage::VulkanImage(VulkanDevice * device, uint32_t width, uint32_t height, uint32_t channelCount, void * data)
+    : device(device), internalImage(new VulkanInternalImage(device, width, height, channelCount, data))
+{
+    format = reverseResolveFormat(internalImage->getFormat());
+}
+
 VulkanImage::~VulkanImage()
 {
 }

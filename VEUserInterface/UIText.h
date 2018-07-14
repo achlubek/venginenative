@@ -4,7 +4,7 @@ struct stbtt_fontinfo;
 class UIText : public UIAbsDrawable
 {
 public:
-    UIText(UIRenderer* renderer, float x, float y, UIColor color, std::string fontpath, int ifontsize, std::string text);
+    UIText(UIRenderer* renderer, float x, float y, UIColor color, std::string fontmediakey, int ifontsize, std::string text);
     ~UIText();
 	VulkanImage* texture{ nullptr };
     stbtt_fontinfo* font;

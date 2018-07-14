@@ -36,3 +36,8 @@ VulkanImage * VulkanImageFactory::build(std::string mediakey)
 {
     return new VulkanImage(device, mediakey);
 }
+
+VulkanImage * VulkanImageFactory::build(uint32_t width, uint32_t height, uint32_t channelCount, void * data)
+{
+    return new VulkanImage(device, width, height, channelCount, data);
+}

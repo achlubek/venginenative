@@ -1,5 +1,4 @@
 #pragma once
-class VulkanRenderer;
 class VulkanToolkit;
 class UIAbsDrawable;
 class Mouse;
@@ -14,15 +13,22 @@ public:
 	void removeDrawable(UIAbsDrawable* drawable);
 	std::vector<UIAbsDrawable*> getDrawables();
 	void removeAllDrawables();
-	VulkanDescriptorSetLayout* layout{ nullptr };
-	VulkanImage* dummyTexture;
-	int width{ 0 }, height{ 0 };
-	VulkanToolkit* vulkan{ nullptr };
     std::vector<UIAbsDrawable*> rayCast(float x, float y);
+
+    VulkanToolkit* getToolkit();
+    uint32_t getWidth();
+    uint32_t getHeight();
+    VulkanDescriptorSetLayout* getSetLayout();
+    VulkanImage* getDummyTexture();
+
+
 private:
-	VulkanRenderer * renderer{ nullptr };
     VulkanRenderStage* stage{ nullptr };
     std::vector<UIAbsDrawable*> drawables;
     Mouse* mouse;
+    VulkanToolkit* vulkan{ nullptr };
+    uint32_t width{ 0 }, height{ 0 };
+    VulkanDescriptorSetLayout* layout{ nullptr };
+    VulkanImage* dummyTexture;
 };
 

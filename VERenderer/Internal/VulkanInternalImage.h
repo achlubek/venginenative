@@ -20,6 +20,8 @@ public:
 
     VulkanInternalImage(VulkanDevice * device, std::string mediakey);
 
+    VulkanInternalImage(VulkanDevice * device, uint32_t width, uint32_t height, uint32_t channelCount, void* data);
+
     ~VulkanInternalImage();
 
     VkSampler getSampler();
