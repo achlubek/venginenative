@@ -45,9 +45,14 @@ double VulkanToolkit::getExecutionTime()
     return device->getExecutionTime();
 }
 
-VulkanDevice * VulkanToolkit::getDevice()
+void VulkanToolkit::waitQueueIdle()
 {
-    return device;
+    vkQueueWaitIdle(device->getMainQueue());
+}
+
+void VulkanToolkit::waitDeviceIdle()
+{
+    vkDeviceWaitIdle(device->getDevice());
 }
 
 Object3dInfoFactory * VulkanToolkit::getObject3dInfoFactory()

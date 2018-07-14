@@ -7,7 +7,7 @@ UIBox::UIBox(UIRenderer* renderer, float x, float y, float width, float height, 
     : UIAbsDrawable(renderer, x, y, width, height, color)
 {
 	set = renderer->layout->generateDescriptorSet();
-	set->bindUniformBuffer(0, dataBuffer);
+	set->bindBuffer(0, dataBuffer);
 	set->bindImageViewSampler(1, renderer->dummyTexture);
 	set->update();
 }

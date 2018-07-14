@@ -144,7 +144,6 @@
     <ClCompile Include="UIAbsDrawable.cpp" />
     <ClCompile Include="UIBitmap.cpp" />
     <ClCompile Include="UIBox.cpp" />
-    <ClCompile Include="UIColor.cpp" />
     <ClCompile Include="UIRenderer.cpp" />
     <ClCompile Include="UIText.cpp" />
   </ItemGroup>

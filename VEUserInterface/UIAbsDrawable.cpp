@@ -22,5 +22,5 @@ void UIAbsDrawable::draw(VulkanRenderStage * stage)
 {
 	if (width == 0 || height == 0) return;
 	stage->setSets({ set });
-	stage->drawMesh(renderer->vulkan->fullScreenQuad3dInfo, 1);
+	stage->drawMesh(renderer->vulkan->getObject3dInfoFactory()->getFullScreenQuad(), 1);
 }

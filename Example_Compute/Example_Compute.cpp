@@ -1,11 +1,4 @@
-// Example_Compute.cpp: Okreœla punkt wejœcia dla aplikacji konsoli.
-//
-
 #include "stdafx.h"
-
-#include "Media.h"
-#include "Internal/VulkanDevice.h"
-#include "VulkanComputeStage.h"
 
 int main()
 {
@@ -41,7 +34,7 @@ int main()
     stage->endRecording();
     stage->submitNoSemaphores({});
 
-    vkQueueWaitIdle(toolkit->getDevice()->getMainQueue());
+    toolkit->waitQueueIdle();
      
     buffer->map(0, sizeof(float) * 4, &ptr);
     printf("%f", ((float*)ptr)[0]);

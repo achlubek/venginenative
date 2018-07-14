@@ -126,7 +126,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AbsTransformable.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="EventHandler.h" />
+    <ClInclude Include="FrustumCone.h" />
     <ClInclude Include="INIReader.h" />
     <ClInclude Include="SimpleParser.h" />
     <ClInclude Include="stdafx.h" />
@@ -135,6 +137,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AbsTransformable.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="FrustumCone.cpp" />
     <ClCompile Include="INIReader.cpp" />
     <ClCompile Include="SimpleParser.cpp" />
     <ClCompile Include="stdafx.cpp">

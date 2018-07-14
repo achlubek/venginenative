@@ -17,7 +17,8 @@ public:
     bool shouldCloseWindow();
     void poolEvents();
     double getExecutionTime();
-    VulkanDevice* getDevice();
+    void waitQueueIdle();
+    void waitDeviceIdle();
 
     Object3dInfoFactory* getObject3dInfoFactory();
     VulkanShaderFactory* getVulkanShaderFactory();

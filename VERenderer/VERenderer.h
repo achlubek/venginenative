@@ -7,7 +7,8 @@
 #include <map>
 #include <unordered_map>
 #include <vulkan.h>
-#include <GLFW/glfw3.h>
+
+#include "Media.h"
 
 #include "Object3dInfo.h"
 #include "VulkanBinaryBufferBuilder.h"
