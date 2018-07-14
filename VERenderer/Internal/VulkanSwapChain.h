@@ -8,10 +8,10 @@ class VulkanDevice;
 class VulkanSwapChain
 {
 public:
-    VulkanSwapChain(VulkanDevice * device, int width, int height, VkSurfaceKHR surface, GLFWwindow* window, VkPhysicalDevice physicalDevice);
+    VulkanSwapChain(VulkanDevice * device, uint32_t width, uint32_t height, VkSurfaceKHR surface, GLFWwindow* window, VkPhysicalDevice physicalDevice);
     ~VulkanSwapChain();
     void present(std::vector<VkSemaphore> waitSemaphores, const uint32_t imageIndex);
-    unsigned int getImagesCount();
+    size_t getImagesCount();
     VkImage getImage(unsigned int index);
     VkImageView getImageView(unsigned int index);
     VkFormat getImageFormat();
@@ -30,11 +30,11 @@ private:
     VkExtent2D swapChainExtent;
 
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
-    VkExtent2D chooseSwapExtent(int width, int height, const VkSurfaceCapabilitiesKHR& capabilities);
+    VkExtent2D chooseSwapExtent(uint32_t width, uint32_t height, const VkSurfaceCapabilitiesKHR& capabilities);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 
-    void createSwapChain(int width, int height);
+    void createSwapChain(uint32_t width, uint32_t height);
 
 };
 

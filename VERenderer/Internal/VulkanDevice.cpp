@@ -50,7 +50,7 @@ VulkanDevice::VulkanDevice(int width, int height, bool enableValidation, std::st
 
     createInfo.pEnabledFeatures = &requiredFeatures;
 
-    createInfo.enabledExtensionCount = deviceExtensions.size();
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
     if (enableValidation) {
@@ -147,7 +147,7 @@ void VulkanDevice::createInstance(std::string appname, std::string enginename, b
     std::vector<const char*> deviceExtensions = {
         VK_EXT_DEBUG_REPORT_EXTENSION_NAME
     };
-    for (int i = 0; i < count; i++) {
+    for (uint32_t i = 0; i < count; i++) {
         const char* str = extensions[i];
         deviceExtensions.push_back(str);
     }
@@ -155,7 +155,7 @@ void VulkanDevice::createInstance(std::string appname, std::string enginename, b
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
-    createInfo.enabledExtensionCount = deviceExtensions.size();
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
     if (enableValidation) {
@@ -212,7 +212,7 @@ void VulkanDevice::loadPhysicalDevices()
         &physicalDeviceCount,
         &physicalDevices[0]);
 
-    for (int i = 0; i < physicalDeviceCount; i++) {
+    for (uint32_t i = 0; i < physicalDeviceCount; i++) {
         vkGetPhysicalDeviceProperties(physicalDevices[i], &physicalDevicesProps[i]);
         vkGetPhysicalDeviceFeatures(physicalDevices[i], &physicalDevicesFeats[i]);
         vkGetPhysicalDeviceMemoryProperties(physicalDevices[i], &physicalDevicesMemoryProps[i]);
@@ -223,7 +223,6 @@ std::vector<VkQueueFamilyProperties> VulkanDevice::getQueueFamilyProperties(VkPh
 {
     uint32_t queueFamilyPropertyCount;
     std::vector<VkQueueFamilyProperties> queueFamilyProperties;
-    VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
 
     vkGetPhysicalDeviceQueueFamilyProperties(pdevice, &queueFamilyPropertyCount, nullptr);
 

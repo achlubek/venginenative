@@ -2,7 +2,7 @@
 #include "VulkanSwapChain.h"
 #include "VulkanDevice.h" 
 
-VulkanSwapChain::VulkanSwapChain(VulkanDevice * device, int width, int height, VkSurfaceKHR surface, GLFWwindow* window, VkPhysicalDevice physicalDevice)
+VulkanSwapChain::VulkanSwapChain(VulkanDevice * device, uint32_t width, uint32_t height, VkSurfaceKHR surface, GLFWwindow* window, VkPhysicalDevice physicalDevice)
     : device(device), surface(surface), window(window), physicalDevice(physicalDevice)
 {
     createSwapChain(width, height);
@@ -19,7 +19,7 @@ void VulkanSwapChain::present(std::vector<VkSemaphore> waitSemaphores, const uin
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-    presentInfo.waitSemaphoreCount = waitSemaphores.size();
+    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
     presentInfo.pWaitSemaphores = waitSemaphores.data();
 
     VkSwapchainKHR swapChains[] = { swapChain };
@@ -35,7 +35,7 @@ void VulkanSwapChain::present(std::vector<VkSemaphore> waitSemaphores, const uin
     glfwSwapBuffers(window);
 }
 
-unsigned int VulkanSwapChain::getImagesCount()
+size_t VulkanSwapChain::getImagesCount()
 {
     return swapChainImages.size();
 }
@@ -97,7 +97,7 @@ int vmin(int a, int b) {
     return a > b ? b : a;
 }
 
-VkExtent2D VulkanSwapChain::chooseSwapExtent(int width, int height, const VkSurfaceCapabilitiesKHR& capabilities) {
+VkExtent2D VulkanSwapChain::chooseSwapExtent(uint32_t width, uint32_t height, const VkSurfaceCapabilitiesKHR& capabilities) {
     if (capabilities.currentExtent.width != 0xffffffff) {
         return capabilities.currentExtent;
     }
@@ -135,7 +135,7 @@ SwapChainSupportDetails VulkanSwapChain::querySwapChainSupport(VkPhysicalDevice 
     return details;
 }
 
-void VulkanSwapChain::createSwapChain(int width, int height)
+void VulkanSwapChain::createSwapChain(uint32_t width, uint32_t height)
 {
     SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
 

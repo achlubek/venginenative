@@ -110,7 +110,7 @@ void Media::searchRecursive(string path)
             }
             else {
                 string s = file.path;
-                int c = s.length() - 1;
+                size_t c = s.length() - 1;
                 while (s[c] != '/' && c > 0) c--;
                 c--;
                 if (c < 0) c = 0;

@@ -10,7 +10,7 @@ public:
     VulkanVertexBuffer(VulkanDevice* device, std::vector<float> data);
     ~VulkanVertexBuffer();
     VkBuffer getBuffer();
-    void drawInstanced(VulkanGraphicsPipeline* p, std::vector<VulkanDescriptorSet*> sets, VulkanCommandBuffer* cb, size_t instances);
+    void drawInstanced(VulkanGraphicsPipeline* p, std::vector<VulkanDescriptorSet*> sets, VulkanCommandBuffer* cb, uint32_t instances);
 private:
     VulkanDevice * device;
     VkBuffer vertexBuffer;

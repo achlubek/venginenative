@@ -32,7 +32,7 @@ void VulkanDescriptorSet::bindImageViewSampler(int binding, VulkanImage* img)
 
     writes.resize(writes.size() + 1);
 
-    int i = writes.size() - 1;
+    size_t i = writes.size() - 1;
 
     writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     writes[i].dstSet = set;
@@ -52,7 +52,7 @@ void VulkanDescriptorSet::bindImageStorage(int binding, VulkanImage* img)
 
     writes.resize(writes.size() + 1);
 
-    int i = writes.size() - 1;
+    size_t i = writes.size() - 1;
 
     writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     writes[i].dstSet = set;
@@ -74,7 +74,7 @@ void VulkanDescriptorSet::bindBuffer(int binding, VulkanGenericBuffer* buffer)
 
     writes.resize(writes.size() + 1);
 
-    int i = writes.size() - 1;
+    size_t i = writes.size() - 1;
 
     writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     writes[i].dstSet = set;

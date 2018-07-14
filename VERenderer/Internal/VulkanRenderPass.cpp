@@ -19,9 +19,9 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice * device, std::vector<VulkanAtta
 
     VkRenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = descs.size();
+    renderPassInfo.attachmentCount = static_cast<uint32_t>(descs.size());
     renderPassInfo.pAttachments = descs.data();
-    renderPassInfo.subpassCount = subpassesraw.size();
+    renderPassInfo.subpassCount = static_cast<uint32_t>(subpassesraw.size());
     renderPassInfo.pSubpasses = subpassesraw.data();
 
     vkCreateRenderPass(device->getDevice(), &renderPassInfo, nullptr, &handle);

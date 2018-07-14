@@ -83,7 +83,7 @@ void VulkanRenderStage::setSets(std::vector<VulkanDescriptorSet*> isets)
     sets = isets;
 }
 
-void VulkanRenderStage::drawMesh(Object3dInfo * info, size_t instances)
+void VulkanRenderStage::drawMesh(Object3dInfo * info, uint32_t instances)
 {
     info->getVertexBuffer()->drawInstanced(pipeline, sets, commandBuffer, instances);
 }
@@ -178,7 +178,7 @@ void VulkanRenderStage::submit(std::vector<VkSemaphore> waitSemaphores)
     VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_ALL_COMMANDS_BIT };
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.waitSemaphoreCount = waitSemaphores.size();
+    submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
     submitInfo.pWaitSemaphores = waitSemaphores.data();
     submitInfo.pWaitDstStageMask = waitStages2;
 
@@ -199,7 +199,7 @@ void VulkanRenderStage::submitNoSemaphores(std::vector<VkSemaphore> waitSemaphor
     VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_ALL_COMMANDS_BIT };
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.waitSemaphoreCount = waitSemaphores.size();
+    submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
     submitInfo.pWaitSemaphores = waitSemaphores.data();
     submitInfo.pWaitDstStageMask = waitStages2;
 

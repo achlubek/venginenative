@@ -26,7 +26,7 @@ void INIReader::splitBySpaces(vector<string>& output, string src)
 
 float INIReader::getf(string key)
 {
-    return atof(data[key].c_str());
+    return static_cast<float>(atof(data[key].c_str()));
 }
 
 glm::vec2 INIReader::getv2(string key)
@@ -68,7 +68,7 @@ void INIReader::readString(string str)
     data = {};
     allKeys = {};
     stringstream sskey, ssval;
-    int len = str.size();
+    size_t len = str.size();
     bool skipspaces = true;
     bool valuereading = false;
     for (int i = 0; i < len; i++) {

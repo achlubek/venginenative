@@ -42,7 +42,7 @@ void VulkanSwapChainOutput::endDrawing()
     outputStages[imageIndex]->endDrawing();
 }
 
-void VulkanSwapChainOutput::drawMesh(Object3dInfo * info, size_t instances)
+void VulkanSwapChainOutput::drawMesh(Object3dInfo * info, uint32_t instances)
 {
     outputStages[imageIndex]->drawMesh(info, instances);
 }

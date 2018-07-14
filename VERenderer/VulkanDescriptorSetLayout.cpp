@@ -34,7 +34,7 @@ void VulkanDescriptorSetLayout::addField(VulkanDescriptorSetFieldType fieldType,
     if (fieldType == VulkanDescriptorSetFieldType::FieldTypeStorageImage) descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 
     VkDescriptorSetLayoutBinding b = {};
-    b.binding = bindings.size();
+    b.binding = static_cast<uint32_t>(bindings.size());
     b.descriptorType = descriptorType;
     b.descriptorCount = 1;
     b.stageFlags = fieldStageInternal;

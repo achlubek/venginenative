@@ -79,7 +79,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Code\glm-0.9.9-a1</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Code\VEngineNative\VEMedia;C:\Code\glm-0.9.9-a1</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -130,8 +130,8 @@
     <ClInclude Include="EventHandler.h" />
     <ClInclude Include="FrustumCone.h" />
     <ClInclude Include="INIReader.h" />
-    <ClInclude Include="SimpleParser.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="tinydir.h" />
     <ClInclude Include="TransformationManager.h" />
     <ClInclude Include="VECommon.h" />
   </ItemGroup>
@@ -140,7 +140,6 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="FrustumCone.cpp" />
     <ClCompile Include="INIReader.cpp" />
-    <ClCompile Include="SimpleParser.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

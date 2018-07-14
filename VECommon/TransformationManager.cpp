@@ -200,7 +200,7 @@ glm::mat4 TransformationManager::getRotationMatrix()
 void TransformationManager::updateJoints()
 {
     needsUpdate = false;
-    int c = joints.size();
+    size_t c = joints.size();
     for (int i = 0; i < c; i++) {
         auto j = joints[i];
         vec3 p = position;

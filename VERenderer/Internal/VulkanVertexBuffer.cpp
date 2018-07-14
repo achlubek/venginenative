@@ -52,16 +52,16 @@ VkBuffer VulkanVertexBuffer::getBuffer()
     return vertexBuffer;
 }
 
-void VulkanVertexBuffer::drawInstanced(VulkanGraphicsPipeline * p, std::vector<VulkanDescriptorSet*> sets, VulkanCommandBuffer* cb, size_t instances)
+void VulkanVertexBuffer::drawInstanced(VulkanGraphicsPipeline * p, std::vector<VulkanDescriptorSet*> sets, VulkanCommandBuffer* cb, uint32_t instances)
 {
     std::vector<VkDescriptorSet> realsets = {};
     for (int i = 0; i < sets.size(); i++) {
         realsets.push_back(sets[i]->getSet());
     }
-    vkCmdBindDescriptorSets(cb->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS, p->getPipelineLayout(), 0, realsets.size(), realsets.data(), 0, nullptr);
+    vkCmdBindDescriptorSets(cb->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS, p->getPipelineLayout(), 0u, static_cast<uint32_t>(realsets.size()), realsets.data(), 0u, nullptr);
     VkBuffer vertexBuffers[] = { vertexBuffer };
     VkDeviceSize offsets[] = { 0 };
     vkCmdBindVertexBuffers(cb->getHandle(), 0, 1, vertexBuffers, offsets);
 
-    vkCmdDraw(cb->getHandle(), static_cast<uint32_t>(vertexCount), instances, 0, 0);
+    vkCmdDraw(cb->getHandle(), static_cast<uint32_t>(vertexCount), instances, 0u, 0u);
 }

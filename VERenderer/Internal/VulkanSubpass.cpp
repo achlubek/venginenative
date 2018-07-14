@@ -6,11 +6,11 @@ VulkanSubpass::VulkanSubpass(std::vector<VulkanAttachment*> colorattachments, st
 {
     VkAttachmentReference* descs = new VkAttachmentReference[colorattachments.size()];
     VkAttachmentReference* depthref = new VkAttachmentReference[1];
-    (*depthref) = depthstencilattachment->getReference(colorattachments.size(), despthattachmentlayout);
+    (*depthref) = depthstencilattachment->getReference(static_cast<uint32_t>(colorattachments.size()), despthattachmentlayout);
     for (int i = 0; i < colorattachments.size(); i++)descs[i] = colorattachments[i]->getReference(i, colorattachmentlayouts[i]);
     description = {};
     description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    description.colorAttachmentCount = colorattachments.size();
+    description.colorAttachmentCount = static_cast<uint32_t>(colorattachments.size());
     description.pColorAttachments = &descs[0];
     description.pDepthStencilAttachment = depthref;
 }
@@ -20,7 +20,7 @@ VulkanSubpass::VulkanSubpass(std::vector<VulkanAttachment*> colorattachments, st
     for (int i = 0; i < colorattachments.size(); i++)descs[i] = colorattachments[i]->getReference(i, colorattachmentlayouts[i]);
     description = {};
     description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    description.colorAttachmentCount = colorattachments.size();
+    description.colorAttachmentCount = static_cast<uint32_t>(colorattachments.size());
     description.pColorAttachments = &descs[0];
 }
 

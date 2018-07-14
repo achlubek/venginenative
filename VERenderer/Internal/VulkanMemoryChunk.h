@@ -1,6 +1,6 @@
 #pragma once
-struct VulkanSingleAllocation;
-struct VulkanDevice;
+class VulkanSingleAllocation;
+class VulkanDevice;
 class VulkanMemoryChunk
 {
 public:

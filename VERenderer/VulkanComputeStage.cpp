@@ -63,7 +63,7 @@ void VulkanComputeStage::dispatch(std::vector<VulkanDescriptorSet*> sets, uint32
     for (int i = 0; i < sets.size(); i++) {
         realsets.push_back(sets[i]->getSet());
     }
-    vkCmdBindDescriptorSets(commandBuffer->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->getPipelineLayout(), 0, realsets.size(), realsets.data(), 0, nullptr);
+    vkCmdBindDescriptorSets(commandBuffer->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->getPipelineLayout(), 0u, static_cast<uint32_t>(realsets.size()), realsets.data(), 0u, nullptr);
     vkCmdDispatch(commandBuffer->getHandle(), groupX, groupY, groupZ);
 }
 
@@ -72,7 +72,7 @@ void VulkanComputeStage::submit(std::vector<VkSemaphore> waitSemaphores)
     VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_ALL_COMMANDS_BIT };
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.waitSemaphoreCount = waitSemaphores.size();
+    submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
     submitInfo.pWaitSemaphores = waitSemaphores.data();
     submitInfo.pWaitDstStageMask = waitStages2;
 
@@ -93,7 +93,7 @@ void VulkanComputeStage::submitNoSemaphores(std::vector<VkSemaphore> waitSemapho
     VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_ALL_COMMANDS_BIT };
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.waitSemaphoreCount = waitSemaphores.size();
+    submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
     submitInfo.pWaitSemaphores = waitSemaphores.data();
     submitInfo.pWaitDstStageMask = waitStages2;
 

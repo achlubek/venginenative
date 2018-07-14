@@ -1,14 +1,22 @@
 #include "stdafx.h"
 #include "Camera.h"
-#include "Application.h"
-
-using namespace glm;
+#include "glm/glm.hpp"
+#include "glm/vec3.hpp" // glm::vec3
+#include "glm/vec4.hpp" // glm::vec4
+#include "glm/mat4x4.hpp" // glm::mat4
+#include "glm/gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
+#include "glm/gtc/constants.hpp" // glm::pi
+#include "glm/gtc/quaternion.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#define PI 3.141592f
+#define rad2deg(a) (a * (180.0f / PI))
+#define deg2rad(a) (a * (PI / 180.0f))
 
 Camera::Camera()
 {
     initTransformation();
     brightness = 1.0;
-    projectionMatrix = mat4(1);
+    projectionMatrix = glm::mat4(1);
     farplane = 1000.0;
     fov = 90.0f;
     updateFocalLength();
@@ -24,15 +32,15 @@ void Camera::createProjectionPerspective(float ifov, float aspectRatio, float ne
     fov = ifov;
     updateFocalLength();
     farplane = farpl; 
-    projectionMatrix = perspectiveRH(deg2rad(fov), aspectRatio, nearpl, farpl);
+    projectionMatrix = glm::perspectiveRH(deg2rad(fov), aspectRatio, nearpl, farpl);
 }
 
 void Camera::createProjectionOrthogonal(float minx, float miny, float minz, float maxx, float maxy, float maxz)
 {
-    fov = 0.001;
+    fov = 0.001f;
     updateFocalLength();
     farplane = 0.0;
-    projectionMatrix = orthoRH(minx, maxx, miny, maxy, minz, maxz);
+    projectionMatrix = glm::orthoRH(minx, maxx, miny, maxy, minz, maxz);
 }
 
 glm::vec2 Camera::projectToScreen(glm::vec3 worldPosition)
@@ -46,8 +54,8 @@ glm::vec2 Camera::projectToScreen(glm::vec3 worldPosition)
         0.0f, 0.0f, 0.5f, 0.0f,
         0.0f, 0.0f, 0.5f, 1.0f);
     glm::mat4 vpmatrix = clip * projectionMatrix * transformation->getInverseWorldTransform();
-    vec4 tmp = (vpmatrix * vec4(worldPosition, 1.0f));
-    float clipper = tmp.z > 0.0 ? 1.0 : 0.0;
+    glm::vec4 tmp = (vpmatrix * glm::vec4(worldPosition, 1.0f));
+    float clipper = tmp.z > 0.0f ? 1.0f : 0.0f;
     return (glm::vec2(tmp.x, tmp.y) / tmp.w) * 0.5f + 0.5f - 1000.0f * (1.0f - clipper);
 }
  

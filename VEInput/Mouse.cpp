@@ -10,7 +10,7 @@ Mouse::Mouse(GLFWwindow* win)
 
     onMouseDown = EventHandler<int>();
     onMouseUp = EventHandler<int>();
-    onMouseScroll = EventHandler<int>();
+    onMouseScroll = EventHandler<double>();
 
     glfwSetMouseButtonCallback(window, [](GLFWwindow * window, int button, int action, int mods) -> void {
         int id = 0;
@@ -34,7 +34,7 @@ void Mouse::setCursorMode(int mode)
     }
 }
 
-std::tuple<float, float> Mouse::getCursorPosition()
+std::tuple<double, double> Mouse::getCursorPosition()
 {
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);

@@ -25,7 +25,7 @@ private:
     VkSurfaceKHR surface;
     VkDebugReportCallbackEXT callback;
     int chosenDeviceId = 0;
-    int chosenQFId = 0;
+    uint32_t chosenQFId = 0;
     int windowWidth;
     int windowHeight;
     VulkanSwapChain* swapChain;

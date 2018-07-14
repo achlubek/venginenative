@@ -21,7 +21,7 @@ public:
     void beginDrawing();
     void endDrawing();
     void setSets(std::vector<VulkanDescriptorSet*> sets);
-    void drawMesh(Object3dInfo *info, size_t instances);
+    void drawMesh(Object3dInfo *info, uint32_t instances);
     void submit(std::vector<VkSemaphore> waitSemaphores);
     void submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores);
     VulkanRenderStage* copy();

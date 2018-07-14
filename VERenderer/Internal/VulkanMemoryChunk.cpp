@@ -51,7 +51,7 @@ void VulkanMemoryChunk::freeBindMemory(VulkanSingleAllocation allocation)
 {
     while (inUse);
     inUse = true;
-    int allocscount = allActiveAllocations.size();
+    size_t allocscount = allActiveAllocations.size();
     for (int i = 0; i < allocscount; i++) {
         auto a = allActiveAllocations[i];
         if (a.getOffset() == allocation.getOffset() && a.getSize() == allocation.getSize()) {
@@ -72,7 +72,7 @@ bool VulkanMemoryChunk::findFreeMemoryOffset(uint64_t size, uint64_t &outOffset)
         inUse = false;
         return true;
     }
-    int allocscount = allActiveAllocations.size();
+    size_t allocscount = allActiveAllocations.size();
     for (int i = 0; i < allocscount; i++) {
         auto a = allActiveAllocations[i];
         if (isFreeSpace(a.getOffset() + a.getSize() + 2048, size)) {
@@ -98,7 +98,7 @@ VkDevice VulkanMemoryChunk::getDevice()
 bool VulkanMemoryChunk::isFreeSpace(uint64_t offset, uint64_t size)
 {
     VkDeviceSize end = offset + size;
-    int allocscount = allActiveAllocations.size();
+    size_t allocscount = allActiveAllocations.size();
     if (end >= chunkSize) {
         return false;
     }

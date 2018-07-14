@@ -79,7 +79,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Code\SFML-2.4.2\include;C:\Code\VEngineNative\VECommon;C:\Code\glm-0.9.9-a1</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Code\SFML-2.4.2\include;C:\Code\VEngineNative\VECommon;C:\Code\glm-0.9.9-a1;C:\Code\VEngineNative\VEMedia</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

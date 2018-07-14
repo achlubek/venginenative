@@ -147,7 +147,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, int viewpo
     colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     colorBlending.logicOpEnable = VK_FALSE;
     colorBlending.logicOp = VK_LOGIC_OP_COPY;
-    colorBlending.attachmentCount = atts.size();
+    colorBlending.attachmentCount = static_cast<uint32_t>(atts.size());
     colorBlending.pAttachments = atts.data();
     colorBlending.blendConstants[0] = 1.0f;
     colorBlending.blendConstants[1] = 1.0f;
@@ -161,7 +161,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, int viewpo
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = layouts.size();
+    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(layouts.size());
     pipelineLayoutInfo.pSetLayouts = layouts.data();
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 
@@ -171,7 +171,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, int viewpo
 
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount = shaderstages.size();
+    pipelineInfo.stageCount = static_cast<uint32_t>(shaderstages.size());
     pipelineInfo.pStages = shaderstages.data();
     pipelineInfo.pVertexInputState = &vertexInputInfo;
     pipelineInfo.pInputAssemblyState = &inputAssembly;
@@ -200,7 +200,7 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, std::vecto
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = layouts.size();
+    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(layouts.size());
     pipelineLayoutInfo.pSetLayouts = layouts.data();
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 

@@ -7,9 +7,9 @@ public:
     ~Mouse();
     EventHandler<int> onMouseDown;
     EventHandler<int> onMouseUp;
-    EventHandler<int> onMouseScroll;
+    EventHandler<double> onMouseScroll;
     void setCursorMode(int mode);
-    std::tuple<float, float> getCursorPosition();
+    std::tuple<double, double> getCursorPosition();
     bool isButtonPressed(int button);
 private:
     static Mouse * instance;
