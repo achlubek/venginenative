@@ -11,8 +11,7 @@ public:
 
     void bindImageViewSampler(int binding, VulkanImage* img);
     void bindImageStorage(int binding, VulkanImage* img);
-    void bindUniformBuffer(int binding, VulkanGenericBuffer* buffer);
-    void bindStorageBuffer(int binding, VulkanGenericBuffer* buffer);
+    void bindBuffer(int binding, VulkanGenericBuffer* buffer);
 
     void update();
 

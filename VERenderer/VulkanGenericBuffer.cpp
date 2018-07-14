@@ -5,7 +5,7 @@
 #include "Internal/VulkanMemoryChunk.h" 
 
 VulkanGenericBuffer::VulkanGenericBuffer(VulkanDevice * device, VulkanBufferType type, uint64_t s)
-    : device(device)
+    : device(device), type(type)
 {
     VkBufferUsageFlagBits usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     if (type == VulkanBufferType::BufferTypeUniform) {
@@ -63,4 +63,9 @@ VkBuffer VulkanGenericBuffer::getBuffer()
 uint64_t VulkanGenericBuffer::getSize()
 {
     return size;
+}
+
+VulkanBufferType VulkanGenericBuffer::getType()
+{
+    return type;
 }

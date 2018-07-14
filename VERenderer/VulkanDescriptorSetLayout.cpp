@@ -17,13 +17,27 @@ VulkanDescriptorSetLayout::~VulkanDescriptorSetLayout()
 {
 }
 
-void VulkanDescriptorSetLayout::addField(uint32_t binding, VkDescriptorType type, VkShaderStageFlags shaderstageflags)
+void VulkanDescriptorSetLayout::addField(VulkanDescriptorSetFieldType fieldType, VulkanDescriptorSetFieldStage fieldStage)
 {
+
+    VkShaderStageFlags fieldStageInternal = VK_SHADER_STAGE_ALL;
+    if (fieldStage == VulkanDescriptorSetFieldStage::FieldStageAll) fieldStageInternal = VK_SHADER_STAGE_ALL;
+    if (fieldStage == VulkanDescriptorSetFieldStage::FieldStageAllGraphics) fieldStageInternal = VK_SHADER_STAGE_ALL_GRAPHICS;
+    if (fieldStage == VulkanDescriptorSetFieldStage::FieldStageCompute) fieldStageInternal = VK_SHADER_STAGE_COMPUTE_BIT;
+    if (fieldStage == VulkanDescriptorSetFieldStage::FieldStageVertex) fieldStageInternal = VK_SHADER_STAGE_VERTEX_BIT;
+    if (fieldStage == VulkanDescriptorSetFieldStage::FieldStageFragment) fieldStageInternal = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    VkDescriptorType descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    if (fieldType == VulkanDescriptorSetFieldType::FieldTypeSampler) descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    if (fieldType == VulkanDescriptorSetFieldType::FieldTypeUniformBuffer) descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    if (fieldType == VulkanDescriptorSetFieldType::FieldTypeStorageBuffer) descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    if (fieldType == VulkanDescriptorSetFieldType::FieldTypeStorageImage) descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+
     VkDescriptorSetLayoutBinding b = {};
-    b.binding = binding;
-    b.descriptorType = type;
+    b.binding = bindings.size();
+    b.descriptorType = descriptorType;
     b.descriptorCount = 1;
-    b.stageFlags = shaderstageflags;
+    b.stageFlags = fieldStageInternal;
     b.pImmutableSamplers = nullptr;
     bindings.push_back(b);
 }

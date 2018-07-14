@@ -99,6 +99,7 @@ VulkanInternalImage::VulkanInternalImage(VulkanDevice * device, VkFormat format,
 }
 
 VulkanInternalImage::VulkanInternalImage(VulkanDevice * device, std::string mediakey)
+    : device(device)
 {
     auto imgdata = readFileImageData(Media::getPath(mediakey));
     auto format = VK_FORMAT_R8G8B8A8_UNORM;

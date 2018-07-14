@@ -14,6 +14,7 @@ public:
 
     VkBuffer getBuffer();
     uint64_t getSize();
+    VulkanBufferType getType();
 
 private:
     VulkanDevice * device;

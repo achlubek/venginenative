@@ -1,13 +1,15 @@
 #pragma once
 class VulkanDevice;
 class VulkanDescriptorSet;
+#include "VulkanEnums.h" 
+
 class VulkanDescriptorSetLayout
 {
 public:
     VulkanDescriptorSetLayout(VulkanDevice * device);
     ~VulkanDescriptorSetLayout();
 
-    void addField(uint32_t binding, VkDescriptorType type, VkShaderStageFlags shaderstageflags);
+    void addField(VulkanDescriptorSetFieldType fieldType, VulkanDescriptorSetFieldStage fieldAccesibility);
     void compile();
 
     VulkanDescriptorSet* generateDescriptorSet();

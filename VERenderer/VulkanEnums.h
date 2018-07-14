@@ -36,6 +36,21 @@ enum VulkanImageLayout {
     Undefined
 };
 
+enum VulkanDescriptorSetFieldType {
+    FieldTypeSampler,
+    FieldTypeUniformBuffer,
+    FieldTypeStorageBuffer,
+    FieldTypeStorageImage
+};
+
+enum VulkanDescriptorSetFieldStage {
+    FieldStageAll,
+    FieldStageAllGraphics,
+    FieldStageCompute,
+    FieldStageVertex,
+    FieldStageFragment
+};
+
 enum VulkanImageFormat {
     R8inorm,
     RG8inorm,

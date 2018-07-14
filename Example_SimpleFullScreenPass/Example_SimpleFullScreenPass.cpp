@@ -15,8 +15,11 @@ int main()
     auto vert = toolkit->getVulkanShaderFactory()->build(VulkanShaderModuleType::Vertex, "example-simplefullscreenpass.vert.spv");
     auto frag = toolkit->getVulkanShaderFactory()->build(VulkanShaderModuleType::Fragment, "example-simplefullscreenpass.frag.spv");
 
+    auto texture = toolkit->getVulkanImageFactory()->build("blaze.png");
+
     auto layout = toolkit->getVulkanDescriptorSetLayoutFactory()->build();
-    layout->addField(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+    layout->addField(VulkanDescriptorSetFieldType::FieldTypeUniformBuffer, VulkanDescriptorSetFieldStage::FieldStageAll);
+    layout->addField(VulkanDescriptorSetFieldType::FieldTypeSampler, VulkanDescriptorSetFieldStage::FieldStageFragment);
     layout->compile();
 
     auto stage = toolkit->getVulkanRenderStageFactory()->build(640, 480, { vert, frag }, { layout }, {});
@@ -24,7 +27,8 @@ int main()
     auto buffer = toolkit->getVulkanBufferFactory()->build(VulkanBufferType::BufferTypeUniform, sizeof(float) * 20);
 
     auto set = layout->generateDescriptorSet();
-    set->bindUniformBuffer(0, buffer); 
+    set->bindBuffer(0, buffer);
+    set->bindImageViewSampler(1, texture);
     set->update();
 
     stage->setSets({ set });
