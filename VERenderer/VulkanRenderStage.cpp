@@ -10,7 +10,7 @@
 #include "Internal/VulkanGraphicsPipeline.h"
 #include "Internal/VulkanVertexBuffer.h"
 #include "Internal/VulkanFramebuffer.h"
-#include "Internal/VulkanAttachment.h"
+#include "VulkanAttachment.h"
 #include "VulkanImage.h"
 #include "Internal/VulkanDevice.h"
 #include "VulkanShaderModule.h"

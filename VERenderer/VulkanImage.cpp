@@ -3,7 +3,7 @@
 #include "Internal/VulkanInternalImage.h"
 #include "Internal/VulkanMemoryManager.h" 
 #include "Internal/VulkanMemoryChunk.h" 
-#include "Internal/VulkanAttachment.h" 
+#include "VulkanAttachment.h" 
 
 
 VulkanImage::VulkanImage(VulkanDevice * device, uint32_t width, uint32_t height, uint32_t depth, 
@@ -29,6 +29,12 @@ VulkanImage::VulkanImage(VulkanDevice * device, uint32_t width, uint32_t height,
 VulkanImage::VulkanImage(VulkanDevice * device, VulkanInternalImage * internalImage, VkFormat internalFormat)
     : device(device), internalImage(internalImage), format(reverseResolveFormat(internalFormat))
 {
+}
+
+VulkanImage::VulkanImage(VulkanDevice * device, std::string mediakey)
+    : device(device), internalImage(new VulkanInternalImage(device, mediakey))
+{
+    format = reverseResolveFormat(internalImage->getFormat());
 }
 
 VulkanImage::~VulkanImage()

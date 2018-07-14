@@ -1,14 +1,16 @@
 #pragma once
-class VulkanToolkit;
-#include "VulkanShaderModule.h"
+class VulkanDevice;
+class VulkanShaderModule;
+#include "VulkanEnums.h"
+
 class VulkanShaderFactory
 {
 public:
-    VulkanShaderFactory(VulkanToolkit* vulkan);
+    VulkanShaderFactory(VulkanDevice* device);
     ~VulkanShaderFactory();
 
     VulkanShaderModule* build(VulkanShaderModuleType type, std::string mediakey);
 private:
-    VulkanToolkit * vulkan;
+    VulkanDevice * device;
 };
 

@@ -1,7 +1,7 @@
 #include "stdafx.h" 
 #include "VulkanGraphicsPipeline.h" 
 #include "VulkanRenderPass.h" 
-#include "VulkanAttachment.h"
+#include "../VulkanAttachment.h"
 #include "../VulkanImage.h" 
 #include "VulkanDevice.h" 
 #include "../VulkanDescriptorSetLayout.h" 
@@ -190,13 +190,18 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, int viewpo
     }
 }
 
-VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, std::vector<VkDescriptorSetLayout> setlayouts,
+VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice * device, std::vector<VulkanDescriptorSetLayout*> setlayouts,
     VkPipelineShaderStageCreateInfo shader)
 {
+    std::vector<VkDescriptorSetLayout> layouts = {};
+    for (int i = 0; i < setlayouts.size(); i++) {
+        layouts.push_back(setlayouts[i]->getHandle());
+    }
+
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = setlayouts.size();
-    pipelineLayoutInfo.pSetLayouts = setlayouts.data();
+    pipelineLayoutInfo.setLayoutCount = layouts.size();
+    pipelineLayoutInfo.pSetLayouts = layouts.data();
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 
     if (vkCreatePipelineLayout(device->getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {

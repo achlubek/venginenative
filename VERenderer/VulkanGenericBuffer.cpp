@@ -4,12 +4,21 @@
 #include "Internal/VulkanMemoryManager.h" 
 #include "Internal/VulkanMemoryChunk.h" 
 
-VulkanGenericBuffer::VulkanGenericBuffer(VulkanDevice * device, VkBufferUsageFlags usage, VkDeviceSize s)
+VulkanGenericBuffer::VulkanGenericBuffer(VulkanDevice * device, VulkanBufferType type, uint64_t s)
     : device(device)
 {
-    if (usage == VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
-    {
-        type = VulkanBufferType::storage;
+    VkBufferUsageFlagBits usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    if (type == VulkanBufferType::BufferTypeUniform) {
+        usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    }
+    if (type == VulkanBufferType::BufferTypeStorage) {
+        usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    }
+    if (type == VulkanBufferType::BufferTypeTransferDestination) {
+        usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    }
+    if (type == VulkanBufferType::BufferTypeTransferSource) {
+        usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     }
     size = s;
     VkBufferCreateInfo bufferInfo = {};
@@ -36,7 +45,7 @@ VulkanGenericBuffer::~VulkanGenericBuffer()
     bufferMemory.free();
 }
 
-void VulkanGenericBuffer::map(VkDeviceSize offset, VkDeviceSize size, void ** data)
+void VulkanGenericBuffer::map(uint64_t offset, uint64_t size, void ** data)
 {
     bufferMemory.map(offset, size, data);
 }

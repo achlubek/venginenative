@@ -1,7 +1,14 @@
 #pragma once 
 class VulkanDevice;
-#include "VulkanAttachment.h"
+#include "../VulkanAttachment.h"
 #include "VulkanSingleAllocation.h"
+
+struct ImageData {
+public:
+    int width, height, channelCount;
+    void* data;
+};
+
 class VulkanInternalImage
 {
 public:
@@ -11,10 +18,13 @@ public:
 
     VulkanInternalImage(VulkanDevice * device, VkFormat format, VkImage imageHandle, VkImageView viewHandle);
 
+    VulkanInternalImage(VulkanDevice * device, std::string mediakey);
+
     ~VulkanInternalImage();
 
     VkSampler getSampler();
     VkImageView getImageView();
+    VkFormat getFormat();
 
 private:
     VulkanDevice * device;
@@ -33,5 +43,17 @@ private:
     VkImageLayout initialLayout;
     VkSampler sampler;
     bool samplerCreated = false;
-    void initalize();
+    void initalize();    
+
+
+    ImageData readFileImageData(std::string path);
+    void createTexture(const ImageData &img, VkFormat format);
+
+    VkCommandBuffer beginSingleTimeCommands();
+    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+    void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+    void transitionImageLayoutExistingCommandBuffer(VkCommandBuffer buffer, uint32_t mipmap, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout
+        , VkPipelineStageFlags sourceStage, VkPipelineStageFlags destinationStage);
+    void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 };

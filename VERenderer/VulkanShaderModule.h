@@ -1,11 +1,6 @@
 #pragma once
 class VulkanDevice;
-
-enum VulkanShaderModuleType {
-    Vertex,
-    Fragment,
-    Compute
-};
+#include "VulkanEnums.h"
 
 class VulkanShaderModule
 {

@@ -3,11 +3,15 @@ class VulkanDevice;
 class VulkanDescriptorSet; 
 class VulkanCommandBuffer;
 class VulkanGraphicsPipeline;
+class VulkanShaderModule;
+class VulkanDescriptorSetLayout;
 
 class VulkanComputeStage
 {
 public:
-    VulkanComputeStage(VulkanDevice * device);
+    VulkanComputeStage(VulkanDevice * device,
+        VulkanShaderModule* shader,
+        std::vector<VulkanDescriptorSetLayout*> layouts);
     ~VulkanComputeStage();
 
     void beginRecording();
@@ -22,11 +26,9 @@ private:
     VkSemaphore signalSemaphore;
     VulkanCommandBuffer* commandBuffer;
     VulkanGraphicsPipeline* pipeline;
-    std::vector<VkDescriptorSetLayout> setLayouts;
-    VkPipelineShaderStageCreateInfo shader; 
 
-    void addDescriptorSetLayout(VkDescriptorSetLayout lay);
-    void setShaderStage(VkPipelineShaderStageCreateInfo ss);
+    std::vector<VulkanDescriptorSetLayout*> setLayouts;
+    VulkanShaderModule* shader;
 
     int cmdMeshesCounts = 0;
     void compile(); 

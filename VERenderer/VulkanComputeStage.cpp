@@ -5,26 +5,18 @@
 #include "Internal/VulkanCommandBuffer.h"
 #include "Internal/VulkanGraphicsPipeline.h"
 
+#include "VulkanShaderModule.h"
 
-VulkanComputeStage::VulkanComputeStage(VulkanDevice * device)
-    : device(device)
+VulkanComputeStage::VulkanComputeStage(VulkanDevice * device,
+    VulkanShaderModule* shader,
+    std::vector<VulkanDescriptorSetLayout*> layouts)
+    : device(device), shader(shader), setLayouts(layouts)
 {
-    setLayouts = {};  
 }
 
 
 VulkanComputeStage::~VulkanComputeStage()
 {
-}
-
-void VulkanComputeStage::addDescriptorSetLayout(VkDescriptorSetLayout lay)
-{
-    setLayouts.push_back(lay);
-}
-
-void VulkanComputeStage::setShaderStage(VkPipelineShaderStageCreateInfo ss)
-{
-    shader = ss;
 }
 
 void VulkanComputeStage::compile()
@@ -35,7 +27,22 @@ void VulkanComputeStage::compile()
 
     commandBuffer = new VulkanCommandBuffer(device, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
      
-    pipeline = new VulkanGraphicsPipeline(device, setLayouts, shader);
+    VkPipelineShaderStageCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+
+    auto type = VK_SHADER_STAGE_VERTEX_BIT;
+    if (shader->getType() == VulkanShaderModuleType::Fragment) {
+        type = VK_SHADER_STAGE_FRAGMENT_BIT;
+    }
+    if (shader->getType() == VulkanShaderModuleType::Compute) {
+        type = VK_SHADER_STAGE_COMPUTE_BIT;
+    }
+
+    info.stage = type;
+    info.module = shader->getHandle();
+    info.pName = "main";
+
+    pipeline = new VulkanGraphicsPipeline(device, setLayouts, info);
 }
 
 

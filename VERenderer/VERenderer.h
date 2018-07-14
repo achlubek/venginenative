@@ -20,3 +20,13 @@
 #include "VulkanShaderModule.h"
 #include "VulkanToolkit.h"
 #include "VulkanSwapChainOutput.h"
+#include "VulkanAttachment.h"
+
+#include "Object3dInfoFactory.h"
+#include "VulkanShaderFactory.h"
+#include "VulkanDescriptorSetLayoutFactory.h"
+#include "VulkanRenderStageFactory.h"
+#include "VulkanComputeStageFactory.h"
+#include "VulkanBufferFactory.h"
+#include "VulkanImageFactory.h"
+#include "VulkanSwapChainOutputFactory.h"
