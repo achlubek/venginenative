@@ -10,7 +10,6 @@ public:
     ~VulkanDescriptorSetLayout();
 
     void addField(VulkanDescriptorSetFieldType fieldType, VulkanDescriptorSetFieldStage fieldAccesibility);
-    void compile();
 
     VulkanDescriptorSet* generateDescriptorSet();
     VkDescriptorSetLayout getHandle();
@@ -23,5 +22,8 @@ private:
 
     std::vector<VkDescriptorPool> descriptorPools = {};
     VkDescriptorSetLayout layout;
+
+    bool compiled = false;
+    void compile();
 };
 

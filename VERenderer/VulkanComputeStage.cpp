@@ -43,16 +43,23 @@ void VulkanComputeStage::compile()
     info.pName = "main";
 
     pipeline = new VulkanGraphicsPipeline(device, setLayouts, info);
+    compiled = true;
 }
 
 VkSemaphore VulkanComputeStage::getSignalSemaphore()
 {
+    if (!compiled) {
+        compile();
+    }
     return signalSemaphore;
 }
 
 
 void VulkanComputeStage::beginRecording()
 {
+    if (!compiled) {
+        compile();
+    }
     commandBuffer->begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
     vkCmdBindPipeline(commandBuffer->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->getPipeline());
 

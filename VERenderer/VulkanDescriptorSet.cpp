@@ -41,6 +41,7 @@ void VulkanDescriptorSet::bindImageViewSampler(int binding, VulkanImage* img)
     writes[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     writes[i].descriptorCount = 1;
     writes[i].pImageInfo = imageInfo;
+    needsUpdate = true;
 
 }
 void VulkanDescriptorSet::bindImageStorage(int binding, VulkanImage* img)
@@ -61,6 +62,7 @@ void VulkanDescriptorSet::bindImageStorage(int binding, VulkanImage* img)
     writes[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
     writes[i].descriptorCount = 1;
     writes[i].pImageInfo = imageInfo;
+    needsUpdate = true;
 
 }
 
@@ -83,6 +85,7 @@ void VulkanDescriptorSet::bindBuffer(int binding, VulkanGenericBuffer* buffer)
     writes[i].descriptorType = buffer->getType() == VulkanBufferType::BufferTypeStorage ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     writes[i].descriptorCount = 1;
     writes[i].pBufferInfo = bufferInfo;
+    needsUpdate = true;
 }
 
 void VulkanDescriptorSet::update()
@@ -90,9 +93,13 @@ void VulkanDescriptorSet::update()
     vkUpdateDescriptorSets(device->getDevice(), static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     writes.clear();
     writes = {};
+    needsUpdate = false;
 }
 
 VkDescriptorSet VulkanDescriptorSet::getSet()
 {
+    if (needsUpdate) {
+        update();
+    }
     return set;
 }

@@ -20,7 +20,6 @@ public:
 
     void submit(std::vector<VkSemaphore> waitSemaphores);
     void submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores);
-    void compile();
     VkSemaphore getSignalSemaphore();
 private:
 
@@ -31,5 +30,7 @@ private:
 
     std::vector<VulkanDescriptorSetLayout*> setLayouts;
     VulkanShaderModule* shader;
+    bool compiled = false;
+    void compile();
 };
 

@@ -16,7 +16,6 @@ UIRenderer::UIRenderer(VulkanToolkit* vulkan, Mouse* mouse, VulkanImage* outputI
     layout = vulkan->getVulkanDescriptorSetLayoutFactory()->build();
     layout->addField(VulkanDescriptorSetFieldType::FieldTypeUniformBuffer, VulkanDescriptorSetFieldStage::FieldStageAll);
     layout->addField(VulkanDescriptorSetFieldType::FieldTypeSampler, VulkanDescriptorSetFieldStage::FieldStageFragment);
-    layout->compile();
 
     auto vert = vulkan->getVulkanShaderFactory()->build(VulkanShaderModuleType::Vertex, "ui.vert.spv");
     auto frag = vulkan->getVulkanShaderFactory()->build(VulkanShaderModuleType::Fragment, "ui.frag.spv");

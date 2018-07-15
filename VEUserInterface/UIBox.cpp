@@ -9,7 +9,6 @@ UIBox::UIBox(UIRenderer* renderer, float x, float y, float width, float height, 
 	set = renderer->getSetLayout()->generateDescriptorSet();
 	set->bindBuffer(0, dataBuffer);
 	set->bindImageViewSampler(1, renderer->getDummyTexture());
-	set->update();
 }
 
 UIBox::~UIBox()

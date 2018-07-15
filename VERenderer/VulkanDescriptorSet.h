@@ -13,7 +13,6 @@ public:
     void bindImageStorage(int binding, VulkanImage* img);
     void bindBuffer(int binding, VulkanGenericBuffer* buffer);
 
-    void update();
 
     VkDescriptorSet getSet();
 
@@ -22,5 +21,8 @@ private:
     VkDescriptorPool pool;
     VkDescriptorSet set;
     std::vector<VkWriteDescriptorSet> writes;
+
+    void update();
+    bool needsUpdate = true;
 };
 

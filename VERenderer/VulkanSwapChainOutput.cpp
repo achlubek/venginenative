@@ -18,7 +18,6 @@ VulkanSwapChainOutput::VulkanSwapChainOutput(VulkanDevice* device, VulkanRenderS
         VkClearColorValue clear = {};
         auto attachment = img->getAttachment(VulkanAttachmentBlending::None, true, clear, true);
         outputStages[i] = stage->copy({ attachment });
-        outputStages[i]->compile();
     }
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

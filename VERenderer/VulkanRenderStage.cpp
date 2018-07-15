@@ -38,6 +38,9 @@ VulkanRenderStage::~VulkanRenderStage()
 
 void VulkanRenderStage::beginDrawing()
 {
+    if (!compiled) {
+        compile();
+    }
     commandBuffer->begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
     VkRenderPassBeginInfo renderPassInfo = {};
@@ -151,6 +154,8 @@ void VulkanRenderStage::compile()
 
     pipeline = new VulkanGraphicsPipeline(device, width, height,
         setLayouts, shaderStages, renderPass, foundDepthBuffer, topology, cullFlags);
+
+    compiled = true;
 }
 
 VulkanRenderStage* VulkanRenderStage::copy()
@@ -169,6 +174,9 @@ VulkanRenderStage * VulkanRenderStage::copy(std::vector<VulkanAttachment*> ioutp
 
 VkSemaphore VulkanRenderStage::getSignalSemaphore()
 {
+    if (!compiled) {
+        compile();
+    }
     return signalSemaphore;
 }
 

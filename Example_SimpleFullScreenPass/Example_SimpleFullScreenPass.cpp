@@ -16,7 +16,6 @@ int main()
     auto layout = toolkit->getVulkanDescriptorSetLayoutFactory()->build();
     layout->addField(VulkanDescriptorSetFieldType::FieldTypeUniformBuffer, static_cast<VulkanDescriptorSetFieldStage>(VulkanDescriptorSetFieldStage::FieldStageFragment | VulkanDescriptorSetFieldStage::FieldStageVertex));
     layout->addField(VulkanDescriptorSetFieldType::FieldTypeSampler, VulkanDescriptorSetFieldStage::FieldStageFragment);
-    layout->compile();
 
     auto stage = toolkit->getVulkanRenderStageFactory()->build(640, 480, { vert, frag }, { layout }, {});
 
@@ -25,7 +24,6 @@ int main()
     auto set = layout->generateDescriptorSet();
     set->bindBuffer(0, buffer);
     set->bindImageViewSampler(1, texture);
-    set->update();
 
     stage->setSets({ set });
 

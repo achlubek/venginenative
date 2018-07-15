@@ -10,7 +10,6 @@ UIBitmap::UIBitmap(UIRenderer* irenderer, float x, float y, float width, float h
     set = renderer->getSetLayout()->generateDescriptorSet();
     set->bindBuffer(0, dataBuffer);
     set->bindImageViewSampler(1, texture);
-    set->update();
 }
 
 

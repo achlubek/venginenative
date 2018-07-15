@@ -50,10 +50,14 @@ void VulkanDescriptorSetLayout::compile()
     layoutInfo.pBindings = bindings.data();
 
     vkCreateDescriptorSetLayout(device->getDevice(), &layoutInfo, nullptr, &layout);
+    compiled = true;
 }
 
 VulkanDescriptorSet* VulkanDescriptorSetLayout::generateDescriptorSet()
 {
+    if (!compiled) {
+        compile();
+    }
     allocationCounter++;
     if (allocationCounter > 10) {
         generateNewPool();
@@ -66,6 +70,9 @@ VulkanDescriptorSet* VulkanDescriptorSetLayout::generateDescriptorSet()
 
 VkDescriptorSetLayout VulkanDescriptorSetLayout::getHandle()
 {
+    if (!compiled) {
+        compile();
+    }
     return layout;
 }
 

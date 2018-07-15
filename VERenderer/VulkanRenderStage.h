@@ -27,7 +27,6 @@ public:
     VulkanRenderStage* copy();
     VulkanRenderStage* copy(std::vector<VulkanAttachment*> outputImages);
     VkSemaphore getSignalSemaphore();
-    void compile();
 
 private:
     VulkanDevice * device;
@@ -45,5 +44,7 @@ private:
     
     VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; 
     VkCullModeFlags cullFlags = VK_CULL_MODE_NONE;
+    bool compiled = false;
+    void compile();
 };
 

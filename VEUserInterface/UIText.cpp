@@ -160,7 +160,6 @@ void UIText::updateText(std::string text)
     texture = renderer->getToolkit()->getVulkanImageFactory()->build(nx, maxy, 1, (void*)bitmap);
     set->bindBuffer(0, dataBuffer);
     set->bindImageViewSampler(1, texture);
-    set->update();
 
    // delete[] bitmap; // stb deletes
 }
