@@ -1,0 +1,19 @@
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
+
+layout(set = 0, binding = 0) uniform ubo {
+    float Time;
+} buff;
+layout(set = 0, binding = 1, rgba16f) uniform coherent image2D testImage;
+
+layout(local_size_x = 64, local_size_y = 10, local_size_z = 1) in;
+
+void main()
+{
+    vec4 data = imageLoad(testImage, ivec2(gl_GlobalInvocationID.xy));
+    vec2 UV = gl_GlobalInvocationID.xy / vec2(640.0, 480.0);
+    data.x += sin(buff.Time + UV.x);
+    data.y += sin(buff.Time*2.0 + UV.y);
+    data.z += sin(buff.Time*3.0 + UV.y + UV.x);
+    imageStore(testImage, ivec2(gl_GlobalInvocationID.xy), data);
+}

@@ -13,6 +13,7 @@ layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec2 inTexCoord;
 
 layout(location = 0) out vec2 outTexCoord;
+layout(location = 1) out float outDepth;
 
 mat3 rotationMatrix(vec3 axis, float angle)
 {
@@ -29,6 +30,8 @@ mat3 rotationMatrix(vec3 axis, float angle)
 void main() {
     mat3 rotmat = rotationMatrix(vec3(0,1,0), buff.Time);
     rotmat = rotmat * rotationMatrix(vec3(1,0,0), buff.Time*0.1);
-    gl_Position = vec4(rotmat * inPosition.xyz * 0.2 * vec3(1.0, -1.0, 1.0), 1.0);
+    vec3 pos = rotmat * inPosition.xyz * 0.2 * vec3(1.0, -1.0, 1.0);
+    gl_Position = vec4(pos, 1.0);
     outTexCoord = inTexCoord;
+    outDepth = pos.z;
 }

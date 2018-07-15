@@ -110,7 +110,6 @@ void VulkanRenderStage::compile()
         if (image->isDepthBuffer()) {
             depthAttachment = atta;
             foundDepthBuffer = true;
-            printf("found");
         }
         else {
             colorAttachments.push_back(atta);
@@ -120,7 +119,6 @@ void VulkanRenderStage::compile()
         attachmentsViews.push_back(view);
     }
 
-    printf(foundDepthBuffer ? "yes" : "no");
     VulkanSubpass subpass;
     if (foundDepthBuffer) subpass = VulkanSubpass(colorAttachments, colorattachmentsLayouts, depthAttachment, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     else  subpass = VulkanSubpass(colorAttachments, colorattachmentsLayouts);
@@ -176,15 +174,15 @@ VkSemaphore VulkanRenderStage::getSignalSemaphore()
 
 void VulkanRenderStage::submit(std::vector<VkSemaphore> waitSemaphores)
 {
-    vkDeviceWaitIdle(device->getDevice());
-    // todo this is shit
-    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
+    std::vector<VkPipelineStageFlags> stageFlags = {};
+    for (int i = 0; i < waitSemaphores.size(); i++) {
+        stageFlags.push_back(VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+    }
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
     submitInfo.pWaitSemaphores = waitSemaphores.data();
-    submitInfo.pWaitDstStageMask = waitStages2;
+    submitInfo.pWaitDstStageMask = stageFlags.data();
 
     submitInfo.commandBufferCount = 1;
     auto cbufferHandle = commandBuffer->getHandle();
@@ -200,13 +198,15 @@ void VulkanRenderStage::submit(std::vector<VkSemaphore> waitSemaphores)
 
 void VulkanRenderStage::submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores)
 {
-    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
+    std::vector<VkPipelineStageFlags> stageFlags = {};
+    for (int i = 0; i < waitSemaphores.size(); i++) {
+        stageFlags.push_back(VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+    }
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
     submitInfo.pWaitSemaphores = waitSemaphores.data();
-    submitInfo.pWaitDstStageMask = waitStages2;
+    submitInfo.pWaitDstStageMask = stageFlags.data();
 
     submitInfo.commandBufferCount = 1;
     auto cbufferHandle = commandBuffer->getHandle();

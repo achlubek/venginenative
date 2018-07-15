@@ -52,4 +52,16 @@ void VulkanSwapChainOutput::submit(std::vector<VkSemaphore> waitSemaphores)
     waitSemaphores.push_back(imageAvailableSemaphore);
     outputStages[imageIndex]->submit(waitSemaphores);
     device->getSwapChain()->present({ outputStages[imageIndex]->getSignalSemaphore() }, imageIndex);
+    firstFrameDrawn = true;
+    vkQueueWaitIdle(device->getMainQueue());
+}
+
+std::vector<VkSemaphore> VulkanSwapChainOutput::getSignalSemaphores()
+{
+    if (!firstFrameDrawn) {
+        return { };
+    }
+    else {
+        return { };
+    }
 }

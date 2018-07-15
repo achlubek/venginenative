@@ -45,6 +45,11 @@ void VulkanComputeStage::compile()
     pipeline = new VulkanGraphicsPipeline(device, setLayouts, info);
 }
 
+VkSemaphore VulkanComputeStage::getSignalSemaphore()
+{
+    return signalSemaphore;
+}
+
 
 void VulkanComputeStage::beginRecording()
 {
@@ -69,13 +74,15 @@ void VulkanComputeStage::dispatch(std::vector<VulkanDescriptorSet*> sets, uint32
 
 void VulkanComputeStage::submit(std::vector<VkSemaphore> waitSemaphores)
 {
-    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
+    std::vector<VkPipelineStageFlags> stageFlags = {};
+    for (int i = 0; i < waitSemaphores.size(); i++) {
+        stageFlags.push_back(VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+    }
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
     submitInfo.pWaitSemaphores = waitSemaphores.data();
-    submitInfo.pWaitDstStageMask = waitStages2;
+    submitInfo.pWaitDstStageMask = stageFlags.data();
 
     submitInfo.commandBufferCount = 1;
     auto cbufferHandle = commandBuffer->getHandle();
@@ -91,13 +98,15 @@ void VulkanComputeStage::submit(std::vector<VkSemaphore> waitSemaphores)
 
 void VulkanComputeStage::submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores)
 {
-    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
+    std::vector<VkPipelineStageFlags> stageFlags = {};
+    for (int i = 0; i < waitSemaphores.size(); i++) {
+        stageFlags.push_back(VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+    }
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
     submitInfo.pWaitSemaphores = waitSemaphores.data();
-    submitInfo.pWaitDstStageMask = waitStages2;
+    submitInfo.pWaitDstStageMask = stageFlags.data();
 
     submitInfo.commandBufferCount = 1;
     auto cbufferHandle = commandBuffer->getHandle();

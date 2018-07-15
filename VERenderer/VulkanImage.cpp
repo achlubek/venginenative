@@ -203,7 +203,7 @@ bool VulkanImage::resolveIsDepthBuffer(VulkanImageFormat format)
     case VulkanImageFormat::RG32f: 
     case VulkanImageFormat::RGBA32f: return false;
 
-    case VulkanImageFormat::Depth16u:;
+    case VulkanImageFormat::Depth16u:
     case VulkanImageFormat::Depth32f: return true;
     }
     return false;
@@ -217,6 +217,26 @@ VulkanAttachment* VulkanImage::getAttachment(VulkanAttachmentBlending blending, 
         VK_IMAGE_LAYOUT_UNDEFINED, forPresent ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR  : (resolveIsDepthBuffer(format) ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL),
         blending, clearColor, clear);
     return att;
+}
+
+VulkanAttachment * VulkanImage::getAttachment(VulkanAttachmentBlending blending, bool clear, VkClearColorValue clearColor)
+{
+    return getAttachment(blending, clear, clearColor, false);
+}
+
+VulkanAttachment * VulkanImage::getAttachment(VulkanAttachmentBlending blending, bool clear)
+{
+    return getAttachment(blending, clear, { {} }, false);
+}
+
+VulkanAttachment * VulkanImage::getAttachment(VulkanAttachmentBlending blending, VkClearColorValue clearColor)
+{
+    return getAttachment(blending, true, clearColor, false);
+}
+
+VulkanAttachment * VulkanImage::getAttachment(VulkanAttachmentBlending blending)
+{
+    return getAttachment(blending, true, { {0.0f, 0.0f, 0.0f, 0.0f} }, false);
 }
 
 bool VulkanImage::isDepthBuffer()

@@ -21,6 +21,7 @@ public:
     void submit(std::vector<VkSemaphore> waitSemaphores);
     void submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores);
     void compile();
+    VkSemaphore getSignalSemaphore();
 private:
 
     VulkanDevice * device;

@@ -18,6 +18,10 @@ public:
     ~VulkanImage();
     // todo abstarct out VkClearColorValue
     VulkanAttachment* getAttachment(VulkanAttachmentBlending blending, bool clear, VkClearColorValue clearColor, bool forPresent);
+    VulkanAttachment* getAttachment(VulkanAttachmentBlending blending, bool clear, VkClearColorValue clearColor);
+    VulkanAttachment* getAttachment(VulkanAttachmentBlending blending, bool clear);
+    VulkanAttachment* getAttachment(VulkanAttachmentBlending blending, VkClearColorValue clearColor);
+    VulkanAttachment* getAttachment(VulkanAttachmentBlending blending);
     bool isDepthBuffer();
     VkSampler getSampler();
     VkImageView getImageView();
