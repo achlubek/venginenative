@@ -1,5 +1,0 @@
-type POINT
-color 1.0 0.57 0.16
-shadowmap FALSE
-cutoff 25
-multiply 0.1
