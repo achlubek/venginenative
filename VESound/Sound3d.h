@@ -5,7 +5,7 @@
 class Sound3d : public Sound, public AbsTransformable
 {
 public:
-    Sound3d(std::string path, TransformationManager* transformation);
+    Sound3d(std::string mediakey, TransformationManager* transformation);
     ~Sound3d();
     void update(TransformationManager* listener);
 };

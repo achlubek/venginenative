@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Sound3d.h"
 
-Sound3d::Sound3d(std::string path, TransformationManager* itransformation)
-    :Sound(path)
+Sound3d::Sound3d(std::string mediakey, TransformationManager* itransformation)
+    :Sound(mediakey)
 {
     transformation = itransformation;
 }

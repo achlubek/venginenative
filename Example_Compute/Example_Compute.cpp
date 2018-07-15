@@ -34,7 +34,6 @@ int main()
     auto set = layout->generateDescriptorSet();
     // Bind newly created buffer at binding 0
     set->bindBuffer(0, buffer);
-    // Update the descriptor set
 
     // Map the buffer and put some values in it
     void* ptr;

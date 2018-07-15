@@ -2,14 +2,14 @@
 #include "Sound.h"
 #include "Media.h"
  
-Sound::Sound(std::string path)
+Sound::Sound(std::string mediakey)
 {
-    if (buffer.loadFromFile(path)) {
+    if (buffer.loadFromFile(Media::getPath(mediakey))) {
         sound.setBuffer(buffer);
         ready = true;
     }
     else {
-        printf("SOUND LOADING ERROR %s\n", path.c_str());
+        printf("SOUND LOADING ERROR %s\n", mediakey.c_str());
     }
 }
 

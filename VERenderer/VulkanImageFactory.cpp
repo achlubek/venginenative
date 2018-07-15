@@ -32,6 +32,11 @@ VulkanImage * VulkanImageFactory::build(uint32_t width, uint32_t height, VulkanI
     return build(width, height, 1, format, usage, VulkanImage::resolveIsDepthBuffer(format) ? VulkanImageAspect::DepthAspect : VulkanImageAspect::ColorAspect, VulkanImageLayout::Preinitialized);
 }
 
+VulkanImage * VulkanImageFactory::build(uint32_t width, uint32_t height, VulkanImageFormat format, int usage)
+{
+    return build(width, height, 1, format, static_cast<VulkanImageUsage>(usage), VulkanImage::resolveIsDepthBuffer(format) ? VulkanImageAspect::DepthAspect : VulkanImageAspect::ColorAspect, VulkanImageLayout::Preinitialized);
+}
+
 VulkanImage * VulkanImageFactory::build(std::string mediakey)
 {
     return new VulkanImage(device, mediakey);
