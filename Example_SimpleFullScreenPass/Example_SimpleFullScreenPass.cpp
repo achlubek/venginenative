@@ -1,6 +1,3 @@
-// Example_SimpleFullScreenPass.cpp: Okreœla punkt wejœcia dla aplikacji konsoli.
-//
-
 #include "stdafx.h"
 
 #include "Media.h"
@@ -17,7 +14,7 @@ int main()
     auto texture = toolkit->getVulkanImageFactory()->build("blaze.png");
 
     auto layout = toolkit->getVulkanDescriptorSetLayoutFactory()->build();
-    layout->addField(VulkanDescriptorSetFieldType::FieldTypeUniformBuffer, VulkanDescriptorSetFieldStage::FieldStageAll);
+    layout->addField(VulkanDescriptorSetFieldType::FieldTypeUniformBuffer, static_cast<VulkanDescriptorSetFieldStage>(VulkanDescriptorSetFieldStage::FieldStageFragment | VulkanDescriptorSetFieldStage::FieldStageVertex));
     layout->addField(VulkanDescriptorSetFieldType::FieldTypeSampler, VulkanDescriptorSetFieldStage::FieldStageFragment);
     layout->compile();
 

@@ -69,7 +69,8 @@ void VulkanComputeStage::dispatch(std::vector<VulkanDescriptorSet*> sets, uint32
 
 void VulkanComputeStage::submit(std::vector<VkSemaphore> waitSemaphores)
 {
-    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_ALL_COMMANDS_BIT };
+    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
@@ -90,7 +91,8 @@ void VulkanComputeStage::submit(std::vector<VkSemaphore> waitSemaphores)
 
 void VulkanComputeStage::submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores)
 {
-    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_ALL_COMMANDS_BIT };
+    VkPipelineStageFlags waitStages2[] = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());

@@ -44,6 +44,6 @@ private:
     std::vector<VulkanShaderModule*> shaders;
     
     VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; 
-    VkCullModeFlags cullFlags = 0;
+    VkCullModeFlags cullFlags = VK_CULL_MODE_NONE;
 };
 
