@@ -1,12 +1,14 @@
 #pragma once
 #include "Sound.h" 
-#include "AbsTransformable.h"
 
-class Sound3d : public Sound, public AbsTransformable
+class Sound3d : public Sound
 {
 public:
-    Sound3d(std::string mediakey, TransformationManager* transformation);
+    Sound3d(std::string mediakey, glm::vec3 position);
     ~Sound3d();
-    void update(TransformationManager* listener);
+    void update(glm::vec3 listenerPosition, glm::quat listenerOrientation);
+
+private:
+    glm::vec3 position;
 };
 

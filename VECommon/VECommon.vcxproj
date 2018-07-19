@@ -125,28 +125,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="AbsTransformable.h" />
-    <ClInclude Include="Camera.h" />
     <ClInclude Include="EventHandler.h" />
-    <ClInclude Include="FrustumCone.h" />
-    <ClInclude Include="INIReader.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="tinydir.h" />
-    <ClInclude Include="TransformationManager.h" />
     <ClInclude Include="VECommon.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AbsTransformable.cpp" />
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="FrustumCone.cpp" />
-    <ClCompile Include="INIReader.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="TransformationManager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
