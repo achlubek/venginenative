@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "UIAbsDrawable.h"
 #include "UIRenderer.h"
-#include "EventHandler.h"
 
 
 UIAbsDrawable::UIAbsDrawable(UIRenderer* irenderer, float ix, float iy, float iwidth, float iheight, UIColor icolor)

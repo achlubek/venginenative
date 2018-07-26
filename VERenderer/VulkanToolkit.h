@@ -8,6 +8,9 @@ class VulkanComputeStageFactory;
 class VulkanBufferFactory;
 class VulkanImageFactory;
 class VulkanSwapChainOutputFactory;
+class Keyboard;
+class Mouse;
+class Joystick;
 
 class VulkanToolkit
 {
@@ -29,6 +32,9 @@ public:
     VulkanBufferFactory* getVulkanBufferFactory();
     VulkanImageFactory* getVulkanImageFactory();
     VulkanSwapChainOutputFactory* getVulkanSwapChainOutputFactory();
+    Keyboard* getKeyboard();
+    Mouse* getMouse();
+    Joystick* getJoystick();
 
 private:
     VulkanDevice* device;
@@ -43,4 +49,7 @@ private:
     VulkanBufferFactory* vulkanBufferFactory;
     VulkanImageFactory* vulkanImageFactory;
     VulkanSwapChainOutputFactory* vulkanSwapChainOutputFactory;
+    Keyboard* keyboard;
+    Mouse* mouse;
+    Joystick* joystock;
 };

@@ -4,7 +4,6 @@
 #include "UIBox.h"
 #include "UIBitmap.h"
 #include "UIText.h"
-#include "Mouse.h"
 
 
 UIRenderer::UIRenderer(VulkanToolkit* vulkan, Mouse* mouse, VulkanImage* outputImage, int width, int height) :

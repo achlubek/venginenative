@@ -262,6 +262,11 @@ VulkanSwapChain * VulkanDevice::getSwapChain()
     return swapChain;
 }
 
+GLFWwindow * VulkanDevice::getWindow()
+{
+    return window;
+}
+
 uint32_t VulkanDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
     for (uint32_t i = 0; i < physicalDevicesMemoryProps[chosenDeviceId].memoryTypeCount; i++) {
         if ((typeFilter & (1 << i)) && (physicalDevicesMemoryProps[chosenDeviceId].memoryTypes[i].propertyFlags & properties) == properties) {

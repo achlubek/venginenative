@@ -10,6 +10,9 @@
 #include "VulkanBufferFactory.h"
 #include "VulkanImageFactory.h"
 #include "VulkanSwapChainOutputFactory.h"
+#include "Input/Keyboard.h"
+#include "Input/Mouse.h"
+#include "Input/Joystick.h"
 
 VulkanToolkit::VulkanToolkit(int width, int height, bool enableValidation, std::string windowName)
     : device(new VulkanDevice(width, height, enableValidation, windowName)),
@@ -21,7 +24,10 @@ VulkanToolkit::VulkanToolkit(int width, int height, bool enableValidation, std::
     vulkanComputeStageFactory(new VulkanComputeStageFactory(device)),
     vulkanBufferFactory(new VulkanBufferFactory(device)),
     vulkanImageFactory(new VulkanImageFactory(device)),
-    vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device))
+    vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device)),
+    keyboard(new Keyboard(device->getWindow())),
+    mouse(new Mouse(device->getWindow())),
+    joystock(new Joystick(device->getWindow()))
 {
 }
 
@@ -35,7 +41,10 @@ VulkanToolkit::VulkanToolkit(bool enableValidation)
     vulkanComputeStageFactory(new VulkanComputeStageFactory(device)),
     vulkanBufferFactory(new VulkanBufferFactory(device)),
     vulkanImageFactory(new VulkanImageFactory(device)),
-    vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device))
+    vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device)),
+    keyboard(new Keyboard(device->getWindow())),
+    mouse(new Mouse(device->getWindow())),
+    joystock(new Joystick(device->getWindow()))
 {
 }
 

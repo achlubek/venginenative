@@ -10,5 +10,7 @@
 #include <GLFW\glfw3.h>
 
 #include "VERenderer.h"
-#include "EventHandler.h"
-#include "VEInput.h"
+#include <Input/EventHandler.h>
+#include <Input/Mouse.h>
+#include <Input/Keyboard.h>
+#include <Input/Joystick.h>

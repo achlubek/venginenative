@@ -125,7 +125,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Input\EventHandler.h" />
+    <ClInclude Include="Input\stdafx.h" />
     <ClInclude Include="Internal\stdafx.h" />
+    <ClInclude Include="Input\Joystick.h" />
+    <ClInclude Include="Input\Keyboard.h" />
+    <ClInclude Include="Input\Mouse.h" />
     <ClInclude Include="Object3dInfo.h" />
     <ClInclude Include="Object3dInfoFactory.h" />
     <ClInclude Include="stdafx.h" />
@@ -163,6 +168,9 @@
     <ClInclude Include="Internal\VulkanVertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Input\Joystick.cpp" />
+    <ClCompile Include="Input\Keyboard.cpp" />
+    <ClCompile Include="Input\Mouse.cpp" />
     <ClCompile Include="Object3dInfo.cpp" />
     <ClCompile Include="Object3dInfoFactory.cpp" />
     <ClCompile Include="stdafx.cpp">
