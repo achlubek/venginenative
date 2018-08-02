@@ -4,7 +4,7 @@
 #include "VulkanMemoryManager.h" 
 #include "VulkanMemoryChunk.h" 
 #include "../VulkanGenericBuffer.h" 
-#include "Media.h" 
+#include "../../Media/Media.h" 
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>  

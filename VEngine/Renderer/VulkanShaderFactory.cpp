@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "VulkanShaderFactory.h"
 #include "VulkanShaderModule.h"
-#include "Media.h"
+#include "../Media/Media.h" 
 
 
 VulkanShaderFactory::VulkanShaderFactory(VulkanDevice* device)

@@ -22,8 +22,9 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{588A34FB-5137-4A09-B272-439764A4C5A8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>VERenderer</RootNamespace>
+    <RootNamespace>VEngine</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <ProjectName>VEngine</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -70,7 +71,11 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IntDir>$(Platform)\$(Configuration)\$ProjectName\</IntDir>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -80,6 +85,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.70.1\Include\vulkan;C:\Code\glfw-3.2.1\include;C:\Code\stb;C:\Code\VEngineNative\VEMedia;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <EnablePREfast>true</EnablePREfast>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -127,88 +133,93 @@
   <ItemGroup>
     <ClInclude Include="Input\EventHandler.h" />
     <ClInclude Include="Input\stdafx.h" />
-    <ClInclude Include="Internal\stdafx.h" />
+    <ClInclude Include="Media\Media.h" />
+    <ClInclude Include="Media\stdafx.h" />
+    <ClInclude Include="Media\tinydir.h" />
+    <ClInclude Include="Renderer\Internal\stdafx.h" />
     <ClInclude Include="Input\Joystick.h" />
     <ClInclude Include="Input\Keyboard.h" />
     <ClInclude Include="Input\Mouse.h" />
-    <ClInclude Include="Object3dInfo.h" />
-    <ClInclude Include="Object3dInfoFactory.h" />
+    <ClInclude Include="Renderer\Object3dInfo.h" />
+    <ClInclude Include="Renderer\Object3dInfoFactory.h" />
+    <ClInclude Include="Renderer\stdafx.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="VERenderer.h" />
-    <ClInclude Include="VulkanAttachment.h" />
-    <ClInclude Include="VulkanBinaryBufferBuilder.h" />
-    <ClInclude Include="Internal\VulkanCommandBuffer.h" />
-    <ClInclude Include="VulkanBufferFactory.h" />
-    <ClInclude Include="VulkanComputeStage.h" />
-    <ClInclude Include="VulkanComputeStageFactory.h" />
-    <ClInclude Include="VulkanDescriptorSet.h" />
-    <ClInclude Include="VulkanDescriptorSetLayout.h" />
-    <ClInclude Include="Internal\VulkanFramebuffer.h" />
-    <ClInclude Include="Internal\VulkanDevice.h" />
-    <ClInclude Include="VulkanDescriptorSetLayoutFactory.h" />
-    <ClInclude Include="VulkanEnums.h" />
-    <ClInclude Include="VulkanGenericBuffer.h" />
-    <ClInclude Include="Internal\VulkanGraphicsPipeline.h" />
-    <ClInclude Include="VulkanImage.h" />
-    <ClInclude Include="Internal\VulkanMemoryChunk.h" />
-    <ClInclude Include="Internal\VulkanMemoryManager.h" />
-    <ClInclude Include="Internal\VulkanInternalImage.h" />
-    <ClInclude Include="Internal\VulkanRenderPass.h" />
-    <ClInclude Include="VulkanImageFactory.h" />
-    <ClInclude Include="VulkanRenderStage.h" />
-    <ClInclude Include="VulkanRenderStageFactory.h" />
-    <ClInclude Include="VulkanShaderFactory.h" />
-    <ClInclude Include="VulkanShaderModule.h" />
-    <ClInclude Include="Internal\VulkanSingleAllocation.h" />
-    <ClInclude Include="Internal\VulkanSubpass.h" />
-    <ClInclude Include="Internal\VulkanSwapChain.h" />
-    <ClInclude Include="VulkanSwapChainOutput.h" />
-    <ClInclude Include="VulkanSwapChainOutputFactory.h" />
-    <ClInclude Include="VulkanToolkit.h" />
-    <ClInclude Include="Internal\VulkanVertexBuffer.h" />
+    <ClInclude Include="VEngine.h" />
+    <ClInclude Include="Renderer\VulkanAttachment.h" />
+    <ClInclude Include="Renderer\VulkanBinaryBufferBuilder.h" />
+    <ClInclude Include="Renderer\Internal\VulkanCommandBuffer.h" />
+    <ClInclude Include="Renderer\VulkanBufferFactory.h" />
+    <ClInclude Include="Renderer\VulkanComputeStage.h" />
+    <ClInclude Include="Renderer\VulkanComputeStageFactory.h" />
+    <ClInclude Include="Renderer\VulkanDescriptorSet.h" />
+    <ClInclude Include="Renderer\VulkanDescriptorSetLayout.h" />
+    <ClInclude Include="Renderer\Internal\VulkanFramebuffer.h" />
+    <ClInclude Include="Renderer\Internal\VulkanDevice.h" />
+    <ClInclude Include="Renderer\VulkanDescriptorSetLayoutFactory.h" />
+    <ClInclude Include="Renderer\VulkanEnums.h" />
+    <ClInclude Include="Renderer\VulkanGenericBuffer.h" />
+    <ClInclude Include="Renderer\Internal\VulkanGraphicsPipeline.h" />
+    <ClInclude Include="Renderer\VulkanImage.h" />
+    <ClInclude Include="Renderer\Internal\VulkanMemoryChunk.h" />
+    <ClInclude Include="Renderer\Internal\VulkanMemoryManager.h" />
+    <ClInclude Include="Renderer\Internal\VulkanInternalImage.h" />
+    <ClInclude Include="Renderer\Internal\VulkanRenderPass.h" />
+    <ClInclude Include="Renderer\VulkanImageFactory.h" />
+    <ClInclude Include="Renderer\VulkanRenderStage.h" />
+    <ClInclude Include="Renderer\VulkanRenderStageFactory.h" />
+    <ClInclude Include="Renderer\VulkanShaderFactory.h" />
+    <ClInclude Include="Renderer\VulkanShaderModule.h" />
+    <ClInclude Include="Renderer\Internal\VulkanSingleAllocation.h" />
+    <ClInclude Include="Renderer\Internal\VulkanSubpass.h" />
+    <ClInclude Include="Renderer\Internal\VulkanSwapChain.h" />
+    <ClInclude Include="Renderer\VulkanSwapChainOutput.h" />
+    <ClInclude Include="Renderer\VulkanSwapChainOutputFactory.h" />
+    <ClInclude Include="Renderer\VulkanToolkit.h" />
+    <ClInclude Include="Renderer\Internal\VulkanVertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Input\Joystick.cpp" />
     <ClCompile Include="Input\Keyboard.cpp" />
     <ClCompile Include="Input\Mouse.cpp" />
-    <ClCompile Include="Object3dInfo.cpp" />
-    <ClCompile Include="Object3dInfoFactory.cpp" />
+    <ClCompile Include="Media\Media.cpp" />
+    <ClCompile Include="Renderer\Object3dInfo.cpp" />
+    <ClCompile Include="Renderer\Object3dInfoFactory.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="VulkanAttachment.cpp" />
-    <ClCompile Include="VulkanBinaryBufferBuilder.cpp" />
-    <ClCompile Include="Internal\VulkanCommandBuffer.cpp" />
-    <ClCompile Include="VulkanBufferFactory.cpp" />
-    <ClCompile Include="VulkanComputeStage.cpp" />
-    <ClCompile Include="VulkanComputeStageFactory.cpp" />
-    <ClCompile Include="VulkanDescriptorSet.cpp" />
-    <ClCompile Include="VulkanDescriptorSetLayout.cpp" />
-    <ClCompile Include="Internal\VulkanFramebuffer.cpp" />
-    <ClCompile Include="Internal\VulkanDevice.cpp" />
-    <ClCompile Include="VulkanDescriptorSetLayoutFactory.cpp" />
-    <ClCompile Include="VulkanGenericBuffer.cpp" />
-    <ClCompile Include="Internal\VulkanGraphicsPipeline.cpp" />
-    <ClCompile Include="VulkanImage.cpp" />
-    <ClCompile Include="Internal\VulkanMemoryChunk.cpp" />
-    <ClCompile Include="Internal\VulkanMemoryManager.cpp" />
-    <ClCompile Include="Internal\VulkanInternalImage.cpp" />
-    <ClCompile Include="Internal\VulkanRenderPass.cpp" />
-    <ClCompile Include="VulkanImageFactory.cpp" />
-    <ClCompile Include="VulkanRenderStage.cpp" />
-    <ClCompile Include="VulkanRenderStageFactory.cpp" />
-    <ClCompile Include="VulkanShaderFactory.cpp" />
-    <ClCompile Include="VulkanShaderModule.cpp" />
-    <ClCompile Include="Internal\VulkanSingleAllocation.cpp" />
-    <ClCompile Include="Internal\VulkanSubpass.cpp" />
-    <ClCompile Include="Internal\VulkanSwapChain.cpp" />
-    <ClCompile Include="VulkanSwapChainOutput.cpp" />
-    <ClCompile Include="VulkanSwapChainOutputFactory.cpp" />
-    <ClCompile Include="VulkanToolkit.cpp" />
-    <ClCompile Include="Internal\VulkanVertexBuffer.cpp" />
+    <ClCompile Include="Renderer\VulkanAttachment.cpp" />
+    <ClCompile Include="Renderer\VulkanBinaryBufferBuilder.cpp" />
+    <ClCompile Include="Renderer\Internal\VulkanCommandBuffer.cpp" />
+    <ClCompile Include="Renderer\VulkanBufferFactory.cpp" />
+    <ClCompile Include="Renderer\VulkanComputeStage.cpp" />
+    <ClCompile Include="Renderer\VulkanComputeStageFactory.cpp" />
+    <ClCompile Include="Renderer\VulkanDescriptorSet.cpp" />
+    <ClCompile Include="Renderer\VulkanDescriptorSetLayout.cpp" />
+    <ClCompile Include="Renderer\Internal\VulkanFramebuffer.cpp" />
+    <ClCompile Include="Renderer\Internal\VulkanDevice.cpp" />
+    <ClCompile Include="Renderer\VulkanDescriptorSetLayoutFactory.cpp" />
+    <ClCompile Include="Renderer\VulkanGenericBuffer.cpp" />
+    <ClCompile Include="Renderer\Internal\VulkanGraphicsPipeline.cpp" />
+    <ClCompile Include="Renderer\VulkanImage.cpp" />
+    <ClCompile Include="Renderer\Internal\VulkanMemoryChunk.cpp" />
+    <ClCompile Include="Renderer\Internal\VulkanMemoryManager.cpp" />
+    <ClCompile Include="Renderer\Internal\VulkanInternalImage.cpp" />
+    <ClCompile Include="Renderer\Internal\VulkanRenderPass.cpp" />
+    <ClCompile Include="Renderer\VulkanImageFactory.cpp" />
+    <ClCompile Include="Renderer\VulkanRenderStage.cpp" />
+    <ClCompile Include="Renderer\VulkanRenderStageFactory.cpp" />
+    <ClCompile Include="Renderer\VulkanShaderFactory.cpp" />
+    <ClCompile Include="Renderer\VulkanShaderModule.cpp" />
+    <ClCompile Include="Renderer\Internal\VulkanSingleAllocation.cpp" />
+    <ClCompile Include="Renderer\Internal\VulkanSubpass.cpp" />
+    <ClCompile Include="Renderer\Internal\VulkanSwapChain.cpp" />
+    <ClCompile Include="Renderer\VulkanSwapChainOutput.cpp" />
+    <ClCompile Include="Renderer\VulkanSwapChainOutputFactory.cpp" />
+    <ClCompile Include="Renderer\VulkanToolkit.cpp" />
+    <ClCompile Include="Renderer\Internal\VulkanVertexBuffer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

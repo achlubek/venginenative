@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Object3dInfoFactory.h"
 #include "Object3dInfo.h"
-#include "Media.h"
+#include "../Media/Media.h" 
 
 
 Object3dInfoFactory::Object3dInfoFactory(VulkanDevice* device)

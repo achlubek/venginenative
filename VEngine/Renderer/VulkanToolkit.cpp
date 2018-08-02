@@ -10,9 +10,9 @@
 #include "VulkanBufferFactory.h"
 #include "VulkanImageFactory.h"
 #include "VulkanSwapChainOutputFactory.h"
-#include "Input/Keyboard.h"
-#include "Input/Mouse.h"
-#include "Input/Joystick.h"
+#include "../Input/Keyboard.h"
+#include "../Input/Mouse.h"
+#include "../Input/Joystick.h"
 
 VulkanToolkit::VulkanToolkit(int width, int height, bool enableValidation, std::string windowName)
     : device(new VulkanDevice(width, height, enableValidation, windowName)),
