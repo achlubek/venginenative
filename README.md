@@ -4,8 +4,6 @@
 
 ##### What we got here
 - Graphics system using Vulkan with help of GLFW3 (also provides input) https://github.com/glfw/glfw
-- Physics system using Bullet Physics https://github.com/bulletphysics/bullet3
-- Audio and Networking system using SFML https://www.sfml-dev.org/
 - Image loading using stb_image https://github.com/nothings/stb
 
 The software is licensed under MIT license.
