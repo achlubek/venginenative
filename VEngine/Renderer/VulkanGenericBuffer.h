@@ -1,25 +1,34 @@
 #pragma once 
-class VulkanDevice;
 #include "Internal/VulkanSingleAllocation.h"
 
 #include "VulkanEnums.h"
-
-class VulkanGenericBuffer
+namespace VEngine
 {
-public:
-    VulkanGenericBuffer(VulkanDevice * device, VulkanBufferType type, uint64_t s);
-    ~VulkanGenericBuffer();
-    void map(uint64_t offset, uint64_t size, void** data);
-    void unmap();
+    namespace Renderer
+    {
+        namespace Internal
+        {
+            class VulkanDevice;
+        }
 
-    VkBuffer getBuffer();
-    uint64_t getSize();
-    VulkanBufferType getType();
+        class VulkanGenericBuffer
+        {
+        public:
+            VulkanGenericBuffer(Internal::VulkanDevice * device, VulkanBufferType type, uint64_t s);
+            ~VulkanGenericBuffer();
+            void map(uint64_t offset, uint64_t size, void** data);
+            void unmap();
 
-private:
-    VulkanDevice * device;
-    VkBuffer buffer;
-    VulkanSingleAllocation bufferMemory;
-    uint64_t size;
-    VulkanBufferType type{ VulkanBufferType::BufferTypeUniform };
-};
+            VkBuffer getBuffer();
+            uint64_t getSize();
+            VulkanBufferType getType();
+
+        private:
+            Internal::VulkanDevice * device;
+            VkBuffer buffer;
+            Internal::VulkanSingleAllocation bufferMemory;
+            uint64_t size;
+            VulkanBufferType type{ VulkanBufferType::BufferTypeUniform };
+        };
+    }
+}

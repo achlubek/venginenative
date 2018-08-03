@@ -1,15 +1,26 @@
 #pragma once
-class VulkanDevice;
-class VulkanGenericBuffer;
 #include "VulkanEnums.h"
-class VulkanBufferFactory
+
+namespace VEngine
 {
-public:
-    VulkanBufferFactory(VulkanDevice* device);
-    ~VulkanBufferFactory();
+    namespace Renderer
+    {
+        namespace Internal
+        {
+            class VulkanDevice;
+        }
+        class VulkanGenericBuffer;
 
-    VulkanGenericBuffer* build(VulkanBufferType type, uint64_t size);
-private:
-    VulkanDevice * device;
-};
+        class VulkanBufferFactory
+        {
+        public:
+            VulkanBufferFactory(Internal::VulkanDevice* device);
+            ~VulkanBufferFactory();
 
+            VulkanGenericBuffer* build(VulkanBufferType type, uint64_t size);
+        private:
+            Internal::VulkanDevice * device;
+        };
+
+    }
+}

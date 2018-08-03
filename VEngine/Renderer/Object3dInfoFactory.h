@@ -1,17 +1,28 @@
 #pragma once
-class Object3dInfo;
-class VulkanDevice;
-class Object3dInfoFactory
+namespace VEngine
 {
-public:
-    Object3dInfoFactory(VulkanDevice* device);
-    ~Object3dInfoFactory();
+    namespace Renderer
+    {
+        namespace Internal
+        {
+            class VulkanDevice;
+        }
 
-    Object3dInfo* build(std::string mediakey);
-    Object3dInfo* build(std::vector<float> rawData);
-    Object3dInfo* getFullScreenQuad();
-private:
-    VulkanDevice * device;
-    Object3dInfo* fullScreenQuad;
-};
+        class Object3dInfo;
 
+        class Object3dInfoFactory
+        {
+        public:
+            Object3dInfoFactory(Internal::VulkanDevice* device);
+            ~Object3dInfoFactory();
+
+            Object3dInfo* build(std::string mediakey);
+            Object3dInfo* build(std::vector<float> rawData);
+            Object3dInfo* getFullScreenQuad();
+        private:
+            Internal::VulkanDevice * device;
+            Object3dInfo* fullScreenQuad;
+        };
+
+    }
+}

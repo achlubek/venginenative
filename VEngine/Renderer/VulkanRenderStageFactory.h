@@ -1,20 +1,31 @@
 #pragma once
-class VulkanDevice;
-class VulkanRenderStage;
-class VulkanShaderModule;
-class VulkanDescriptorSetLayout;
-class VulkanAttachment;
-class VulkanRenderStageFactory
+
+namespace VEngine
 {
-public:
-    VulkanRenderStageFactory(VulkanDevice* device);
-    ~VulkanRenderStageFactory();
-    VulkanRenderStage* build(int width, int height,
-        std::vector<VulkanShaderModule*> shaders,
-        std::vector<VulkanDescriptorSetLayout*> layouts,
-        std::vector<VulkanAttachment*> outputImages);
+    namespace Renderer
+    {
+        namespace Internal
+        {
+            class VulkanDevice;
+        }
+        class VulkanRenderStage;
+        class VulkanShaderModule;
+        class VulkanDescriptorSetLayout;
+        class VulkanAttachment;
 
-private:
-    VulkanDevice * device;
-};
+        class VulkanRenderStageFactory
+        {
+        public:
+            VulkanRenderStageFactory(Internal::VulkanDevice* device);
+            ~VulkanRenderStageFactory();
+            VulkanRenderStage* build(int width, int height,
+                std::vector<VulkanShaderModule*> shaders,
+                std::vector<VulkanDescriptorSetLayout*> layouts,
+                std::vector<VulkanAttachment*> outputImages);
 
+        private:
+            Internal::VulkanDevice * device;
+        };
+
+    }
+}

@@ -1,18 +1,25 @@
 #include "stdafx.h"
 #include "VulkanComputeStageFactory.h"
 #include "VulkanComputeStage.h"
-
-
-VulkanComputeStageFactory::VulkanComputeStageFactory(VulkanDevice* device)
-    : device(device)
+namespace VEngine
 {
-}
+    namespace Renderer
+    {
+        using namespace VEngine::Renderer::Internal;
 
-VulkanComputeStageFactory::~VulkanComputeStageFactory()
-{
-}
+        VulkanComputeStageFactory::VulkanComputeStageFactory(VulkanDevice* device)
+            : device(device)
+        {
+        }
 
-VulkanComputeStage * VulkanComputeStageFactory::build(VulkanShaderModule * shader, std::vector<VulkanDescriptorSetLayout*> layouts)
-{
-    return new VulkanComputeStage(device, shader, layouts);
+        VulkanComputeStageFactory::~VulkanComputeStageFactory()
+        {
+        }
+
+        VulkanComputeStage * VulkanComputeStageFactory::build(VulkanShaderModule * shader, std::vector<VulkanDescriptorSetLayout*> layouts)
+        {
+            return new VulkanComputeStage(device, shader, layouts);
+        }
+
+    }
 }

@@ -1,34 +1,41 @@
 #include "stdafx.h"
 #include "Joystick.h"
 
-
-Joystick::Joystick(GLFWwindow * win)
+namespace VEngine
 {
-}
+    namespace Input
+    {
 
-Joystick::~Joystick()
-{
-}
+        Joystick::Joystick(GLFWwindow * win)
+        {
+        }
 
-std::vector<bool> Joystick::getButtonsStatus(int index)
-{
-    int count;
-    const unsigned char* axes = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count);
-    auto res = std::vector<bool>();
-    for (int i = 0; i < count; i++) res.push_back(axes[i] == GLFW_PRESS);
-    return res;
-}
+        Joystick::~Joystick()
+        {
+        }
 
-bool Joystick::isPresent(int index)
-{
-    return glfwJoystickPresent(index) == GLFW_TRUE;
-}
+        std::vector<bool> Joystick::getButtonsStatus(int index)
+        {
+            int count;
+            const unsigned char* axes = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count);
+            auto res = std::vector<bool>();
+            for (int i = 0; i < count; i++) res.push_back(axes[i] == GLFW_PRESS);
+            return res;
+        }
 
-std::vector<float> Joystick::getAxes(int index)
-{
-    int count;
-    const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &count);
-    auto res = std::vector<float>();
-    for (int i = 0; i < count; i++) res.push_back(axes[i]);
-    return res;
+        bool Joystick::isPresent(int index)
+        {
+            return glfwJoystickPresent(index) == GLFW_TRUE;
+        }
+
+        std::vector<float> Joystick::getAxes(int index)
+        {
+            int count;
+            const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &count);
+            auto res = std::vector<float>();
+            for (int i = 0; i < count; i++) res.push_back(axes[i]);
+            return res;
+        }
+
+    }
 }

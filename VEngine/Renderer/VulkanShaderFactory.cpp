@@ -3,17 +3,26 @@
 #include "VulkanShaderModule.h"
 #include "../Media/Media.h" 
 
-
-VulkanShaderFactory::VulkanShaderFactory(VulkanDevice* device)
-    : device(device)
+namespace VEngine
 {
-}
+    namespace Renderer
+    {
+        using namespace VEngine::Renderer::Internal;
+        using namespace VEngine::FileSystem;
 
-VulkanShaderFactory::~VulkanShaderFactory()
-{
-}
+        VulkanShaderFactory::VulkanShaderFactory(VulkanDevice* device)
+            : device(device)
+        {
+        }
 
-VulkanShaderModule * VulkanShaderFactory::build(VulkanShaderModuleType type, std::string mediakey)
-{
-    return new VulkanShaderModule(device, type, Media::getPath(mediakey));
+        VulkanShaderFactory::~VulkanShaderFactory()
+        {
+        }
+
+        VulkanShaderModule * VulkanShaderFactory::build(VulkanShaderModuleType type, std::string mediakey)
+        {
+            return new VulkanShaderModule(device, type, Media::getPath(mediakey));
+        }
+
+    }
 }

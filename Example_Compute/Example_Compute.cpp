@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+using namespace VEngine::FileSystem;
+using namespace VEngine::Renderer;
+
 /*
 This example shows how to do simple computations on GPU using compute shader
 */

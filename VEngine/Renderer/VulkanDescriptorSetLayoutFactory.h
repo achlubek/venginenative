@@ -1,15 +1,26 @@
 #pragma once
-class VulkanDevice;
-class VulkanDescriptorSetLayout;
-class VulkanDescriptorSetLayoutFactory
+
+namespace VEngine
 {
-public:
-    VulkanDescriptorSetLayoutFactory(VulkanDevice * device);
-    ~VulkanDescriptorSetLayoutFactory();
+    namespace Renderer
+    {
+        namespace Internal
+        {
+            class VulkanDevice;
+        }
+        class VulkanDescriptorSetLayout;
 
-    VulkanDescriptorSetLayout* build();
+        class VulkanDescriptorSetLayoutFactory
+        {
+        public:
+            VulkanDescriptorSetLayoutFactory(Internal::VulkanDevice * device);
+            ~VulkanDescriptorSetLayoutFactory();
 
-private:
-    VulkanDevice * device;
-};
+            VulkanDescriptorSetLayout* build();
 
+        private:
+            Internal::VulkanDevice * device;
+        };
+
+    }
+}

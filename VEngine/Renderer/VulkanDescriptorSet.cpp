@@ -4,102 +4,111 @@
 #include "VulkanGenericBuffer.h"
 #include "Internal/VulkanDevice.h"
 
-VulkanDescriptorSet::VulkanDescriptorSet(VulkanDevice * device, VkDescriptorPool p, VkDescriptorSetLayout l)
-    : device(device)
+namespace VEngine
 {
-    writes = {};
-    pool = p;
+    namespace Renderer
+    {
+        using namespace VEngine::Renderer::Internal;
 
-    VkDescriptorSetLayout layouts[] = { l };
-    VkDescriptorSetAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = pool;
-    allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = layouts;
-    vkAllocateDescriptorSets(device->getDevice(), &allocInfo, &set);
-}
+        VulkanDescriptorSet::VulkanDescriptorSet(VulkanDevice * device, VkDescriptorPool p, VkDescriptorSetLayout l)
+            : device(device)
+        {
+            writes = {};
+            pool = p;
 
-VulkanDescriptorSet::~VulkanDescriptorSet()
-{
-}
+            VkDescriptorSetLayout layouts[] = { l };
+            VkDescriptorSetAllocateInfo allocInfo = {};
+            allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            allocInfo.descriptorPool = pool;
+            allocInfo.descriptorSetCount = 1;
+            allocInfo.pSetLayouts = layouts;
+            vkAllocateDescriptorSets(device->getDevice(), &allocInfo, &set);
+        }
 
-void VulkanDescriptorSet::bindImageViewSampler(int binding, VulkanImage* img)
-{
-    VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo();
-    imageInfo->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-    imageInfo->imageView = img->getImageView();
-    imageInfo->sampler = img->getSampler();
+        VulkanDescriptorSet::~VulkanDescriptorSet()
+        {
+        }
 
-    writes.resize(writes.size() + 1);
+        void VulkanDescriptorSet::bindImageViewSampler(int binding, VulkanImage* img)
+        {
+            VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo();
+            imageInfo->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+            imageInfo->imageView = img->getImageView();
+            imageInfo->sampler = img->getSampler();
 
-    size_t i = writes.size() - 1;
+            writes.resize(writes.size() + 1);
 
-    writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writes[i].dstSet = set;
-    writes[i].dstBinding = binding;
-    writes[i].dstArrayElement = 0;
-    writes[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    writes[i].descriptorCount = 1;
-    writes[i].pImageInfo = imageInfo;
-    needsUpdate = true;
+            size_t i = writes.size() - 1;
 
-}
-void VulkanDescriptorSet::bindImageStorage(int binding, VulkanImage* img)
-{
-    VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo();
-    imageInfo->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-    imageInfo->imageView = img->getImageView();
-    imageInfo->sampler = img->getSampler();
+            writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[i].dstSet = set;
+            writes[i].dstBinding = binding;
+            writes[i].dstArrayElement = 0;
+            writes[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            writes[i].descriptorCount = 1;
+            writes[i].pImageInfo = imageInfo;
+            needsUpdate = true;
 
-    writes.resize(writes.size() + 1);
+        }
+        void VulkanDescriptorSet::bindImageStorage(int binding, VulkanImage* img)
+        {
+            VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo();
+            imageInfo->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+            imageInfo->imageView = img->getImageView();
+            imageInfo->sampler = img->getSampler();
 
-    size_t i = writes.size() - 1;
+            writes.resize(writes.size() + 1);
 
-    writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writes[i].dstSet = set;
-    writes[i].dstBinding = binding;
-    writes[i].dstArrayElement = 0;
-    writes[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-    writes[i].descriptorCount = 1;
-    writes[i].pImageInfo = imageInfo;
-    needsUpdate = true;
+            size_t i = writes.size() - 1;
 
-}
+            writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[i].dstSet = set;
+            writes[i].dstBinding = binding;
+            writes[i].dstArrayElement = 0;
+            writes[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            writes[i].descriptorCount = 1;
+            writes[i].pImageInfo = imageInfo;
+            needsUpdate = true;
+
+        }
 
 
-void VulkanDescriptorSet::bindBuffer(int binding, VulkanGenericBuffer* buffer)
-{
-    VkDescriptorBufferInfo* bufferInfo = new VkDescriptorBufferInfo();
-    bufferInfo->buffer = buffer->getBuffer();
-    bufferInfo->offset = 0;
-    bufferInfo->range = buffer->getSize();
+        void VulkanDescriptorSet::bindBuffer(int binding, VulkanGenericBuffer* buffer)
+        {
+            VkDescriptorBufferInfo* bufferInfo = new VkDescriptorBufferInfo();
+            bufferInfo->buffer = buffer->getBuffer();
+            bufferInfo->offset = 0;
+            bufferInfo->range = buffer->getSize();
 
-    writes.resize(writes.size() + 1);
+            writes.resize(writes.size() + 1);
 
-    size_t i = writes.size() - 1;
+            size_t i = writes.size() - 1;
 
-    writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writes[i].dstSet = set;
-    writes[i].dstBinding = binding;
-    writes[i].dstArrayElement = 0;
-    writes[i].descriptorType = buffer->getType() == VulkanBufferType::BufferTypeStorage ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    writes[i].descriptorCount = 1;
-    writes[i].pBufferInfo = bufferInfo;
-    needsUpdate = true;
-}
+            writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[i].dstSet = set;
+            writes[i].dstBinding = binding;
+            writes[i].dstArrayElement = 0;
+            writes[i].descriptorType = buffer->getType() == VulkanBufferType::BufferTypeStorage ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            writes[i].descriptorCount = 1;
+            writes[i].pBufferInfo = bufferInfo;
+            needsUpdate = true;
+        }
 
-void VulkanDescriptorSet::update()
-{
-    vkUpdateDescriptorSets(device->getDevice(), static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
-    writes.clear();
-    writes = {};
-    needsUpdate = false;
-}
+        void VulkanDescriptorSet::update()
+        {
+            vkUpdateDescriptorSets(device->getDevice(), static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+            writes.clear();
+            writes = {};
+            needsUpdate = false;
+        }
 
-VkDescriptorSet VulkanDescriptorSet::getSet()
-{
-    if (needsUpdate) {
-        update();
+        VkDescriptorSet VulkanDescriptorSet::getSet()
+        {
+            if (needsUpdate) {
+                update();
+            }
+            return set;
+        }
+
     }
-    return set;
 }

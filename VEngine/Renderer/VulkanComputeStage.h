@@ -1,36 +1,46 @@
 #pragma once
-class VulkanDevice;
-class VulkanDescriptorSet; 
-class VulkanCommandBuffer;
-class VulkanGraphicsPipeline;
-class VulkanShaderModule;
-class VulkanDescriptorSetLayout;
 
-class VulkanComputeStage
+namespace VEngine
 {
-public:
-    VulkanComputeStage(VulkanDevice * device,
-        VulkanShaderModule* shader,
-        std::vector<VulkanDescriptorSetLayout*> layouts);
-    ~VulkanComputeStage();
+    namespace Renderer
+    {
+        namespace Internal
+        {
+            class VulkanDevice;
+            class VulkanCommandBuffer;
+            class VulkanGraphicsPipeline;
+        }
+        class VulkanDescriptorSet;
+        class VulkanDescriptorSetLayout;
+        class VulkanShaderModule;
 
-    void beginRecording();
-    void endRecording();
-    void dispatch(std::vector<VulkanDescriptorSet*> sets, uint32_t groupX, uint32_t groupY, uint32_t groupZ);
+        class VulkanComputeStage
+        {
+        public:
+            VulkanComputeStage(Internal::VulkanDevice * device,
+                VulkanShaderModule* shader,
+                std::vector<VulkanDescriptorSetLayout*> layouts);
+            ~VulkanComputeStage();
 
-    void submit(std::vector<VkSemaphore> waitSemaphores);
-    void submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores);
-    VkSemaphore getSignalSemaphore();
-private:
+            void beginRecording();
+            void endRecording();
+            void dispatch(std::vector<VulkanDescriptorSet*> sets, uint32_t groupX, uint32_t groupY, uint32_t groupZ);
 
-    VulkanDevice * device;
-    VkSemaphore signalSemaphore;
-    VulkanCommandBuffer* commandBuffer;
-    VulkanGraphicsPipeline* pipeline;
+            void submit(std::vector<VkSemaphore> waitSemaphores);
+            void submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores);
+            VkSemaphore getSignalSemaphore();
+        private:
 
-    std::vector<VulkanDescriptorSetLayout*> setLayouts;
-    VulkanShaderModule* shader;
-    bool compiled = false;
-    void compile();
-};
+            Internal::VulkanDevice * device;
+            VkSemaphore signalSemaphore;
+            Internal::VulkanCommandBuffer* commandBuffer;
+            Internal::VulkanGraphicsPipeline* pipeline;
 
+            std::vector<VulkanDescriptorSetLayout*> setLayouts;
+            VulkanShaderModule* shader;
+            bool compiled = false;
+            void compile();
+        };
+
+    }
+}

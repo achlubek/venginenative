@@ -2,17 +2,25 @@
 #include "VulkanDescriptorSetLayoutFactory.h"
 #include "VulkanDescriptorSetLayout.h"
 
-
-VulkanDescriptorSetLayoutFactory::VulkanDescriptorSetLayoutFactory(VulkanDevice * device)
-    : device(device)
+namespace VEngine
 {
-}
+    namespace Renderer
+    {
+        using namespace VEngine::Renderer::Internal;
 
-VulkanDescriptorSetLayoutFactory::~VulkanDescriptorSetLayoutFactory()
-{
-}
+        VulkanDescriptorSetLayoutFactory::VulkanDescriptorSetLayoutFactory(VulkanDevice * device)
+            : device(device)
+        {
+        }
 
-VulkanDescriptorSetLayout * VulkanDescriptorSetLayoutFactory::build()
-{
-    return new VulkanDescriptorSetLayout(device);
+        VulkanDescriptorSetLayoutFactory::~VulkanDescriptorSetLayoutFactory()
+        {
+        }
+
+        VulkanDescriptorSetLayout * VulkanDescriptorSetLayoutFactory::build()
+        {
+            return new VulkanDescriptorSetLayout(device);
+        }
+
+    }
 }

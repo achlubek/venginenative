@@ -1,15 +1,26 @@
 #pragma once
-class VulkanDevice;
-class VulkanVertexBuffer;
 
-class Object3dInfo
+namespace VEngine
 {
-public:
-    Object3dInfo(VulkanDevice * device, std::vector<float> &vbo);
-    ~Object3dInfo();
+    namespace Renderer
+    {
+        namespace Internal
+        {
+            class VulkanDevice;
+            class VulkanVertexBuffer;
+        }
 
-    VulkanVertexBuffer* getVertexBuffer();
+        class Object3dInfo
+        {
+        public:
+            Object3dInfo(Internal::VulkanDevice * device, std::vector<float> &vbo);
+            ~Object3dInfo();
 
-private: 
-    VulkanVertexBuffer* vertexBuffer;
-};
+            Internal::VulkanVertexBuffer* getVertexBuffer();
+
+        private:
+            Internal::VulkanVertexBuffer * vertexBuffer;
+        };
+
+    }
+}

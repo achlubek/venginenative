@@ -2,17 +2,25 @@
 #include "VulkanBufferFactory.h"
 #include "VulkanGenericBuffer.h"
 
-
-VulkanBufferFactory::VulkanBufferFactory(VulkanDevice* device)
-    : device(device)
+namespace VEngine
 {
-}
+    namespace Renderer
+    {
+        using namespace VEngine::Renderer::Internal;
 
-VulkanBufferFactory::~VulkanBufferFactory()
-{
-}
+        VulkanBufferFactory::VulkanBufferFactory(VulkanDevice* device)
+            : device(device)
+        {
+        }
 
-VulkanGenericBuffer* VulkanBufferFactory::build(VulkanBufferType type, uint64_t size)
-{
-    return new VulkanGenericBuffer(device, type, size);
+        VulkanBufferFactory::~VulkanBufferFactory()
+        {
+        }
+
+        VulkanGenericBuffer* VulkanBufferFactory::build(VulkanBufferType type, uint64_t size)
+        {
+            return new VulkanGenericBuffer(device, type, size);
+        }
+
+    }
 }

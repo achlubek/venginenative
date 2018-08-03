@@ -1,17 +1,26 @@
 #pragma once
-class VulkanDevice;
 #include "VulkanEnums.h"
 
-class VulkanShaderModule
+namespace VEngine
 {
-public:
-    VulkanShaderModule(VulkanDevice * device, VulkanShaderModuleType type, std::string path);
-    ~VulkanShaderModule();
-    VkShaderModule getHandle();
-    VulkanShaderModuleType getType();
+    namespace Renderer
+    {
+        namespace Internal
+        {
+            class VulkanDevice;
+        }
+        class VulkanShaderModule
+        {
+        public:
+            VulkanShaderModule(Internal::VulkanDevice * device, VulkanShaderModuleType type, std::string path);
+            ~VulkanShaderModule();
+            VkShaderModule getHandle();
+            VulkanShaderModuleType getType();
 
-private:
-    VkShaderModule handle;
-    VulkanDevice * device;
-    VulkanShaderModuleType type;
-};
+        private:
+            VkShaderModule handle;
+            Internal::VulkanDevice * device;
+            VulkanShaderModuleType type;
+        };
+    }
+}

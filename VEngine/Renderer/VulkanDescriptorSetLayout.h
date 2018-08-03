@@ -1,29 +1,39 @@
 #pragma once
-class VulkanDevice;
-class VulkanDescriptorSet;
 #include "VulkanEnums.h" 
 
-class VulkanDescriptorSetLayout
+namespace VEngine
 {
-public:
-    VulkanDescriptorSetLayout(VulkanDevice * device);
-    ~VulkanDescriptorSetLayout();
+    namespace Renderer
+    {
+        namespace Internal
+        {
+            class VulkanDevice;
+        }
+        class VulkanDescriptorSet;
 
-    void addField(VulkanDescriptorSetFieldType fieldType, VulkanDescriptorSetFieldStage fieldAccesibility);
+        class VulkanDescriptorSetLayout
+        {
+        public:
+            VulkanDescriptorSetLayout(Internal::VulkanDevice * device);
+            ~VulkanDescriptorSetLayout();
 
-    VulkanDescriptorSet* generateDescriptorSet();
-    VkDescriptorSetLayout getHandle();
-private:
-    std::vector<VkDescriptorSetLayoutBinding> bindings;
-    void generateNewPool();
+            void addField(VulkanDescriptorSetFieldType fieldType, VulkanDescriptorSetFieldStage fieldAccesibility);
 
-    VulkanDevice * device;
-    int allocationCounter = 0;
+            VulkanDescriptorSet* generateDescriptorSet();
+            VkDescriptorSetLayout getHandle();
+        private:
+            std::vector<VkDescriptorSetLayoutBinding> bindings;
+            void generateNewPool();
 
-    std::vector<VkDescriptorPool> descriptorPools = {};
-    VkDescriptorSetLayout layout;
+            Internal::VulkanDevice * device;
+            int allocationCounter = 0;
 
-    bool compiled = false;
-    void compile();
-};
+            std::vector<VkDescriptorPool> descriptorPools = {};
+            VkDescriptorSetLayout layout;
 
+            bool compiled = false;
+            void compile();
+        };
+
+    }
+}

@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+using namespace VEngine::FileSystem;
+using namespace VEngine::Renderer;
+
 int main()
 {
     Media::loadFileMap("../../media");

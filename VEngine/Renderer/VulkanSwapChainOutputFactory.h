@@ -1,15 +1,27 @@
 #pragma once
 class VulkanDevice;
-class VulkanSwapChainOutput;
-class VulkanRenderStage;
-class VulkanSwapChainOutputFactory
+
+namespace VEngine
 {
-public:
-    VulkanSwapChainOutputFactory(VulkanDevice* device);
-    ~VulkanSwapChainOutputFactory();
+    namespace Renderer
+    {
+        namespace Internal
+        {
+            class VulkanDevice;
+        }
+        class VulkanSwapChainOutput;
+        class VulkanRenderStage;
 
-    VulkanSwapChainOutput* build(VulkanRenderStage* stage); // todo in future allow compute shader to draw to swapchain
-private:
-    VulkanDevice * device;
-};
+        class VulkanSwapChainOutputFactory
+        {
+        public:
+            VulkanSwapChainOutputFactory(Internal::VulkanDevice* device);
+            ~VulkanSwapChainOutputFactory();
 
+            VulkanSwapChainOutput* build(VulkanRenderStage* stage); // todo in future allow compute shader to draw to swapchain
+        private:
+            Internal::VulkanDevice * device;
+        };
+
+    }
+}

@@ -14,106 +14,116 @@
 #include "../Input/Mouse.h"
 #include "../Input/Joystick.h"
 
-VulkanToolkit::VulkanToolkit(int width, int height, bool enableValidation, std::string windowName)
-    : device(new VulkanDevice(width, height, enableValidation, windowName)),
-    windowWidth(width), windowHeight(height),
-    object3dInfoFactory(new Object3dInfoFactory(device)),
-    vulkanShaderFactory(new VulkanShaderFactory(device)),
-    vulkanDescriptorSetLayoutFactory(new VulkanDescriptorSetLayoutFactory(device)),
-    vulkanRenderStageFactory(new VulkanRenderStageFactory(device)),
-    vulkanComputeStageFactory(new VulkanComputeStageFactory(device)),
-    vulkanBufferFactory(new VulkanBufferFactory(device)),
-    vulkanImageFactory(new VulkanImageFactory(device)),
-    vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device)),
-    keyboard(new Keyboard(device->getWindow())),
-    mouse(new Mouse(device->getWindow())),
-    joystock(new Joystick(device->getWindow()))
+namespace VEngine
 {
-}
+    namespace Renderer
+    {
+        using namespace VEngine::Renderer::Internal;
+        using namespace VEngine::Input;
 
-VulkanToolkit::VulkanToolkit(bool enableValidation)
-    : device(new VulkanDevice(0, 0, enableValidation, "")),
-    windowWidth(0), windowHeight(0),
-    object3dInfoFactory(new Object3dInfoFactory(device)),
-    vulkanShaderFactory(new VulkanShaderFactory(device)),
-    vulkanDescriptorSetLayoutFactory(new VulkanDescriptorSetLayoutFactory(device)),
-    vulkanRenderStageFactory(new VulkanRenderStageFactory(device)),
-    vulkanComputeStageFactory(new VulkanComputeStageFactory(device)),
-    vulkanBufferFactory(new VulkanBufferFactory(device)),
-    vulkanImageFactory(new VulkanImageFactory(device)),
-    vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device)),
-    keyboard(new Keyboard(device->getWindow())),
-    mouse(new Mouse(device->getWindow())),
-    joystock(new Joystick(device->getWindow()))
-{
-}
 
-VulkanToolkit::~VulkanToolkit()
-{
-    delete device;
-}
+        VulkanToolkit::VulkanToolkit(int width, int height, bool enableValidation, std::string windowName)
+            : device(new VulkanDevice(width, height, enableValidation, windowName)),
+            windowWidth(width), windowHeight(height),
+            object3dInfoFactory(new Object3dInfoFactory(device)),
+            vulkanShaderFactory(new VulkanShaderFactory(device)),
+            vulkanDescriptorSetLayoutFactory(new VulkanDescriptorSetLayoutFactory(device)),
+            vulkanRenderStageFactory(new VulkanRenderStageFactory(device)),
+            vulkanComputeStageFactory(new VulkanComputeStageFactory(device)),
+            vulkanBufferFactory(new VulkanBufferFactory(device)),
+            vulkanImageFactory(new VulkanImageFactory(device)),
+            vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device)),
+            keyboard(new Keyboard(device->getWindow())),
+            mouse(new Mouse(device->getWindow())),
+            joystock(new Joystick(device->getWindow()))
+        {
+        }
 
-bool VulkanToolkit::shouldCloseWindow()
-{
-    return device->shouldCloseWindow();
-}
+        VulkanToolkit::VulkanToolkit(bool enableValidation)
+            : device(new VulkanDevice(0, 0, enableValidation, "")),
+            windowWidth(0), windowHeight(0),
+            object3dInfoFactory(new Object3dInfoFactory(device)),
+            vulkanShaderFactory(new VulkanShaderFactory(device)),
+            vulkanDescriptorSetLayoutFactory(new VulkanDescriptorSetLayoutFactory(device)),
+            vulkanRenderStageFactory(new VulkanRenderStageFactory(device)),
+            vulkanComputeStageFactory(new VulkanComputeStageFactory(device)),
+            vulkanBufferFactory(new VulkanBufferFactory(device)),
+            vulkanImageFactory(new VulkanImageFactory(device)),
+            vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device)),
+            keyboard(new Keyboard(device->getWindow())),
+            mouse(new Mouse(device->getWindow())),
+            joystock(new Joystick(device->getWindow()))
+        {
+        }
 
-void VulkanToolkit::poolEvents()
-{
-    device->poolEvents();
-}
+        VulkanToolkit::~VulkanToolkit()
+        {
+            delete device;
+        }
 
-double VulkanToolkit::getExecutionTime()
-{
-    return device->getExecutionTime();
-}
+        bool VulkanToolkit::shouldCloseWindow()
+        {
+            return device->shouldCloseWindow();
+        }
 
-void VulkanToolkit::waitQueueIdle()
-{
-    vkQueueWaitIdle(device->getMainQueue());
-}
+        void VulkanToolkit::poolEvents()
+        {
+            device->poolEvents();
+        }
 
-void VulkanToolkit::waitDeviceIdle()
-{
-    vkDeviceWaitIdle(device->getDevice());
-}
+        double VulkanToolkit::getExecutionTime()
+        {
+            return device->getExecutionTime();
+        }
 
-Object3dInfoFactory * VulkanToolkit::getObject3dInfoFactory()
-{
-    return object3dInfoFactory;
-}
+        void VulkanToolkit::waitQueueIdle()
+        {
+            vkQueueWaitIdle(device->getMainQueue());
+        }
 
-VulkanShaderFactory * VulkanToolkit::getVulkanShaderFactory()
-{
-    return vulkanShaderFactory;
-}
+        void VulkanToolkit::waitDeviceIdle()
+        {
+            vkDeviceWaitIdle(device->getDevice());
+        }
 
-VulkanDescriptorSetLayoutFactory * VulkanToolkit::getVulkanDescriptorSetLayoutFactory()
-{
-    return vulkanDescriptorSetLayoutFactory;
-}
+        Object3dInfoFactory * VulkanToolkit::getObject3dInfoFactory()
+        {
+            return object3dInfoFactory;
+        }
 
-VulkanRenderStageFactory * VulkanToolkit::getVulkanRenderStageFactory()
-{
-    return vulkanRenderStageFactory;
-}
+        VulkanShaderFactory * VulkanToolkit::getVulkanShaderFactory()
+        {
+            return vulkanShaderFactory;
+        }
 
-VulkanComputeStageFactory * VulkanToolkit::getVulkanComputeStageFactory()
-{
-    return vulkanComputeStageFactory;
-}
+        VulkanDescriptorSetLayoutFactory * VulkanToolkit::getVulkanDescriptorSetLayoutFactory()
+        {
+            return vulkanDescriptorSetLayoutFactory;
+        }
 
-VulkanBufferFactory * VulkanToolkit::getVulkanBufferFactory()
-{
-    return vulkanBufferFactory;
-}
+        VulkanRenderStageFactory * VulkanToolkit::getVulkanRenderStageFactory()
+        {
+            return vulkanRenderStageFactory;
+        }
 
-VulkanImageFactory * VulkanToolkit::getVulkanImageFactory()
-{
-    return vulkanImageFactory;
-}
+        VulkanComputeStageFactory * VulkanToolkit::getVulkanComputeStageFactory()
+        {
+            return vulkanComputeStageFactory;
+        }
 
-VulkanSwapChainOutputFactory * VulkanToolkit::getVulkanSwapChainOutputFactory()
-{
-    return vulkanSwapChainOutputFactory;
+        VulkanBufferFactory * VulkanToolkit::getVulkanBufferFactory()
+        {
+            return vulkanBufferFactory;
+        }
+
+        VulkanImageFactory * VulkanToolkit::getVulkanImageFactory()
+        {
+            return vulkanImageFactory;
+        }
+
+        VulkanSwapChainOutputFactory * VulkanToolkit::getVulkanSwapChainOutputFactory()
+        {
+            return vulkanSwapChainOutputFactory;
+        }
+    }
 }

@@ -1,16 +1,27 @@
 #pragma once
-class VulkanDevice;
-class VulkanComputeStage;
-class VulkanShaderModule;
-class VulkanDescriptorSetLayout;
-class VulkanComputeStageFactory
+namespace VEngine
 {
-public:
-    VulkanComputeStageFactory(VulkanDevice* device);
-    ~VulkanComputeStageFactory();
+    namespace Renderer
+    {
+        namespace Internal
+        {
+            class VulkanDevice;
+        }
 
-    VulkanComputeStage* build(VulkanShaderModule* shader, std::vector<VulkanDescriptorSetLayout*> layouts);
-private:
-    VulkanDevice * device;
-};
+        class VulkanComputeStage;
+        class VulkanShaderModule;
+        class VulkanDescriptorSetLayout;
 
+        class VulkanComputeStageFactory
+        {
+        public:
+            VulkanComputeStageFactory(Internal::VulkanDevice* device);
+            ~VulkanComputeStageFactory();
+
+            VulkanComputeStage* build(VulkanShaderModule* shader, std::vector<VulkanDescriptorSetLayout*> layouts);
+        private:
+            Internal::VulkanDevice * device;
+        };
+
+    }
+}

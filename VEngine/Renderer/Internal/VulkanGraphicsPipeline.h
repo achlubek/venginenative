@@ -1,26 +1,37 @@
 #pragma once
-class VulkanDevice;
-class VulkanRenderPass;
-class VulkanDescriptorSetLayout;
 
-class VulkanGraphicsPipeline
+namespace VEngine
 {
-public:
-    VulkanGraphicsPipeline(VulkanDevice * device, int viewportwidth, int viewportheight, std::vector<VulkanDescriptorSetLayout*> setlayouts,
-        std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass* renderpass, bool enableDepthTest, 
-        VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VkCullModeFlags cullflags = 0); // todo omg this needs refactor
+    namespace Renderer
+    {
+        class VulkanDescriptorSetLayout;
+        namespace Internal
+        {
 
-    VulkanGraphicsPipeline(VulkanDevice * device, std::vector<VulkanDescriptorSetLayout*> setlayouts,
-        VkPipelineShaderStageCreateInfo shader);
+            class VulkanDevice;
+            class VulkanRenderPass;
 
-    ~VulkanGraphicsPipeline();
+            class VulkanGraphicsPipeline
+            {
+            public:
+                VulkanGraphicsPipeline(VulkanDevice * device, int viewportwidth, int viewportheight, std::vector<VulkanDescriptorSetLayout*> setlayouts,
+                    std::vector<VkPipelineShaderStageCreateInfo> shaderstages, VulkanRenderPass* renderpass, bool enableDepthTest,
+                    VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VkCullModeFlags cullflags = 0); // todo omg this needs refactor
 
-    VkPipeline getPipeline();
-    VkPipelineLayout getPipelineLayout();
+                VulkanGraphicsPipeline(VulkanDevice * device, std::vector<VulkanDescriptorSetLayout*> setlayouts,
+                    VkPipelineShaderStageCreateInfo shader);
 
-private:
-    VulkanDevice * device;
-    VkPipelineLayout pipelineLayout;
-    VkPipeline graphicsPipeline;
-};
+                ~VulkanGraphicsPipeline();
 
+                VkPipeline getPipeline();
+                VkPipelineLayout getPipelineLayout();
+
+            private:
+                VulkanDevice * device;
+                VkPipelineLayout pipelineLayout;
+                VkPipeline graphicsPipeline;
+            };
+
+        }
+    }
+}

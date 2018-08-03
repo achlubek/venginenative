@@ -1,28 +1,37 @@
 #pragma once
-class VulkanDevice;
-class VulkanImage;
-class VulkanGenericBuffer; 
-
-class VulkanDescriptorSet
+namespace VEngine
 {
-public:
-    VulkanDescriptorSet(VulkanDevice * device, VkDescriptorPool p, VkDescriptorSetLayout l);
-    ~VulkanDescriptorSet();
+    namespace Renderer
+    {
+        namespace Internal
+        {
+            class VulkanDevice;
+        }
+        class VulkanImage;
+        class VulkanGenericBuffer;
 
-    void bindImageViewSampler(int binding, VulkanImage* img);
-    void bindImageStorage(int binding, VulkanImage* img);
-    void bindBuffer(int binding, VulkanGenericBuffer* buffer);
+        class VulkanDescriptorSet
+        {
+        public:
+            VulkanDescriptorSet(Internal::VulkanDevice * device, VkDescriptorPool p, VkDescriptorSetLayout l);
+            ~VulkanDescriptorSet();
+
+            void bindImageViewSampler(int binding, VulkanImage* img);
+            void bindImageStorage(int binding, VulkanImage* img);
+            void bindBuffer(int binding, VulkanGenericBuffer* buffer);
 
 
-    VkDescriptorSet getSet();
+            VkDescriptorSet getSet();
 
-private:
-    VulkanDevice * device;
-    VkDescriptorPool pool;
-    VkDescriptorSet set;
-    std::vector<VkWriteDescriptorSet> writes;
+        private:
+            Internal::VulkanDevice * device;
+            VkDescriptorPool pool;
+            VkDescriptorSet set;
+            std::vector<VkWriteDescriptorSet> writes;
 
-    void update();
-    bool needsUpdate = true;
-};
+            void update();
+            bool needsUpdate = true;
+        };
 
+    }
+}

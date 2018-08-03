@@ -1,19 +1,29 @@
 #pragma once
-class VulkanMemoryChunk;
-class VulkanSingleAllocation;
-class VulkanDevice;
-class VulkanMemoryManager
+namespace VEngine
 {
-public:
-    VulkanMemoryManager(VulkanDevice* device);
-    ~VulkanMemoryManager();
+    namespace Renderer
+    {
+        namespace Internal
+        {
 
-    VulkanDevice* device;
+            class VulkanMemoryChunk;
+            class VulkanSingleAllocation;
+            class VulkanDevice;
+            class VulkanMemoryManager
+            {
+            public:
+                VulkanMemoryManager(VulkanDevice* device);
+                ~VulkanMemoryManager();
 
-    VulkanSingleAllocation bindBufferMemory(uint32_t type, VkBuffer buffer, VkDeviceSize size);
-    VulkanSingleAllocation bindImageMemory(uint32_t type, VkImage image, VkDeviceSize size);
+                VulkanDevice* device;
 
-private:
-    std::map<uint32_t, std::vector<VulkanMemoryChunk*>> allAllocationsByType;
-};
+                VulkanSingleAllocation bindBufferMemory(uint32_t type, VkBuffer buffer, VkDeviceSize size);
+                VulkanSingleAllocation bindImageMemory(uint32_t type, VkImage image, VkDeviceSize size);
 
+            private:
+                std::map<uint32_t, std::vector<VulkanMemoryChunk*>> allAllocationsByType;
+            };
+
+        }
+    }
+}
