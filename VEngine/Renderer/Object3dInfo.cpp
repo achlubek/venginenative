@@ -20,7 +20,7 @@ namespace VEngine
 
         Object3dInfo::~Object3dInfo()
         {
-            delete vertexBuffer;
+            safedelete(vertexBuffer);
         }
 
         VulkanVertexBuffer * Object3dInfo::getVertexBuffer()

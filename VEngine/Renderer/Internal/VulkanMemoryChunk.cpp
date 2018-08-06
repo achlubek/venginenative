@@ -25,6 +25,11 @@ namespace VEngine
 
             VulkanMemoryChunk::~VulkanMemoryChunk()
             {
+                size_t allocscount = allActiveAllocations.size();
+                for (int i = 0; i < allocscount; i++) {
+                    auto a = allActiveAllocations[i];
+                    a.free();
+                }
                 vkFreeMemory(device->getDevice(), handle, nullptr);
             }
 

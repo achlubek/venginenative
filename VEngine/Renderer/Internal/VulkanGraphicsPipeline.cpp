@@ -227,6 +227,8 @@ namespace VEngine
 
             VulkanGraphicsPipeline::~VulkanGraphicsPipeline()
             {
+                vkDestroyPipeline(device->getDevice(), graphicsPipeline, nullptr);
+                vkDestroyPipelineLayout(device->getDevice(), pipelineLayout, nullptr);
             }
 
             VkPipeline VulkanGraphicsPipeline::getPipeline()

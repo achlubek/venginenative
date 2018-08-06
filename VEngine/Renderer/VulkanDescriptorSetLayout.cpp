@@ -20,6 +20,10 @@ namespace VEngine
 
         VulkanDescriptorSetLayout::~VulkanDescriptorSetLayout()
         {
+            for (int i = 0; i < descriptorPools.size(); i++) {
+                vkDestroyDescriptorPool(device->getDevice(), descriptorPools[i], nullptr);
+            }
+            vkDestroyDescriptorSetLayout(device->getDevice(), layout, nullptr);
         }
 
         void VulkanDescriptorSetLayout::addField(VulkanDescriptorSetFieldType fieldType, VulkanDescriptorSetFieldStage fieldStage)

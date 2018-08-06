@@ -16,6 +16,7 @@ namespace VEngine
 
             VulkanSwapChain::~VulkanSwapChain()
             {
+                vkDestroySwapchainKHR(device->getDevice(), swapChain, nullptr);
             }
 
             void VulkanSwapChain::present(std::vector<VkSemaphore> waitSemaphores, const uint32_t imageIndex)
@@ -34,9 +35,7 @@ namespace VEngine
                 presentInfo.pImageIndices = &imageIndex;
 
                 vkQueuePresentKHR(device->getMainQueue(), &presentInfo);
-                //###########
 
-                /* Swap front and back buffers */
                 glfwSwapBuffers(window);
             }
 

@@ -103,6 +103,12 @@ namespace VEngine
 
             VulkanDevice::~VulkanDevice()
             {
+                vkDestroyCommandPool(device, commandPool, nullptr);
+                safedelete(swapChain);
+                safedelete(memoryManager);
+                vkDestroySurfaceKHR(instance, surface, nullptr);
+                glfwDestroyWindow(window);
+                vkDestroyDevice(device, nullptr);
                 vkDestroyInstance(instance, nullptr);
             }
 

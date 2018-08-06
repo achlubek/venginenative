@@ -25,6 +25,7 @@ namespace VEngine
                 auto attachment = img->getAttachment(VulkanAttachmentBlending::None, true, clear, true);
                 outputStages[i] = stage->copy({ attachment });
             }
+            safedelete(stage);
             VkSemaphoreCreateInfo semaphoreInfo = {};
             semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
             vkCreateSemaphore(device->getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphore);
@@ -33,6 +34,10 @@ namespace VEngine
 
         VulkanSwapChainOutput::~VulkanSwapChainOutput()
         {
+            for (int i = 0; i < outputStages.size(); i++) {
+                safedelete(outputStages[i]);
+            }
+            vkDestroySemaphore(device->getDevice(), imageAvailableSemaphore, nullptr);
         }
 
         void VulkanSwapChainOutput::beginDrawing()

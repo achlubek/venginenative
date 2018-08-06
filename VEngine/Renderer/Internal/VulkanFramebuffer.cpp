@@ -25,6 +25,7 @@ namespace VEngine
 
             VulkanFramebuffer::~VulkanFramebuffer()
             {
+                vkDestroyFramebuffer(device->getDevice(), handle, nullptr);
             }
 
             VkFramebuffer VulkanFramebuffer::getHandle()

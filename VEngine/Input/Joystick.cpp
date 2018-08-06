@@ -7,6 +7,7 @@ namespace VEngine
     {
 
         Joystick::Joystick(GLFWwindow * win)
+            : window(win)
         {
         }
 

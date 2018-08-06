@@ -12,3 +12,4 @@
 #include <windows.h>
 #endif
 #include <GLFW/glfw3.h>
+#define safedelete(a) if(a!=nullptr){delete a;a=nullptr;}

@@ -35,7 +35,7 @@ namespace VEngine
             vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device)),
             keyboard(new Keyboard(device->getWindow())),
             mouse(new Mouse(device->getWindow())),
-            joystock(new Joystick(device->getWindow()))
+            joystick(new Joystick(device->getWindow()))
         {
         }
 
@@ -50,15 +50,26 @@ namespace VEngine
             vulkanBufferFactory(new VulkanBufferFactory(device)),
             vulkanImageFactory(new VulkanImageFactory(device)),
             vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device)),
-            keyboard(new Keyboard(device->getWindow())),
-            mouse(new Mouse(device->getWindow())),
-            joystock(new Joystick(device->getWindow()))
+            keyboard(nullptr),
+            mouse(nullptr),
+            joystick(nullptr)
         {
         }
 
         VulkanToolkit::~VulkanToolkit()
         {
-            delete device;
+            safedelete(object3dInfoFactory);
+            safedelete(vulkanShaderFactory);
+            safedelete(vulkanDescriptorSetLayoutFactory);
+            safedelete(vulkanRenderStageFactory);
+            safedelete(vulkanComputeStageFactory);
+            safedelete(vulkanBufferFactory);
+            safedelete(vulkanImageFactory);
+            safedelete(vulkanSwapChainOutputFactory);
+            safedelete(keyboard);
+            safedelete(mouse);
+            safedelete(joystick);
+            safedelete(device);
         }
 
         bool VulkanToolkit::shouldCloseWindow()
@@ -124,6 +135,18 @@ namespace VEngine
         VulkanSwapChainOutputFactory * VulkanToolkit::getVulkanSwapChainOutputFactory()
         {
             return vulkanSwapChainOutputFactory;
+        }
+        Input::Keyboard * VulkanToolkit::getKeyboard()
+        {
+            return keyboard;
+        }
+        Input::Mouse * VulkanToolkit::getMouse()
+        {
+            return mouse;
+        }
+        Input::Joystick * VulkanToolkit::getJoystick()
+        {
+            return joystick;
         }
     }
 }

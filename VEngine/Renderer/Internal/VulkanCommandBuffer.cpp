@@ -21,6 +21,7 @@ namespace VEngine
 
             VulkanCommandBuffer::~VulkanCommandBuffer()
             {
+                // no idea how to destroy command buffer
             }
 
             void VulkanCommandBuffer::begin(VkCommandBufferUsageFlags flags)

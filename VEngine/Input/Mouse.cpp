@@ -10,8 +10,8 @@ namespace VEngine
         Mouse * Mouse::instance = nullptr;
 
         Mouse::Mouse(GLFWwindow* win)
+            : window(win)
         {
-            window = win;
             instance = this;
 
             onMouseDown = EventHandler<int>();

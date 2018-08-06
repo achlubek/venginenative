@@ -50,6 +50,7 @@ namespace VEngine
 
         VulkanImage::~VulkanImage()
         {
+            safedelete(internalImage);
         }
 
         VkFormat VulkanImage::resolveFormat(VulkanImageFormat format)

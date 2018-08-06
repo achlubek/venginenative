@@ -10,8 +10,8 @@ namespace VEngine
         Keyboard * Keyboard::instance = nullptr;
 
         Keyboard::Keyboard(GLFWwindow* win)
+            : window(win)
         {
-            window = win;
             instance = this;
 
             onKeyPress = EventHandler<int>();

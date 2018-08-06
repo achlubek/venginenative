@@ -22,6 +22,9 @@ namespace VEngine
 
         VulkanComputeStage::~VulkanComputeStage()
         {
+            vkDestroySemaphore(device->getDevice(), signalSemaphore, nullptr);
+            safedelete(pipeline);
+            safedelete(commandBuffer);
         }
 
         void VulkanComputeStage::compile()

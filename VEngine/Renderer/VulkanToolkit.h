@@ -63,7 +63,7 @@ namespace VEngine
             VulkanSwapChainOutputFactory* vulkanSwapChainOutputFactory;
             Input::Keyboard* keyboard;
             Input::Mouse* mouse;
-            Input::Joystick* joystock;
+            Input::Joystick* joystick;
         };
 
     }

@@ -12,7 +12,6 @@ namespace VEngine
             bool isPresent(int index);
             std::vector<float> getAxes(int index);
         private:
-            static Joystick * instance;
             GLFWwindow* window;
         };
 

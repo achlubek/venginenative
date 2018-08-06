@@ -22,7 +22,7 @@ namespace VEngine
             VulkanImage(Internal::VulkanDevice* device, std::string mediakey);
             VulkanImage(Internal::VulkanDevice* device, uint32_t width, uint32_t height, uint32_t channelCount, void * data);
             ~VulkanImage();
-            // todo abstarct out VkClearColorValue
+            // todo abstract out VkClearColorValue
             VulkanAttachment* getAttachment(VulkanAttachmentBlending blending, bool clear, VkClearColorValue clearColor, bool forPresent);
             VulkanAttachment* getAttachment(VulkanAttachmentBlending blending, bool clear, VkClearColorValue clearColor);
             VulkanAttachment* getAttachment(VulkanAttachmentBlending blending, bool clear);

@@ -32,10 +32,12 @@ namespace VEngine
         }
 
 
-#define safedelete(a) if(a!=nullptr){delete a;a=nullptr;}
         VulkanRenderStage::~VulkanRenderStage()
         {
-            //vkDestroySemaphore(vulkan->device, signalSemaphore, nullptr);
+            if (compiled) {
+                vkDestroySemaphore(device->getDevice(), signalSemaphore, nullptr);
+            }
+
             safedelete(renderPass);
             safedelete(framebuffer);
 
