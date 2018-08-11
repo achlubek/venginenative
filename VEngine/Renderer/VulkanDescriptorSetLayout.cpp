@@ -25,7 +25,7 @@ namespace VEngine
             }
             vkDestroyDescriptorSetLayout(device->getDevice(), layout, nullptr);
         }
-
+        
         void VulkanDescriptorSetLayout::addField(VulkanDescriptorSetFieldType fieldType, VulkanDescriptorSetFieldStage fieldStage)
         {
 

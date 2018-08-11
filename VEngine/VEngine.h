@@ -6,9 +6,20 @@
 #include <set>
 #include <map>
 #include <unordered_map>
+#include <functional>
 #include <vulkan.h>
+#ifdef _MSC_VER
+#include <windows.h>
+#endif
+#include <GLFW/glfw3.h>
 
 #include "Media/Media.h"
+
+#include "Input/Joystick.h"
+#include "Input/Keyboard.h"
+#include "Input/Mouse.h"
+
+#include "Utilities/EventHandler.h"
 
 #include "Renderer/Object3dInfo.h"
 #include "Renderer/VulkanBinaryBufferBuilder.h"
