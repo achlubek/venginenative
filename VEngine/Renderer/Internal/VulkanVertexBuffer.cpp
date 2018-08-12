@@ -12,7 +12,7 @@ namespace VEngine
     {
         namespace Internal
         {
-            VulkanVertexBuffer::VulkanVertexBuffer(VulkanDevice* device, std::vector<float> data)
+            VulkanVertexBuffer::VulkanVertexBuffer(VulkanDevice* device, std::vector<float>& data)
                 : device(device)
             {
                 VkBufferCreateInfo bufferInfo = {};

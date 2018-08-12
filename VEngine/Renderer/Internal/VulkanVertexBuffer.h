@@ -13,7 +13,7 @@ namespace VEngine
             class VulkanVertexBuffer
             {
             public:
-                VulkanVertexBuffer(VulkanDevice* device, std::vector<float> data);
+                VulkanVertexBuffer(VulkanDevice* device, std::vector<float>& data);
                 ~VulkanVertexBuffer();
                 VkBuffer getBuffer();
                 void drawInstanced(VulkanGraphicsPipeline* p, std::vector<VulkanDescriptorSet*> sets, VulkanCommandBuffer* cb, uint32_t instances);

@@ -17,9 +17,11 @@ namespace VEngine
             ~Object3dInfo();
 
             Internal::VulkanVertexBuffer* getVertexBuffer();
+            std::vector<float> & getVBO();
 
         private:
             Internal::VulkanVertexBuffer * vertexBuffer;
+            std::vector<float> vbo;
         };
 
     }
