@@ -1,4 +1,5 @@
 #pragma once
+#include "VulkanEnums.h"
 
 namespace VEngine
 {
@@ -24,7 +25,8 @@ namespace VEngine
             VulkanRenderStage(Internal::VulkanDevice * device, int width, int height,
                 std::vector<VulkanShaderModule*> shaders,
                 std::vector<VulkanDescriptorSetLayout*> layouts,
-                std::vector<VulkanAttachment*> outputImages);
+                std::vector<VulkanAttachment*> outputImages,
+                VulkanCullMode cullMode);
             ~VulkanRenderStage();
             void beginDrawing();
             void endDrawing();
@@ -52,6 +54,7 @@ namespace VEngine
 
             VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
             VkCullModeFlags cullFlags = VK_CULL_MODE_NONE;
+            VulkanCullMode cullMode;
             bool compiled = false;
             void compile();
         };

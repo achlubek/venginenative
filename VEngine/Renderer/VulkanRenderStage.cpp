@@ -25,10 +25,18 @@ namespace VEngine
         VulkanRenderStage::VulkanRenderStage(VulkanDevice * device, int width, int height,
             std::vector<VulkanShaderModule*> shaders,
             std::vector<VulkanDescriptorSetLayout*> layouts,
-            std::vector<VulkanAttachment*> outputImages)
-            : device(device), width(width), height(height), setLayouts(layouts), outputImages(outputImages), shaders(shaders)
+            std::vector<VulkanAttachment*> outputImages,
+            VulkanCullMode cullMode)
+            : device(device), width(width), height(height), setLayouts(layouts), outputImages(outputImages), shaders(shaders), cullMode(cullMode)
         {
             sets = {};
+            cullFlags = VK_CULL_MODE_NONE;
+            if (cullMode == VulkanCullMode::CullModeFront) {
+                cullFlags = VK_CULL_MODE_FRONT_BIT;
+            }
+            if (cullMode == VulkanCullMode::CullModeBack) {
+                cullFlags = VK_CULL_MODE_BACK_BIT;
+            }
         }
 
 
@@ -169,14 +177,14 @@ namespace VEngine
 
         VulkanRenderStage* VulkanRenderStage::copy()
         {
-            auto v = new VulkanRenderStage(device, width, height, shaders, setLayouts, outputImages);
+            auto v = new VulkanRenderStage(device, width, height, shaders, setLayouts, outputImages, cullMode);
             v->setSets(sets);
             return v;
         }
 
         VulkanRenderStage * VulkanRenderStage::copy(std::vector<VulkanAttachment*> ioutputImages)
         {
-            auto v = new VulkanRenderStage(device, width, height, shaders, setLayouts, ioutputImages);
+            auto v = new VulkanRenderStage(device, width, height, shaders, setLayouts, ioutputImages, cullMode);
             v->setSets(sets);
             return v;
         }

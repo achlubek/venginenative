@@ -1,4 +1,5 @@
 #pragma once
+#include "VulkanEnums.h"
 
 namespace VEngine
 {
@@ -20,8 +21,23 @@ namespace VEngine
             ~VulkanRenderStageFactory();
             VulkanRenderStage* build(int width, int height,
                 std::vector<VulkanShaderModule*> shaders,
+                std::vector<VulkanDescriptorSetLayout*> layouts);
+
+            VulkanRenderStage* build(int width, int height,
+                std::vector<VulkanShaderModule*> shaders,
                 std::vector<VulkanDescriptorSetLayout*> layouts,
                 std::vector<VulkanAttachment*> outputImages);
+
+            VulkanRenderStage* build(int width, int height,
+                std::vector<VulkanShaderModule*> shaders,
+                std::vector<VulkanDescriptorSetLayout*> layouts,
+                VulkanCullMode cullMode);
+
+            VulkanRenderStage* build(int width, int height,
+                std::vector<VulkanShaderModule*> shaders,
+                std::vector<VulkanDescriptorSetLayout*> layouts,
+                std::vector<VulkanAttachment*> outputImages,
+                VulkanCullMode cullMode);
 
         private:
             Internal::VulkanDevice * device;

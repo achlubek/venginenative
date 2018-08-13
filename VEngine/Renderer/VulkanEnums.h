@@ -10,6 +10,12 @@ namespace VEngine
             Compute
         };
 
+        enum VulkanCullMode {
+            CullModeFront,
+            CullModeBack,
+            CullModeNone
+        };
+
         enum VulkanAttachmentBlending {
             None,
             Additive,

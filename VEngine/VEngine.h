@@ -21,6 +21,7 @@
 
 #include "Utilities/EventHandler.h"
 
+#include "Renderer/VulkanEnums.h"
 #include "Renderer/Object3dInfo.h"
 #include "Renderer/VulkanBinaryBufferBuilder.h"
 #include "Renderer/VulkanComputeStage.h"
