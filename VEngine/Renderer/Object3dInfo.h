@@ -21,7 +21,7 @@ namespace VEngine
 
         private:
             Internal::VulkanVertexBuffer * vertexBuffer;
-            std::vector<float> vbo;
+            std::vector<float> vbo = {};
         };
 
     }

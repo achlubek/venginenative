@@ -15,10 +15,10 @@ int main()
     auto texture = toolkit->getVulkanImageFactory()->build("blaze.png");
 
     auto layout = toolkit->getVulkanDescriptorSetLayoutFactory()->build();
-    layout->addField(VulkanDescriptorSetFieldType::FieldTypeUniformBuffer, static_cast<VulkanDescriptorSetFieldStage>(VulkanDescriptorSetFieldStage::FieldStageFragment | VulkanDescriptorSetFieldStage::FieldStageVertex));
+    layout->addField(VulkanDescriptorSetFieldType::FieldTypeUniformBuffer, VulkanDescriptorSetFieldStage::FieldStageAllGraphics);
     layout->addField(VulkanDescriptorSetFieldType::FieldTypeSampler, VulkanDescriptorSetFieldStage::FieldStageFragment);
 
-    auto stage = toolkit->getVulkanRenderStageFactory()->build(640, 480, { vert, frag }, { layout }, {});
+    auto stage = toolkit->getVulkanRenderStageFactory()->build(640, 480, { vert, frag }, { layout });
 
     auto buffer = toolkit->getVulkanBufferFactory()->build(VulkanBufferType::BufferTypeUniform, sizeof(float) * 20);
 

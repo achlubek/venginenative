@@ -122,6 +122,7 @@ namespace VEngine
                 imgdata.width = width;
                 imgdata.height = height;
                 imgdata.channelCount = channelCount;
+                imgdata.data = data;
                 auto format = VK_FORMAT_R8G8B8A8_UNORM;
                 if (imgdata.channelCount == 2) format = VK_FORMAT_R8G8_UNORM;
                 if (imgdata.channelCount == 1) format = VK_FORMAT_R8_UNORM;

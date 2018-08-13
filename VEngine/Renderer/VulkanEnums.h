@@ -11,9 +11,9 @@ namespace VEngine
         };
 
         enum VulkanCullMode {
+            CullModeNone,
             CullModeFront,
-            CullModeBack,
-            CullModeNone
+            CullModeBack
         };
 
         enum VulkanAttachmentBlending {
