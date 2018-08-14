@@ -27,16 +27,6 @@ namespace VEngine
                 chunk->freeBindMemory(VulkanSingleAllocation(chunk, size, offset));
             }
 
-            uint64_t VulkanSingleAllocation::getOffset()
-            {
-                return offset;
-            }
-
-            uint64_t VulkanSingleAllocation::getSize()
-            {
-                return size;
-            }
-
             void VulkanSingleAllocation::map(uint64_t ioffset, uint64_t isize, void ** data)
             {
                 vkMapMemory(chunk->getDevice(), chunk->getHandle(), ioffset + offset, isize, 0, data);

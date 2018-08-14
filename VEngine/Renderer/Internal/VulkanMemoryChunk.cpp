@@ -18,8 +18,9 @@ namespace VEngine
                 allocInfo.allocationSize = chunkSize;
                 allocInfo.memoryTypeIndex = type;
 
-                if (vkAllocateMemory(device->getDevice(), &allocInfo, nullptr, &handle) != VK_SUCCESS) {
-                    throw std::runtime_error("failed to allocate requested memory!");
+                VkResult result = vkAllocateMemory(device->getDevice(), &allocInfo, nullptr, &handle);
+                if (result != VK_SUCCESS) {
+                    throw std::runtime_error("failed to allocate requested memory");
                 }
             }
 
@@ -64,9 +65,9 @@ namespace VEngine
                 size_t allocscount = allActiveAllocations.size();
                 for (int i = 0; i < allocscount; i++) {
                     auto a = allActiveAllocations[i];
-                    if (a.getOffset() == allocation.getOffset() && a.getSize() == allocation.getSize()) {
+                    if (a.offset == allocation.offset && a.size == allocation.size) {
                         allActiveAllocations.erase(allActiveAllocations.begin() + i);
-                        allAllocationsSize -= allocation.getSize();
+                        allAllocationsSize -= allocation.size;
                         break;
                     }
                 }
@@ -85,8 +86,8 @@ namespace VEngine
                 size_t allocscount = allActiveAllocations.size();
                 for (int i = 0; i < allocscount; i++) {
                     auto a = allActiveAllocations[i];
-                    if (isFreeSpace(a.getOffset() + a.getSize() + 2048, size)) {
-                        outOffset = a.getOffset() + a.getSize() + 2048;
+                    if (isFreeSpace(a.offset + a.size + 2048, size)) {
+                        outOffset = a.offset + a.size + 2048;
                         inUse = false;
                         return true;
                     }
@@ -114,14 +115,14 @@ namespace VEngine
                 }
                 for (int i = 0; i < allocscount; i++) {
                     auto a = allActiveAllocations[i];
-                    VkDeviceSize aend = a.getOffset() + a.getSize();
-                    if (offset >= a.getOffset() && offset <= aend) { // if start of alloc collides
+                    VkDeviceSize aend = a.offset + a.size;
+                    if (offset >= a.offset && offset <= aend) { // if start of alloc collides
                         return false;
                     }
-                    if (end >= a.getOffset() && end <= aend) { // if end of alloc collides
+                    if (end >= a.offset && end <= aend) { // if end of alloc collides
                         return false;
                     }
-                    if (offset <= a.getOffset() && end >= aend) { // if alloc contains element
+                    if (offset <= a.offset && end >= aend) { // if alloc contains element
                         return false;
                     }
                 }

@@ -72,8 +72,8 @@ namespace VEngine
             std::vector<VkClearValue> clearValues = {};
 
             for (int i = 0; i < renderPass->getAttachments().size(); i++) {
+                clearValues.push_back(VkClearValue());
                 if (renderPass->getAttachments()[i]->isCleared()) {
-                    clearValues.push_back(VkClearValue());
                     if (renderPass->getAttachments()[i]->getImage()->isDepthBuffer()) {
                         clearValues[clearValues.size() - 1].depthStencil = { 1.0f, 0 };
                     }
