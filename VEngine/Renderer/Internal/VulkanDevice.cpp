@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "VulkanDevice.h"
 #include <GLFW/glfw3.h>
+#include <iostream>
+
 namespace VEngine
 {
     namespace Renderer
@@ -136,7 +138,8 @@ namespace VEngine
                 const char* layerPrefix,
                 const char* msg,
                 void* userData) {
-                printf("VALIDATION: %s\n\n", msg);
+                
+                std::cout << "VALIDATION (Layer " << layerPrefix << ", obj " << obj << ", location " << location << ", code " << code << ":\n" << msg << "\n\n";
 
                 return VK_FALSE;
             }

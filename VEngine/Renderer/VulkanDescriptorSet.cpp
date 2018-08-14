@@ -29,16 +29,25 @@ namespace VEngine
         {
         }
 
-        void VulkanDescriptorSet::bindImageViewSampler(int binding, VulkanImage* img)
+        void VulkanDescriptorSet::bindImageViewSampler(uint32_t binding, VulkanImage* img)
         {
             VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo();
             imageInfo->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
             imageInfo->imageView = img->getImageView();
             imageInfo->sampler = img->getSampler();
 
-            writes.resize(writes.size() + 1);
+            size_t i = 0xFFFFFF;
 
-            size_t i = writes.size() - 1;
+            for (int x = 0; x < writes.size(); x++) {
+                if (writes[x].dstBinding == binding) {
+                    i = x;
+                    break;
+                }
+            }
+            if (i == 0xFFFFFF) {
+                writes.resize(writes.size() + 1);
+                i = writes.size() - 1;
+            }
 
             writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             writes[i].dstSet = set;
@@ -50,16 +59,25 @@ namespace VEngine
             needsUpdate = true;
 
         }
-        void VulkanDescriptorSet::bindImageStorage(int binding, VulkanImage* img)
+        void VulkanDescriptorSet::bindImageStorage(uint32_t binding, VulkanImage* img)
         {
             VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo();
             imageInfo->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
             imageInfo->imageView = img->getImageView();
             imageInfo->sampler = img->getSampler();
 
-            writes.resize(writes.size() + 1);
+            size_t i = 0xFFFFFF;
 
-            size_t i = writes.size() - 1;
+            for (int x = 0; x < writes.size(); x++) {
+                if (writes[x].dstBinding == binding) {
+                    i = x;
+                    break;
+                }
+            }
+            if (i == 0xFFFFFF) {
+                writes.resize(writes.size() + 1);
+                i = writes.size() - 1;
+            }
 
             writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             writes[i].dstSet = set;
@@ -73,16 +91,26 @@ namespace VEngine
         }
 
 
-        void VulkanDescriptorSet::bindBuffer(int binding, VulkanGenericBuffer* buffer)
+        void VulkanDescriptorSet::bindBuffer(uint32_t binding, VulkanGenericBuffer* buffer)
         {
             VkDescriptorBufferInfo* bufferInfo = new VkDescriptorBufferInfo();
             bufferInfo->buffer = buffer->getBuffer();
             bufferInfo->offset = 0;
             bufferInfo->range = buffer->getSize();
 
-            writes.resize(writes.size() + 1);
 
-            size_t i = writes.size() - 1;
+            size_t i = 0xFFFFFF;
+
+            for (int x = 0; x < writes.size(); x++) {
+                if (writes[x].dstBinding == binding) {
+                    i = x;
+                    break;
+                }
+            }
+            if (i == 0xFFFFFF) {
+                writes.resize(writes.size() + 1);
+                i = writes.size() - 1;
+            }
 
             writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             writes[i].dstSet = set;

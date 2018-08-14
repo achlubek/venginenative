@@ -16,9 +16,9 @@ namespace VEngine
             VulkanDescriptorSet(Internal::VulkanDevice * device, VkDescriptorPool p, VkDescriptorSetLayout l);
             ~VulkanDescriptorSet();
 
-            void bindImageViewSampler(int binding, VulkanImage* img);
-            void bindImageStorage(int binding, VulkanImage* img);
-            void bindBuffer(int binding, VulkanGenericBuffer* buffer);
+            void bindImageViewSampler(uint32_t binding, VulkanImage* img);
+            void bindImageStorage(uint32_t binding, VulkanImage* img);
+            void bindBuffer(uint32_t binding, VulkanGenericBuffer* buffer);
 
 
             VkDescriptorSet getSet();
