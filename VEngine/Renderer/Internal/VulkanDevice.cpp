@@ -35,6 +35,8 @@ namespace VEngine
                 requiredFeatures.samplerAnisotropy = VK_FALSE; // I will need to recheck this mipmapping hell some time
                 requiredFeatures.shaderStorageImageExtendedFormats = VK_TRUE;
                 requiredFeatures.independentBlend = VK_TRUE;
+                requiredFeatures.fragmentStoresAndAtomics = VK_TRUE;
+                requiredFeatures.vertexPipelineStoresAndAtomics = VK_TRUE;
 
                 const std::vector<float> priorities = { 1.0f, 0.0f };
                 const VkDeviceQueueCreateInfo deviceQueueCreateInfo =
@@ -90,7 +92,7 @@ namespace VEngine
 
                 if (width > 0 && height > 0) {
                     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-                    window = glfwCreateWindow(width, height, "VEngine", NULL, NULL);
+                    window = glfwCreateWindow(width, height, windowName.c_str(), NULL, NULL);
 
                     VkResult result;
                     result = glfwCreateWindowSurface(instance, window, NULL, &surface);
