@@ -83,7 +83,17 @@ namespace VEngine
                     inUse = false;
                     return true;
                 }
+                // try the last one for a small performance boost
+
                 size_t allocscount = allActiveAllocations.size();
+
+                auto a = allActiveAllocations[allocscount - 1];
+                if (isFreeSpace(a.offset + a.size + 2048, size)) {
+                    outOffset = a.offset + a.size + 2048;
+                    inUse = false;
+                    return true;
+                }
+
                 for (int i = 0; i < allocscount; i++) {
                     auto a = allActiveAllocations[i];
                     if (isFreeSpace(a.offset + a.size + 2048, size)) {
@@ -113,9 +123,9 @@ namespace VEngine
                 if (end >= chunkSize) {
                     return false;
                 }
-                for (int i = 0; i < allocscount; i++) {
+                for (size_t i = 0; i < allocscount; i++) {
                     auto a = allActiveAllocations[i];
-                    VkDeviceSize aend = a.offset + a.size;
+                    uint64_t aend = a.offset + a.size;
                     if (offset >= a.offset && offset <= aend) { // if start of alloc collides
                         return false;
                     }

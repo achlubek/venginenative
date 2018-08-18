@@ -17,7 +17,7 @@ namespace VEngine
                 void map(uint64_t offset, uint64_t size, void** data);
                 void map(void** data);
                 void unmap();
-                uint64_t size;
+                uint64_t size; // public instead of get set because of performance issues
                 uint64_t offset;
             private:
 
