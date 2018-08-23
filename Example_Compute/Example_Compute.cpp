@@ -1,6 +1,5 @@
 #include "stdafx.h"
 
-using namespace VEngine::FileSystem;
 using namespace VEngine::Renderer;
 
 /*
@@ -9,14 +8,13 @@ This example shows how to do simple computations on GPU using compute shader
 
 int main()
 {
-    // Initialize media so the system can find needed files
-
-    Media::loadFileMap("../../media");
-    Media::loadFileMap("../../shaders");
-
     // Initialize the system, in headless mode (no window)
     // Setting true to enable validation layers
     auto toolkit = new VulkanToolkit(true);
+
+    // Initialize media so the system can find needed files
+    toolkit->getMedia()->scanDirectory("../../media");
+    toolkit->getMedia()->scanDirectory("../../shaders");
     
     // Load the compute shader that will do the calculation
     // This expects Spir-V spv file - compiled shader

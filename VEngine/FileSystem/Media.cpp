@@ -8,9 +8,6 @@ namespace VEngine
     {
         using namespace std;
 
-        map<string, string> Media::mediaMap = {};
-        map<string, void*> Media::cache = {};
-
         static int fsize(FILE* fh) {
             int prev = ftell(fh);
             fseek(fh, 0L, SEEK_END);
@@ -47,11 +44,20 @@ namespace VEngine
             return size;
         }
 
-        void Media::loadFileMap(string path)
+        Media::Media()
+            : mediaMap({})
+        {
+        }
+
+        Media::~Media()
+        {
+        }
+
+        void Media::scanDirectory(string path)
         {
             searchRecursive(path);
         }
-
+        
         string Media::readString(string key)
         {
             return string(get_file_contents(getPath(key).c_str()));
@@ -65,8 +71,7 @@ namespace VEngine
         string Media::getPath(string key)
         {
             if (mediaMap.find(key) == mediaMap.end()) {
-                printf("File %s not found in media map", key.c_str());
-                return nullptr;
+                throw std::runtime_error("Could find media file " + key);
             }
             return mediaMap.at(key);
         }
@@ -81,18 +86,6 @@ namespace VEngine
         int Media::readBinary(string key, unsigned char** out_bytes)
         {
             return get_file_contents_binary(out_bytes, getPath(key).c_str());
-        }
-
-        void Media::saveCache(string key, void * data)
-        {
-            cache[key] = data;
-        }
-
-        void * Media::checkCache(string key)
-        {
-            if (cache.find(key) == cache.end())
-                return nullptr;
-            return cache.at(key);
         }
 
         void Media::searchRecursive(string path)

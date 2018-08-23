@@ -4,7 +4,7 @@
 #include "VulkanMemoryManager.h" 
 #include "VulkanMemoryChunk.h" 
 #include "../VulkanGenericBuffer.h" 
-#include "../../Media/Media.h" 
+#include "../../FileSystem/Media.h" 
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>  
@@ -14,6 +14,9 @@ namespace VEngine
     {
         namespace Internal
         {
+
+            using namespace VEngine::FileSystem;
+
             VulkanInternalImage::VulkanInternalImage(VulkanDevice * device, uint32_t iwidth, uint32_t iheight, uint32_t idepth, VkFormat iformat, VkImageTiling itiling,
                 VkImageUsageFlags iusage, VkMemoryPropertyFlags iproperties, VkImageAspectFlags iaspectFlags,
                 VkImageLayout iinitialLayout)
@@ -103,10 +106,10 @@ namespace VEngine
                 samplerCreated = false;
             }
 
-            VulkanInternalImage::VulkanInternalImage(VulkanDevice * device, std::string mediakey)
+            VulkanInternalImage::VulkanInternalImage(VulkanDevice * device, FileSystem::Media* media, std::string mediakey)
                 : device(device)
             {
-                auto imgdata = readFileImageData(VEngine::FileSystem::Media::getPath(mediakey));
+                auto imgdata = readFileImageData(media->getPath(mediakey));
                 auto format = VK_FORMAT_R8G8B8A8_UNORM;
                 imgdata.channelCount = 4;
                 //  if (imgdata.channelCount == 3) format = VK_FORMAT_R8G8B8A8_UNORM;

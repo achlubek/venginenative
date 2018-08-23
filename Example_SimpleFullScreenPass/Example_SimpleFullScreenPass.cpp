@@ -1,13 +1,12 @@
 #include "stdafx.h"
 
-using namespace VEngine::FileSystem;
 using namespace VEngine::Renderer;
 
 int main()
 {
-    Media::loadFileMap("../../media");
-    Media::loadFileMap("../../shaders");
     auto toolkit = new VulkanToolkit(640, 480, true, "Full screen pass example");
+    toolkit->getMedia()->scanDirectory("../../media");
+    toolkit->getMedia()->scanDirectory("../../shaders");
     
     auto vert = toolkit->getVulkanShaderFactory()->build(VulkanShaderModuleType::Vertex, "example-simplefullscreenpass.vert.spv");
     auto frag = toolkit->getVulkanShaderFactory()->build(VulkanShaderModuleType::Fragment, "example-simplefullscreenpass.frag.spv");

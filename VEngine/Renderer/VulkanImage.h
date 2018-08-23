@@ -4,6 +4,11 @@
 
 namespace VEngine
 {
+    namespace FileSystem
+    {
+        class Media;
+    }
+
     namespace Renderer
     {
         namespace Internal
@@ -19,7 +24,7 @@ namespace VEngine
             VulkanImage(Internal::VulkanDevice* device, uint32_t width, uint32_t height, uint32_t depth,
                 VulkanImageFormat format, VulkanImageUsage usage, VulkanImageAspect aspect, VulkanImageLayout layout);
             VulkanImage(Internal::VulkanDevice* device, Internal::VulkanInternalImage* internalImage, VkFormat internalFormat);
-            VulkanImage(Internal::VulkanDevice* device, std::string mediakey);
+            VulkanImage(Internal::VulkanDevice* device, FileSystem::Media* media, std::string mediakey);
             VulkanImage(Internal::VulkanDevice* device, uint32_t width, uint32_t height, uint32_t channelCount, void * data);
             ~VulkanImage();
             // todo abstract out VkClearColorValue

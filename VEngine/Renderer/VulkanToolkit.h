@@ -8,6 +8,10 @@ namespace VEngine
         class Mouse;
         class Joystick;
     }
+    namespace FileSystem
+    {
+        class Media;
+    }
     namespace Renderer
     {
         namespace Internal
@@ -47,9 +51,11 @@ namespace VEngine
             Input::Keyboard* getKeyboard();
             Input::Mouse* getMouse();
             Input::Joystick* getJoystick();
+            FileSystem::Media* getMedia();
 
         private:
             Internal::VulkanDevice * device;
+            FileSystem::Media* media;
             int windowWidth;
             int windowHeight;
 

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Object3dInfoFactory.h"
 #include "Object3dInfo.h"
-#include "../Media/Media.h" 
+#include "../FileSystem/Media.h" 
 
 namespace VEngine
 {
@@ -10,8 +10,8 @@ namespace VEngine
         using namespace VEngine::FileSystem;
         using namespace VEngine::Renderer::Internal;
 
-        Object3dInfoFactory::Object3dInfoFactory(VulkanDevice* device)
-            : device(device)
+        Object3dInfoFactory::Object3dInfoFactory(VulkanDevice* device, FileSystem::Media* media)
+            : device(device), media(media)
         {
             unsigned char bytes[288] = {
                 0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x80, 0xBF, 0x00, 0x00, 0x00, 0x00,
@@ -55,19 +55,13 @@ namespace VEngine
 
         Object3dInfo * Object3dInfoFactory::build(std::string mediakey)
         {
-            void * cached = Media::checkCache(mediakey);
-            if (cached != nullptr) {
-                return (Object3dInfo*)cached;
-            }
             unsigned char* bytes;
-            int bytescount = Media::readBinary(mediakey, &bytes);
+            int bytescount = media->readBinary(mediakey, &bytes);
             float * floats = (float*)bytes;
             int floatsCount = bytescount / 4;
             std::vector<float> flo(floats, floats + floatsCount);
 
-            auto o = build(flo);
-            Media::saveCache(mediakey, o);
-            return o;
+            return build(flo);
         }
 
         Object3dInfo * Object3dInfoFactory::build(std::vector<float> rawData)

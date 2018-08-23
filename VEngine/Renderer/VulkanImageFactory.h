@@ -3,6 +3,11 @@
 
 namespace VEngine
 {
+    namespace FileSystem
+    {
+        class Media;
+    }
+
     namespace Renderer
     {
         namespace Internal
@@ -14,7 +19,7 @@ namespace VEngine
         class VulkanImageFactory
         {
         public:
-            VulkanImageFactory(Internal::VulkanDevice* device);
+            VulkanImageFactory(Internal::VulkanDevice* device, FileSystem::Media * media);
             ~VulkanImageFactory();
 
             VulkanImage* build(uint32_t width, uint32_t height, uint32_t depth,
@@ -38,6 +43,7 @@ namespace VEngine
 
         private:
             Internal::VulkanDevice * device;
+            FileSystem::Media * media;
         };
 
 

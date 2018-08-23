@@ -3,6 +3,11 @@
 #include "VulkanSingleAllocation.h"
 namespace VEngine
 {
+    namespace FileSystem
+    {
+        class Media;
+    }
+
     namespace Renderer
     {
         namespace Internal
@@ -23,7 +28,7 @@ namespace VEngine
 
                 VulkanInternalImage(VulkanDevice * device, VkFormat format, VkImage imageHandle, VkImageView viewHandle);
 
-                VulkanInternalImage(VulkanDevice * device, std::string mediakey);
+                VulkanInternalImage(VulkanDevice * device, FileSystem::Media* media, std::string mediakey);
 
                 VulkanInternalImage(VulkanDevice * device, uint32_t width, uint32_t height, uint32_t channelCount, void* data);
 

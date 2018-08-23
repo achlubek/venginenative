@@ -13,7 +13,7 @@
 #endif
 #include <GLFW/glfw3.h>
 
-#include "Media/Media.h"
+#include "FileSystem/Media.h"
 
 #include "Input/Joystick.h"
 #include "Input/Keyboard.h"

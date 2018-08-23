@@ -133,9 +133,9 @@
   <ItemGroup>
     <ClInclude Include="Utilities\EventHandler.h" />
     <ClInclude Include="Input\stdafx.h" />
-    <ClInclude Include="Media\Media.h" />
-    <ClInclude Include="Media\stdafx.h" />
-    <ClInclude Include="Media\tinydir.h" />
+    <ClInclude Include="FileSystem\Media.h" />
+    <ClInclude Include="FileSystem\stdafx.h" />
+    <ClInclude Include="FileSystem\tinydir.h" />
     <ClInclude Include="Renderer\Internal\stdafx.h" />
     <ClInclude Include="Input\Joystick.h" />
     <ClInclude Include="Input\Keyboard.h" />
@@ -181,7 +181,7 @@
     <ClCompile Include="Input\Joystick.cpp" />
     <ClCompile Include="Input\Keyboard.cpp" />
     <ClCompile Include="Input\Mouse.cpp" />
-    <ClCompile Include="Media\Media.cpp" />
+    <ClCompile Include="FileSystem\Media.cpp" />
     <ClCompile Include="Renderer\Object3dInfo.cpp" />
     <ClCompile Include="Renderer\Object3dInfoFactory.cpp" />
     <ClCompile Include="stdafx.cpp">

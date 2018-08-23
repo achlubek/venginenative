@@ -7,9 +7,10 @@ namespace VEngine
     namespace Renderer
     {
         using namespace VEngine::Renderer::Internal;
+        using namespace VEngine::FileSystem;
 
-        VulkanImageFactory::VulkanImageFactory(VulkanDevice* device)
-            : device(device)
+        VulkanImageFactory::VulkanImageFactory(VulkanDevice* device, FileSystem::Media * media)
+            : device(device), media(media)
         {
         }
 
@@ -44,7 +45,7 @@ namespace VEngine
 
         VulkanImage * VulkanImageFactory::build(std::string mediakey)
         {
-            return new VulkanImage(device, mediakey);
+            return new VulkanImage(device, media, mediakey);
         }
 
         VulkanImage * VulkanImageFactory::build(uint32_t width, uint32_t height, uint32_t channelCount, void * data)

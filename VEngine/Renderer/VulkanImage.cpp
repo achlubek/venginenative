@@ -10,6 +10,7 @@ namespace VEngine
     namespace Renderer
     {
         using namespace VEngine::Renderer::Internal;
+        using namespace VEngine::FileSystem;
 
         VulkanImage::VulkanImage(VulkanDevice * device, uint32_t width, uint32_t height, uint32_t depth,
             VulkanImageFormat format, VulkanImageUsage usage, VulkanImageAspect aspect, VulkanImageLayout layout)
@@ -36,8 +37,8 @@ namespace VEngine
         {
         }
 
-        VulkanImage::VulkanImage(VulkanDevice * device, std::string mediakey)
-            : device(device), internalImage(new VulkanInternalImage(device, mediakey))
+        VulkanImage::VulkanImage(VulkanDevice * device, FileSystem::Media* media, std::string mediakey)
+            : device(device), internalImage(new VulkanInternalImage(device, media, mediakey))
         {
             format = reverseResolveFormat(internalImage->getFormat());
         }

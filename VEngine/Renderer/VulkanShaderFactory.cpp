@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "VulkanShaderFactory.h"
 #include "VulkanShaderModule.h"
-#include "../Media/Media.h" 
+#include "../FileSystem/Media.h" 
 
 namespace VEngine
 {
@@ -10,8 +10,8 @@ namespace VEngine
         using namespace VEngine::Renderer::Internal;
         using namespace VEngine::FileSystem;
 
-        VulkanShaderFactory::VulkanShaderFactory(VulkanDevice* device)
-            : device(device)
+        VulkanShaderFactory::VulkanShaderFactory(VulkanDevice* device, Media* media)
+            : device(device), media(media)
         {
         }
 
@@ -21,7 +21,7 @@ namespace VEngine
 
         VulkanShaderModule * VulkanShaderFactory::build(VulkanShaderModuleType type, std::string mediakey)
         {
-            return new VulkanShaderModule(device, type, Media::getPath(mediakey));
+            return new VulkanShaderModule(device, type, media->getPath(mediakey));
         }
 
     }

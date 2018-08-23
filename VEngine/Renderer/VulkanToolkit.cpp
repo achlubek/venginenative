@@ -13,6 +13,7 @@
 #include "../Input/Keyboard.h"
 #include "../Input/Mouse.h"
 #include "../Input/Joystick.h"
+#include "../FileSystem/Media.h"
 
 namespace VEngine
 {
@@ -20,18 +21,19 @@ namespace VEngine
     {
         using namespace VEngine::Renderer::Internal;
         using namespace VEngine::Input;
-
+        using namespace VEngine::FileSystem;
 
         VulkanToolkit::VulkanToolkit(int width, int height, bool enableValidation, std::string windowName)
             : device(new VulkanDevice(width, height, enableValidation, windowName)),
             windowWidth(width), windowHeight(height),
-            object3dInfoFactory(new Object3dInfoFactory(device)),
-            vulkanShaderFactory(new VulkanShaderFactory(device)),
+            media(new Media()),
+            object3dInfoFactory(new Object3dInfoFactory(device, media)),
+            vulkanShaderFactory(new VulkanShaderFactory(device, media)),
             vulkanDescriptorSetLayoutFactory(new VulkanDescriptorSetLayoutFactory(device)),
             vulkanRenderStageFactory(new VulkanRenderStageFactory(device)),
             vulkanComputeStageFactory(new VulkanComputeStageFactory(device)),
             vulkanBufferFactory(new VulkanBufferFactory(device)),
-            vulkanImageFactory(new VulkanImageFactory(device)),
+            vulkanImageFactory(new VulkanImageFactory(device, media)),
             vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device)),
             keyboard(new Keyboard(device->getWindow())),
             mouse(new Mouse(device->getWindow())),
@@ -42,13 +44,14 @@ namespace VEngine
         VulkanToolkit::VulkanToolkit(bool enableValidation)
             : device(new VulkanDevice(0, 0, enableValidation, "")),
             windowWidth(0), windowHeight(0),
-            object3dInfoFactory(new Object3dInfoFactory(device)),
-            vulkanShaderFactory(new VulkanShaderFactory(device)),
+            media(new Media()),
+            object3dInfoFactory(new Object3dInfoFactory(device, media)),
+            vulkanShaderFactory(new VulkanShaderFactory(device, media)),
             vulkanDescriptorSetLayoutFactory(new VulkanDescriptorSetLayoutFactory(device)),
             vulkanRenderStageFactory(new VulkanRenderStageFactory(device)),
             vulkanComputeStageFactory(new VulkanComputeStageFactory(device)),
             vulkanBufferFactory(new VulkanBufferFactory(device)),
-            vulkanImageFactory(new VulkanImageFactory(device)),
+            vulkanImageFactory(new VulkanImageFactory(device, media)),
             vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device)),
             keyboard(nullptr),
             mouse(nullptr),
@@ -69,6 +72,7 @@ namespace VEngine
             safedelete(keyboard);
             safedelete(mouse);
             safedelete(joystick);
+            safedelete(media);
             safedelete(device);
         }
 
@@ -136,17 +140,25 @@ namespace VEngine
         {
             return vulkanSwapChainOutputFactory;
         }
+
         Input::Keyboard * VulkanToolkit::getKeyboard()
         {
             return keyboard;
         }
+
         Input::Mouse * VulkanToolkit::getMouse()
         {
             return mouse;
         }
+
         Input::Joystick * VulkanToolkit::getJoystick()
         {
             return joystick;
+        }
+
+        FileSystem::Media * VulkanToolkit::getMedia()
+        {
+            return media;
         }
     }
 }
