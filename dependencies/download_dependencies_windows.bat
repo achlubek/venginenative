@@ -1,0 +1,1 @@
+powershell -executionpolicy bypass -File download_dependencies_windows.ps1

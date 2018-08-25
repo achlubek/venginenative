@@ -90,13 +90,13 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Code\VEngineNative\VEngine;C:\VulkanSDK\1.1.82.0\Include\vulkan;C:\Code\glfw-3.2.1\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\VEngine;$(VULKAN_SDK)\Include\vulkan;$(SolutionDir)\dependencies\glfw-3.2.1.bin.WIN64\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>C:\Code\VEngineNative\x64\Release\VEngine.lib;C:\VulkanSDK\1.1.82.0\Lib\vulkan-1.lib;C:\Code\glfw-3.2.1\glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)\x64\Release\VEngine.lib;$(VULKAN_SDK)\Lib\vulkan-1.lib;$(SolutionDir)\dependencies\glfw-3.2.1.bin.WIN64\lib-vc2015\glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
