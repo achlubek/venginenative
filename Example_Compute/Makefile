@@ -1,0 +1,2 @@
+build:
+	g++ -std=c++14 -I/home/achlubek/testing_vengine_build/1.1.82.1/x86_64/include/vulkan -I/home/achlubek/testing_vengine_build/glfw-3.2.1/include -I/home/achlubek/testing_vengine_build/venginenative/VEngine -L/home/achlubek/testing_vengine_build/1.1.82.1/x86_64/lib -L/home/achlubek/testing_vengine_build/glfw-3.2.1/build/src -L/home/achlubek/testing_vengine_build/venginenative/VEngine `find . | grep ".*.cpp"` -lvengine -lglfw -lvulkan
