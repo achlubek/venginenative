@@ -31,6 +31,7 @@ namespace VEngine
             void beginDrawing();
             void endDrawing();
             void setSets(std::vector<VulkanDescriptorSet*> sets);
+            void setSet(size_t index, VulkanDescriptorSet* set);
             void drawMesh(Object3dInfo *info, uint32_t instances);
             void submit(std::vector<VkSemaphore> waitSemaphores);
             void submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores);

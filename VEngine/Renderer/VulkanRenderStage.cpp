@@ -103,6 +103,12 @@ namespace VEngine
             sets = isets;
         }
 
+        void VulkanRenderStage::setSet(size_t index, VulkanDescriptorSet * set)
+        {
+            if (sets.size() > index) sets[index] = set;
+            else sets.push_back(set);
+        }
+
         void VulkanRenderStage::drawMesh(Object3dInfo * info, uint32_t instances)
         {
             info->getVertexBuffer()->drawInstanced(pipeline, sets, commandBuffer, instances);
@@ -241,7 +247,7 @@ namespace VEngine
             submitInfo.pSignalSemaphores = nullptr;
 
             if (vkQueueSubmit(device->getMainQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
-                throw std::runtime_error("failed to submit draw command buffer!");
+               throw std::runtime_error("failed to submit draw command buffer!");
             }
         }
     }
