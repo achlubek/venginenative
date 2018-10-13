@@ -1,2 +1,2 @@
 build:
-	g++ -std=c++14 -I${VULKAN_SDK}/include/vulkan -I${GLFW_INCLUDE_DIR} -I${STB_INCLUDE_DIR} -shared -o libvengine.so -fPIC  `find . | grep ".*.cpp"`
+	g++ -std=c++14 -I${VULKAN_SDK}/include/vulkan -I${STB_INCLUDE_DIR} -shared -o libvengine.so -fPIC  `find . | grep ".*.cpp"`
