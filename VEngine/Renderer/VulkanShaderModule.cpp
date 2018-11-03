@@ -3,6 +3,7 @@
 #include "Internal/VulkanDevice.h"
 #include <iostream>
 #include <fstream>
+#include <cstring>
 
 namespace VEngine
 {
@@ -33,7 +34,7 @@ namespace VEngine
             createInfo.codeSize = buffer.size();
 
             std::vector<uint32_t> codeAligned(buffer.size() / 4 + 1);
-            memcpy(codeAligned.data(), buffer.data(), buffer.size());
+            std::memcpy(codeAligned.data(), buffer.data(), buffer.size());
 
             createInfo.pCode = codeAligned.data();
 

@@ -4,8 +4,22 @@
 - Graphics system using Vulkan with help of GLFW3 (also provides input) https://github.com/glfw/glfw
 - Image loading using stb_image https://github.com/nothings/stb
 
+##### What we got here
+
+Compiling under Windows:
+- Go to **dependencies** folder and run the .bat file.
+- Ensure you have Vulkan SDK installed in official way
+- Open the solution and compile it
+
+Compiling under Linux:
+- Download, unpack, and build the Vulkan SDK
+- Download glfw most recent release, make and then sudo make install it
+- Clone https://github.com/nothings/stb somewhere
+- Open env.sh and adjust **STB_INCLUDE_DIR** and **VULKAN_SDK** to point to correct directories
+- In the terminal where you will be compiling execute **source env.sh**
+- Run **make**
+
 ##### Urgent things to do
-- Linux makefiles and hopefully cmake
 - Images mipmapping with handy api
 - Images rebuffering
 - Support for custom vertex attribs layouts

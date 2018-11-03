@@ -5,6 +5,7 @@
 #include "VulkanGraphicsPipeline.h"
 #include "VulkanDevice.h"
 #include "../VulkanDescriptorSet.h"
+#include <cstring>
 
 namespace VEngine
 {
@@ -39,7 +40,7 @@ namespace VEngine
 
                 void* ptr;
                 vertexBufferMemory.map(&ptr);
-                memcpy(ptr, data.data(), (size_t)bufferInfo.size);
+                std::memcpy(ptr, data.data(), (size_t)bufferInfo.size);
                 vertexBufferMemory.unmap();
 
                 vertexCount = (int)(data.size() / 12);
