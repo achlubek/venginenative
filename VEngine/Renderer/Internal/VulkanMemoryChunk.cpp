@@ -10,7 +10,7 @@ namespace VEngine
         {
 
             VulkanMemoryChunk::VulkanMemoryChunk(VulkanDevice* device, uint32_t itype)
-                : device(device), type(itype)
+                : device(device), type(itype), allAllocationsSize(0)
             {
                 chunkSize = 256 * 1024 * 1024;
                 VkMemoryAllocateInfo allocInfo = {};
@@ -114,6 +114,11 @@ namespace VEngine
             VkDevice VulkanMemoryChunk::getDevice()
             {
                 return device->getDevice();
+            }
+
+            uint64_t VulkanMemoryChunk::getTotalAllocatedMemory()
+            {
+                return allAllocationsSize;
             }
 
             bool VulkanMemoryChunk::isFreeSpace(uint64_t offset, uint64_t size)

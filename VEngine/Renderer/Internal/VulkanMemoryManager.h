@@ -20,6 +20,8 @@ namespace VEngine
                 VulkanSingleAllocation bindBufferMemory(uint32_t type, VkBuffer buffer, VkDeviceSize size);
                 VulkanSingleAllocation bindImageMemory(uint32_t type, VkImage image, VkDeviceSize size);
 
+                uint64_t getTotalAllocatedMemory();
+
             private:
                 std::map<uint32_t, std::vector<VulkanMemoryChunk*>> allAllocationsByType;
             };

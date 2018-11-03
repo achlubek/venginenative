@@ -64,6 +64,17 @@ namespace VEngine
                 bool result = newchunk->findFreeMemoryOffset(size, offset);
                 return newchunk->bindImageMemory(image, size, offset);
             }
+
+            uint64_t VulkanMemoryManager::getTotalAllocatedMemory()
+            {
+                uint64_t sum = 0;
+                for (auto const& element : allAllocationsByType) {
+                    for (auto const& chunk : element.second) {
+                        sum += chunk->getTotalAllocatedMemory();
+                    }
+                }
+                return sum;
+            }
         }
     }
 }

@@ -37,6 +37,7 @@ namespace VEngine
             bool shouldCloseWindow();
             void poolEvents();
             double getExecutionTime();
+            size_t getTotalAllocatedMemory();
             void waitQueueIdle();
             void waitDeviceIdle();
 

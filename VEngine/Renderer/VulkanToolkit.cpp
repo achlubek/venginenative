@@ -91,6 +91,11 @@ namespace VEngine
             return device->getExecutionTime();
         }
 
+        size_t VulkanToolkit::getTotalAllocatedMemory()
+        {
+            return device->getMemoryManager()->getTotalAllocatedMemory();
+        }
+
         void VulkanToolkit::waitQueueIdle()
         {
             vkQueueWaitIdle(device->getMainQueue());

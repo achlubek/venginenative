@@ -21,6 +21,7 @@ namespace VEngine
                 bool findFreeMemoryOffset(uint64_t size, uint64_t &outOffset);
                 VkDeviceMemory getHandle();
                 VkDevice getDevice();
+                uint64_t getTotalAllocatedMemory();
             private:
                 bool isFreeSpace(uint64_t offset, uint64_t size);
                 VulkanDevice* device;
