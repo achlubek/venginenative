@@ -45,7 +45,7 @@ namespace VEngine
                     nullptr,                                        // pNext
                     0,                                              // flags
                     chosenQFId,                                     // queueFamilyIndex
-                    2,                                              // queueCount
+                    1,                                              // queueCount
                     priorities.data()                                         // pQueuePriorities
                 };
                 std::vector<const char*> deviceExtensions = {
@@ -75,7 +75,6 @@ namespace VEngine
 
 
                 vkGetDeviceQueue(device, chosenQFId, 0, &mainQueue);
-                vkGetDeviceQueue(device, chosenQFId, 1, &secondaryQueue);
 
                 memoryManager = new VulkanMemoryManager(this);
 

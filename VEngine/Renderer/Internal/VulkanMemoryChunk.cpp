@@ -88,16 +88,16 @@ namespace VEngine
                 size_t allocscount = allActiveAllocations.size();
 
                 auto a = allActiveAllocations[allocscount - 1];
-                if (isFreeSpace(a.offset + a.size + 2048, size)) {
-                    outOffset = a.offset + a.size + 2048;
+                if (isFreeSpace(a.offset + a.size + 0x1000, size)) {
+                    outOffset = a.offset + a.size + 0x1000;
                     inUse = false;
                     return true;
                 }
 
                 for (int i = 0; i < allocscount; i++) {
                     auto a = allActiveAllocations[i];
-                    if (isFreeSpace(a.offset + a.size + 2048, size)) {
-                        outOffset = a.offset + a.size + 2048;
+                    if (isFreeSpace(a.offset + a.size + 0x1000, size)) {
+                        outOffset = a.offset + a.size + 0x1000;
                         inUse = false;
                         return true;
                     }

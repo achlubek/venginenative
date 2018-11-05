@@ -4,9 +4,9 @@
 layout(set = 0, binding = 0) uniform ubo {
     float Time;
 } buff;
-layout(set = 0, binding = 1, rgba16f) uniform coherent image2D testImage;
+layout(set = 0, binding = 1, rgba8) uniform coherent image2D testImage;
 
-layout(local_size_x = 64, local_size_y = 10, local_size_z = 1) in;
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 void main()
 {

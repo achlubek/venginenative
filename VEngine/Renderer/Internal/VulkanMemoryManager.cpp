@@ -23,7 +23,7 @@ namespace VEngine
 
             VulkanSingleAllocation VulkanMemoryManager::bindBufferMemory(uint32_t type, VkBuffer buffer, VkDeviceSize size)
             {
-                size += 2048 - (size % 2048);
+                size += 0x1000 - (size % 0x1000);
                 if (allAllocationsByType.find(type) == allAllocationsByType.end()) {
                     allAllocationsByType[type] = { new VulkanMemoryChunk(device, type) };
                 }
@@ -45,7 +45,7 @@ namespace VEngine
 
             VulkanSingleAllocation VulkanMemoryManager::bindImageMemory(uint32_t type, VkImage image, VkDeviceSize size)
             {
-                size += 2048 - (size % 2048);
+                size += 0x1000 - (size % 0x1000);
                 if (allAllocationsByType.find(type) == allAllocationsByType.end()) {
                     allAllocationsByType[type] = { new VulkanMemoryChunk(device, type) };
                 }

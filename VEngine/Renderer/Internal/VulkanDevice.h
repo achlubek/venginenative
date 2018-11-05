@@ -38,7 +38,6 @@ namespace VEngine
                 VulkanSwapChain* swapChain;
                 VkCommandPool commandPool;
                 VkQueue mainQueue;
-                VkQueue secondaryQueue;
                 VulkanMemoryManager* memoryManager;
 
                 const std::vector<const char*> validationLayers = {

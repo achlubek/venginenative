@@ -15,7 +15,7 @@ VulkanRenderStage* createTeapotStage(VulkanToolkit* vulkan, VulkanGenericBuffer*
     auto stageTeapot = vulkan->getVulkanRenderStageFactory()->build(640, 480, { vertTeapot, fragTeapot }, { layoutTeapot },
     {
         colorImage->getAttachment(VulkanAttachmentBlending::None, true, { { 0.1f, 0.2f, 0.3f, 1.0f } }),
-        depthImage->getAttachment(VulkanAttachmentBlending::None)
+        depthImage->getAttachment(VulkanAttachmentBlending::None, true)
     });
 
     auto setTeapot = layoutTeapot->generateDescriptorSet();
@@ -72,7 +72,7 @@ int main()
 
     auto buffer = vulkan->getVulkanBufferFactory()->build(VulkanBufferType::BufferTypeUniform, sizeof(float) * 20);
 
-    auto colorImage = vulkan->getVulkanImageFactory()->build(640, 480, VulkanImageFormat::RGBA16f, VulkanImageUsage::ColorAttachment | VulkanImageUsage::Storage | VulkanImageUsage::Sampled);
+    auto colorImage = vulkan->getVulkanImageFactory()->build(640, 480, VulkanImageFormat::RGBA8unorm, VulkanImageUsage::ColorAttachment | VulkanImageUsage::Sampled | VulkanImageUsage::Storage);
     
     auto stageTeapot = createTeapotStage(vulkan, buffer, texture, colorImage);
 
@@ -98,12 +98,12 @@ int main()
         stageTeapot->drawMesh(teapot, 1);
         stageTeapot->endDrawing();
         stageTeapot->submit(output->getSignalSemaphores());
-
+        
         stagePostprocess->beginRecording();
-        stagePostprocess->dispatch({ setPostprocess }, 10, 48, 1);
+        stagePostprocess->dispatch({ setPostprocess }, 10, 480, 1);
         stagePostprocess->endRecording();
         stagePostprocess->submit({ stageTeapot->getSignalSemaphore() });
-
+        
         output->beginDrawing();
         output->drawMesh(fullScreenQuad, 1);
         output->endDrawing();

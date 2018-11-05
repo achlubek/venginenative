@@ -218,10 +218,11 @@ namespace VEngine
 
         VulkanAttachment* VulkanImage::getAttachment(VulkanAttachmentBlending blending, bool clear, VkClearColorValue clearColor, bool forPresent)
         {
-            auto att = new VulkanAttachment(this, resolveFormat(format), VK_SAMPLE_COUNT_1_BIT,
+            auto att = new VulkanAttachment(this, 
+                resolveFormat(format), VK_SAMPLE_COUNT_1_BIT,
                 clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : (VK_ATTACHMENT_LOAD_OP_LOAD), VK_ATTACHMENT_STORE_OP_STORE,
                 VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                VK_IMAGE_LAYOUT_UNDEFINED, forPresent ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : (resolveIsDepthBuffer(format) ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL),
+                VK_IMAGE_LAYOUT_UNDEFINED, forPresent ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : (resolveIsDepthBuffer(format) ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_GENERAL),
                 blending, clearColor, clear);
             return att;
         }

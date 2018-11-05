@@ -207,7 +207,9 @@ namespace VEngine
         {
             std::vector<VkPipelineStageFlags> stageFlags = {};
             for (int i = 0; i < waitSemaphores.size(); i++) {
-                stageFlags.push_back(VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+                stageFlags.push_back(
+                    VK_PIPELINE_STAGE_ALL_COMMANDS_BIT |
+                    VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT);
             }
             VkSubmitInfo submitInfo = {};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -231,7 +233,9 @@ namespace VEngine
         {
             std::vector<VkPipelineStageFlags> stageFlags = {};
             for (int i = 0; i < waitSemaphores.size(); i++) {
-                stageFlags.push_back(VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+                stageFlags.push_back(
+                    VK_PIPELINE_STAGE_ALL_COMMANDS_BIT |
+                    VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT);
             }
             VkSubmitInfo submitInfo = {};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
