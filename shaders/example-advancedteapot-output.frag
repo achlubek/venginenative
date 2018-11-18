@@ -28,6 +28,6 @@ vec3 aces_tonemap(vec3 color){
 
 void main() {
     float levels = float(textureQueryLevels(testTexture));
-    vec3 tex = textureLod(testTexture, UV, int(mod(buff.Time, levels))).rgb;
+    vec3 tex = textureLod(testTexture, UV, 3).rgb;
     outColor = vec4(aces_tonemap(tex), 1.0);
 }

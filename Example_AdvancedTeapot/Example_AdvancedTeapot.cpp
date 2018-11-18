@@ -104,7 +104,7 @@ int main()
         stagePostprocess->endRecording();
         stagePostprocess->submit({ stageTeapot->getSignalSemaphore() });
         
-       // colorImage->regenerateMipmaps();
+        colorImage->regenerateMipmaps();
 
         output->beginDrawing();
         output->drawMesh(fullScreenQuad, 1);

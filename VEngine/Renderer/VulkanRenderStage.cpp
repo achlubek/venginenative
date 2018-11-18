@@ -132,7 +132,7 @@ namespace VEngine
             for (int i = 0; i < outputImages.size(); i++) {
                 auto atta = outputImages[i];
                 auto image = atta->getImage();
-                auto view = image->getImageView();
+                auto view = image->getFirstMipmapImageView();
                 if (image->isDepthBuffer()) {
                     depthAttachment = atta;
                     foundDepthBuffer = true;

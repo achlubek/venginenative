@@ -45,7 +45,7 @@ namespace VEngine
 
         VulkanImage * VulkanImageFactory::buildMipmapped(uint32_t width, uint32_t height, uint32_t depth, VulkanImageFormat format, VulkanImageUsage usage, VulkanImageAspect aspect, VulkanImageLayout layout)
         {
-            return new VulkanImage(device, width, height, depth, false, format, usage, aspect, layout);
+            return new VulkanImage(device, width, height, depth, true, format, usage, aspect, layout);
         }
 
         VulkanImage * VulkanImageFactory::buildMipmapped(uint32_t width, uint32_t height, uint32_t depth, VulkanImageFormat format, VulkanImageUsage usage)

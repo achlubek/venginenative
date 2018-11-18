@@ -36,6 +36,7 @@ namespace VEngine
 
                 VkSampler getSampler();
                 VkImageView getImageView();
+                VkImageView getFirstMipmapImageView();
                 VkFormat getFormat();
                 void regenerateMipmaps();
 
@@ -44,6 +45,7 @@ namespace VEngine
                 VkImage image;
                 VulkanSingleAllocation imageMemory;
                 VkImageView imageView;
+                VkImageView firstMipmapImageView;
 
                 uint32_t width;
                 uint32_t height;

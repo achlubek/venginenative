@@ -34,6 +34,7 @@ namespace VEngine
                 if (mipmapped) {
                     mipLevels = static_cast<uint32_t>(std::floor(std::log2(max(width, height)))) + 1;
                 }
+                currentLayout = initialLayout;
                 initalize();
                 if (mipmapped) {
                     regenerateMipmaps();
@@ -47,6 +48,7 @@ namespace VEngine
                     vkDestroySampler(device->getDevice(), sampler, nullptr);
                 }
                 vkDestroyImageView(device->getDevice(), imageView, nullptr);
+                vkDestroyImageView(device->getDevice(), firstMipmapImageView, nullptr);
                 vkDestroyImage(device->getDevice(), image, nullptr);
                 imageMemory.free();
                 // vkFreeMemory(device->getDevice(), imageMemory, nullptr);
@@ -103,11 +105,32 @@ namespace VEngine
                 if (vkCreateImageView(device->getDevice(), &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create texture image view!");
                 }
+
+                viewInfo = {};
+                viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+                viewInfo.image = image;
+
+                if (depth == 1) {
+                    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                }
+                else {
+                    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_3D;
+                }
+                viewInfo.format = format;
+                viewInfo.subresourceRange.aspectMask = aspectFlags;
+                viewInfo.subresourceRange.baseMipLevel = 0;
+                viewInfo.subresourceRange.levelCount = 1;
+                viewInfo.subresourceRange.baseArrayLayer = 0;
+                viewInfo.subresourceRange.layerCount = 1;
+
+                if (vkCreateImageView(device->getDevice(), &viewInfo, nullptr, &firstMipmapImageView) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create texture image view!");
+                }
                 samplerCreated = false;
             }
-            
+
             VulkanInternalImage::VulkanInternalImage(VulkanDevice * device, VkFormat format, VkImage image, VkImageView imageView)
-                : device(device), format(format), image(image), imageView(imageView)
+                : device(device), format(format), image(image), imageView(imageView), firstMipmapImageView(imageView)
             {
                 samplerCreated = false;
             }
@@ -175,6 +198,11 @@ namespace VEngine
                 return imageView;
             }
 
+            VkImageView VulkanInternalImage::getFirstMipmapImageView()
+            {
+                return firstMipmapImageView;
+            }
+
             VkFormat VulkanInternalImage::getFormat()
             {
                 return format;
@@ -182,7 +210,10 @@ namespace VEngine
 
             void VulkanInternalImage::regenerateMipmaps()
             {
+                auto old = currentLayout;
+                transitionImageLayout(image, format, old, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
                 generateMipmaps(image, static_cast<uint32_t>(width), static_cast<uint32_t>(height), mipLevels);
+               // transitionImageLayout(image, format, currentLayout, old);
             }
 
             ImageData VulkanInternalImage::readFileImageData(std::string path)
@@ -242,7 +273,7 @@ namespace VEngine
 
                 for (uint32_t i = 1; i < mipLevels; i++) {
                     barrier.subresourceRange.baseMipLevel = i - 1;
-                    barrier.oldLayout = currentLayout;
+                    barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
                     barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
                     barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                     barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
@@ -274,7 +305,7 @@ namespace VEngine
                         VK_FILTER_LINEAR);
 
                     barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-                    barrier.newLayout = currentLayout;
+                    barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
                     barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
                     barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
@@ -290,9 +321,10 @@ namespace VEngine
 
                 barrier.subresourceRange.baseMipLevel = mipLevels - 1;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-                barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // was shader read only optimal
+                barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL; // was shader read only optimal
                 barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                currentLayout = VK_IMAGE_LAYOUT_GENERAL;
 
                 vkCmdPipelineBarrier(commandBuffer,
                     VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
@@ -381,7 +413,70 @@ namespace VEngine
                     destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
                 }
                 else {
-                    throw std::invalid_argument("unsupported layout transition!");
+                    sourceStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+                    destinationStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+                    switch (oldLayout)
+                    {
+                    case VK_IMAGE_LAYOUT_UNDEFINED:
+                        barrier.srcAccessMask = 0;
+                        break;
+
+                    case VK_IMAGE_LAYOUT_PREINITIALIZED:
+                        barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+                        break;
+
+                    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                        break;
+
+                    case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                        barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                        break;
+
+                        barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                        break;
+
+                    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                        break;
+
+                    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                        break;
+                    default:
+                        break;
+                    }
+                    switch (newLayout)
+                    {
+                    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                        break;
+
+                    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                        barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                        break;
+
+                    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                        break;
+
+                    case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                        barrier.dstAccessMask = barrier.dstAccessMask | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                        break;
+
+                    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                        if (barrier.srcAccessMask == 0)
+                        {
+                            barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+                        }
+                        if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
+                            barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                        }
+                        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                        break;
+                    default:
+                        break;
+                    }
                 }
 
                 vkCmdPipelineBarrier(
@@ -392,7 +487,7 @@ namespace VEngine
                     0, nullptr,
                     1, &barrier
                 );
-
+                currentLayout = newLayout;
                 endSingleTimeCommands(commandBuffer);
             }
 
@@ -477,6 +572,7 @@ namespace VEngine
                     break;
                 }
 
+                currentLayout = newLayout;
                 vkCmdPipelineBarrier(
                     buffer,
                     sourceStage, destinationStage,

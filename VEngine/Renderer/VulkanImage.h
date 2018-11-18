@@ -36,6 +36,7 @@ namespace VEngine
             bool isDepthBuffer();
             VkSampler getSampler();
             VkImageView getImageView();
+            VkImageView getFirstMipmapImageView();
             static bool resolveIsDepthBuffer(VulkanImageFormat format);
             void regenerateMipmaps();
         private:

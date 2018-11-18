@@ -267,5 +267,10 @@ namespace VEngine
             return internalImage->getImageView();
         }
 
+        VkImageView VulkanImage::getFirstMipmapImageView()
+        {
+            return internalImage->getFirstMipmapImageView();
+        }
+
     }
 }
