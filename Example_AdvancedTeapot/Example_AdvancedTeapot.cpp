@@ -72,7 +72,7 @@ int main()
 
     auto buffer = vulkan->getVulkanBufferFactory()->build(VulkanBufferType::BufferTypeUniform, sizeof(float) * 20);
 
-    auto colorImage = vulkan->getVulkanImageFactory()->build(640, 480, VulkanImageFormat::RGBA8unorm, VulkanImageUsage::ColorAttachment | VulkanImageUsage::Sampled | VulkanImageUsage::Storage);
+    auto colorImage = vulkan->getVulkanImageFactory()->buildMipmapped(640, 480, VulkanImageFormat::RGBA8unorm, VulkanImageUsage::ColorAttachment | VulkanImageUsage::Sampled | VulkanImageUsage::Storage);
     
     auto stageTeapot = createTeapotStage(vulkan, buffer, texture, colorImage);
 
@@ -104,6 +104,8 @@ int main()
         stagePostprocess->endRecording();
         stagePostprocess->submit({ stageTeapot->getSignalSemaphore() });
         
+       // colorImage->regenerateMipmaps();
+
         output->beginDrawing();
         output->drawMesh(fullScreenQuad, 1);
         output->endDrawing();

@@ -32,7 +32,7 @@ namespace VEngine
                 requiredFeatures.tessellationShader = VK_FALSE;
                 requiredFeatures.geometryShader = VK_FALSE;
                 requiredFeatures.depthClamp = VK_TRUE;
-                requiredFeatures.samplerAnisotropy = VK_FALSE; // I will need to recheck this mipmapping hell some time
+                requiredFeatures.samplerAnisotropy = VK_TRUE; // I will need to recheck this mipmapping hell some time
                 requiredFeatures.shaderStorageImageExtendedFormats = VK_TRUE;
                 requiredFeatures.independentBlend = VK_TRUE;
                 requiredFeatures.fragmentStoresAndAtomics = VK_TRUE;

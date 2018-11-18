@@ -24,7 +24,7 @@ namespace VEngine
             public:
                 VulkanInternalImage(VulkanDevice * vulkan, uint32_t width, uint32_t height, uint32_t depth, VkFormat format, VkImageTiling tiling,
                     VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags,
-                    VkImageLayout initialLayout);
+                    VkImageLayout initialLayout, bool mipmapped);
 
                 VulkanInternalImage(VulkanDevice * device, VkFormat format, VkImage imageHandle, VkImageView viewHandle);
 
@@ -37,6 +37,7 @@ namespace VEngine
                 VkSampler getSampler();
                 VkImageView getImageView();
                 VkFormat getFormat();
+                void regenerateMipmaps();
 
             private:
                 VulkanDevice * device;
@@ -47,12 +48,14 @@ namespace VEngine
                 uint32_t width;
                 uint32_t height;
                 uint32_t depth;
+                uint32_t mipLevels = 1;
                 VkFormat format;
                 VkImageTiling tiling;
                 VkImageUsageFlags usage;
                 VkMemoryPropertyFlags properties;
                 VkImageAspectFlags aspectFlags;
                 VkImageLayout initialLayout;
+                VkImageLayout currentLayout;
                 VkSampler sampler;
                 bool samplerCreated = false;
                 void initalize();
@@ -60,6 +63,7 @@ namespace VEngine
 
                 ImageData readFileImageData(std::string path);
                 void createTexture(const ImageData &img, VkFormat format);
+                void generateMipmaps(VkImage image, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 
                 VkCommandBuffer beginSingleTimeCommands();
                 void endSingleTimeCommands(VkCommandBuffer commandBuffer);

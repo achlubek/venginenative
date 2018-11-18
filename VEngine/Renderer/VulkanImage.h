@@ -21,7 +21,7 @@ namespace VEngine
         class VulkanImage
         {
         public:
-            VulkanImage(Internal::VulkanDevice* device, uint32_t width, uint32_t height, uint32_t depth,
+            VulkanImage(Internal::VulkanDevice* device, uint32_t width, uint32_t height, uint32_t depth, bool mipmapped,
                 VulkanImageFormat format, VulkanImageUsage usage, VulkanImageAspect aspect, VulkanImageLayout layout);
             VulkanImage(Internal::VulkanDevice* device, Internal::VulkanInternalImage* internalImage, VkFormat internalFormat);
             VulkanImage(Internal::VulkanDevice* device, FileSystem::Media* media, std::string mediakey);
@@ -37,6 +37,7 @@ namespace VEngine
             VkSampler getSampler();
             VkImageView getImageView();
             static bool resolveIsDepthBuffer(VulkanImageFormat format);
+            void regenerateMipmaps();
         private:
             VkFormat resolveFormat(VulkanImageFormat format);
             VulkanImageFormat reverseResolveFormat(VkFormat format);

@@ -12,7 +12,7 @@ namespace VEngine
         using namespace VEngine::Renderer::Internal;
         using namespace VEngine::FileSystem;
 
-        VulkanImage::VulkanImage(VulkanDevice * device, uint32_t width, uint32_t height, uint32_t depth,
+        VulkanImage::VulkanImage(VulkanDevice * device, uint32_t width, uint32_t height, uint32_t depth, bool mipmapped,
             VulkanImageFormat format, VulkanImageUsage usage, VulkanImageAspect aspect, VulkanImageLayout layout)
             : format(format)
         {
@@ -29,7 +29,7 @@ namespace VEngine
                 mappedUsage = mappedUsage | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
             internalImage = new VulkanInternalImage(device, width, height, depth, resolveFormat(format), VK_IMAGE_TILING_OPTIMAL, (VkImageUsageFlagBits)mappedUsage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                 aspect == VulkanImageAspect::ColorAspect ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT,
-                layout == VulkanImageLayout::Preinitialized ? VK_IMAGE_LAYOUT_PREINITIALIZED : VK_IMAGE_LAYOUT_UNDEFINED);
+                layout == VulkanImageLayout::Preinitialized ? VK_IMAGE_LAYOUT_PREINITIALIZED : VK_IMAGE_LAYOUT_UNDEFINED, mipmapped);
         }
 
         VulkanImage::VulkanImage(VulkanDevice * device, VulkanInternalImage * internalImage, VkFormat internalFormat)
@@ -214,6 +214,11 @@ namespace VEngine
             case VulkanImageFormat::Depth32f: return true;
             }
             return false;
+        }
+
+        void VulkanImage::regenerateMipmaps()
+        {
+            internalImage->regenerateMipmaps();
         }
 
         VulkanAttachment* VulkanImage::getAttachment(VulkanAttachmentBlending blending, bool clear, VkClearColorValue clearColor, bool forPresent)
