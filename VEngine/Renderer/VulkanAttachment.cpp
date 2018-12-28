@@ -5,9 +5,9 @@ namespace VEngine
     namespace Renderer
     {
 
-        VulkanAttachment::VulkanAttachment(VulkanImage* image, VkFormat format, VkSampleCountFlagBits samples, VkAttachmentLoadOp loadop, VkAttachmentStoreOp storeop,
+        VulkanAttachment::VulkanAttachment(ImageInterface* image, VkFormat format, VkSampleCountFlagBits samples, VkAttachmentLoadOp loadop, VkAttachmentStoreOp storeop,
             VkAttachmentLoadOp stencilloadop, VkAttachmentStoreOp stencilstoreop, VkImageLayout initialLayout, VkImageLayout finalLayout,
-            VulkanAttachmentBlending blending, VkClearColorValue clearColor, bool clear)
+            VEngineAttachmentBlending blending, VEngineClearColorValue clearColor, bool clear)
             : image(image), blending(blending), clearColor(clearColor), clear(clear)
         {
             description = {};
@@ -26,7 +26,7 @@ namespace VEngine
         {
         }
 
-        VulkanImage * VulkanAttachment::getImage()
+        ImageInterface * VulkanAttachment::getImage()
         {
             return image;
         }
@@ -36,12 +36,12 @@ namespace VEngine
             return description;
         }
 
-        VulkanAttachmentBlending VulkanAttachment::getBlending()
+        VEngineAttachmentBlending VulkanAttachment::getBlending()
         {
             return blending;
         }
 
-        VkClearColorValue VulkanAttachment::getClearColor()
+        VEngineClearColorValue VulkanAttachment::getClearColor()
         {
             return clearColor;
         }

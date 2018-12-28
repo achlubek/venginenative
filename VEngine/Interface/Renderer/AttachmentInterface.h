@@ -11,9 +11,9 @@ namespace VEngine
         class AttachmentInterface
         {
         public:
-            ImageInterface * getImage();
-            VEngineAttachmentBlending getBlending();
-            bool isCleared();
+            virtual ImageInterface * getImage() = 0;
+            virtual VEngineAttachmentBlending getBlending() = 0;
+            virtual bool isCleared() = 0;
         };
 
     }

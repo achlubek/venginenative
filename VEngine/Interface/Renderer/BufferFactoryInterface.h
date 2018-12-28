@@ -10,7 +10,7 @@ namespace VEngine
         class BufferFactoryInterface
         {
         public:
-            GenericBufferInterface * build(VEngineBufferType type, uint64_t size);
+            virtual GenericBufferInterface * build(VEngineBufferType type, uint64_t size) = 0;
         };
 
     }

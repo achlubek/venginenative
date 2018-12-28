@@ -155,9 +155,10 @@
     <ClInclude Include="Interface\Renderer\ImageFactoryInterface.h" />
     <ClInclude Include="Interface\Renderer\RenderStageInterface.h" />
     <ClInclude Include="Interface\Renderer\RenderStageFactoryInterface.h" />
+    <ClInclude Include="Interface\Renderer\SemaphoreFactoryInterface.h" />
+    <ClInclude Include="Interface\Renderer\SemaphoreInterface.h" />
     <ClInclude Include="Interface\Renderer\ShaderFactoryInterface.h" />
     <ClInclude Include="Interface\Renderer\ShaderModuleInterface.h" />
-    <ClInclude Include="Interface\Renderer\stdafx.h" />
     <ClInclude Include="Interface\Renderer\SwapChainOutputInterface.h" />
     <ClInclude Include="Interface\Renderer\SwapChainOutputFactoryInterface.h" />
     <ClInclude Include="Interface\Renderer\ToolkitInterface.h" />
@@ -182,7 +183,6 @@
     <ClInclude Include="Renderer\Internal\VulkanFramebuffer.h" />
     <ClInclude Include="Renderer\Internal\VulkanDevice.h" />
     <ClInclude Include="Renderer\VulkanDescriptorSetLayoutFactory.h" />
-    <ClInclude Include="Renderer\VulkanEnums.h" />
     <ClInclude Include="Renderer\VulkanGenericBuffer.h" />
     <ClInclude Include="Renderer\Internal\VulkanGraphicsPipeline.h" />
     <ClInclude Include="Renderer\VulkanImage.h" />
@@ -202,13 +202,14 @@
     <ClInclude Include="Renderer\VulkanSwapChainOutputFactory.h" />
     <ClInclude Include="Renderer\VulkanToolkit.h" />
     <ClInclude Include="Renderer\Internal\VulkanVertexBuffer.h" />
+    <ClInclude Include="Renderer\VulkanSemaphore.h" />
+    <ClInclude Include="Renderer\VulkanSemaphoreFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Input\Joystick.cpp" />
     <ClCompile Include="Input\Keyboard.cpp" />
     <ClCompile Include="Input\Mouse.cpp" />
     <ClCompile Include="FileSystem\Media.cpp" />
-    <ClCompile Include="Interface\VEngineInterface.cpp" />
     <ClCompile Include="Renderer\Object3dInfo.cpp" />
     <ClCompile Include="Renderer\Object3dInfoFactory.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -247,6 +248,8 @@
     <ClCompile Include="Renderer\VulkanSwapChainOutputFactory.cpp" />
     <ClCompile Include="Renderer\VulkanToolkit.cpp" />
     <ClCompile Include="Renderer\Internal\VulkanVertexBuffer.cpp" />
+    <ClCompile Include="Renderer\VulkanSemaphore.cpp" />
+    <ClCompile Include="Renderer\VulkanSemaphoreFactory.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -11,7 +11,7 @@ namespace VEngine
         class ShaderFactoryInterface
         {
         public:
-            ShaderModuleInterface * build(VEngineShaderModuleType type, std::string mediakey);
+            virtual ShaderModuleInterface * build(VEngineShaderModuleType type, std::string mediakey) = 0;
         };
 
     }

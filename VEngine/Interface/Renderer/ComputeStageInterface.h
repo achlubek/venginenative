@@ -9,17 +9,17 @@ namespace VEngine
         class DescriptorSetInterface;
         class DescriptorSetLayoutInterface;
         class ShaderModuleInterface;
+        class SemaphoreInterface;
 
         class ComputeStageInterface
         {
         public:
-            void beginRecording();
-            void endRecording();
-            void dispatch(std::vector<DescriptorSetInterface*> sets, uint32_t groupX, uint32_t groupY, uint32_t groupZ);
-
-            void submit(std::vector<VkSemaphore> waitSemaphores);
-            void submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores);
-            VkSemaphore getSignalSemaphore();
+            virtual void beginRecording() = 0;
+            virtual void endRecording() = 0;
+            virtual void dispatch(std::vector<DescriptorSetInterface*> sets, uint32_t groupX, uint32_t groupY, uint32_t groupZ) = 0;
+            virtual void submit(std::vector<SemaphoreInterface*> waitSemaphores) = 0;
+            virtual void submitNoSemaphores(std::vector<SemaphoreInterface*> waitSemaphores) = 0;
+            virtual SemaphoreInterface* getSignalSemaphore() = 0;
         };
 
     }

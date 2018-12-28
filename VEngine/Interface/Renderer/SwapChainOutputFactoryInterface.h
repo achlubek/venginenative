@@ -11,7 +11,7 @@ namespace VEngine
         class SwapChainOutputFactoryInterface
         {
         public:
-            SwapChainOutputInterface * build(RenderStageInterface* stage);
+            virtual SwapChainOutputInterface * build(RenderStageInterface* stage) = 0;
         };
 
     }

@@ -8,7 +8,7 @@ namespace VEngine
         class Object3dInfoInterface
         {
         public:
-            std::vector<float> & getVBO();
+            virtual std::vector<float> & getVBO() = 0;
         };
 
     }

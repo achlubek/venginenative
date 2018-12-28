@@ -9,7 +9,7 @@ namespace VEngine
         class DescriptorSetLayoutFactoryInterface
         {
         public:
-            DescriptorSetLayoutInterface* build();
+            virtual DescriptorSetLayoutInterface* build() = 0;
         };
 
     }

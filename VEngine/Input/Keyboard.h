@@ -1,18 +1,20 @@
 #pragma once
+#include "../Interface/Input/KeyboardInterface.h"
+
 namespace VEngine
 {
     namespace Input
     {
-        class Keyboard
+        class Keyboard : public KeyboardInterface
         {
         public:
             Keyboard(GLFWwindow* win);
-            void setOnKeyPressHandler(std::function<void(int)> onKeyPress);
-            void setOnKeyReleaseHandler(std::function<void(int)> onKeyRelease);
-            void setOnKeyRepeatHandler(std::function<void(int)> onKeyRepeat);
-            void setOnCharHandler(std::function<void(unsigned int)> onChar);
             ~Keyboard();
-            bool isKeyDown(int key);
+            virtual void setOnKeyPressHandler(std::function<void(int)> onKeyPress) override;
+            virtual void setOnKeyReleaseHandler(std::function<void(int)> onKeyRelease) override;
+            virtual void setOnKeyRepeatHandler(std::function<void(int)> onKeyRepeat) override;
+            virtual void setOnCharHandler(std::function<void(unsigned int)> onChar) override;
+            virtual bool isKeyDown(int key) override;
         private:
             static Keyboard * instance;
             GLFWwindow* window;

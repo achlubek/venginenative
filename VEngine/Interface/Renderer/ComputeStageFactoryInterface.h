@@ -12,7 +12,7 @@ namespace VEngine
         class ComputeStageFactoryInterface
         {
         public:
-            ComputeStageInterface * build(ShaderModuleInterface* shader, std::vector<DescriptorSetLayoutInterface*> layouts);
+            virtual ComputeStageInterface * build(ShaderModuleInterface* shader, std::vector<DescriptorSetLayoutInterface*> layouts) = 0;
         };
 
     }

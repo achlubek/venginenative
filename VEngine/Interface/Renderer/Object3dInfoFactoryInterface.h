@@ -11,9 +11,9 @@ namespace VEngine
         class Object3dInfoFactoryInterface
         {
         public:
-            Object3dInfoInterface* build(std::string mediakey);
-            Object3dInfoInterface* build(std::vector<float> rawData);
-            Object3dInfoInterface* getFullScreenQuad();
+            virtual Object3dInfoInterface* build(std::string mediakey) = 0;
+            virtual Object3dInfoInterface* build(std::vector<float> rawData) = 0;
+            virtual Object3dInfoInterface* getFullScreenQuad() = 0;
         };
 
     }

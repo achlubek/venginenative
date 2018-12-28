@@ -11,9 +11,9 @@ namespace VEngine
         class DescriptorSetInterface
         {
         public:
-            void bindImageViewSampler(uint32_t binding, ImageInterface* img);
-            void bindImageStorage(uint32_t binding, ImageInterface* img);
-            void bindBuffer(uint32_t binding, GenericBufferInterface* buffer);
+            virtual void bindImageViewSampler(uint32_t binding, ImageInterface* img) = 0;
+            virtual void bindImageStorage(uint32_t binding, ImageInterface* img) = 0;
+            virtual void bindBuffer(uint32_t binding, GenericBufferInterface* buffer) = 0;
         };
 
     }

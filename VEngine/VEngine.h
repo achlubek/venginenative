@@ -19,7 +19,6 @@
 #include "Input/Keyboard.h"
 #include "Input/Mouse.h"
 
-#include "Renderer/VulkanEnums.h"
 #include "Renderer/Object3dInfo.h"
 #include "Renderer/VulkanBinaryBufferBuilder.h"
 #include "Renderer/VulkanComputeStage.h"
@@ -30,6 +29,7 @@
 #include "Renderer/VulkanRenderStage.h"
 #include "Renderer/VulkanShaderModule.h"
 #include "Renderer/VulkanToolkit.h"
+#include "Renderer/VulkanSemaphore.h"
 #include "Renderer/VulkanSwapChainOutput.h"
 #include "Renderer/VulkanAttachment.h"
 
@@ -40,4 +40,5 @@
 #include "Renderer/VulkanComputeStageFactory.h"
 #include "Renderer/VulkanBufferFactory.h"
 #include "Renderer/VulkanImageFactory.h"
+#include "Renderer/VulkanSemaphoreFactory.h"
 #include "Renderer/VulkanSwapChainOutputFactory.h"

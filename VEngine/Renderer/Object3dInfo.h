@@ -1,4 +1,5 @@
 #pragma once
+#include "../Interface/Renderer/Object3dInfoInterface.h"
 
 namespace VEngine
 {
@@ -10,14 +11,14 @@ namespace VEngine
             class VulkanVertexBuffer;
         }
 
-        class Object3dInfo
+        class Object3dInfo : public Object3dInfoInterface
         {
         public:
             Object3dInfo(Internal::VulkanDevice * device, std::vector<float> &vbo);
             ~Object3dInfo();
 
             Internal::VulkanVertexBuffer* getVertexBuffer();
-            std::vector<float> & getVBO();
+            virtual std::vector<float> & getVBO() override;
 
         private:
             Internal::VulkanVertexBuffer * vertexBuffer;

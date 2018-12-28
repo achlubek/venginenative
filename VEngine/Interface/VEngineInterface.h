@@ -6,7 +6,6 @@
 #include "Input/KeyboardInterface.h"
 #include "Input/MouseInterface.h"
 
-#include "Renderer/Enums.h"
 #include "Renderer/Object3dInfoInterface.h"
 #include "Renderer/BinaryBufferBuilderInterface.h"
 #include "Renderer/ComputeStageInterface.h"
@@ -19,6 +18,7 @@
 #include "Renderer/ToolkitInterface.h"
 #include "Renderer/SwapChainOutputInterface.h"
 #include "Renderer/AttachmentInterface.h"
+#include "Renderer/SemaphoreInterface.h"
 
 #include "Renderer/Object3dInfoFactoryInterface.h"
 #include "Renderer/ShaderFactoryInterface.h"
@@ -28,3 +28,4 @@
 #include "Renderer/BufferFactoryInterface.h"
 #include "Renderer/ImageFactoryInterface.h"
 #include "Renderer/SwapChainOutputFactoryInterface.h"
+#include "Renderer/SemaphoreFactoryInterface.h"

@@ -16,14 +16,14 @@ namespace VEngine
         {
         public:
             // todo abstract out VkClearColorValue
-            AttachmentInterface* getAttachment(VEngineAttachmentBlending blending, bool clear, VkClearColorValue clearColor, bool forPresent);
-            AttachmentInterface* getAttachment(VEngineAttachmentBlending blending, bool clear, VkClearColorValue clearColor);
-            AttachmentInterface* getAttachment(VEngineAttachmentBlending blending, bool clear);
-            AttachmentInterface* getAttachment(VEngineAttachmentBlending blending, VkClearColorValue clearColor);
-            AttachmentInterface* getAttachment(VEngineAttachmentBlending blending);
-            bool isDepthBuffer();
-            static bool resolveIsDepthBuffer(VEngineImageFormat format);
-            void regenerateMipmaps();
+            virtual AttachmentInterface* getAttachment(VEngineAttachmentBlending blending, bool clear, VEngineClearColorValue clearColor, bool forPresent) = 0;
+            virtual AttachmentInterface* getAttachment(VEngineAttachmentBlending blending, bool clear, VEngineClearColorValue clearColor) = 0;
+            virtual AttachmentInterface* getAttachment(VEngineAttachmentBlending blending, bool clear) = 0;
+            virtual AttachmentInterface* getAttachment(VEngineAttachmentBlending blending, VEngineClearColorValue clearColor) = 0;
+            virtual AttachmentInterface* getAttachment(VEngineAttachmentBlending blending) = 0;
+            virtual bool isDepthBuffer() = 0;
+            virtual bool resolveIsDepthBuffer(VEngineImageFormat format) = 0;
+            virtual void regenerateMipmaps() = 0;
         };
     }
 }

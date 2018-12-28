@@ -1,7 +1,7 @@
 #pragma once 
+#include "../Interface/Renderer/Enums.h"
+#include "../Interface/Renderer/GenericBufferInterface.h"
 #include "Internal/VulkanSingleAllocation.h"
-
-#include "VulkanEnums.h"
 namespace VEngine
 {
     namespace Renderer
@@ -11,7 +11,7 @@ namespace VEngine
             class VulkanDevice;
         }
 
-        class VulkanGenericBuffer
+        class VulkanGenericBuffer : public GenericBufferInterface
         {
         public:
             VulkanGenericBuffer(Internal::VulkanDevice * device, VulkanBufferType type, uint64_t s);

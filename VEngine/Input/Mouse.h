@@ -1,19 +1,21 @@
 #pragma once
+#include "../Interface/Input/MouseInterface.h"
+
 namespace VEngine
 {
     namespace Input
     {
-        class Mouse
+        class Mouse : public MouseInterface
         {
         public:
             Mouse(GLFWwindow* win);
             ~Mouse();
-            void setOnMouseDownHandler(std::function<void(int)> onMouseDown);
-            void setOnMouseUpHandler(std::function<void(int)> onMouseUp);
-            void setOnMouseScrollHandler(std::function<void(double, double)> onMouseScroll);
-            void setCursorMode(int mode);
-            std::tuple<double, double> getCursorPosition();
-            bool isButtonPressed(int button);
+            virtual void setOnMouseDownHandler(std::function<void(int)> onMouseDown) override;
+            virtual void setOnMouseUpHandler(std::function<void(int)> onMouseUp) override;
+            virtual void setOnMouseScrollHandler(std::function<void(double, double)> onMouseScroll) override;
+            virtual void setCursorMode(int mode) override;
+            virtual std::tuple<double, double> getCursorPosition() override;
+            virtual bool isButtonPressed(int button) override;
         private:
             static Mouse * instance;
             GLFWwindow* window;

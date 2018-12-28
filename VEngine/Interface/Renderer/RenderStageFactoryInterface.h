@@ -14,25 +14,25 @@ namespace VEngine
         class RenderStageFactoryInterface
         {
         public:
-            RenderStageInterface* build(int width, int height,
+            virtual RenderStageInterface* build(int width, int height,
                 std::vector<ShaderModuleInterface*> shaders,
-                std::vector<DescriptorSetLayoutInterface*> layouts);
+                std::vector<DescriptorSetLayoutInterface*> layouts) = 0;
 
-            RenderStageInterface* build(int width, int height,
-                std::vector<ShaderModuleInterface*> shaders,
-                std::vector<DescriptorSetLayoutInterface*> layouts,
-                std::vector<AttachmentInterface*> outputImages);
-
-            RenderStageInterface* build(int width, int height,
+            virtual RenderStageInterface* build(int width, int height,
                 std::vector<ShaderModuleInterface*> shaders,
                 std::vector<DescriptorSetLayoutInterface*> layouts,
-                VEngineCullMode cullMode);
+                std::vector<AttachmentInterface*> outputImages) = 0;
 
-            RenderStageInterface* build(int width, int height,
+            virtual RenderStageInterface* build(int width, int height,
+                std::vector<ShaderModuleInterface*> shaders,
+                std::vector<DescriptorSetLayoutInterface*> layouts,
+                VEngineCullMode cullMode) = 0;
+
+            virtual RenderStageInterface* build(int width, int height,
                 std::vector<ShaderModuleInterface*> shaders,
                 std::vector<DescriptorSetLayoutInterface*> layouts,
                 std::vector<AttachmentInterface*> outputImages,
-                VEngineCullMode cullMode);
+                VEngineCullMode cullMode) = 0;
         };
 
     }

@@ -1,5 +1,6 @@
 #pragma once
-#include "VulkanEnums.h"
+#include "../Interface/Renderer/Enums.h"
+#include "../Interface/Renderer/BufferFactoryInterface.h"
 
 namespace VEngine
 {
@@ -9,15 +10,15 @@ namespace VEngine
         {
             class VulkanDevice;
         }
-        class VulkanGenericBuffer;
+        class GenericBufferInterface;
 
-        class VulkanBufferFactory
+        class VulkanBufferFactory : public BufferFactoryInterface
         {
         public:
             VulkanBufferFactory(Internal::VulkanDevice* device);
             ~VulkanBufferFactory();
 
-            VulkanGenericBuffer* build(VulkanBufferType type, uint64_t size);
+            virtual GenericBufferInterface* build(VEngineBufferType type, uint64_t size) override;
         private:
             Internal::VulkanDevice * device;
         };

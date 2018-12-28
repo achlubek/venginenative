@@ -16,37 +16,37 @@ namespace VEngine
         class ImageFactoryInterface
         {
         public:
-            ImageInterface * build(uint32_t width, uint32_t height, uint32_t depth,
-                VEngineImageFormat format, VEngineImageUsage usage, VEngineImageAspect aspect, VEngineImageLayout layout);
+            virtual ImageInterface * build(uint32_t width, uint32_t height, uint32_t depth,
+                VEngineImageFormat format, VEngineImageUsage usage, VEngineImageAspect aspect, VEngineImageLayout layout) = 0;
 
-            ImageInterface* build(uint32_t width, uint32_t height, uint32_t depth,
-                VEngineImageFormat format, VEngineImageUsage usage);
+            virtual ImageInterface* build(uint32_t width, uint32_t height, uint32_t depth,
+                VEngineImageFormat format, VEngineImageUsage usage) = 0;
 
-            ImageInterface* build(uint32_t width, uint32_t height,
-                VEngineImageFormat format, VEngineImageUsage usage, VEngineImageAspect aspect, VEngineImageLayout layout);
+            virtual ImageInterface* build(uint32_t width, uint32_t height,
+                VEngineImageFormat format, VEngineImageUsage usage, VEngineImageAspect aspect, VEngineImageLayout layout) = 0;
 
-            ImageInterface* build(uint32_t width, uint32_t height,
-                VEngineImageFormat format, VEngineImageUsage usage);
+            virtual ImageInterface* build(uint32_t width, uint32_t height,
+                VEngineImageFormat format, VEngineImageUsage usage) = 0;
 
-            ImageInterface* build(uint32_t width, uint32_t height, VEngineImageFormat format, int usage);
+            virtual ImageInterface* build(uint32_t width, uint32_t height, VEngineImageFormat format, int usage) = 0;
 
-            ImageInterface* buildMipmapped(uint32_t width, uint32_t height, uint32_t depth,
-                VEngineImageFormat format, VEngineImageUsage usage, VEngineImageAspect aspect, VEngineImageLayout layout);
+            virtual ImageInterface* buildMipmapped(uint32_t width, uint32_t height, uint32_t depth,
+                VEngineImageFormat format, VEngineImageUsage usage, VEngineImageAspect aspect, VEngineImageLayout layout) = 0;
 
-            ImageInterface* buildMipmapped(uint32_t width, uint32_t height, uint32_t depth,
-                VEngineImageFormat format, VEngineImageUsage usage);
+            virtual ImageInterface* buildMipmapped(uint32_t width, uint32_t height, uint32_t depth,
+                VEngineImageFormat format, VEngineImageUsage usage) = 0;
 
-            ImageInterface* buildMipmapped(uint32_t width, uint32_t height,
-                VEngineImageFormat format, VEngineImageUsage usage, VEngineImageAspect aspect, VEngineImageLayout layout);
+            virtual ImageInterface* buildMipmapped(uint32_t width, uint32_t height,
+                VEngineImageFormat format, VEngineImageUsage usage, VEngineImageAspect aspect, VEngineImageLayout layout) = 0;
 
-            ImageInterface* buildMipmapped(uint32_t width, uint32_t height,
-                VEngineImageFormat format, VEngineImageUsage usage);
+            virtual ImageInterface* buildMipmapped(uint32_t width, uint32_t height,
+                VEngineImageFormat format, VEngineImageUsage usage) = 0;
 
-            ImageInterface* buildMipmapped(uint32_t width, uint32_t height, VEngineImageFormat format, int usage);
+            virtual ImageInterface* buildMipmapped(uint32_t width, uint32_t height, VEngineImageFormat format, int usage) = 0;
 
-            ImageInterface* build(std::string mediakey);
+            virtual ImageInterface* build(std::string mediakey) = 0;
 
-            ImageInterface* build(uint32_t width, uint32_t height, uint32_t channelCount, void * data);
+            virtual ImageInterface* build(uint32_t width, uint32_t height, uint32_t channelCount, void * data) = 0;
         };
 
 

@@ -7,27 +7,26 @@ namespace VEngine
 {
     namespace Renderer
     {
-        namespace Internal
-        {
         class Object3dInfoInterface;
         class ShaderModuleInterface;
         class DescriptorSetInterface;
         class DescriptorSetLayoutInterface;
         class AttachmentInterface;
+        class SemaphoreInterface;
 
         class RenderStageInterface
         {
         public:
-            void beginDrawing();
-            void endDrawing();
-            void setSets(std::vector<DescriptorSetInterface*> sets);
-            void setSet(size_t index, DescriptorSetInterface* set);
-            void drawMesh(Object3dInfoInterface* info, uint32_t instances);
-            void submit(std::vector<VkSemaphore> waitSemaphores);
-            void submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores);
-            RenderStageInterface* copy();
-            RenderStageInterface* copy(std::vector<AttachmentInterface*> outputImages);
-            VkSemaphore getSignalSemaphore();
+            virtual void beginDrawing() = 0;
+            virtual void endDrawing() = 0;
+            virtual void setSets(std::vector<DescriptorSetInterface*> sets) = 0;
+            virtual void setSet(size_t index, DescriptorSetInterface* set) = 0;
+            virtual void drawMesh(Object3dInfoInterface* info, uint32_t instances) = 0;
+            virtual void submit(std::vector<SemaphoreInterface*> waitSemaphores) = 0;
+            virtual void submitNoSemaphores(std::vector<SemaphoreInterface*> waitSemaphores) = 0;
+            virtual RenderStageInterface* copy() = 0;
+            virtual RenderStageInterface* copy(std::vector<AttachmentInterface*> outputImages) = 0;
+            virtual SemaphoreInterface* getSignalSemaphore() = 0;
         };
 
     }

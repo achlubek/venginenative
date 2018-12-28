@@ -17,7 +17,7 @@ namespace VEngine
         {
         }
 
-        VulkanGenericBuffer* VulkanBufferFactory::build(VulkanBufferType type, uint64_t size)
+        GenericBufferInterface* VulkanBufferFactory::build(VEngineBufferType type, uint64_t size)
         {
             return new VulkanGenericBuffer(device, type, size);
         }

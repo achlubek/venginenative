@@ -1,5 +1,7 @@
 #pragma once
-#include "VulkanEnums.h"
+#include "../Interface/Renderer/Enums.h"
+#include "../Interface/Renderer/AttachmentInterface.h"
+
 namespace VEngine
 {
     namespace Renderer
@@ -7,24 +9,24 @@ namespace VEngine
 
         class VulkanImage;
 
-        class VulkanAttachment
+        class VulkanAttachment : public AttachmentInterface
         {
         public:
-            VulkanAttachment(VulkanImage* iimage, VkFormat format, VkSampleCountFlagBits samples, VkAttachmentLoadOp loadop, VkAttachmentStoreOp storeop,
+            VulkanAttachment(ImageInterface* iimage, VkFormat format, VkSampleCountFlagBits samples, VkAttachmentLoadOp loadop, VkAttachmentStoreOp storeop,
                 VkAttachmentLoadOp stencilloadop, VkAttachmentStoreOp stencilstoreop, VkImageLayout initialLayout, VkImageLayout finalLayout,
-                VulkanAttachmentBlending blending, VkClearColorValue clearColor, bool clear);
+                VEngineAttachmentBlending blending, VEngineClearColorValue clearColor, bool clear);
             ~VulkanAttachment();
-            VulkanImage* getImage();
+            virtual ImageInterface* getImage() override;
             VkAttachmentDescription getDescription();
-            VulkanAttachmentBlending getBlending();
-            VkClearColorValue getClearColor();
+            virtual VEngineAttachmentBlending getBlending() override;
+            VEngineClearColorValue getClearColor();
             VkAttachmentReference getReference(uint32_t attachment, VkImageLayout layout);
-            bool isCleared();
+            virtual bool isCleared() override;
         private:
-            VulkanImage * image;
+            ImageInterface * image;
             VkAttachmentDescription description;
-            VulkanAttachmentBlending blending;
-            VkClearColorValue clearColor;
+            VEngineAttachmentBlending blending;
+            VEngineClearColorValue clearColor;
             bool clear = true;
         };
 

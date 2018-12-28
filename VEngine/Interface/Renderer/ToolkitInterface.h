@@ -15,7 +15,6 @@ namespace VEngine
     }
     namespace Renderer
     {
-
         class Object3dInfoFactoryInterface;
         class ShaderFactoryInterface;
         class DescriptorSetLayoutFactoryInterface;
@@ -24,29 +23,31 @@ namespace VEngine
         class BufferFactoryInterface;
         class ImageFactoryInterface;
         class SwapChainOutputFactoryInterface;
+        class SemaphoreFactoryInterface;
 
         class ToolkitInterface
         {
         public:
-            bool shouldCloseWindow();
-            void poolEvents();
-            double getExecutionTime();
-            size_t getTotalAllocatedMemory();
-            void waitQueueIdle();
-            void waitDeviceIdle();
+            virtual bool shouldCloseWindow() = 0;
+            virtual void poolEvents() = 0;
+            virtual double getExecutionTime() = 0;
+            virtual size_t getTotalAllocatedMemory() = 0;
+            virtual void waitQueueIdle() = 0;
+            virtual void waitDeviceIdle() = 0;
 
-            Object3dInfoFactoryInterface* getObject3dInfoFactory();
-            ShaderFactoryInterface* getVulkanShaderFactory();
-            DescriptorSetLayoutFactoryInterface* getVulkanDescriptorSetLayoutFactory();
-            RenderStageFactoryInterface* getVulkanRenderStageFactory();
-            ComputeStageFactoryInterface* getVulkanComputeStageFactory();
-            BufferFactoryInterface* getVulkanBufferFactory();
-            ImageFactoryInterface* getVulkanImageFactory();
-            SwapChainOutputFactoryInterface* getVulkanSwapChainOutputFactory();
-            Input::KeyboardInterface* getKeyboard();
-            Input::MouseInterface* getMouse();
-            Input::JoystickInterface* getJoystick();
-            FileSystem::MediaInterface* getMedia();
+            virtual Object3dInfoFactoryInterface* getObject3dInfoFactory() = 0;
+            virtual ShaderFactoryInterface* getShaderFactory() = 0;
+            virtual DescriptorSetLayoutFactoryInterface* getDescriptorSetLayoutFactory() = 0;
+            virtual RenderStageFactoryInterface* getRenderStageFactory() = 0;
+            virtual ComputeStageFactoryInterface* getComputeStageFactory() = 0;
+            virtual BufferFactoryInterface* getBufferFactory() = 0;
+            virtual ImageFactoryInterface* getImageFactory() = 0;
+            virtual SwapChainOutputFactoryInterface* getSwapChainOutputFactory() = 0;
+            virtual SemaphoreFactoryInterface* getSemaphoreFactoryInterface() = 0;
+            virtual Input::KeyboardInterface* getKeyboard() = 0;
+            virtual Input::MouseInterface* getMouse() = 0;
+            virtual Input::JoystickInterface* getJoystick() = 0;
+            virtual FileSystem::MediaInterface* getMedia() = 0;
         };
 
     }

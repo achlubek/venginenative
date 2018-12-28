@@ -8,7 +8,7 @@ namespace VEngine
         class ShaderModuleInterface
         {
         public:
-            VEngineShaderModuleType getType();
+            virtual VEngineShaderModuleType getType() = 0;
         };
     }
 }

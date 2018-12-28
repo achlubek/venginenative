@@ -10,8 +10,8 @@ namespace VEngine
         class DescriptorSetLayoutInterface
         {
         public:
-            void addField(VEngineDescriptorSetFieldType fieldType, VEngineDescriptorSetFieldStage fieldAccesibility);
-            DescriptorSetInterface* generateDescriptorSet();
+            virtual void addField(VEngineDescriptorSetFieldType fieldType, VEngineDescriptorSetFieldStage fieldAccesibility) = 0;
+            virtual DescriptorSetInterface* generateDescriptorSet() = 0;
         };
 
     }

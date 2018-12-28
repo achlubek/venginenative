@@ -1,4 +1,6 @@
 #pragma once
+#include "../Interface/Renderer/Object3dInfoFactoryInterface.h"
+
 namespace VEngine
 {
     namespace FileSystem
@@ -15,15 +17,15 @@ namespace VEngine
 
         class Object3dInfo;
 
-        class Object3dInfoFactory
+        class Object3dInfoFactory : public Object3dInfoFactoryInterface
         {
         public:
             Object3dInfoFactory(Internal::VulkanDevice* device, FileSystem::Media* media);
             ~Object3dInfoFactory();
 
-            Object3dInfo* build(std::string mediakey);
-            Object3dInfo* build(std::vector<float> rawData);
-            Object3dInfo* getFullScreenQuad();
+            virtual Object3dInfo* build(std::string mediakey) override;
+            virtual Object3dInfo* build(std::vector<float> rawData) override;
+            virtual Object3dInfo* getFullScreenQuad() override;
         private:
             Internal::VulkanDevice* device;
             FileSystem::Media* media;
