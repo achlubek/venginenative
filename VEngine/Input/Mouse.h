@@ -1,6 +1,4 @@
 #pragma once
-#include "../Utilities/EventHandler.h"
-
 namespace VEngine
 {
     namespace Input
@@ -10,9 +8,9 @@ namespace VEngine
         public:
             Mouse(GLFWwindow* win);
             ~Mouse();
-            VEngine::Utilities::EventHandler<int> onMouseDown;
-            VEngine::Utilities::EventHandler<int> onMouseUp;
-            VEngine::Utilities::EventHandler<double> onMouseScroll;
+            void setOnMouseDownHandler(std::function<void(int)> onMouseDown);
+            void setOnMouseUpHandler(std::function<void(int)> onMouseUp);
+            void setOnMouseScrollHandler(std::function<void(double, double)> onMouseScroll);
             void setCursorMode(int mode);
             std::tuple<double, double> getCursorPosition();
             bool isButtonPressed(int button);
@@ -20,6 +18,9 @@ namespace VEngine
             static Mouse * instance;
             GLFWwindow* window;
             int cursorMode = GLFW_CURSOR_NORMAL;
+            std::function<void(int)> onMouseDown;
+            std::function<void(int)> onMouseUp;
+            std::function<void(double, double)> onMouseScroll;
         };
 
     }

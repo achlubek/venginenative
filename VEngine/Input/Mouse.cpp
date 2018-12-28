@@ -5,31 +5,43 @@ namespace VEngine
 {
     namespace Input
     {
-        using namespace VEngine::Utilities;
-
         Mouse * Mouse::instance = nullptr;
 
         Mouse::Mouse(GLFWwindow* win)
-            : window(win)
+            : window(win),
+            onMouseDown(std::function<void(int)>()),
+            onMouseUp(std::function<void(int)>()),
+            onMouseScroll(std::function<void(double, double)>())
         {
             instance = this;
-
-            onMouseDown = EventHandler<int>();
-            onMouseUp = EventHandler<int>();
-            onMouseScroll = EventHandler<double>();
 
             glfwSetMouseButtonCallback(window, [](GLFWwindow * window, int button, int action, int mods) -> void {
                 int id = 0;
                 if (button == GLFW_MOUSE_BUTTON_LEFT) id = 0;
                 if (button == GLFW_MOUSE_BUTTON_RIGHT) id = 1;
                 if (button == GLFW_MOUSE_BUTTON_MIDDLE) id = 2;
-                if (action == GLFW_PRESS) Mouse::instance->onMouseDown.invoke(id);
-                if (action == GLFW_RELEASE) Mouse::instance->onMouseUp.invoke(id);
+                if (action == GLFW_PRESS) Mouse::instance->onMouseDown(id);
+                if (action == GLFW_RELEASE) Mouse::instance->onMouseUp(id);
             });
             glfwSetScrollCallback(window, [](GLFWwindow * window, double xoffset, double yoffset) -> void {
-                Mouse::instance->onMouseScroll.invoke(yoffset); // TODO add x offset making another callback
+                Mouse::instance->onMouseScroll(xoffset, yoffset); // TODO add x offset making another callback
             });
             glfwSetInputMode(window, GLFW_CURSOR, cursorMode);
+        }
+
+        void Mouse::setOnMouseUpHandler(std::function<void(int)> onMouseDown)
+        {
+            onMouseDown = onMouseDown;
+        }
+
+        void Mouse::setOnMouseDownHandler(std::function<void(int)> onMouseUp)
+        {
+            onMouseUp = onMouseUp;
+        }
+
+        void Mouse::setOnMouseScrollHandler(std::function<void(double, double)> onMouseScroll)
+        {
+            onMouseScroll = onMouseScroll;
         }
 
         void Mouse::setCursorMode(int mode)

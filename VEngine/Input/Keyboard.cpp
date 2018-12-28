@@ -5,33 +5,48 @@ namespace VEngine
 {
     namespace Input
     {
-        using namespace VEngine::Utilities;
-
         Keyboard * Keyboard::instance = nullptr;
 
         Keyboard::Keyboard(GLFWwindow* win)
-            : window(win)
+            : window(win),
+            onKeyPress(std::function<void(int)>()),
+            onKeyRelease(std::function<void(int)>()),
+            onKeyRepeat(std::function<void(int)>()),
+            onChar(std::function<void(unsigned int)>())
         {
-            instance = this;
-
-            onKeyPress = EventHandler<int>();
-            onKeyRelease = EventHandler<int>();
-            onKeyRepeat = EventHandler<int>();
-            onChar = EventHandler<unsigned int>();
-
             glfwSetCharCallback(window, [](GLFWwindow * window, unsigned int key) -> void {
-                Keyboard::instance->onChar.invoke(key);
+                Keyboard::instance->onChar(key);
             });
 
             glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int, int action, int mods) -> void {
                 if (action == GLFW_PRESS)
-                    Keyboard::instance->onKeyPress.invoke(key);
+                    Keyboard::instance->onKeyPress(key);
                 if (action == GLFW_RELEASE)
-                    Keyboard::instance->onKeyRelease.invoke(key);
+                    Keyboard::instance->onKeyRelease(key);
                 if (action == GLFW_REPEAT)
-                    Keyboard::instance->onKeyRepeat.invoke(key);
+                    Keyboard::instance->onKeyRepeat(key);
             });
 
+        }
+
+        void Keyboard::setOnKeyPressHandler(std::function<void(int)> onKeyPress)
+        {
+            onKeyPress = onKeyPress;
+        }
+
+        void Keyboard::setOnKeyReleaseHandler(std::function<void(int)> onKeyRelease)
+        {
+            onKeyRelease = onKeyRelease;
+        }
+
+        void Keyboard::setOnKeyRepeatHandler(std::function<void(int)> onKeyRepeat)
+        {
+            onKeyRepeat = onKeyRepeat;
+        }
+
+        void Keyboard::setOnCharHandler(std::function<void(unsigned int)> onChar)
+        {
+            onChar = onChar;
         }
 
         Keyboard::~Keyboard()
@@ -40,9 +55,9 @@ namespace VEngine
             glfwSetKeyCallback(window, NULL);
         }
 
-        int Keyboard::getKeyStatus(int key)
+        bool Keyboard::isKeyDown(int key)
         {
-            return glfwGetKey(window, key);
+            return glfwGetKey(window, key) != GLFW_RELEASE;
         }
     }
 }

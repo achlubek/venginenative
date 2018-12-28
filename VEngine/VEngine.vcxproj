@@ -131,11 +131,37 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Utilities\EventHandler.h" />
     <ClInclude Include="Input\stdafx.h" />
     <ClInclude Include="FileSystem\Media.h" />
     <ClInclude Include="FileSystem\stdafx.h" />
     <ClInclude Include="FileSystem\tinydir.h" />
+    <ClInclude Include="Interface\FileSystem\MediaInterface.h" />
+    <ClInclude Include="Interface\Input\JoystickInterface.h" />
+    <ClInclude Include="Interface\Input\KeyboardInterface.h" />
+    <ClInclude Include="Interface\Input\MouseInterface.h" />
+    <ClInclude Include="Interface\Renderer\Object3dInfoInterface.h" />
+    <ClInclude Include="Interface\Renderer\Object3dInfoFactoryInterface.h" />
+    <ClInclude Include="Interface\Renderer\AttachmentInterface.h" />
+    <ClInclude Include="Interface\Renderer\BinaryBufferBuilderInterface.h" />
+    <ClInclude Include="Interface\Renderer\BufferFactoryInterface.h" />
+    <ClInclude Include="Interface\Renderer\ComputeStageInterface.h" />
+    <ClInclude Include="Interface\Renderer\ComputeStageFactoryInterface.h" />
+    <ClInclude Include="Interface\Renderer\DescriptorSetInterface.h" />
+    <ClInclude Include="Interface\Renderer\DescriptorSetLayoutInterface.h" />
+    <ClInclude Include="Interface\Renderer\DescriptorSetLayoutFactoryInterface.h" />
+    <ClInclude Include="Interface\Renderer\Enums.h" />
+    <ClInclude Include="Interface\Renderer\GenericBufferInterface.h" />
+    <ClInclude Include="Interface\Renderer\ImageInterface.h" />
+    <ClInclude Include="Interface\Renderer\ImageFactoryInterface.h" />
+    <ClInclude Include="Interface\Renderer\RenderStageInterface.h" />
+    <ClInclude Include="Interface\Renderer\RenderStageFactoryInterface.h" />
+    <ClInclude Include="Interface\Renderer\ShaderFactoryInterface.h" />
+    <ClInclude Include="Interface\Renderer\ShaderModuleInterface.h" />
+    <ClInclude Include="Interface\Renderer\stdafx.h" />
+    <ClInclude Include="Interface\Renderer\SwapChainOutputInterface.h" />
+    <ClInclude Include="Interface\Renderer\SwapChainOutputFactoryInterface.h" />
+    <ClInclude Include="Interface\Renderer\ToolkitInterface.h" />
+    <ClInclude Include="Interface\VEngineInterface.h" />
     <ClInclude Include="Renderer\Internal\stdafx.h" />
     <ClInclude Include="Input\Joystick.h" />
     <ClInclude Include="Input\Keyboard.h" />
@@ -182,6 +208,7 @@
     <ClCompile Include="Input\Keyboard.cpp" />
     <ClCompile Include="Input\Mouse.cpp" />
     <ClCompile Include="FileSystem\Media.cpp" />
+    <ClCompile Include="Interface\VEngineInterface.cpp" />
     <ClCompile Include="Renderer\Object3dInfo.cpp" />
     <ClCompile Include="Renderer\Object3dInfoFactory.cpp" />
     <ClCompile Include="stdafx.cpp">
