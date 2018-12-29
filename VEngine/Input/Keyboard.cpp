@@ -30,24 +30,24 @@ namespace VEngine
 
         }
 
-        void Keyboard::setOnKeyPressHandler(std::function<void(int)> onKeyPress)
+        void Keyboard::setOnKeyPressHandler(std::function<void(int)> ionKeyPress)
         {
-            onKeyPress = onKeyPress;
+            onKeyPress = ionKeyPress;
         }
 
-        void Keyboard::setOnKeyReleaseHandler(std::function<void(int)> onKeyRelease)
+        void Keyboard::setOnKeyReleaseHandler(std::function<void(int)> ionKeyRelease)
         {
-            onKeyRelease = onKeyRelease;
+            onKeyRelease = ionKeyRelease;
         }
 
-        void Keyboard::setOnKeyRepeatHandler(std::function<void(int)> onKeyRepeat)
+        void Keyboard::setOnKeyRepeatHandler(std::function<void(int)> ionKeyRepeat)
         {
-            onKeyRepeat = onKeyRepeat;
+            onKeyRepeat = ionKeyRepeat;
         }
 
-        void Keyboard::setOnCharHandler(std::function<void(unsigned int)> onChar)
+        void Keyboard::setOnCharHandler(std::function<void(unsigned int)> ionChar)
         {
-            onChar = onChar;
+            onChar = ionChar;
         }
 
         Keyboard::~Keyboard()

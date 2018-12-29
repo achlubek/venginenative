@@ -29,19 +29,19 @@ namespace VEngine
             glfwSetInputMode(window, GLFW_CURSOR, cursorMode);
         }
 
-        void Mouse::setOnMouseUpHandler(std::function<void(int)> onMouseDown)
+        void Mouse::setOnMouseUpHandler(std::function<void(int)> ionMouseDown)
         {
-            onMouseDown = onMouseDown;
+            onMouseDown = ionMouseDown;
         }
 
-        void Mouse::setOnMouseDownHandler(std::function<void(int)> onMouseUp)
+        void Mouse::setOnMouseDownHandler(std::function<void(int)> ionMouseUp)
         {
-            onMouseUp = onMouseUp;
+            onMouseUp = ionMouseUp;
         }
 
-        void Mouse::setOnMouseScrollHandler(std::function<void(double, double)> onMouseScroll)
+        void Mouse::setOnMouseScrollHandler(std::function<void(double, double)> ionMouseScroll)
         {
-            onMouseScroll = onMouseScroll;
+            onMouseScroll = ionMouseScroll;
         }
 
         void Mouse::setCursorMode(int mode)

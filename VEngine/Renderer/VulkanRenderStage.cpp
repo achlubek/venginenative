@@ -108,6 +108,7 @@ namespace VEngine
 
         void VulkanRenderStage::setSets(std::vector<DescriptorSetInterface*> isets)
         {
+            sets.clear();
             for (auto &set : isets) {
                 sets.push_back(static_cast<VulkanDescriptorSet*>(set));
             }
