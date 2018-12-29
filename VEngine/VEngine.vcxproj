@@ -142,7 +142,6 @@
     <ClInclude Include="Interface\Renderer\Object3dInfoInterface.h" />
     <ClInclude Include="Interface\Renderer\Object3dInfoFactoryInterface.h" />
     <ClInclude Include="Interface\Renderer\AttachmentInterface.h" />
-    <ClInclude Include="Interface\Renderer\BinaryBufferBuilderInterface.h" />
     <ClInclude Include="Interface\Renderer\BufferFactoryInterface.h" />
     <ClInclude Include="Interface\Renderer\ComputeStageInterface.h" />
     <ClInclude Include="Interface\Renderer\ComputeStageFactoryInterface.h" />
@@ -174,7 +173,6 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="VEngine.h" />
     <ClInclude Include="Renderer\VulkanAttachment.h" />
-    <ClInclude Include="Renderer\VulkanBinaryBufferBuilder.h" />
     <ClInclude Include="Renderer\Internal\VulkanCommandBuffer.h" />
     <ClInclude Include="Renderer\VulkanBufferFactory.h" />
     <ClInclude Include="Renderer\VulkanComputeStage.h" />
@@ -220,7 +218,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Renderer\VulkanAttachment.cpp" />
-    <ClCompile Include="Renderer\VulkanBinaryBufferBuilder.cpp" />
     <ClCompile Include="Renderer\Internal\VulkanCommandBuffer.cpp" />
     <ClCompile Include="Renderer\VulkanBufferFactory.cpp" />
     <ClCompile Include="Renderer\VulkanComputeStage.cpp" />

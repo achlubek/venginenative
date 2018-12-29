@@ -7,7 +7,6 @@
 #include "Input/MouseInterface.h"
 
 #include "Renderer/Object3dInfoInterface.h"
-#include "Renderer/BinaryBufferBuilderInterface.h"
 #include "Renderer/ComputeStageInterface.h"
 #include "Renderer/DescriptorSetInterface.h"
 #include "Renderer/DescriptorSetLayoutInterface.h"
