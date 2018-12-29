@@ -1,12 +1,26 @@
 #include "stdafx.h"
 #include "VulkanSemaphoreFactory.h"
+#include "VulkanSemaphore.h"
 
-
-VulkanSemaphoreFactory::VulkanSemaphoreFactory()
+namespace VEngine
 {
-}
+    namespace Renderer
+    {
+        using namespace VEngine::Renderer::Internal;
 
+        VulkanSemaphoreFactory::VulkanSemaphoreFactory(VulkanDevice * device)
+            : device(device)
+        {
+        }
 
-VulkanSemaphoreFactory::~VulkanSemaphoreFactory()
-{
+        VulkanSemaphoreFactory::~VulkanSemaphoreFactory()
+        {
+        }
+
+        SemaphoreInterface * VulkanSemaphoreFactory::build()
+        {
+            return new VulkanSemaphore(device);
+        }
+
+    }
 }

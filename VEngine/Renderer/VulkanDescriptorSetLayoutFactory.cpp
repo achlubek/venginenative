@@ -17,7 +17,7 @@ namespace VEngine
         {
         }
 
-        VulkanDescriptorSetLayout * VulkanDescriptorSetLayoutFactory::build()
+        DescriptorSetLayoutInterface * VulkanDescriptorSetLayoutFactory::build()
         {
             return new VulkanDescriptorSetLayout(device);
         }

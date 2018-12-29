@@ -58,11 +58,11 @@ namespace VEngine
                 return vertexBuffer;
             }
 
-            void VulkanVertexBuffer::drawInstanced(VulkanGraphicsPipeline * p, std::vector<VulkanDescriptorSet*> sets, VulkanCommandBuffer* cb, uint32_t instances)
+            void VulkanVertexBuffer::drawInstanced(VulkanGraphicsPipeline * p, std::vector<DescriptorSetInterface*> sets, VulkanCommandBuffer* cb, uint32_t instances)
             {
                 std::vector<VkDescriptorSet> realsets = {};
                 for (int i = 0; i < sets.size(); i++) {
-                    realsets.push_back(sets[i]->getSet());
+                    realsets.push_back(static_cast<VulkanDescriptorSet*>(sets[i])->getSet());
                 }
                 vkCmdBindDescriptorSets(cb->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS, p->getPipelineLayout(), 0u, static_cast<uint32_t>(realsets.size()), realsets.data(), 0u, nullptr);
                 VkBuffer vertexBuffers[] = { vertexBuffer };

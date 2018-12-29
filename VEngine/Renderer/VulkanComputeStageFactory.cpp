@@ -7,8 +7,8 @@ namespace VEngine
     {
         using namespace VEngine::Renderer::Internal;
 
-        VulkanComputeStageFactory::VulkanComputeStageFactory(VulkanDevice* device)
-            : device(device)
+        VulkanComputeStageFactory::VulkanComputeStageFactory(VulkanDevice* device, SemaphoreFactoryInterface* semaphoreFactory)
+            : device(device), semaphoreFactory(semaphoreFactory)
         {
         }
 
@@ -16,9 +16,9 @@ namespace VEngine
         {
         }
 
-        VulkanComputeStage * VulkanComputeStageFactory::build(VulkanShaderModule * shader, std::vector<VulkanDescriptorSetLayout*> layouts)
+        ComputeStageInterface * VulkanComputeStageFactory::build(ShaderModuleInterface * shader, std::vector<DescriptorSetLayoutInterface*> layouts)
         {
-            return new VulkanComputeStage(device, shader, layouts);
+            return new VulkanComputeStage(device, semaphoreFactory, shader, layouts);
         }
 
     }

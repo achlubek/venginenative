@@ -14,21 +14,21 @@ namespace VEngine
         class VulkanGenericBuffer : public GenericBufferInterface
         {
         public:
-            VulkanGenericBuffer(Internal::VulkanDevice * device, VulkanBufferType type, uint64_t s);
+            VulkanGenericBuffer(Internal::VulkanDevice * device, VEngineBufferType type, uint64_t s);
             ~VulkanGenericBuffer();
             void map(uint64_t offset, uint64_t size, void** data);
             void unmap();
 
             VkBuffer getBuffer();
             uint64_t getSize();
-            VulkanBufferType getType();
+            VEngineBufferType getType();
 
         private:
             Internal::VulkanDevice * device;
             VkBuffer buffer;
             Internal::VulkanSingleAllocation bufferMemory;
             uint64_t size;
-            VulkanBufferType type{ VulkanBufferType::BufferTypeUniform };
+            VEngineBufferType type{ VEngineBufferType::BufferTypeUniform };
         };
     }
 }

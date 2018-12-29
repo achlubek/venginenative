@@ -6,9 +6,6 @@ namespace VEngine
 {
     namespace Renderer
     {
-
-        class VulkanImage;
-
         class VulkanAttachment : public AttachmentInterface
         {
         public:
@@ -17,11 +14,11 @@ namespace VEngine
                 VEngineAttachmentBlending blending, VEngineClearColorValue clearColor, bool clear);
             ~VulkanAttachment();
             virtual ImageInterface* getImage() override;
-            VkAttachmentDescription getDescription();
             virtual VEngineAttachmentBlending getBlending() override;
+            virtual bool isCleared() override;
+            VkAttachmentDescription getDescription();
             VEngineClearColorValue getClearColor();
             VkAttachmentReference getReference(uint32_t attachment, VkImageLayout layout);
-            virtual bool isCleared() override;
         private:
             ImageInterface * image;
             VkAttachmentDescription description;

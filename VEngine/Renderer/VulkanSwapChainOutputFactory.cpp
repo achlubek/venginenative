@@ -9,8 +9,8 @@ namespace VEngine
         using namespace VEngine::Renderer::Internal;
 
 
-        VulkanSwapChainOutputFactory::VulkanSwapChainOutputFactory(VulkanDevice* device)
-            : device(device)
+        VulkanSwapChainOutputFactory::VulkanSwapChainOutputFactory(VulkanDevice* device, SemaphoreFactoryInterface* semaphoreFactory)
+            : device(device), semaphoreFactory(semaphoreFactory)
         {
         }
 
@@ -18,9 +18,9 @@ namespace VEngine
         {
         }
 
-        VulkanSwapChainOutput * VulkanSwapChainOutputFactory::build(VulkanRenderStage * stage)
+        SwapChainOutputInterface * VulkanSwapChainOutputFactory::build(RenderStageInterface * stage)
         {
-            return new VulkanSwapChainOutput(device, stage);
+            return new VulkanSwapChainOutput(device, semaphoreFactory, stage);
         }
 
     }

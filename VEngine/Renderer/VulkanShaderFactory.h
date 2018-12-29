@@ -1,11 +1,12 @@
 #pragma once
-#include "VulkanEnums.h"
+#include "../Interface/Renderer/Enums.h"
+#include "../Interface/Renderer/ShaderFactoryInterface.h"
 
 namespace VEngine
 {
     namespace FileSystem
     {
-        class Media;
+        class MediaInterface;
     }
 
     namespace Renderer
@@ -15,18 +16,18 @@ namespace VEngine
             class VulkanDevice;
         }
 
-        class VulkanShaderModule;
+        class ShaderModuleInterface;
 
-        class VulkanShaderFactory
+        class VulkanShaderFactory : public ShaderFactoryInterface
         {
         public:
-            VulkanShaderFactory(Internal::VulkanDevice* device, FileSystem::Media* media);
+            VulkanShaderFactory(Internal::VulkanDevice* device, FileSystem::MediaInterface* media);
             ~VulkanShaderFactory();
 
-            VulkanShaderModule* build(VulkanShaderModuleType type, std::string mediakey);
+            virtual ShaderModuleInterface* build(VEngineShaderModuleType type, std::string mediakey) override;
         private:
             Internal::VulkanDevice * device;
-            FileSystem::Media* media;
+            FileSystem::MediaInterface* media;
         };
 
     }

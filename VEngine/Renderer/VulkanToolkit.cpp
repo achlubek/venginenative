@@ -9,6 +9,7 @@
 #include "VulkanComputeStageFactory.h"
 #include "VulkanBufferFactory.h"
 #include "VulkanImageFactory.h"
+#include "VulkanSemaphoreFactory.h"
 #include "VulkanSwapChainOutputFactory.h"
 #include "../Input/Keyboard.h"
 #include "../Input/Mouse.h"
@@ -28,13 +29,14 @@ namespace VEngine
             windowWidth(width), windowHeight(height),
             media(new Media()),
             object3dInfoFactory(new Object3dInfoFactory(device, media)),
+            vulkanSemaphoreFactory(new VulkanSemaphoreFactory(device)),
             vulkanShaderFactory(new VulkanShaderFactory(device, media)),
             vulkanDescriptorSetLayoutFactory(new VulkanDescriptorSetLayoutFactory(device)),
-            vulkanRenderStageFactory(new VulkanRenderStageFactory(device)),
-            vulkanComputeStageFactory(new VulkanComputeStageFactory(device)),
+            vulkanRenderStageFactory(new VulkanRenderStageFactory(device, vulkanSemaphoreFactory)),
+            vulkanComputeStageFactory(new VulkanComputeStageFactory(device, vulkanSemaphoreFactory)),
             vulkanBufferFactory(new VulkanBufferFactory(device)),
             vulkanImageFactory(new VulkanImageFactory(device, media)),
-            vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device)),
+            vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device, vulkanSemaphoreFactory)),
             keyboard(new Keyboard(device->getWindow())),
             mouse(new Mouse(device->getWindow())),
             joystick(new Joystick(device->getWindow()))
@@ -46,13 +48,14 @@ namespace VEngine
             windowWidth(0), windowHeight(0),
             media(new Media()),
             object3dInfoFactory(new Object3dInfoFactory(device, media)),
+            vulkanSemaphoreFactory(new VulkanSemaphoreFactory(device)),
             vulkanShaderFactory(new VulkanShaderFactory(device, media)),
             vulkanDescriptorSetLayoutFactory(new VulkanDescriptorSetLayoutFactory(device)),
-            vulkanRenderStageFactory(new VulkanRenderStageFactory(device)),
-            vulkanComputeStageFactory(new VulkanComputeStageFactory(device)),
+            vulkanRenderStageFactory(new VulkanRenderStageFactory(device, vulkanSemaphoreFactory)),
+            vulkanComputeStageFactory(new VulkanComputeStageFactory(device, vulkanSemaphoreFactory)),
             vulkanBufferFactory(new VulkanBufferFactory(device)),
             vulkanImageFactory(new VulkanImageFactory(device, media)),
-            vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device)),
+            vulkanSwapChainOutputFactory(new VulkanSwapChainOutputFactory(device, vulkanSemaphoreFactory)),
             keyboard(nullptr),
             mouse(nullptr),
             joystick(nullptr)
@@ -106,62 +109,67 @@ namespace VEngine
             vkDeviceWaitIdle(device->getDevice());
         }
 
-        Object3dInfoFactory * VulkanToolkit::getObject3dInfoFactory()
+        Object3dInfoFactoryInterface * VulkanToolkit::getObject3dInfoFactory()
         {
             return object3dInfoFactory;
         }
 
-        VulkanShaderFactory * VulkanToolkit::getVulkanShaderFactory()
+        ShaderFactoryInterface * VulkanToolkit::getShaderFactory()
         {
             return vulkanShaderFactory;
         }
 
-        VulkanDescriptorSetLayoutFactory * VulkanToolkit::getVulkanDescriptorSetLayoutFactory()
+        DescriptorSetLayoutFactoryInterface * VulkanToolkit::getDescriptorSetLayoutFactory()
         {
             return vulkanDescriptorSetLayoutFactory;
         }
 
-        VulkanRenderStageFactory * VulkanToolkit::getVulkanRenderStageFactory()
+        RenderStageFactoryInterface * VulkanToolkit::getRenderStageFactory()
         {
             return vulkanRenderStageFactory;
         }
 
-        VulkanComputeStageFactory * VulkanToolkit::getVulkanComputeStageFactory()
+        ComputeStageFactoryInterface * VulkanToolkit::getComputeStageFactory()
         {
             return vulkanComputeStageFactory;
         }
 
-        VulkanBufferFactory * VulkanToolkit::getVulkanBufferFactory()
+        BufferFactoryInterface * VulkanToolkit::getBufferFactory()
         {
             return vulkanBufferFactory;
         }
 
-        VulkanImageFactory * VulkanToolkit::getVulkanImageFactory()
+        ImageFactoryInterface * VulkanToolkit::getImageFactory()
         {
             return vulkanImageFactory;
         }
 
-        VulkanSwapChainOutputFactory * VulkanToolkit::getVulkanSwapChainOutputFactory()
+        SwapChainOutputFactoryInterface * VulkanToolkit::getSwapChainOutputFactory()
         {
             return vulkanSwapChainOutputFactory;
         }
 
-        Input::Keyboard * VulkanToolkit::getKeyboard()
+        SemaphoreFactoryInterface * VulkanToolkit::getSemaphoreFactory()
+        {
+            return vulkanSemaphoreFactory;
+        }
+
+        Input::KeyboardInterface * VulkanToolkit::getKeyboard()
         {
             return keyboard;
         }
 
-        Input::Mouse * VulkanToolkit::getMouse()
+        Input::MouseInterface * VulkanToolkit::getMouse()
         {
             return mouse;
         }
 
-        Input::Joystick * VulkanToolkit::getJoystick()
+        Input::JoystickInterface * VulkanToolkit::getJoystick()
         {
             return joystick;
         }
 
-        FileSystem::Media * VulkanToolkit::getMedia()
+        FileSystem::MediaInterface * VulkanToolkit::getMedia()
         {
             return media;
         }

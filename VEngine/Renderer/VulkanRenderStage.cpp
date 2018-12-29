@@ -14,6 +14,8 @@
 #include "VulkanImage.h"
 #include "Internal/VulkanDevice.h"
 #include "VulkanShaderModule.h"
+#include "VulkanSemaphore.h"
+#include "VulkanSemaphoreFactory.h"
 
 
 namespace VEngine
@@ -22,19 +24,21 @@ namespace VEngine
     {
         using namespace VEngine::Renderer::Internal;
 
-        VulkanRenderStage::VulkanRenderStage(VulkanDevice * device, int width, int height,
-            std::vector<VulkanShaderModule*> shaders,
-            std::vector<VulkanDescriptorSetLayout*> layouts,
-            std::vector<VulkanAttachment*> outputImages,
-            VulkanCullMode cullMode)
-            : device(device), width(width), height(height), setLayouts(layouts), outputImages(outputImages), shaders(shaders), cullMode(cullMode)
+        VulkanRenderStage::VulkanRenderStage(VulkanDevice * device, SemaphoreFactoryInterface* semaphoreFactory, int width, int height,
+            std::vector<ShaderModuleInterface*> shaders,
+            std::vector<DescriptorSetLayoutInterface*> layouts,
+            std::vector<AttachmentInterface*> outputImages,
+            VEngineCullMode cullMode)
+            : device(device), semaphoreFactory(semaphoreFactory),
+            width(width), height(height), setLayouts(layouts), 
+            outputImages(outputImages), shaders(shaders), cullMode(cullMode)
         {
             sets = {};
             cullFlags = VK_CULL_MODE_NONE;
-            if (cullMode == VulkanCullMode::CullModeFront) {
+            if (cullMode == VEngineCullMode::CullModeFront) {
                 cullFlags = VK_CULL_MODE_FRONT_BIT;
             }
-            if (cullMode == VulkanCullMode::CullModeBack) {
+            if (cullMode == VEngineCullMode::CullModeBack) {
                 cullFlags = VK_CULL_MODE_BACK_BIT;
             }
         }
@@ -43,7 +47,7 @@ namespace VEngine
         VulkanRenderStage::~VulkanRenderStage()
         {
             if (compiled) {
-                vkDestroySemaphore(device->getDevice(), signalSemaphore, nullptr);
+                safedelete(signalSemaphore);
             }
 
             safedelete(renderPass);
@@ -78,7 +82,11 @@ namespace VEngine
                         clearValues[clearValues.size() - 1].depthStencil = { 1.0f, 0 };
                     }
                     else {
-                        clearValues[clearValues.size() - 1].color = renderPass->getAttachments()[i]->getClearColor();
+                        // todo maybe theres better way
+                        std::memcpy(
+                            &clearValues[clearValues.size() - 1].color, 
+                            &renderPass->getAttachments()[i]->getClearColor(), 
+                            sizeof(VkClearColorValue));
                     }
                 }
             }
@@ -98,27 +106,29 @@ namespace VEngine
             commandBuffer->end();
         }
 
-        void VulkanRenderStage::setSets(std::vector<VulkanDescriptorSet*> isets)
+        void VulkanRenderStage::setSets(std::vector<DescriptorSetInterface*> isets)
         {
-            sets = isets;
+            for (auto &set : isets) {
+                sets.push_back(static_cast<VulkanDescriptorSet*>(set));
+            }
         }
 
-        void VulkanRenderStage::setSet(size_t index, VulkanDescriptorSet * set)
+        void VulkanRenderStage::setSet(size_t index, DescriptorSetInterface * set)
         {
-            if (sets.size() > index) sets[index] = set;
-            else sets.push_back(set);
+            if (sets.size() > index) sets[index] = static_cast<VulkanDescriptorSet*>(set);
+            else sets.push_back(static_cast<VulkanDescriptorSet*>(set));
         }
 
-        void VulkanRenderStage::drawMesh(Object3dInfo * info, uint32_t instances)
+        void VulkanRenderStage::drawMesh(Object3dInfoInterface * info, uint32_t instances)
         {
-            info->getVertexBuffer()->drawInstanced(pipeline, sets, commandBuffer, instances);
+            static_cast<Object3dInfo*>(info)
+                ->getVertexBuffer()
+                ->drawInstanced(pipeline, sets, commandBuffer, instances);
         }
 
         void VulkanRenderStage::compile()
         {
-            VkSemaphoreCreateInfo semaphoreInfo = {};
-            semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            vkCreateSemaphore(device->getDevice(), &semaphoreInfo, nullptr, &signalSemaphore);
+            signalSemaphore = static_cast<VulkanSemaphore*>(semaphoreFactory->build());
 
             commandBuffer = new VulkanCommandBuffer(device, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
@@ -132,16 +142,16 @@ namespace VEngine
             for (int i = 0; i < outputImages.size(); i++) {
                 auto atta = outputImages[i];
                 auto image = atta->getImage();
-                auto view = image->getFirstMipmapImageView();
+                auto view = static_cast<VulkanImage*>(image)->getFirstMipmapImageView();
                 if (image->isDepthBuffer()) {
-                    depthAttachment = atta;
+                    depthAttachment = static_cast<VulkanAttachment*>(atta);
                     foundDepthBuffer = true;
                 }
                 else {
-                    colorAttachments.push_back(atta);
+                    colorAttachments.push_back(static_cast<VulkanAttachment*>(atta));
                     colorattachmentsLayouts.push_back(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
                 }
-                attachments.push_back(atta);
+                attachments.push_back(static_cast<VulkanAttachment*>(atta));
                 attachmentsViews.push_back(view);
             }
 
@@ -162,40 +172,45 @@ namespace VEngine
                 info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 
                 auto type = VK_SHADER_STAGE_VERTEX_BIT;
-                if (shader->getType() == VulkanShaderModuleType::Fragment) {
+                if (shader->getType() == VEngineShaderModuleType::Fragment) {
                     type = VK_SHADER_STAGE_FRAGMENT_BIT;
                 }
-                if (shader->getType() == VulkanShaderModuleType::Compute) {
+                if (shader->getType() == VEngineShaderModuleType::Compute) {
                     type = VK_SHADER_STAGE_COMPUTE_BIT;
                 }
 
                 info.stage = type;
-                info.module = shader->getHandle();
+                info.module = static_cast<VulkanShaderModule*>(shader)->getHandle();
                 info.pName = "main";
                 shaderStages.push_back(info);
             }
 
+            std::vector<VulkanDescriptorSetLayout*> vulkanSetLayouts = {};
+            for (auto &setLayout : setLayouts) {
+                vulkanSetLayouts.push_back(static_cast<VulkanDescriptorSetLayout*>(setLayout));
+            }
+            
             pipeline = new VulkanGraphicsPipeline(device, width, height,
-                setLayouts, shaderStages, renderPass, foundDepthBuffer, topology, cullFlags);
+                vulkanSetLayouts, shaderStages, renderPass, foundDepthBuffer, topology, cullFlags);
 
             compiled = true;
         }
 
         VulkanRenderStage* VulkanRenderStage::copy()
         {
-            auto v = new VulkanRenderStage(device, width, height, shaders, setLayouts, outputImages, cullMode);
+            auto v = new VulkanRenderStage(device, semaphoreFactory, width, height, shaders, setLayouts, outputImages, cullMode);
             v->setSets(sets);
             return v;
         }
 
-        VulkanRenderStage * VulkanRenderStage::copy(std::vector<VulkanAttachment*> ioutputImages)
+        VulkanRenderStage * VulkanRenderStage::copy(std::vector<AttachmentInterface*> ioutputImages)
         {
-            auto v = new VulkanRenderStage(device, width, height, shaders, setLayouts, ioutputImages, cullMode);
+            auto v = new VulkanRenderStage(device, semaphoreFactory, width, height, shaders, setLayouts, ioutputImages, cullMode);
             v->setSets(sets);
             return v;
         }
 
-        VkSemaphore VulkanRenderStage::getSignalSemaphore()
+        SemaphoreInterface* VulkanRenderStage::getSignalSemaphore()
         {
             if (!compiled) {
                 compile();
@@ -203,18 +218,20 @@ namespace VEngine
             return signalSemaphore;
         }
 
-        void VulkanRenderStage::submit(std::vector<VkSemaphore> waitSemaphores)
+        void VulkanRenderStage::submit(std::vector<SemaphoreInterface*> waitSemaphores)
         {
             std::vector<VkPipelineStageFlags> stageFlags = {};
+            std::vector<VkSemaphore> vulkanSemaphores = {};
             for (int i = 0; i < waitSemaphores.size(); i++) {
                 stageFlags.push_back(
                     VK_PIPELINE_STAGE_ALL_COMMANDS_BIT |
                     VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT);
+                vulkanSemaphores.push_back(static_cast<VulkanSemaphore*>(waitSemaphores[i])->getHandle());
             }
             VkSubmitInfo submitInfo = {};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-            submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
-            submitInfo.pWaitSemaphores = waitSemaphores.data();
+            submitInfo.waitSemaphoreCount = static_cast<uint32_t>(vulkanSemaphores.size());
+            submitInfo.pWaitSemaphores = vulkanSemaphores.data();
             submitInfo.pWaitDstStageMask = stageFlags.data();
 
             submitInfo.commandBufferCount = 1;
@@ -222,25 +239,27 @@ namespace VEngine
             submitInfo.pCommandBuffers = &cbufferHandle;
 
             submitInfo.signalSemaphoreCount = 1;
-            submitInfo.pSignalSemaphores = &signalSemaphore;
+            submitInfo.pSignalSemaphores = static_cast<VulkanSemaphore*>(signalSemaphore)->getHandlePointer();
 
             if (vkQueueSubmit(device->getMainQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
                 throw std::runtime_error("failed to submit draw command buffer!");
             }
         }
 
-        void VulkanRenderStage::submitNoSemaphores(std::vector<VkSemaphore> waitSemaphores)
+        void VulkanRenderStage::submitNoSemaphores(std::vector<SemaphoreInterface*> waitSemaphores)
         {
             std::vector<VkPipelineStageFlags> stageFlags = {};
+            std::vector<VkSemaphore> vulkanSemaphores = {};
             for (int i = 0; i < waitSemaphores.size(); i++) {
                 stageFlags.push_back(
                     VK_PIPELINE_STAGE_ALL_COMMANDS_BIT |
                     VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT);
+                vulkanSemaphores.push_back(static_cast<VulkanSemaphore*>(waitSemaphores[i])->getHandle());
             }
             VkSubmitInfo submitInfo = {};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-            submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
-            submitInfo.pWaitSemaphores = waitSemaphores.data();
+            submitInfo.waitSemaphoreCount = static_cast<uint32_t>(vulkanSemaphores.size());
+            submitInfo.pWaitSemaphores = vulkanSemaphores.data();
             submitInfo.pWaitDstStageMask = stageFlags.data();
 
             submitInfo.commandBufferCount = 1;

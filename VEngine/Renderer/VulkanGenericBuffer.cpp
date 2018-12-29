@@ -10,20 +10,20 @@ namespace VEngine
     {
         using namespace VEngine::Renderer::Internal;
 
-        VulkanGenericBuffer::VulkanGenericBuffer(VulkanDevice * device, VulkanBufferType type, uint64_t s)
+        VulkanGenericBuffer::VulkanGenericBuffer(VulkanDevice * device, VEngineBufferType type, uint64_t s)
             : device(device), type(type)
         {
             VkBufferUsageFlagBits usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-            if (type == VulkanBufferType::BufferTypeUniform) {
+            if (type == VEngineBufferType::BufferTypeUniform) {
                 usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
             }
-            if (type == VulkanBufferType::BufferTypeStorage) {
+            if (type == VEngineBufferType::BufferTypeStorage) {
                 usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
             }
-            if (type == VulkanBufferType::BufferTypeTransferDestination) {
+            if (type == VEngineBufferType::BufferTypeTransferDestination) {
                 usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
             }
-            if (type == VulkanBufferType::BufferTypeTransferSource) {
+            if (type == VEngineBufferType::BufferTypeTransferSource) {
                 usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             }
             size = s;
@@ -71,7 +71,7 @@ namespace VEngine
             return size;
         }
 
-        VulkanBufferType VulkanGenericBuffer::getType()
+        VEngineBufferType VulkanGenericBuffer::getType()
         {
             return type;
         }

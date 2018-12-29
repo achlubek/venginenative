@@ -4,7 +4,7 @@
 #include "VulkanMemoryManager.h" 
 #include "VulkanMemoryChunk.h" 
 #include "../VulkanGenericBuffer.h" 
-#include "../../FileSystem/Media.h" 
+#include "../../Interface/FileSystem/MediaInterface.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>  
@@ -135,7 +135,7 @@ namespace VEngine
                 samplerCreated = false;
             }
 
-            VulkanInternalImage::VulkanInternalImage(VulkanDevice * device, FileSystem::Media* media, std::string mediakey)
+            VulkanInternalImage::VulkanInternalImage(VulkanDevice * device, FileSystem::MediaInterface* media, std::string mediakey)
                 : device(device)
             {
                 auto imgdata = readFileImageData(media->getPath(mediakey));
@@ -226,7 +226,7 @@ namespace VEngine
             void VulkanInternalImage::createTexture(const ImageData &img, VkFormat iformat)
             {
                 mipLevels = static_cast<uint32_t>(std::floor(std::log2(max(img.width, img.height)))) + 1;
-                VulkanGenericBuffer* stagingBuffer = new VulkanGenericBuffer(device, VulkanBufferType::BufferTypeTransferSource, img.width * img.height * img.channelCount);
+                VulkanGenericBuffer* stagingBuffer = new VulkanGenericBuffer(device, VEngineBufferType::BufferTypeTransferSource, img.width * img.height * img.channelCount);
                 void* mappoint;
                 stagingBuffer->map(0, img.width * img.height * img.channelCount, &mappoint);
                 memcpy(mappoint, img.data, static_cast<size_t>(img.width * img.height * img.channelCount));

@@ -1,5 +1,6 @@
 #pragma once
-#include "VulkanEnums.h"
+#include "../Interface/Renderer/Enums.h"
+#include "../Interface/Renderer/RenderStageFactoryInterface.h"
 
 namespace VEngine
 {
@@ -9,38 +10,37 @@ namespace VEngine
         {
             class VulkanDevice;
         }
-        class VulkanRenderStage;
-        class VulkanShaderModule;
-        class VulkanDescriptorSetLayout;
-        class VulkanAttachment;
+        class SemaphoreFactoryInterface;
 
-        class VulkanRenderStageFactory
+        class VulkanRenderStageFactory : public RenderStageFactoryInterface
         {
         public:
-            VulkanRenderStageFactory(Internal::VulkanDevice* device);
+            VulkanRenderStageFactory(Internal::VulkanDevice* device, SemaphoreFactoryInterface* semaphoreFactory);
             ~VulkanRenderStageFactory();
-            VulkanRenderStage* build(int width, int height,
-                std::vector<VulkanShaderModule*> shaders,
-                std::vector<VulkanDescriptorSetLayout*> layouts);
 
-            VulkanRenderStage* build(int width, int height,
-                std::vector<VulkanShaderModule*> shaders,
-                std::vector<VulkanDescriptorSetLayout*> layouts,
-                std::vector<VulkanAttachment*> outputImages);
+            virtual RenderStageInterface* build(int width, int height,
+                std::vector<ShaderModuleInterface*> shaders,
+                std::vector<DescriptorSetLayoutInterface*> layouts) override;
 
-            VulkanRenderStage* build(int width, int height,
-                std::vector<VulkanShaderModule*> shaders,
-                std::vector<VulkanDescriptorSetLayout*> layouts,
-                VulkanCullMode cullMode);
+            virtual RenderStageInterface* build(int width, int height,
+                std::vector<ShaderModuleInterface*> shaders,
+                std::vector<DescriptorSetLayoutInterface*> layouts,
+                std::vector<AttachmentInterface*> outputImages) override;
 
-            VulkanRenderStage* build(int width, int height,
-                std::vector<VulkanShaderModule*> shaders,
-                std::vector<VulkanDescriptorSetLayout*> layouts,
-                std::vector<VulkanAttachment*> outputImages,
-                VulkanCullMode cullMode);
+            virtual RenderStageInterface* build(int width, int height,
+                std::vector<ShaderModuleInterface*> shaders,
+                std::vector<DescriptorSetLayoutInterface*> layouts,
+                VEngineCullMode cullMode) override;
+
+            virtual RenderStageInterface* build(int width, int height,
+                std::vector<ShaderModuleInterface*> shaders,
+                std::vector<DescriptorSetLayoutInterface*> layouts,
+                std::vector<AttachmentInterface*> outputImages,
+                VEngineCullMode cullMode) override;
 
         private:
             Internal::VulkanDevice * device;
+            SemaphoreFactoryInterface* semaphoreFactory;
         };
 
     }

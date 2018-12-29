@@ -7,8 +7,9 @@ namespace VEngine
     namespace Renderer
     {
         using namespace VEngine::Renderer::Internal;
-        VulkanRenderStageFactory::VulkanRenderStageFactory(VulkanDevice* device)
-            : device(device)
+
+        VulkanRenderStageFactory::VulkanRenderStageFactory(VulkanDevice* device, SemaphoreFactoryInterface* semaphoreFactory)
+            : device(device), semaphoreFactory(semaphoreFactory)
         {
         }
 
@@ -16,28 +17,28 @@ namespace VEngine
         {
         }
 
-        VulkanRenderStage * VulkanRenderStageFactory::build(int width, int height, std::vector<VulkanShaderModule*> shaders, 
-            std::vector<VulkanDescriptorSetLayout*> layouts)
+        RenderStageInterface * VulkanRenderStageFactory::build(int width, int height, std::vector<ShaderModuleInterface*> shaders,
+            std::vector<DescriptorSetLayoutInterface*> layouts)
         {
-            return new VulkanRenderStage(device, width, height, shaders, layouts, { }, VulkanCullMode::CullModeNone);
+            return new VulkanRenderStage(device, semaphoreFactory, width, height, shaders, layouts, { }, VEngineCullMode::CullModeNone);
         }
 
-        VulkanRenderStage * VulkanRenderStageFactory::build(int width, int height, std::vector<VulkanShaderModule*> shaders, 
-            std::vector<VulkanDescriptorSetLayout*> layouts, std::vector<VulkanAttachment*> outputImages)
+        RenderStageInterface * VulkanRenderStageFactory::build(int width, int height, std::vector<ShaderModuleInterface*> shaders,
+            std::vector<DescriptorSetLayoutInterface*> layouts, std::vector<AttachmentInterface*> outputImages)
         {
-            return new VulkanRenderStage(device, width, height, shaders, layouts, outputImages, VulkanCullMode::CullModeNone);
+            return new VulkanRenderStage(device, semaphoreFactory, width, height, shaders, layouts, outputImages, VEngineCullMode::CullModeNone);
         }
 
-        VulkanRenderStage * VulkanRenderStageFactory::build(int width, int height, std::vector<VulkanShaderModule*> shaders, 
-            std::vector<VulkanDescriptorSetLayout*> layouts, VulkanCullMode cullMode)
+        RenderStageInterface * VulkanRenderStageFactory::build(int width, int height, std::vector<ShaderModuleInterface*> shaders,
+            std::vector<DescriptorSetLayoutInterface*> layouts, VEngineCullMode cullMode)
         {
-            return new VulkanRenderStage(device, width, height, shaders, layouts, { }, cullMode);
+            return new VulkanRenderStage(device, semaphoreFactory, width, height, shaders, layouts, { }, cullMode);
         }
 
-        VulkanRenderStage * VulkanRenderStageFactory::build(int width, int height, std::vector<VulkanShaderModule*> shaders, 
-            std::vector<VulkanDescriptorSetLayout*> layouts, std::vector<VulkanAttachment*> outputImages, VulkanCullMode cullMode)
+        RenderStageInterface * VulkanRenderStageFactory::build(int width, int height, std::vector<ShaderModuleInterface*> shaders,
+            std::vector<DescriptorSetLayoutInterface*> layouts, std::vector<AttachmentInterface*> outputImages, VEngineCullMode cullMode)
         {
-            return new VulkanRenderStage(device, width, height, shaders, layouts, outputImages, cullMode);
+            return new VulkanRenderStage(device, semaphoreFactory, width, height, shaders, layouts, outputImages, cullMode);
         }
     }
 }

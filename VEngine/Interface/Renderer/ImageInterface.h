@@ -22,7 +22,6 @@ namespace VEngine
             virtual AttachmentInterface* getAttachment(VEngineAttachmentBlending blending, VEngineClearColorValue clearColor) = 0;
             virtual AttachmentInterface* getAttachment(VEngineAttachmentBlending blending) = 0;
             virtual bool isDepthBuffer() = 0;
-            virtual bool resolveIsDepthBuffer(VEngineImageFormat format) = 0;
             virtual void regenerateMipmaps() = 0;
         };
     }

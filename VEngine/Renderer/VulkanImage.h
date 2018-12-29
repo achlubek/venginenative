@@ -1,12 +1,13 @@
 #pragma once 
+#include "../Interface/Renderer/Enums.h"
+#include "../Interface/Renderer/ImageInterface.h"
 #include "Internal/VulkanSingleAllocation.h"
-#include "VulkanEnums.h"
 
 namespace VEngine
 {
     namespace FileSystem
     {
-        class Media;
+        class MediaInterface;
     }
 
     namespace Renderer
@@ -18,33 +19,31 @@ namespace VEngine
         }
         class VulkanAttachment;
 
-        class VulkanImage
+        class VulkanImage : public ImageInterface
         {
         public:
             VulkanImage(Internal::VulkanDevice* device, uint32_t width, uint32_t height, uint32_t depth, bool mipmapped,
-                VulkanImageFormat format, VulkanImageUsage usage, VulkanImageAspect aspect, VulkanImageLayout layout);
+                VEngineImageFormat format, VEngineImageUsage usage, VEngineImageAspect aspect, VEngineImageLayout layout);
             VulkanImage(Internal::VulkanDevice* device, Internal::VulkanInternalImage* internalImage, VkFormat internalFormat);
-            VulkanImage(Internal::VulkanDevice* device, FileSystem::Media* media, std::string mediakey);
+            VulkanImage(Internal::VulkanDevice* device, FileSystem::MediaInterface* media, std::string mediakey);
             VulkanImage(Internal::VulkanDevice* device, uint32_t width, uint32_t height, uint32_t channelCount, void * data);
             ~VulkanImage();
-            // todo abstract out VkClearColorValue
-            VulkanAttachment* getAttachment(VulkanAttachmentBlending blending, bool clear, VkClearColorValue clearColor, bool forPresent);
-            VulkanAttachment* getAttachment(VulkanAttachmentBlending blending, bool clear, VkClearColorValue clearColor);
-            VulkanAttachment* getAttachment(VulkanAttachmentBlending blending, bool clear);
-            VulkanAttachment* getAttachment(VulkanAttachmentBlending blending, VkClearColorValue clearColor);
-            VulkanAttachment* getAttachment(VulkanAttachmentBlending blending);
-            bool isDepthBuffer();
+            virtual AttachmentInterface* getAttachment(VEngineAttachmentBlending blending, bool clear, VEngineClearColorValue clearColor, bool forPresent) override;
+            virtual AttachmentInterface* getAttachment(VEngineAttachmentBlending blending, bool clear, VEngineClearColorValue clearColor) override;
+            virtual AttachmentInterface* getAttachment(VEngineAttachmentBlending blending, bool clear) override;
+            virtual AttachmentInterface* getAttachment(VEngineAttachmentBlending blending, VEngineClearColorValue clearColor) override;
+            virtual AttachmentInterface* getAttachment(VEngineAttachmentBlending blending) override;
+            virtual bool isDepthBuffer() override;
+            virtual void regenerateMipmaps() override;
             VkSampler getSampler();
             VkImageView getImageView();
             VkImageView getFirstMipmapImageView();
-            static bool resolveIsDepthBuffer(VulkanImageFormat format);
-            void regenerateMipmaps();
         private:
-            VkFormat resolveFormat(VulkanImageFormat format);
-            VulkanImageFormat reverseResolveFormat(VkFormat format);
+            VkFormat resolveFormat(VEngineImageFormat format);
+            VEngineImageFormat reverseResolveFormat(VkFormat format);
             Internal::VulkanDevice * device;
             Internal::VulkanInternalImage * internalImage;
-            VulkanImageFormat format;
+            VEngineImageFormat format;
         };
     }
 }

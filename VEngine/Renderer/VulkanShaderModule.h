@@ -1,5 +1,6 @@
 #pragma once
-#include "VulkanEnums.h"
+#include "../Interface/Renderer/Enums.h"
+#include "../Interface/Renderer/ShaderModuleInterface.h"
 
 namespace VEngine
 {
@@ -9,18 +10,18 @@ namespace VEngine
         {
             class VulkanDevice;
         }
-        class VulkanShaderModule
+        class VulkanShaderModule : public ShaderModuleInterface
         {
         public:
-            VulkanShaderModule(Internal::VulkanDevice * device, VulkanShaderModuleType type, std::string path);
+            VulkanShaderModule(Internal::VulkanDevice * device, VEngineShaderModuleType type, std::string path);
             ~VulkanShaderModule();
             VkShaderModule getHandle();
-            VulkanShaderModuleType getType();
+            virtual VEngineShaderModuleType getType() override;
 
         private:
             VkShaderModule handle;
             Internal::VulkanDevice * device;
-            VulkanShaderModuleType type;
+            VEngineShaderModuleType type;
         };
     }
 }

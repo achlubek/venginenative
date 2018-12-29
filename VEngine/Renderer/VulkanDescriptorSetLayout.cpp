@@ -26,21 +26,21 @@ namespace VEngine
             vkDestroyDescriptorSetLayout(device->getDevice(), layout, nullptr);
         }
         
-        void VulkanDescriptorSetLayout::addField(VulkanDescriptorSetFieldType fieldType, VulkanDescriptorSetFieldStage fieldStage)
+        void VulkanDescriptorSetLayout::addField(VEngineDescriptorSetFieldType fieldType, VEngineDescriptorSetFieldStage fieldStage)
         {
 
             VkShaderStageFlags fieldStageInternal = VK_SHADER_STAGE_ALL;
-            if (fieldStage == VulkanDescriptorSetFieldStage::FieldStageAll) fieldStageInternal = VK_SHADER_STAGE_ALL;
-            if (fieldStage == VulkanDescriptorSetFieldStage::FieldStageAllGraphics) fieldStageInternal = VK_SHADER_STAGE_ALL_GRAPHICS;
-            if (fieldStage == VulkanDescriptorSetFieldStage::FieldStageCompute) fieldStageInternal = VK_SHADER_STAGE_COMPUTE_BIT;
-            if (fieldStage == VulkanDescriptorSetFieldStage::FieldStageVertex) fieldStageInternal = VK_SHADER_STAGE_VERTEX_BIT;
-            if (fieldStage == VulkanDescriptorSetFieldStage::FieldStageFragment) fieldStageInternal = VK_SHADER_STAGE_FRAGMENT_BIT;
+            if (fieldStage == VEngineDescriptorSetFieldStage::FieldStageAll) fieldStageInternal = VK_SHADER_STAGE_ALL;
+            if (fieldStage == VEngineDescriptorSetFieldStage::FieldStageAllGraphics) fieldStageInternal = VK_SHADER_STAGE_ALL_GRAPHICS;
+            if (fieldStage == VEngineDescriptorSetFieldStage::FieldStageCompute) fieldStageInternal = VK_SHADER_STAGE_COMPUTE_BIT;
+            if (fieldStage == VEngineDescriptorSetFieldStage::FieldStageVertex) fieldStageInternal = VK_SHADER_STAGE_VERTEX_BIT;
+            if (fieldStage == VEngineDescriptorSetFieldStage::FieldStageFragment) fieldStageInternal = VK_SHADER_STAGE_FRAGMENT_BIT;
 
             VkDescriptorType descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            if (fieldType == VulkanDescriptorSetFieldType::FieldTypeSampler) descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            if (fieldType == VulkanDescriptorSetFieldType::FieldTypeUniformBuffer) descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            if (fieldType == VulkanDescriptorSetFieldType::FieldTypeStorageBuffer) descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            if (fieldType == VulkanDescriptorSetFieldType::FieldTypeStorageImage) descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            if (fieldType == VEngineDescriptorSetFieldType::FieldTypeSampler) descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            if (fieldType == VEngineDescriptorSetFieldType::FieldTypeUniformBuffer) descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            if (fieldType == VEngineDescriptorSetFieldType::FieldTypeStorageBuffer) descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            if (fieldType == VEngineDescriptorSetFieldType::FieldTypeStorageImage) descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 
             VkDescriptorSetLayoutBinding b = {};
             b.binding = static_cast<uint32_t>(bindings.size());
@@ -62,7 +62,7 @@ namespace VEngine
             compiled = true;
         }
 
-        VulkanDescriptorSet* VulkanDescriptorSetLayout::generateDescriptorSet()
+        DescriptorSetInterface* VulkanDescriptorSetLayout::generateDescriptorSet()
         {
             if (!compiled) {
                 compile();

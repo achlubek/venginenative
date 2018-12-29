@@ -1,4 +1,6 @@
 #pragma once
+#include "../Interface/Renderer/ComputeStageFactoryInterface.h"
+
 namespace VEngine
 {
     namespace Renderer
@@ -7,20 +9,18 @@ namespace VEngine
         {
             class VulkanDevice;
         }
+        class SemaphoreFactoryInterface;
 
-        class VulkanComputeStage;
-        class VulkanShaderModule;
-        class VulkanDescriptorSetLayout;
-
-        class VulkanComputeStageFactory
+        class VulkanComputeStageFactory : public ComputeStageFactoryInterface
         {
         public:
-            VulkanComputeStageFactory(Internal::VulkanDevice* device);
+            VulkanComputeStageFactory(Internal::VulkanDevice* device, SemaphoreFactoryInterface* semaphoreFactory);
             ~VulkanComputeStageFactory();
 
-            VulkanComputeStage* build(VulkanShaderModule* shader, std::vector<VulkanDescriptorSetLayout*> layouts);
+            virtual ComputeStageInterface* build(ShaderModuleInterface* shader, std::vector<DescriptorSetLayoutInterface*> layouts) override;
         private:
             Internal::VulkanDevice * device;
+            SemaphoreFactoryInterface* semaphoreFactory;
         };
 
     }

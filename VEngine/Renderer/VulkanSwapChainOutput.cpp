@@ -4,6 +4,8 @@
 #include "Internal/VulkanInternalImage.h"
 #include "VulkanRenderStage.h"
 #include "VulkanImage.h"
+#include "VulkanSemaphore.h"
+#include "VulkanSemaphoreFactory.h"
 
 namespace VEngine
 {
@@ -12,7 +14,7 @@ namespace VEngine
         using namespace VEngine::Renderer::Internal;
 
 
-        VulkanSwapChainOutput::VulkanSwapChainOutput(VulkanDevice* device, VulkanRenderStage* stage)
+        VulkanSwapChainOutput::VulkanSwapChainOutput(VulkanDevice* device, SemaphoreFactoryInterface* semaphoreFactory, RenderStageInterface* stage)
             : device(device)
         {
             VkFormat format = device->getSwapChain()->getImageFormat();
@@ -21,14 +23,12 @@ namespace VEngine
 
                 VulkanInternalImage* internalImage = new VulkanInternalImage(device, format, device->getSwapChain()->getImage(i), device->getSwapChain()->getImageView(i));
                 VulkanImage* img = new VulkanImage(device, internalImage, format);
-                VkClearColorValue clear = {};
-                auto attachment = img->getAttachment(VulkanAttachmentBlending::None, true, clear, true);
+                VEngineClearColorValue clear = {};
+                auto attachment = img->getAttachment(VEngineAttachmentBlending::None, true, clear, true);
                 outputStages[i] = stage->copy({ attachment });
             }
-            safedelete(stage);
-            VkSemaphoreCreateInfo semaphoreInfo = {};
-            semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            vkCreateSemaphore(device->getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphore);
+            safedelete(stage); // this is clear but todo if its not confusing
+            imageAvailableSemaphore = semaphoreFactory->build();
         }
 
 
@@ -37,13 +37,13 @@ namespace VEngine
             for (int i = 0; i < outputStages.size(); i++) {
                 safedelete(outputStages[i]);
             }
-            vkDestroySemaphore(device->getDevice(), imageAvailableSemaphore, nullptr);
+            safedelete(imageAvailableSemaphore);
         }
 
         void VulkanSwapChainOutput::beginDrawing()
         {
             vkAcquireNextImageKHR(device->getDevice(), device->getSwapChain()->getHandle(),
-                9999999, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+                9999999, static_cast<VulkanSemaphore*>(imageAvailableSemaphore)->getHandle(), VK_NULL_HANDLE, &imageIndex);
             outputStages[imageIndex]->beginDrawing();
         }
 
@@ -52,22 +52,22 @@ namespace VEngine
             outputStages[imageIndex]->endDrawing();
         }
 
-        void VulkanSwapChainOutput::drawMesh(Object3dInfo * info, uint32_t instances)
+        void VulkanSwapChainOutput::drawMesh(Object3dInfoInterface * info, uint32_t instances)
         {
             outputStages[imageIndex]->drawMesh(info, instances);
         }
 
-        void VulkanSwapChainOutput::submit(std::vector<VkSemaphore> waitSemaphores)
+        void VulkanSwapChainOutput::submit(std::vector<SemaphoreInterface*> waitSemaphores)
         {
             waitSemaphores.push_back(imageAvailableSemaphore);
             outputStages[imageIndex]->submit(waitSemaphores);
-            device->getSwapChain()->present({ outputStages[imageIndex]->getSignalSemaphore() }, imageIndex);
+            device->getSwapChain()->present({ static_cast<VulkanSemaphore*>(outputStages[imageIndex]->getSignalSemaphore())->getHandle() }, imageIndex);
             firstFrameDrawn = true;
             vkQueueWaitIdle(device->getMainQueue());// Todo make it synchronized better
         }
 
-        std::vector<VkSemaphore> VulkanSwapChainOutput::getSignalSemaphores()
-        { // Todo make it synchronized better
+        std::vector<SemaphoreInterface*> VulkanSwapChainOutput::getSignalSemaphores()
+        { // Todo make it synchronized at least
             if (!firstFrameDrawn) {
                 return { };
             }

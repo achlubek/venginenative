@@ -29,12 +29,12 @@ namespace VEngine
         {
         }
 
-        void VulkanDescriptorSet::bindImageViewSampler(uint32_t binding, VulkanImage* img)
+        void VulkanDescriptorSet::bindImageViewSampler(uint32_t binding, ImageInterface* img)
         {
             VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo();
             imageInfo->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-            imageInfo->imageView = img->getImageView();
-            imageInfo->sampler = img->getSampler();
+            imageInfo->imageView = static_cast<VulkanImage*>(img)->getImageView();
+            imageInfo->sampler = static_cast<VulkanImage*>(img)->getSampler();
 
             size_t i = 0xFFFFFF;
 
@@ -59,12 +59,12 @@ namespace VEngine
             needsUpdate = true;
 
         }
-        void VulkanDescriptorSet::bindImageStorage(uint32_t binding, VulkanImage* img)
+        void VulkanDescriptorSet::bindImageStorage(uint32_t binding, ImageInterface* img)
         {
             VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo();
             imageInfo->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-            imageInfo->imageView = img->getImageView();
-            imageInfo->sampler = img->getSampler();
+            imageInfo->imageView = static_cast<VulkanImage*>(img)->getImageView();
+            imageInfo->sampler = static_cast<VulkanImage*>(img)->getSampler();
 
             size_t i = 0xFFFFFF;
 
@@ -91,10 +91,10 @@ namespace VEngine
         }
 
 
-        void VulkanDescriptorSet::bindBuffer(uint32_t binding, VulkanGenericBuffer* buffer)
+        void VulkanDescriptorSet::bindBuffer(uint32_t binding, GenericBufferInterface* buffer)
         {
             VkDescriptorBufferInfo* bufferInfo = new VkDescriptorBufferInfo();
-            bufferInfo->buffer = buffer->getBuffer();
+            bufferInfo->buffer = static_cast<VulkanGenericBuffer*>(buffer)->getBuffer();
             bufferInfo->offset = 0;
             bufferInfo->range = buffer->getSize();
 
@@ -116,7 +116,7 @@ namespace VEngine
             writes[i].dstSet = set;
             writes[i].dstBinding = binding;
             writes[i].dstArrayElement = 0;
-            writes[i].descriptorType = buffer->getType() == VulkanBufferType::BufferTypeStorage ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            writes[i].descriptorType = buffer->getType() == VEngineBufferType::BufferTypeStorage ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             writes[i].descriptorCount = 1;
             writes[i].pBufferInfo = bufferInfo;
             needsUpdate = true;

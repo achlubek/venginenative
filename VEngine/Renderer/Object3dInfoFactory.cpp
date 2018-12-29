@@ -10,7 +10,7 @@ namespace VEngine
         using namespace VEngine::FileSystem;
         using namespace VEngine::Renderer::Internal;
 
-        Object3dInfoFactory::Object3dInfoFactory(VulkanDevice* device, FileSystem::Media* media)
+        Object3dInfoFactory::Object3dInfoFactory(VulkanDevice* device, FileSystem::MediaInterface* media)
             : device(device), media(media)
         {
             unsigned char bytes[288] = {
@@ -53,7 +53,7 @@ namespace VEngine
         {
         }
 
-        Object3dInfo * Object3dInfoFactory::build(std::string mediakey)
+        Object3dInfoInterface * Object3dInfoFactory::build(std::string mediakey)
         {
             unsigned char* bytes;
             int bytescount = media->readBinary(mediakey, &bytes);
@@ -64,12 +64,12 @@ namespace VEngine
             return build(flo);
         }
 
-        Object3dInfo * Object3dInfoFactory::build(std::vector<float> rawData)
+        Object3dInfoInterface * Object3dInfoFactory::build(std::vector<float> rawData)
         {
             return new Object3dInfo(device, rawData);
         }
 
-        Object3dInfo * Object3dInfoFactory::getFullScreenQuad()
+        Object3dInfoInterface * Object3dInfoFactory::getFullScreenQuad()
         {
             return fullScreenQuad;
         }

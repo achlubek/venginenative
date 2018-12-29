@@ -6,7 +6,7 @@ namespace VEngine
     namespace Renderer
     {
         class RenderStageInterface;
-        class SemaphoreInterface;
+        class Object3dInfoInterface;
         class SemaphoreInterface;
 
         class SwapChainOutputInterface

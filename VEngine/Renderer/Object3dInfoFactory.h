@@ -5,7 +5,7 @@ namespace VEngine
 {
     namespace FileSystem
     {
-        class Media;
+        class MediaInterface;
     }
 
     namespace Renderer
@@ -20,16 +20,16 @@ namespace VEngine
         class Object3dInfoFactory : public Object3dInfoFactoryInterface
         {
         public:
-            Object3dInfoFactory(Internal::VulkanDevice* device, FileSystem::Media* media);
+            Object3dInfoFactory(Internal::VulkanDevice* device, FileSystem::MediaInterface* media);
             ~Object3dInfoFactory();
 
-            virtual Object3dInfo* build(std::string mediakey) override;
-            virtual Object3dInfo* build(std::vector<float> rawData) override;
-            virtual Object3dInfo* getFullScreenQuad() override;
+            virtual Object3dInfoInterface* build(std::string mediakey) override;
+            virtual Object3dInfoInterface* build(std::vector<float> rawData) override;
+            virtual Object3dInfoInterface* getFullScreenQuad() override;
         private:
             Internal::VulkanDevice* device;
-            FileSystem::Media* media;
-            Object3dInfo* fullScreenQuad;
+            FileSystem::MediaInterface* media;
+            Object3dInfoInterface* fullScreenQuad;
         };
 
     }

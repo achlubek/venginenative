@@ -1,4 +1,6 @@
 #pragma once
+#include "../Interface/Renderer/DescriptorSetInterface.h"
+
 namespace VEngine
 {
     namespace Renderer
@@ -7,19 +9,16 @@ namespace VEngine
         {
             class VulkanDevice;
         }
-        class VulkanImage;
-        class VulkanGenericBuffer;
 
-        class VulkanDescriptorSet
+        class VulkanDescriptorSet : public DescriptorSetInterface
         {
         public:
             VulkanDescriptorSet(Internal::VulkanDevice * device, VkDescriptorPool p, VkDescriptorSetLayout l);
             ~VulkanDescriptorSet();
 
-            void bindImageViewSampler(uint32_t binding, VulkanImage* img);
-            void bindImageStorage(uint32_t binding, VulkanImage* img);
-            void bindBuffer(uint32_t binding, VulkanGenericBuffer* buffer);
-
+            virtual void bindImageViewSampler(uint32_t binding, ImageInterface* img) override;
+            virtual void bindImageStorage(uint32_t binding, ImageInterface* img) override;
+            virtual void bindBuffer(uint32_t binding, GenericBufferInterface* buffer) override;
 
             VkDescriptorSet getSet();
 

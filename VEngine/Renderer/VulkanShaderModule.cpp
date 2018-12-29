@@ -11,7 +11,7 @@ namespace VEngine
     {
         using namespace VEngine::Renderer::Internal;
 
-        VulkanShaderModule::VulkanShaderModule(VulkanDevice * device, VulkanShaderModuleType type, std::string path)
+        VulkanShaderModule::VulkanShaderModule(VulkanDevice * device, VEngineShaderModuleType type, std::string path)
             : device(device), type(type)
         {
             std::ifstream file(path, std::ios::ate | std::ios::binary);
@@ -45,11 +45,13 @@ namespace VEngine
         {
             vkDestroyShaderModule(device->getDevice(), handle, nullptr);
         }
+
         VkShaderModule VulkanShaderModule::getHandle()
         {
             return handle;
         }
-        VulkanShaderModuleType VulkanShaderModule::getType()
+
+        VEngineShaderModuleType VulkanShaderModule::getType()
         {
             return type;
         }

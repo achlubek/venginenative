@@ -1,16 +1,23 @@
 #pragma once
+#include "../Interface/Renderer/SemaphoreInterface.h"
 
 namespace VEngine
 {
     namespace Renderer
     {
-        class VulkanSemaphore
+        namespace Internal {
+            class VulkanDevice;
+        }
+
+        class VulkanSemaphore : public SemaphoreInterface
         {
         public:
-            VulkanSemaphore();
+            VulkanSemaphore(Internal::VulkanDevice* device);
             ~VulkanSemaphore();
             VkSemaphore getHandle();
+            VkSemaphore* getHandlePointer();
         private:
+            Internal::VulkanDevice* device;
             VkSemaphore handle;
         };
     }

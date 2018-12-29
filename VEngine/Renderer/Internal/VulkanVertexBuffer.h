@@ -4,7 +4,7 @@ namespace VEngine
 {
     namespace Renderer
     {
-        class VulkanDescriptorSet;
+        class DescriptorSetInterface;
         namespace Internal
         {
             class VulkanDevice;
@@ -16,7 +16,7 @@ namespace VEngine
                 VulkanVertexBuffer(VulkanDevice* device, std::vector<float>& data);
                 ~VulkanVertexBuffer();
                 VkBuffer getBuffer();
-                void drawInstanced(VulkanGraphicsPipeline* p, std::vector<VulkanDescriptorSet*> sets, VulkanCommandBuffer* cb, uint32_t instances);
+                void drawInstanced(VulkanGraphicsPipeline* p, std::vector<DescriptorSetInterface*> sets, VulkanCommandBuffer* cb, uint32_t instances);
             private:
                 VulkanDevice * device;
                 VkBuffer vertexBuffer;

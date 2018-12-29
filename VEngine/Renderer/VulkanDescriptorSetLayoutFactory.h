@@ -1,4 +1,5 @@
 #pragma once
+#include "../Interface/Renderer/DescriptorSetLayoutFactoryInterface.h"
 
 namespace VEngine
 {
@@ -8,15 +9,14 @@ namespace VEngine
         {
             class VulkanDevice;
         }
-        class VulkanDescriptorSetLayout;
 
-        class VulkanDescriptorSetLayoutFactory
+        class VulkanDescriptorSetLayoutFactory : public DescriptorSetLayoutFactoryInterface
         {
         public:
             VulkanDescriptorSetLayoutFactory(Internal::VulkanDevice * device);
             ~VulkanDescriptorSetLayoutFactory();
 
-            VulkanDescriptorSetLayout* build();
+            virtual DescriptorSetLayoutInterface* build() override;
 
         private:
             Internal::VulkanDevice * device;

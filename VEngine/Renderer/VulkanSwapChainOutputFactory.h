@@ -1,5 +1,5 @@
 #pragma once
-class VulkanDevice;
+#include "../Interface/Renderer/SwapChainOutputFactoryInterface.h"
 
 namespace VEngine
 {
@@ -9,18 +9,20 @@ namespace VEngine
         {
             class VulkanDevice;
         }
-        class VulkanSwapChainOutput;
-        class VulkanRenderStage;
+        class SwapChainOutputInterface;
+        class SemaphoreFactoryInterface;
+        class RenderStageInterface;
 
-        class VulkanSwapChainOutputFactory
+        class VulkanSwapChainOutputFactory : public SwapChainOutputFactoryInterface
         {
         public:
-            VulkanSwapChainOutputFactory(Internal::VulkanDevice* device);
+            VulkanSwapChainOutputFactory(Internal::VulkanDevice* device, SemaphoreFactoryInterface* semaphoreFactory);
             ~VulkanSwapChainOutputFactory();
 
-            VulkanSwapChainOutput* build(VulkanRenderStage* stage); // todo in future allow compute shader to draw to swapchain
+            virtual SwapChainOutputInterface* build(RenderStageInterface* stage) override; // todo in future allow compute shader to draw to swapchain
         private:
             Internal::VulkanDevice * device;
+            SemaphoreFactoryInterface* semaphoreFactory;
         };
 
     }

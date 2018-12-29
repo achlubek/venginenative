@@ -47,6 +47,8 @@ namespace VEngine
             virtual ImageInterface* build(std::string mediakey) = 0;
 
             virtual ImageInterface* build(uint32_t width, uint32_t height, uint32_t channelCount, void * data) = 0;
+
+            virtual bool resolveIsDepthBuffer(VEngineImageFormat format) = 0;
         };
 
 

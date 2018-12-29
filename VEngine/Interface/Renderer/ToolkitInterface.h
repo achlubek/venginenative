@@ -43,7 +43,7 @@ namespace VEngine
             virtual BufferFactoryInterface* getBufferFactory() = 0;
             virtual ImageFactoryInterface* getImageFactory() = 0;
             virtual SwapChainOutputFactoryInterface* getSwapChainOutputFactory() = 0;
-            virtual SemaphoreFactoryInterface* getSemaphoreFactoryInterface() = 0;
+            virtual SemaphoreFactoryInterface* getSemaphoreFactory() = 0;
             virtual Input::KeyboardInterface* getKeyboard() = 0;
             virtual Input::MouseInterface* getMouse() = 0;
             virtual Input::JoystickInterface* getJoystick() = 0;

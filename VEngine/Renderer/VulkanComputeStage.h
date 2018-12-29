@@ -1,6 +1,5 @@
 #pragma once
 #include "../Interface/Renderer/ComputeStageInterface.h"
-#include "../Interface/Renderer/SemaphoreInterface.h"
 
 namespace VEngine
 {
@@ -12,22 +11,23 @@ namespace VEngine
             class VulkanCommandBuffer;
             class VulkanGraphicsPipeline;
         }
-        class VulkanDescriptorSet;
-        class VulkanDescriptorSetLayout;
-        class VulkanShaderModule;
-        class DescriptorSetLayout;
+        class SemaphoreInterface;
+        class SemaphoreFactoryInterface;
+        class ShaderModuleInterface;
+        class DescriptorSetLayoutInterface;
 
         class VulkanComputeStage : public ComputeStageInterface
         {
         public:
             VulkanComputeStage(Internal::VulkanDevice * device,
-                VulkanShaderModule* shader,
-                std::vector<VulkanDescriptorSetLayout*> layouts);
+                SemaphoreFactoryInterface* semaphoreFactory,
+                ShaderModuleInterface* shader,
+                std::vector<DescriptorSetLayoutInterface*> layouts);
             ~VulkanComputeStage();
 
             virtual void beginRecording() override;
             virtual void endRecording() override;
-            virtual void dispatch(std::vector<VulkanDescriptorSet*> sets, uint32_t groupX, uint32_t groupY, uint32_t groupZ) override;
+            virtual void dispatch(std::vector<DescriptorSetInterface*> sets, uint32_t groupX, uint32_t groupY, uint32_t groupZ) override;
 
             virtual void submit(std::vector<SemaphoreInterface*> waitSemaphores) override;
             virtual void submitNoSemaphores(std::vector<SemaphoreInterface*> waitSemaphores) override;
@@ -36,11 +36,12 @@ namespace VEngine
 
             Internal::VulkanDevice * device;
             SemaphoreInterface* signalSemaphore;
+            SemaphoreFactoryInterface* semaphoreFactory;
             Internal::VulkanCommandBuffer* commandBuffer;
             Internal::VulkanGraphicsPipeline* pipeline;
 
-            std::vector<VulkanDescriptorSetLayout*> setLayouts;
-            VulkanShaderModule* shader;
+            std::vector<DescriptorSetLayoutInterface*> setLayouts;
+            ShaderModuleInterface* shader;
             bool compiled = false;
             void compile();
         };

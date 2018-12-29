@@ -1,5 +1,6 @@
 #pragma once
-#include "VulkanEnums.h" 
+#include "../Interface/Renderer/Enums.h"
+#include "../Interface/Renderer/DescriptorSetLayoutInterface.h"
 
 namespace VEngine
 {
@@ -9,17 +10,16 @@ namespace VEngine
         {
             class VulkanDevice;
         }
-        class VulkanDescriptorSet;
 
-        class VulkanDescriptorSetLayout
+        class VulkanDescriptorSetLayout : public DescriptorSetLayoutInterface
         {
         public:
             VulkanDescriptorSetLayout(Internal::VulkanDevice * device);
             ~VulkanDescriptorSetLayout();
 
-            void addField(VulkanDescriptorSetFieldType fieldType, VulkanDescriptorSetFieldStage fieldAccesibility);
+            virtual void addField(VEngineDescriptorSetFieldType fieldType, VEngineDescriptorSetFieldStage fieldAccesibility) override;
 
-            VulkanDescriptorSet* generateDescriptorSet();
+            virtual DescriptorSetInterface* generateDescriptorSet() override;
             VkDescriptorSetLayout getHandle();
         private:
             std::vector<VkDescriptorSetLayoutBinding> bindings;
