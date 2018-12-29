@@ -14,6 +14,7 @@ namespace VEngine
             onKeyRepeat(std::function<void(int)>()),
             onChar(std::function<void(unsigned int)>())
         {
+            instance = this;
             glfwSetCharCallback(window, [](GLFWwindow * window, unsigned int key) -> void {
                 Keyboard::instance->onChar(key);
             });

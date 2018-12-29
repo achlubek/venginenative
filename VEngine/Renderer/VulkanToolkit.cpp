@@ -71,6 +71,7 @@ namespace VEngine
             safedelete(vulkanComputeStageFactory);
             safedelete(vulkanBufferFactory);
             safedelete(vulkanImageFactory);
+            safedelete(vulkanSemaphoreFactory);
             safedelete(vulkanSwapChainOutputFactory);
             safedelete(keyboard);
             safedelete(mouse);

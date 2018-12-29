@@ -8,18 +8,18 @@ int main()
     toolkit->getMedia()->scanDirectory("../../media");
     toolkit->getMedia()->scanDirectory("../../shaders");
     
-    auto vert = toolkit->getVulkanShaderFactory()->build(VulkanShaderModuleType::Vertex, "example-simplefullscreenpass.vert.spv");
-    auto frag = toolkit->getVulkanShaderFactory()->build(VulkanShaderModuleType::Fragment, "example-simplefullscreenpass.frag.spv");
+    auto vert = toolkit->getShaderFactory()->build(VEngineShaderModuleType::Vertex, "example-simplefullscreenpass.vert.spv");
+    auto frag = toolkit->getShaderFactory()->build(VEngineShaderModuleType::Fragment, "example-simplefullscreenpass.frag.spv");
 
-    auto texture = toolkit->getVulkanImageFactory()->build("blaze.png");
+    auto texture = toolkit->getImageFactory()->build("blaze.png");
 
-    auto layout = toolkit->getVulkanDescriptorSetLayoutFactory()->build();
-    layout->addField(VulkanDescriptorSetFieldType::FieldTypeUniformBuffer, VulkanDescriptorSetFieldStage::FieldStageAllGraphics);
-    layout->addField(VulkanDescriptorSetFieldType::FieldTypeSampler, VulkanDescriptorSetFieldStage::FieldStageFragment);
+    auto layout = toolkit->getDescriptorSetLayoutFactory()->build();
+    layout->addField(VEngineDescriptorSetFieldType::FieldTypeUniformBuffer, VEngineDescriptorSetFieldStage::FieldStageAllGraphics);
+    layout->addField(VEngineDescriptorSetFieldType::FieldTypeSampler, VEngineDescriptorSetFieldStage::FieldStageFragment);
 
-    auto stage = toolkit->getVulkanRenderStageFactory()->build(640, 480, { vert, frag }, { layout });
+    auto stage = toolkit->getRenderStageFactory()->build(640, 480, { vert, frag }, { layout });
 
-    auto buffer = toolkit->getVulkanBufferFactory()->build(VulkanBufferType::BufferTypeUniform, sizeof(float) * 20);
+    auto buffer = toolkit->getBufferFactory()->build(VEngineBufferType::BufferTypeUniform, sizeof(float) * 20);
 
     auto set = layout->generateDescriptorSet();
     set->bindBuffer(0, buffer);
@@ -27,7 +27,7 @@ int main()
 
     stage->setSets({ set });
 
-    auto output = toolkit->getVulkanSwapChainOutputFactory()->build(stage);
+    auto output = toolkit->getSwapChainOutputFactory()->build(stage);
 
     auto fullScreenQuad3dInfo = toolkit->getObject3dInfoFactory()->getFullScreenQuad();
 

@@ -18,18 +18,18 @@ int main()
     
     // Load the compute shader that will do the calculation
     // This expects Spir-V spv file - compiled shader
-    auto shader = toolkit->getVulkanShaderFactory()->build(VulkanShaderModuleType::Compute, "example-compute.comp.spv");
+    auto shader = toolkit->getShaderFactory()->build(VEngineShaderModuleType::Compute, "example-compute.comp.spv");
 
     // Build the layout of data that will be available in the shader runtime
-    auto layout = toolkit->getVulkanDescriptorSetLayoutFactory()->build();
+    auto layout = toolkit->getDescriptorSetLayoutFactory()->build();
     // Add a storage buffer to the layout - it will be at binding 0
-    layout->addField(VulkanDescriptorSetFieldType::FieldTypeStorageBuffer, VulkanDescriptorSetFieldStage::FieldStageCompute);
+    layout->addField(VEngineDescriptorSetFieldType::FieldTypeStorageBuffer, VEngineDescriptorSetFieldStage::FieldStageCompute);
 
     // Create the compute stage that will execute the computation, using given shader and given layout
-    auto stage = toolkit->getVulkanComputeStageFactory()->build(shader, { layout });
+    auto stage = toolkit->getComputeStageFactory()->build(shader, { layout });
     
     // Create the storage buffer that will hold input data and where output will be saved
-    auto buffer = toolkit->getVulkanBufferFactory()->build(VulkanBufferType::BufferTypeStorage, sizeof(float) * 20);
+    auto buffer = toolkit->getBufferFactory()->build(VEngineBufferType::BufferTypeStorage, sizeof(float) * 20);
     
     // Create a descriptor set matching previously created descriptor set layout
     auto set = layout->generateDescriptorSet();

@@ -162,6 +162,7 @@
     <ClInclude Include="Interface\Renderer\SwapChainOutputInterface.h" />
     <ClInclude Include="Interface\Renderer\SwapChainOutputFactoryInterface.h" />
     <ClInclude Include="Interface\Renderer\ToolkitInterface.h" />
+    <ClInclude Include="VEngineVulkan.h" />
     <ClInclude Include="Interface\VEngineInterface.h" />
     <ClInclude Include="Renderer\Internal\stdafx.h" />
     <ClInclude Include="Input\Joystick.h" />
