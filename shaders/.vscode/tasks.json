@@ -6,7 +6,14 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "C:\\Code\\VEngineNative\\shaders\\glslcompiler.exe C:\\Code\\VEngineNative\\shaders"
+            "command": "mono glslcompiler.exe",
+            "windows": {
+                "command": ".\\glslcompiler.exe ."
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
 }
