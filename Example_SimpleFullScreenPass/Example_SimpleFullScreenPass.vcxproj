@@ -90,7 +90,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)\VEngine;$(VULKAN_SDK)\Include\vulkan;$(SolutionDir)\dependencies\glfw-3.2.1.bin.WIN64\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\VEngine;$(VULKAN_SDK)\Include\vulkan;$(SolutionDir)\dependencies\glfw-3.2.1.bin.WIN64\include;C:\Code\glm-0.9.9.6</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
