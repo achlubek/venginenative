@@ -7,7 +7,7 @@ int main()
 {
 	int height = 1000;
 	int width = 1000;
-    auto toolkit = new VulkanToolkit(height, width, false, "Full screen pass example");
+    auto toolkit = new VulkanToolkit(height, width, true, "Full screen pass example");
     toolkit->getMedia()->scanDirectory("../../media");
     toolkit->getMedia()->scanDirectory("../../shaders");
 
@@ -51,8 +51,8 @@ int main()
 
 		BinaryBufferBuilder camBufferBuilder = BinaryBufferBuilder();
 		camBufferBuilder.emplaceFloat32(0.0f);
+		camBufferBuilder.emplaceFloat32(2.0f);
 		camBufferBuilder.emplaceFloat32(0.0f);
-		camBufferBuilder.emplaceFloat32(3.0f);
 		camBufferBuilder.emplaceFloat32(1.0 / fov);
 
 		camBufferBuilder.emplaceFloat32(camrot.x);
@@ -60,7 +60,15 @@ int main()
 		camBufferBuilder.emplaceFloat32(camrot.z);
 		camBufferBuilder.emplaceFloat32(camrot.w);
 
-		camBufferBuilder.emplaceInt32(1);
+		camBufferBuilder.emplaceInt32(16);
+		camBufferBuilder.emplaceInt32(16);
+		camBufferBuilder.emplaceInt32(16);
+		camBufferBuilder.emplaceInt32(16);
+
+		camBufferBuilder.emplaceFloat32((float)toolkit->getExecutionTime());
+		camBufferBuilder.emplaceFloat32((float)toolkit->getExecutionTime());
+		camBufferBuilder.emplaceFloat32((float)toolkit->getExecutionTime());
+		camBufferBuilder.emplaceFloat32((float)toolkit->getExecutionTime());
 
 		void* camBufPtr;
 		cameraBuffer->map(0, camBufferBuilder.buffer.size(), &camBufPtr);
@@ -70,27 +78,32 @@ int main()
 
 		BinaryBufferBuilder boxBufferBuilder = BinaryBufferBuilder();
 
-		glm::quat boxorient = glm::angleAxis(sin((float)toolkit->getExecutionTime()), glm::vec3(1.0, 0.0, 1.0));
 
-		boxBufferBuilder.emplaceFloat32(1.0f);
-		boxBufferBuilder.emplaceFloat32(0.0f);
-		boxBufferBuilder.emplaceFloat32(0.0f);
-		boxBufferBuilder.emplaceFloat32(0.0f);
+		for (int x = 0; x < 4; x++) {
+			for (int y = 0; y < 4; y++) {
+				glm::quat boxorient = glm::angleAxis(sin((float)toolkit->getExecutionTime() * (x * y * 0.1f + 0.2f)), glm::vec3(1.0, 0.0, 1.0));
+				boxBufferBuilder.emplaceFloat32(1.0f + x * 2.0f);
+				boxBufferBuilder.emplaceFloat32(sin(x + y * 1234.567f));
+				boxBufferBuilder.emplaceFloat32(1.0f + y * 2.0f);
+				boxBufferBuilder.emplaceFloat32(0.0f);
 
-		boxBufferBuilder.emplaceFloat32(boxorient.x);
-		boxBufferBuilder.emplaceFloat32(boxorient.y);
-		boxBufferBuilder.emplaceFloat32(boxorient.z);
-		boxBufferBuilder.emplaceFloat32(boxorient.w);
+				boxBufferBuilder.emplaceFloat32(boxorient.x);
+				boxBufferBuilder.emplaceFloat32(boxorient.y);
+				boxBufferBuilder.emplaceFloat32(boxorient.z);
+				boxBufferBuilder.emplaceFloat32(boxorient.w);
 
-		boxBufferBuilder.emplaceFloat32(1.0f);
-		boxBufferBuilder.emplaceFloat32(1.0f);
-		boxBufferBuilder.emplaceFloat32(1.0f);
-		boxBufferBuilder.emplaceFloat32(0.0f);
+				boxBufferBuilder.emplaceFloat32(1.0f);
+				boxBufferBuilder.emplaceFloat32(1.0f);
+				boxBufferBuilder.emplaceFloat32(1.0f);
+				boxBufferBuilder.emplaceFloat32(0.0f);
 
-		boxBufferBuilder.emplaceFloat32(1.0f);
-		boxBufferBuilder.emplaceFloat32(0.0f);
-		boxBufferBuilder.emplaceFloat32(1.0f);
-		boxBufferBuilder.emplaceFloat32(0.0f);
+				boxBufferBuilder.emplaceFloat32(1.0f);
+				boxBufferBuilder.emplaceFloat32(1.0f);
+				boxBufferBuilder.emplaceFloat32(1.0f);
+				boxBufferBuilder.emplaceFloat32((float)(x + y) / 54.0f);
+			}
+		}
+
 
 		void* boxBufPtr;
 		boxBuffer->map(0, boxBufferBuilder.buffer.size(), &boxBufPtr);

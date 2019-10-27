@@ -156,25 +156,12 @@ Ray generateRandomRay(Ray originalRay, vec3 normal, float roughness){
     return Ray(originalRay.o, normalize(rd));
 }
 
-vec3 trace(Ray ray, int counter);
-
-vec3 shadeBox(Ray ray, Box box, float distance, int counter) {
+vec3 shadeBoxColorRay(Ray ray, Box box, vec3 color, float distance) {
     vec3 intersectionPoint = ray.o + ray.d * distance;
     vec3 normal = boxNormal(box, intersectionPoint);
     float roughness = box.color_roughness.w;
-    vec3 color = box.color_roughness.rgb;
-
-    if(counter == 0){
-        return getSky(ray.o, ray.d) * fresnelCoefficent(normal, ray.d, 0.04);
-    } else {
-        vec3 result = vec3(0.0);
-        for(int i=0;i<4;i++){
-            float fresnel = fresnelCoefficent(normal, ray.d, 0.04);
-            Ray randomRay = generateRandomRay(ray, normal, roughness - fresnel * (1.0 - roughness));
-            result += trace(randomRay, counter - 1) * fresnel;
-        }
-        return result / 4.0;
-    }
+    vec3 surfaceColor = box.color_roughness.rgb;
+    return surfaceColor * color * fresnelCoefficent(normal, ray.d, 0.04);
 }
 
 vec3 getCameraRay(vec2 uv){
@@ -183,22 +170,62 @@ vec3 getCameraRay(vec2 uv){
     return quat_mul_vec(cameraBuffer.cameraOrientation, normalize(vec3(signeduv.x, -signeduv.y, -fov)));
 }
 
-vec3 trace(Ray ray, int counter){
+struct Intersection
+{
+    Ray ray;
+    Box box;
+    vec3 hitPoint;
+    vec3 normal;
+};
+const int MAX_INTERSECTIONS = 2;
+Intersection intersections[MAX_INTERSECTIONS];
+int tracingIndex = 0;
+
+void traceIntersections(Ray ray){
     int boxesCount = cameraBuffer.boxesCount.w;
     int minDistBoxIndex = -1;
-    float minDist = 9999.0;
-    for(int i=0;i<boxesCount;i++){
-        Box box = boxBuffer.boxes[i];
-        float dst = intersectBox(ray, box);
-        if(dst < minDist){
-            minDist = dst;
-            minDistBoxIndex = i;
+    do{
+        minDistBoxIndex = -1;
+        float minDist = 9999.0;
+        for(int i=0;i<boxesCount;i++){
+            Box box = boxBuffer.boxes[i];
+            float dst = intersectBox(ray, box);
+            if(dst < minDist){
+                minDist = dst;
+                minDistBoxIndex = i;
+            }
         }
+        if(minDistBoxIndex > -1){
+            vec3 point = ray.o + ray.d * minDist;
+            Box box = boxBuffer.boxes[minDistBoxIndex];
+            vec3 normal = boxNormal(box, point);
+            intersections[tracingIndex++] = Intersection(
+                ray, 
+                box,
+                point,
+                normal
+            );
+            float roughness = box.color_roughness.w;
+            float fresnel = fresnelCoefficent(normal, ray.d, 0.04);
+            Ray randomRay = generateRandomRay(ray, normal, roughness);
+            randomRay.o = point + randomRay.d * 0.001;
+            ray = randomRay;
+        }
+    } while (minDistBoxIndex > -1 && tracingIndex < MAX_INTERSECTIONS);
+}
+
+vec3 resolveIntersections(Ray cameraRay){
+    if(tracingIndex == 0){
+        return getSky(cameraRay.o, cameraRay.d);
     }
-    if(minDistBoxIndex == -1){
-        return getSky(ray.o, ray.d);
+    Intersection initialIntersection = intersections[tracingIndex-1];
+    Ray randomRay = generateRandomRay(initialIntersection.ray, initialIntersection.normal, initialIntersection.box.color_roughness.a);
+    vec3 initialColor = getSky(initialIntersection.hitPoint, randomRay.d);
+    for(int i = tracingIndex - 1; i >= 0; i--){
+        Intersection inter = intersections[i];
+        initialColor *= fresnelCoefficent(inter.normal, inter.ray.d, 0.04) * inter.box.color_roughness.rgb;
     }
-    return shadeBox(ray, boxBuffer.boxes[minDistBoxIndex], minDist, counter);
+    return initialColor;
 }
 
 void main() {
@@ -210,10 +237,13 @@ void main() {
     for(int x=0;x<4;x++){
         for(int y=0;y<4;y++){
             float fx = x / 4.0;
-            float fy = x / 4.0;
+            float fy = y / 4.0;
             vec2 offset = pixel * vec2(fx, fy);
             Ray ray = Ray(cameraBuffer.cameraPosition_fov.xyz, getCameraRay(UV + offset));
-            result += trace(ray, 3);
+            tracingIndex = 0;
+            traceIntersections(ray);
+            result += resolveIntersections(ray);
+            //result += (float(tracingIndex) / 2.0);
             w += 1.0;
         }
     }
