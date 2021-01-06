@@ -7,6 +7,7 @@
 #include <functional>
 #include <map>
 #include <unordered_map>
+#include <stdexcept>
 #include <vulkan.h>
 #ifdef _MSC_VER
 #include <windows.h>
